@@ -80,24 +80,30 @@ function capturePhotoWeb(
     input.style.display = "none";
     document.body.appendChild(input);
 
+    // Some browsers fire both `cancel` and `change` (with no file) when the
+    // sheet is dismissed. Guard so we resolve / remove the node exactly once.
+    let settled = false;
+    const finish = (cb: () => void) => {
+      if (settled) return;
+      settled = true;
+      if (input.parentNode === document.body) document.body.removeChild(input);
+      cb();
+    };
+
     input.onchange = async () => {
       const file = input.files?.[0];
-      document.body.removeChild(input);
       if (!file) {
-        resolve(null);
+        finish(() => resolve(null));
         return;
       }
       try {
         const result = await downscaleAndEncode(file, quality, maxWidth);
-        resolve(result);
+        finish(() => resolve(result));
       } catch (err) {
-        reject(err);
+        finish(() => reject(err));
       }
     };
-    input.oncancel = () => {
-      document.body.removeChild(input);
-      resolve(null);
-    };
+    input.oncancel = () => finish(() => resolve(null));
 
     input.click();
   });
@@ -109,26 +115,33 @@ async function downscaleAndEncode(
   maxWidth: number
 ): Promise<PhotoResult> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxWidth / bitmap.width);
-  const w = Math.round(bitmap.width * scale);
-  const h = Math.round(bitmap.height * scale);
+  try {
+    const scale = Math.min(1, maxWidth / bitmap.width);
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
 
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas not supported");
-  ctx.drawImage(bitmap, 0, 0, w, h);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas not supported");
+    ctx.drawImage(bitmap, 0, 0, w, h);
 
-  const blob: Blob = await new Promise((res, rej) =>
-    canvas.toBlob(
-      (b) => (b ? res(b) : rej(new Error("Image encode failed"))),
-      "image/jpeg",
-      quality / 100
-    )
-  );
-  const base64 = await blobToBase64(blob);
-  return { base64, mimeType: "image/jpeg", width: w, height: h };
+    const blob: Blob = await new Promise((res, rej) =>
+      canvas.toBlob(
+        (b) => (b ? res(b) : rej(new Error("Image encode failed"))),
+        "image/jpeg",
+        quality / 100
+      )
+    );
+    const base64 = await blobToBase64(blob);
+    return { base64, mimeType: "image/jpeg", width: w, height: h };
+  } finally {
+    // Free the GPU/native bitmap explicitly. Without this, repeated NCR
+    // captures on cheap Android tablets (Lenovo Tab P12, Galaxy A8) build
+    // up GPU memory until the WebView OOMs.
+    bitmap.close();
+  }
 }
 
 function blobToBase64(blob: Blob): Promise<string> {

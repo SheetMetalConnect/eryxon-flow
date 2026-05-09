@@ -75,31 +75,47 @@ export function useNetworkStatus(): NetworkStatus {
     let cleanup: (() => void) | undefined;
 
     if (isNativeApp()) {
+      // The Capacitor handshake is async (dynamic import + getStatus +
+      // addListener). If the component unmounts *during* that handshake the
+      // synchronous cleanup runs first and the listener would register
+      // afterwards, leaking past the component lifetime. We guard with an
+      // `unmounted` flag at every await boundary AND tear down a listener
+      // that resolves after we've already unmounted.
+      let unmounted = false;
       let removeFn: (() => Promise<void>) | undefined;
-      (async () => {
+      void (async () => {
         try {
           const mod = (await import(
             "@capacitor/network"
           )) as unknown as CapacitorNetworkModule;
+          if (unmounted) return;
           const initial = await mod.Network.getStatus();
+          if (unmounted) return;
           setStatus({
             online: initial.connected,
             connectionType: normalizeType(initial.connectionType),
           });
           const handle = await mod.Network.addListener(
             "networkStatusChange",
-            (s) =>
+            (s) => {
+              if (unmounted) return;
               setStatus({
                 online: s.connected,
                 connectionType: normalizeType(s.connectionType),
-              })
+              });
+            }
           );
+          if (unmounted) {
+            void handle.remove();
+            return;
+          }
           removeFn = handle.remove;
         } catch {
           /* ignore */
         }
       })();
       cleanup = () => {
+        unmounted = true;
         if (removeFn) void removeFn();
       };
     } else {

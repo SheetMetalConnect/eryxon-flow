@@ -131,6 +131,49 @@ Recommended export options:
 - Run on iPad Pro M-series and iPhone 15+ — those are the devices the UX is
   tuned for. (Older devices still work, just without 120Hz ProMotion.)
 
+## Compatibility (across all three apps)
+
+| Concern               | iOS native             | Android native          | PWA / Mobile Safari        |
+|-----------------------|------------------------|--------------------------|----------------------------|
+| **Min OS**            | iOS / iPadOS 13+       | Android 7.0 (API 24)+    | Safari 17+, Chrome 88+     |
+| **Auth**              | Supabase email + magic link, PIN keypad, Face ID / Touch ID re-unlock | Supabase email + magic link, PIN keypad, fingerprint re-unlock | Same Supabase flow, biometric re-unlock not available |
+| **Hosted backend**    | Default `app.eryxon.eu` via runtime `env.js` | Same | Same |
+| **Self-hosted backend** | Build with `VITE_SUPABASE_URL=http://your-host` and either bundle that into the IPA or set `CAPACITOR_SERVER_URL=https://your-host` for live-reload | Same, plus Android `network_security_config` whitelists `*.local` and `localhost` for LAN setups | Build with `VITE_SUPABASE_URL=http://127.0.0.1:54321`; the meta-CSP localhost strip is auto-skipped when the URL is local (see `vite.config.ts:stripDevCspForProd`) |
+| **Language switching** | `LanguageSwitcher` on `/m/login`; switch persists in localStorage and applies app-wide via i18next | Same | Same |
+| **Viewports**         | `viewport-fit=cover` + `100dvh`, safe-area utilities for notch / home indicator. iPad split-view collapses below 768px. | Same plus sw600dp / sw720dp tablet breakpoints. | Same. |
+| **Devices**           | iPhone SE (3rd gen) → 16 Pro Max. iPad mini, Air, Pro M-series. iPadOS 13+ stage-manager / split-view honored. | Pixel 6+, Galaxy S20+, Pixel Tablet, Galaxy Tab S7+, Lenovo Tab P12, foldables. | Anything modern with Safari 17+, Chrome / Edge / Firefox. |
+
+### Login flow (every surface)
+
+1. Operator opens the app / tab.
+2. If no Supabase session → redirect to `/auth` (web) or the Auth screen inside the WebView (native).
+3. If signed in but no PIN session → `/m/login` (touch shells) or `/operator/login` (desktop terminal).
+4. Operator enters badge + 6-digit PIN, optionally Face ID / Touch ID after the first PIN of the day.
+5. Lands on `/m/queue` (mobile) or `/operator/work-queue` (desktop). Mobile shell preserves the session even if the WebView reloads.
+
+### Drawing / 3D inspection on mobile
+
+The mobile operation detail page lazy-loads the same PDF viewer **and** the
+STEP viewer the desktop terminal uses, but both chunks are split:
+
+- **PDF preview** (~127 KB gzipped) loads on first tap, opens in an in-app modal.
+- **STEP / 3D preview** (~520 KB gzipped Three.js + occt-import) loads on first tap of a `.step` / `.stp` file. Pre-fetched as a Blob to dodge signed-URL CORS in the loader.
+
+iPad Pro M-series and modern Android tablets render the STEP viewer fluidly;
+on a phone-class device the same dialog still works but the user is paying
+the bandwidth bill — that's a deliberate trade so a fitter on the floor never
+has to walk to the desktop terminal for a 3D check.
+
+## Remaining iOS-only gaps you'll wire up before TestFlight
+
+These can't be done from the web bundle — they live in Xcode / Apple Developer:
+
+1. **APNs key + push subscription** — Capacitor Push is configured (`presentationOptions: ['badge','sound','alert']`) but you still need to upload an APNs auth key to Supabase Edge Function secrets and wire `PushNotifications.register()` into the auth context. See [Capacitor Push docs](https://capacitorjs.com/docs/apis/push-notifications).
+2. **Universal Links / Associated Domains** — for `eryxon://job/...` deep links to also work as `https://app.eryxon.eu/job/...`. Add the `applinks:app.eryxon.eu` entitlement and serve `/.well-known/apple-app-site-association` from the host.
+3. **Splash screen assets** — Xcode generates a launch storyboard; replace the placeholder logo at `ios/App/App/Assets.xcassets/Splash.imageset/`.
+4. **App icon set** — replace `ios/App/App/Assets.xcassets/AppIcon.appiconset/` with the brand mark (1024x1024 master + auto-generated sizes).
+5. **Localizations in Info.plist** — `CFBundleLocalizations = [en, nl, de]` and `CFBundleDevelopmentRegion = en` so the App Store listing appears in Dutch / German.
+
 ## Troubleshooting
 
 - **WebView shows a blank screen on cold start** — the splash screen is

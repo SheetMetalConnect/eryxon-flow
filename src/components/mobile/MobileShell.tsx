@@ -13,7 +13,6 @@ import { useNative } from "@/hooks/useNative";
 import { useHardwareBack } from "@/hooks/useHardwareBack";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 import { hideSplash, isAndroidNative, setStatusBarStyle } from "@/native";
-import { cn } from "@/lib/utils";
 import { BottomTabBar, type MobileTab } from "./BottomTabBar";
 import { OfflineBanner } from "./OfflineBanner";
 
@@ -101,17 +100,22 @@ export function MobileShell({ children }: MobileShellProps) {
 
   return (
     <div
-      className={cn(
-        "flex min-h-screen flex-col bg-background text-foreground",
-        // Reserve space for the home-indicator / system-nav gutter when the
-        // tab bar is visible, so scrolling content never lands underneath it.
-        !hideTabBar && "pb-[calc(56px+env(safe-area-inset-bottom))]",
-      )}
+      className="flex flex-col bg-background text-foreground"
       data-platform={native.platform}
       data-native={native.isNative ? "true" : "false"}
+      // Reserve space for the home-indicator / system-nav gutter when the
+      // tab bar is visible. The `<main>` below carries `min-h-0 flex-1`
+      // which already gives the page its full height — adding `min-h-screen`
+      // here was duplicating chrome height with the operator pages and
+      // pushing scroll content under the safe-area inset.
+      style={
+        hideTabBar
+          ? undefined
+          : { paddingBottom: "calc(56px + env(safe-area-inset-bottom))" }
+      }
     >
       <OfflineBanner />
-      <main className="flex flex-1 flex-col">
+      <main className="flex min-h-0 flex-1 flex-col">
         {children ?? <Outlet />}
       </main>
       {hideTabBar ? null : <BottomTabBar tabs={tabs} />}

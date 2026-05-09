@@ -20,7 +20,6 @@ export type PlatformId = "ios" | "ipados" | "android" | "web";
 let cachedNative: boolean | null = null;
 let cachedAndroid: boolean | null = null;
 let cachedIOS: boolean | null = null;
-let cachedTablet: boolean | null = null;
 let cachedPlatform: PlatformId | null = null;
 
 /** Returns the injected Capacitor bridge, if any. */
@@ -82,13 +81,19 @@ export function isIPhone(): boolean {
   return /iPhone|iPod/.test(navigator.userAgent) && !isIPad();
 }
 
-/** Approximate "is this a tablet-class screen?" — short side ≥ 600 CSS px. */
+/**
+ * Approximate "is this a tablet-class screen?" — short side ≥ 600 CSS px.
+ *
+ * NOT cached: viewport changes when the user rotates the device, when iPad
+ * Slide Over splits the screen, or when Android freeform mode resizes the
+ * window. A cached value would lie about all of those, so we re-evaluate
+ * each call. Callers that need reactive updates should subscribe via
+ * `useNative()` (which re-snapshots on resize / orientationchange).
+ */
 export function isTabletViewport(): boolean {
-  if (cachedTablet !== null) return cachedTablet;
   if (typeof window === "undefined") return false;
   const shortSide = Math.min(window.innerWidth, window.innerHeight);
-  cachedTablet = shortSide >= 600;
-  return cachedTablet;
+  return shortSide >= 600;
 }
 
 /** Best-effort runtime platform fingerprint, cached per session. */
@@ -132,6 +137,5 @@ export function __resetPlatformCache(): void {
   cachedNative = null;
   cachedAndroid = null;
   cachedIOS = null;
-  cachedTablet = null;
   cachedPlatform = null;
 }

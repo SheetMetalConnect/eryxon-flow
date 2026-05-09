@@ -31,6 +31,13 @@ import {
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { PDFViewer } from "@/components/PDFViewerLazy";
+import { STEPViewer } from "@/components/STEPViewerLazy";
 import { MobileTopBar } from "@/components/mobile";
 import MobileIssueSheet from "./MobileIssueSheet";
 
@@ -389,30 +396,9 @@ export default function MobileOperationDetail(
           </section>
 
           {operation.part.file_paths && operation.part.file_paths.length > 0 ? (
-            <section className="rounded-2xl border border-border/60 bg-card/60 p-4">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("operations.files", "Drawings & models")}
-              </div>
-              <ul className="mt-2 flex flex-col divide-y divide-border/50">
-                {operation.part.file_paths.map((path) => (
-                  <li
-                    key={path}
-                    className="flex items-center gap-2 py-2 text-[13px]"
-                  >
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span className="truncate">
-                      {path.split("/").pop()}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-2 text-[11px] text-muted-foreground">
-                {t(
-                  "operations.openOnDesktop",
-                  "Tap on the desktop terminal to open large STEP / PDF previews.",
-                )}
-              </p>
-            </section>
+            <FilesSection
+              filePaths={operation.part.file_paths}
+            />
           ) : null}
         </div>
       </div>
@@ -571,5 +557,144 @@ function SecondaryButton({
       {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
       <span>{children}</span>
     </button>
+  );
+}
+
+type PreviewState = {
+  path: string;
+  url: string;
+  type: "pdf" | "step";
+};
+
+/**
+ * File list with tap-to-preview for PDFs *and* STEP CAD files.
+ *
+ * Both viewers are split into their own chunk via `*Lazy` wrappers, so the
+ * 520 KB Three.js + STEP-parser bundle only loads when an operator actually
+ * taps a `.step` row. The PDF viewer (~127 KB gzipped) is lazy-loaded the
+ * same way. iPad Pro M-series and modern Android tablets render the STEP
+ * viewer fluidly — full inspection on the shop floor is the whole point.
+ *
+ * STEP files are fetched as a Blob first (matches the desktop modal) so we
+ * don't trip the supabase signed-URL CORS dance inside the Three.js loader.
+ */
+function FilesSection({ filePaths }: { filePaths: string[] }) {
+  const { t } = useTranslation();
+  const [previewing, setPreviewing] = useState<PreviewState | null>(null);
+  const [loading, setLoading] = useState<string | null>(null);
+
+  // Revoke any blob: URL when the dialog closes so we don't leak memory
+  // across STEP previews on cheap tablets.
+  useEffect(() => {
+    if (!previewing) return;
+    const url = previewing.url;
+    return () => {
+      if (url.startsWith("blob:")) URL.revokeObjectURL(url);
+    };
+  }, [previewing]);
+
+  const openPreview = useCallback(
+    async (path: string, type: "pdf" | "step") => {
+      setLoading(path);
+      try {
+        const { data, error } = await supabase.storage
+          .from("parts-cad")
+          .createSignedUrl(path, 3600);
+        if (error || !data?.signedUrl) throw error ?? new Error("no_url");
+        let url = data.signedUrl;
+        if (type === "step") {
+          // Three-mesh-bvh / occt-import-js can't always follow a redirected
+          // signed URL because of fetch CORS — pre-fetch as a Blob and pass
+          // a blob: URL into the loader instead.
+          const response = await fetch(data.signedUrl);
+          if (!response.ok) throw new Error(`fetch_${response.status}`);
+          const blob = await response.blob();
+          url = URL.createObjectURL(blob);
+        }
+        setPreviewing({ path, url, type });
+      } catch (err) {
+        logger.error("MobileOperationDetail", "Failed to open file", err);
+        toast.error(
+          err instanceof Error ? err.message : "Failed to open file",
+        );
+      } finally {
+        setLoading(null);
+      }
+    },
+    [],
+  );
+
+  return (
+    <>
+      <section className="rounded-2xl border border-border/60 bg-card/60 p-4">
+        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+          {t("operations.files", "Drawings & models")}
+        </div>
+        <ul className="mt-2 flex flex-col divide-y divide-border/50">
+          {filePaths.map((path) => {
+            const ext = path.split(".").pop()?.toLowerCase();
+            const type: "pdf" | "step" | null =
+              ext === "pdf"
+                ? "pdf"
+                : ext === "step" || ext === "stp"
+                  ? "step"
+                  : null;
+            const busy = loading === path;
+            return (
+              <li
+                key={path}
+                className="flex items-center gap-2 py-2 text-[13px]"
+              >
+                <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="min-w-0 flex-1 truncate">
+                  {path.split("/").pop()}
+                </span>
+                {type ? (
+                  <button
+                    type="button"
+                    onClick={() => void openPreview(path, type)}
+                    disabled={busy}
+                    className="shrink-0 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary active:bg-primary/20 disabled:opacity-60"
+                  >
+                    {busy ? (
+                      <Loader2 className="inline-block h-3 w-3 animate-spin" />
+                    ) : type === "step" ? (
+                      t("common.viewStep", "View 3D")
+                    ) : (
+                      t("common.preview", "Preview")
+                    )}
+                  </button>
+                ) : null}
+              </li>
+            );
+          })}
+        </ul>
+      </section>
+
+      <Dialog
+        open={!!previewing}
+        onOpenChange={(open) => {
+          if (!open) setPreviewing(null);
+        }}
+      >
+        <DialogContent className="h-[92vh] max-w-4xl gap-0 p-0">
+          <DialogTitle className="sr-only">
+            {previewing?.path.split("/").pop() ?? "Preview"}
+          </DialogTitle>
+          {previewing?.type === "pdf" ? (
+            <PDFViewer
+              url={previewing.url}
+              title={previewing.path.split("/").pop() ?? "PDF"}
+              compact
+            />
+          ) : previewing?.type === "step" ? (
+            <STEPViewer
+              url={previewing.url}
+              title={previewing.path.split("/").pop() ?? "STEP"}
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
