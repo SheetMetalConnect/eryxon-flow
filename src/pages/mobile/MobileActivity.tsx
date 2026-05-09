@@ -72,7 +72,6 @@ export default function MobileActivity() {
       setLoading(false);
       return;
     }
-    setLoading(true);
     const startDate = subDays(new Date(), 7);
     const { data, error } = await supabase
       .from("time_entries")
@@ -100,8 +99,17 @@ export default function MobileActivity() {
     setLoading(false);
   }, [operatorId]);
 
+  // Defer the initial fetch by a microtask so we don't synchronously call
+  // setState inside the effect — the spinner stays visible because `loading`
+  // is initialised to true.
   useEffect(() => {
-    void load();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void load();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
 
   const grouped = useMemo<DayGroup[]>(() => {

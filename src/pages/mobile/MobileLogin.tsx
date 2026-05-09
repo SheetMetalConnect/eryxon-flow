@@ -37,15 +37,25 @@ export default function MobileLogin() {
   const [rememberedBadge, setRememberedBadge] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     void getBiometricAvailability().then((info) => {
+      if (cancelled) return;
       if (info.available && info.kind !== "none") setBiometric(info.kind);
     });
-    try {
-      const stored = window.localStorage.getItem(STORED_LAST_BADGE_KEY);
-      if (stored) setRememberedBadge(stored);
-    } catch {
-      // localStorage may be locked down — proceed without remembered badge.
-    }
+    // Defer the localStorage read so the synchronous setState doesn't run
+    // inside the mount effect.
+    queueMicrotask(() => {
+      if (cancelled) return;
+      try {
+        const stored = window.localStorage.getItem(STORED_LAST_BADGE_KEY);
+        if (stored) setRememberedBadge(stored);
+      } catch {
+        // localStorage may be locked down — proceed without remembered badge.
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const submitPin = async (badge: string, pinValue: string) => {
@@ -60,9 +70,7 @@ export default function MobileLogin() {
         } catch {
           /* ignore */
         }
-        // Stay inside the touch shell — sending the operator to the desktop
-        // route after a phone-side PIN drops the bottom tabs and scanner.
-        navigate(ROUTES.MOBILE.QUEUE, { replace: true });
+        navigate(ROUTES.OPERATOR.WORK_QUEUE, { replace: true });
       } else {
         await haptics.error();
         setError(result.error_message || t("terminalLogin.invalidCredentials"));

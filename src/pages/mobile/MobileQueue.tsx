@@ -88,8 +88,11 @@ export default function MobileQueue() {
   }, [profile?.tenant_id, t]);
 
   useEffect(() => {
-    void load();
-    if (!profile?.tenant_id) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void load();
+    });
+    if (!profile?.tenant_id) return () => { cancelled = true; };
     const channel = supabase
       .channel("mobile-queue-ops")
       .on(
@@ -114,6 +117,7 @@ export default function MobileQueue() {
       )
       .subscribe();
     return () => {
+      cancelled = true;
       void supabase.removeChannel(channel);
     };
   }, [load, profile?.tenant_id]);

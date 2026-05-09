@@ -80,7 +80,13 @@ export default function MobileOperationDetail(
   }, [operationId, profile?.tenant_id]);
 
   useEffect(() => {
-    void reload();
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void reload();
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [reload]);
 
   const isMyTimer =

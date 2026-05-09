@@ -23,10 +23,13 @@ export function PullToRefresh({
   className,
   threshold = 72,
 }: PullToRefreshProps) {
+  // `dragging` is read during render to drive the snap-back transition, so it
+  // has to live in state. Refs would be invisible to React's commit phase
+  // and the lint plugin (rightly) flags accessing them mid-render.
   const [pull, setPull] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const startY = useRef<number | null>(null);
-  const armed = useRef(false);
   const hapticFired = useRef(false);
   const haptics = useHaptics();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -39,12 +42,12 @@ export function PullToRefresh({
     // we would steal vertical scroll from the inner list.
     if (el.scrollTop > 0) return;
     startY.current = event.touches[0].clientY;
-    armed.current = true;
     hapticFired.current = false;
+    setDragging(true);
   };
 
   const onTouchMove = (event: React.TouchEvent) => {
-    if (!armed.current || startY.current === null) return;
+    if (!dragging || startY.current === null) return;
     const dy = event.touches[0].clientY - startY.current;
     if (dy <= 0) {
       setPull(0);
@@ -62,7 +65,7 @@ export function PullToRefresh({
   };
 
   const onTouchEnd = async () => {
-    armed.current = false;
+    setDragging(false);
     if (refreshing) return;
     if (pull >= threshold) {
       setRefreshing(true);
@@ -103,7 +106,7 @@ export function PullToRefresh({
           opacity: ringProgress,
           transition: refreshing
             ? "transform 200ms ease, opacity 200ms ease"
-            : armed.current
+            : dragging
               ? "none"
               : "transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1), opacity 200ms ease",
         }}
@@ -123,7 +126,7 @@ export function PullToRefresh({
       <div
         style={{
           transform: `translateY(${refreshing ? threshold : pull}px)`,
-          transition: armed.current
+          transition: dragging
             ? "none"
             : "transform 280ms cubic-bezier(0.2, 0.7, 0.2, 1)",
         }}

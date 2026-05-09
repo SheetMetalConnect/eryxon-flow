@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Loader2, ScanLine, Search, X } from "lucide-react";
@@ -38,69 +38,64 @@ export default function MobileScanner() {
     void isScannerAvailable().then(setAvailable);
   }, []);
 
-  // On first arrival on a native device, fire the scanner immediately. The
-  // user came here to scan — making them tap a "Start scanning" button is
-  // friction.
-  useEffect(() => {
-    if (native.isNativeIOS && available) {
-      void launchScan();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [native.isNativeIOS, available]);
+  const resolvePayload = useCallback(
+    async (payload: string): Promise<string | null> => {
+      if (!profile?.tenant_id) return null;
+      const trimmed = payload.trim();
+      if (!trimmed) return null;
 
-  const resolvePayload = async (payload: string): Promise<string | null> => {
-    if (!profile?.tenant_id) return null;
-    const trimmed = payload.trim();
-    if (!trimmed) return null;
+      // 1. Direct operation id (UUID) — used by terminal-printed labels.
+      if (/^[0-9a-fA-F-]{36}$/.test(trimmed)) {
+        const { data } = await supabase
+          .from("operations")
+          .select("id")
+          .eq("id", trimmed)
+          .eq("tenant_id", profile.tenant_id)
+          .maybeSingle();
+        if (data?.id) return data.id;
+      }
 
-    // 1. Direct operation id (UUID) — used by terminal-printed labels.
-    if (/^[0-9a-fA-F-]{36}$/.test(trimmed)) {
-      const { data } = await supabase
-        .from("operations")
-        .select("id")
-        .eq("id", trimmed)
+      // 2. Job number → first non-completed operation
+      const jobMatch = await supabase
+        .from("jobs")
+        .select("id, parts!inner(operations!inner(id, status, sequence))")
         .eq("tenant_id", profile.tenant_id)
+        .eq("job_number", trimmed)
         .maybeSingle();
-      if (data?.id) return data.id;
-    }
+      if (jobMatch.data) {
+        type Op = { id: string; status: string; sequence: number };
+        const parts = (jobMatch.data as unknown as {
+          parts: { operations: Op[] }[];
+        }).parts;
+        const ops = parts.flatMap((p) => p.operations);
+        const next = ops
+          .filter((op) => op.status !== "completed")
+          .sort((a, b) => a.sequence - b.sequence)[0];
+        if (next) return next.id;
+      }
 
-    // 2. Job number → first non-completed operation
-    const jobMatch = await supabase
-      .from("jobs")
-      .select("id, parts!inner(operations!inner(id, status, sequence))")
-      .eq("tenant_id", profile.tenant_id)
-      .eq("job_number", trimmed)
-      .maybeSingle();
-    if (jobMatch.data) {
-      type Op = { id: string; status: string; sequence: number };
-      const parts = (jobMatch.data as unknown as {
-        parts: { operations: Op[] }[];
-      }).parts;
-      const ops = parts.flatMap((p) => p.operations);
-      const next = ops
-        .filter((op) => op.status !== "completed")
-        .sort((a, b) => a.sequence - b.sequence)[0];
-      if (next) return next.id;
-    }
+      // 3. Part number → first non-completed operation
+      const partMatch = await supabase
+        .from("parts")
+        .select("id, operations(id, status, sequence)")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("part_number", trimmed)
+        .maybeSingle();
+      if (partMatch.data) {
+        const ops = (partMatch.data as unknown as {
+          operations: { id: string; status: string; sequence: number }[];
+        }).operations;
+        const next = ops
+          .filter((op) => op.status !== "completed")
+          .sort((a, b) => a.sequence - b.sequence)[0];
+        if (next) return next.id;
+      }
+      return null;
+    },
+    [profile?.tenant_id],
+  );
 
-    // 3. Part number → first non-completed operation
-    const partMatch = await supabase
-      .from("parts")
-      .select("id, operations(id, status, sequence)")
-      .eq("tenant_id", profile.tenant_id)
-      .eq("part_number", trimmed)
-      .maybeSingle();
-    if (partMatch.data) {
-      const ops = (partMatch.data as unknown as { operations: { id: string; status: string; sequence: number }[] }).operations;
-      const next = ops
-        .filter((op) => op.status !== "completed")
-        .sort((a, b) => a.sequence - b.sequence)[0];
-      if (next) return next.id;
-    }
-    return null;
-  };
-
-  const launchScan = async () => {
+  const launchScan = useCallback(async () => {
     setScanning(true);
     try {
       const result = await scanOnce();
@@ -123,9 +118,15 @@ export default function MobileScanner() {
       } else if (error instanceof ScannerPermissionError) {
         await haptics.error();
         toast.error(
-          t("scanner.permissionDenied", "Enable camera access in iOS Settings to scan"),
+          t(
+            "scanner.permissionDenied",
+            "Enable camera access in iOS Settings to scan",
+          ),
         );
-      } else if (error instanceof Error && error.message !== "Scan cancelled.") {
+      } else if (
+        error instanceof Error &&
+        error.message !== "Scan cancelled."
+      ) {
         await haptics.error();
         logger.error("MobileScanner", "Scan failed", error);
         toast.error(error.message);
@@ -133,7 +134,16 @@ export default function MobileScanner() {
     } finally {
       setScanning(false);
     }
-  };
+  }, [haptics, navigate, resolvePayload, t]);
+
+  // On first arrival on a native device, fire the scanner immediately. The
+  // user came here to scan — making them tap a "Start scanning" button is
+  // friction.
+  useEffect(() => {
+    if (native.isNativeIOS && available) {
+      void launchScan();
+    }
+  }, [native.isNativeIOS, available, launchScan]);
 
   const handleManual = async (event: React.FormEvent) => {
     event.preventDefault();

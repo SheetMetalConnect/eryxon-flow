@@ -54,8 +54,11 @@ export default function MobileTerminal() {
   }, [profile?.tenant_id]);
 
   useEffect(() => {
-    void load();
-    if (!profile?.tenant_id) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (!cancelled) void load();
+    });
+    if (!profile?.tenant_id) return () => { cancelled = true; };
     const channel = supabase
       .channel("mobile-terminal")
       .on(
@@ -70,6 +73,7 @@ export default function MobileTerminal() {
       )
       .subscribe();
     return () => {
+      cancelled = true;
       void supabase.removeChannel(channel);
     };
   }, [load, profile?.tenant_id]);
