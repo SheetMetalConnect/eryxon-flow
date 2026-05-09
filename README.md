@@ -90,6 +90,30 @@ PostgreSQL + Auth + RLS + Realtime + Storage
 | Deployment | Vercel (frontend), Supabase (backend), Docker (self-hosted) |
 | API | REST with API key auth, rate limiting, webhook dispatch |
 
+## Install as a Desktop App (PWA)
+
+Eryxon Flow ships as an installable Progressive Web App, so it runs as a standalone desktop application with its own Dock/Launchpad/Start-menu tile — no Electron, no extra runtime.
+
+**macOS — Safari 17+ (Sonoma):** open the app, then *File → Add to Dock…*. The app appears in Launchpad and Applications.
+
+**macOS / Windows / Linux — Chrome, Edge, Brave:** click the install icon at the right of the address bar (or *⋮ → Install / Apps → Install this site*). On macOS the resulting `.app` bundle shows up in Launchpad with the Eryxon icon.
+
+**iOS / iPadOS — Safari:** *Share → Add to Home Screen*.
+
+**Android — Chrome:** *⋮ → Install app*.
+
+The installed app launches in a standalone window with its own icon, supports background updates (auto-applied on next launch via the service worker), and works offline for assets it has already loaded. Runtime config (`/env.js`) and API calls always go to the network.
+
+### Regenerating PWA icons
+
+If you change the brand mark, edit `public/pwa-icon.svg` and rerun:
+
+```bash
+npm run pwa:assets
+```
+
+This regenerates `pwa-{64,192,512}.png`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`, and `favicon.ico` from the SVG source.
+
 ## Self-Hosting
 
 Full self-hosting guide: [eryxon.eu/guides/self-hosting](https://eryxon.eu/guides/self-hosting/)

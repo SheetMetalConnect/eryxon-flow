@@ -18,6 +18,7 @@
     "test:api": "npx tsx scripts/api-test-utils.ts",
     "test:api:e2e": "bash scripts/test-api-e2e.sh",
     "analyze": "vite build --mode analyze",
+    "pwa:assets": "pwa-assets-generator --preset minimal-2023 public/pwa-icon.svg",
     "deps:graph": "madge --ts-config tsconfig.app.json --extensions ts,tsx --json src/App.tsx > docs/dependency-graph.json",
     "deps:circular": "madge --ts-config tsconfig.app.json --extensions ts,tsx --circular src/App.tsx"
   },
@@ -104,6 +105,7 @@
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "@types/three": "^0.183.1",
+    "@vite-pwa/assets-generator": "^1.0.2",
     "@vitejs/plugin-react-swc": "^4.3.0",
     "@vitest/coverage-v8": "^4.1.4",
     "autoprefixer": "^10.5.0",
@@ -123,6 +125,7 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.58.2",
     "vite": "^7.3.1",
+    "vite-plugin-pwa": "^1.3.0",
     "vitest": "^4.0.18"
   }
 }
