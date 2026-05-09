@@ -5,7 +5,9 @@ description: Manufacturing execution system for metals fabrication shops.
 
 **Manufacturing execution system for metals fabrication shops.**
 
-> **Try it now:** Open the [hosted version at app.eryxon.eu](https://app.eryxon.eu) - no installation required. It remains online as-is.
+> **Status:** Most of Eryxon Flow is in **Beta** — including the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **Android** and **iOS** apps are coming soon.
+
+> **Try it now:** Open the [hosted version at app.eryxon.eu](https://app.eryxon.eu) — no installation required.
 
 ![Eryxon Flow admin dashboard](../../assets/step-1.png)
 
@@ -80,7 +82,7 @@ Request a signed upload URL from the API, upload STEP and PDF files directly to 
 Include JSON payloads on jobs, parts, and tasks for your specific needs—tooling requirements, mold numbers, machine settings, material specifications, anything your shop needs to track.
 
 ### ERP & Planning Integrations
-Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems. Or build your own using our GitHub starter kits with example code and documentation. v0.5 also ships pluggable planning adapters for **FrePPLe** (production-ready) and **Odoo MRP** (scaffold) — see the [scheduling feature page](/features/scheduling/) for details.
+Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems. Or build your own using our GitHub starter kits with example code and documentation. v0.5 also ships pluggable **Beta** planning adapters for **FrePPLe** and **Odoo MRP** — see the [scheduling feature page](/features/scheduling/) for status details.
 
 ### Assembly Tracking
 Parts can have parent-child relationships. Visual grouping shows assemblies with nested components. Non-blocking dependency warnings remind operators when child parts should be complete before starting assembly tasks—but they can override if needed.

@@ -5,7 +5,7 @@ description: Release history and current maintenance status for Eryxon Flow.
 
 ## Current Status
 
-The latest stable release is **v0.5.1**, published on May 6, 2026. Web app development on the v0.5.x line is in maintenance mode. **Native Android and iOS apps are now in development** — Android is being built natively with offline support and fast cold start, and iOS is in active development. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
+The latest stable release is **v0.5.1**, published on May 6, 2026. Most of Eryxon Flow is still **Beta** — including the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **Android** and **iOS** apps are coming soon (Android is being built natively with offline support and fast cold start). The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
 
 Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms. The native mobile apps will share the same backend and REST/MCP/MQTT API as the web app.
 

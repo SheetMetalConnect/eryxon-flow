@@ -5,7 +5,9 @@ description: Das einfache, elegante und leistungsstarke Manufacturing Execution 
 
 **Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.**
 
-> **Jetzt ausprobieren:** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) - keine Installation erforderlich. Sie bleibt online wie sie ist.
+> **Status:** Der Großteil von Eryxon Flow ist im **Beta**-Status — Web-App, REST-API, Webhooks, MQTT und die Planungs-Adapter für FrePPLe und Odoo. Der **MCP-Server ist Live**. Native **Android**- und **iOS**-Apps folgen bald.
+
+> **Jetzt ausprobieren:** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) — keine Installation erforderlich.
 
 ## Was Es Macht
 
@@ -74,7 +76,7 @@ Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-
 Fügen Sie JSON-Payloads zu Aufträgen, Teilen und Aufgaben hinzu für Ihre spezifischen Anforderungen — Werkzeuganforderungen, Formnummern, Maschineneinstellungen, Materialspezifikationen, alles was Ihre Werkstatt nachverfolgen muss.
 
 ### ERP- & Planungs-Integrationen
-Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation. v0.5 liefert außerdem steckbare Planungs-Adapter für **FrePPLe** (produktionsreif) und **Odoo MRP** (Scaffold).
+Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation. v0.5 liefert außerdem steckbare Planungs-Adapter im **Beta**-Status für **FrePPLe** und **Odoo MRP**.
 
 ### Montage-Verfolgung
 Teile können Eltern-Kind-Beziehungen haben. Visuelle Gruppierung zeigt Baugruppen mit verschachtelten Komponenten. Nicht-blockierende Abhängigkeitswarnungen erinnern Werker daran, wann Unterteile fertig sein sollten, bevor Montageaufgaben beginnen — sie können dies aber bei Bedarf überschreiben.

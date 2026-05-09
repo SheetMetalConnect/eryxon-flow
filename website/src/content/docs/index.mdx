@@ -27,9 +27,9 @@ import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
 <div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
-  <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary ring-1 ring-inset ring-primary/20">
-    <span class="inline-block h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-    Native in Browser
+  <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+    <span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+    Web App — Beta
   </span>
   <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
     Android (Native) — Coming Soon
@@ -39,33 +39,33 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
   </span>
 </div>
 
-<Section title="One Platform, <span class='text-primary'>Every Screen</span>" description="From the office tablet to the shop floor terminal — Eryxon Flow runs natively where your team works.">
+<Section title="One Platform, <span class='text-primary'>Every Screen</span>" description="From the office tablet to the shop floor terminal — Eryxon Flow runs natively where your team works. Most of the app is in Beta today; the MCP server is the first surface to graduate.">
 <Grid columns={4}>
-  <Card title="Web App" icon="seti:globe" iconColor="#38bdf8" size="sm">
-    **Live today.** Tablet-friendly responsive web app. No install — just open the browser. Real-time updates via WebSockets.
+  <Card title="Web App" icon="seti:globe" iconColor="#fbbf24" size="sm">
+    **Beta.** Tablet-friendly responsive web app. No install — just open the browser. Real-time updates via WebSockets. Hosted version is free to try.
   </Card>
   <Card title="Android (Native)" icon="seti:mobile" iconColor="#34d399" size="sm">
-    **In development.** Built for shop floor reliability with **offline support** and **fast cold start**. Designed for rugged tablets and phones.
+    **Coming Soon.** Native Android app with **offline support** and **fast cold start**. Designed for rugged tablets and phones on the shop floor.
   </Card>
   <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
-    **In development.** Native iPhone and iPad app for managers and operators on Apple devices.
+    **Coming Soon.** Native iPhone and iPad app for managers and operators on Apple devices.
   </Card>
-  <Card title="REST · MCP · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
-    **Live today.** 24 REST endpoints, MCP server, MQTT, and webhooks. Build your own clients and integrations.
+  <Card title="MCP · REST · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
+    **MCP server: Live.** REST API, webhooks, and MQTT are in **Beta** alongside the web app. 24 REST endpoints today.
   </Card>
 </Grid>
 </Section>
 
-<Section title="Current <span class='text-primary'>Status</span>" description="v0.5.x is the stable line. Native mobile apps are next.">
+<Section title="Current <span class='text-primary'>Status</span>" description="v0.5.x is the stable line. Most surfaces are Beta — MCP is live, native mobile apps are next.">
 <Grid columns={3}>
   <Card title="Stable Release" icon="seti:tag" iconColor="#38bdf8">
-    **v0.5.1** is the current stable release, published on May 6, 2026. v0.5.0 introduced planning adapters, MCP HTTP transport, and MQTT reliability hardening.
+    **v0.5.1** is the current stable release, published on May 6, 2026. v0.5.0 introduced planning adapters, MCP HTTP transport, and MQTT reliability hardening. The app itself is still **Beta**.
   </Card>
-  <Card title="Hosted Version" icon="seti:globe" iconColor="#34d399">
-    The hosted version at [app.eryxon.eu](https://app.eryxon.eu) is online and free to try. Self-hosting is fully documented for production deployments.
+  <Card title="Hosted Version (Beta)" icon="seti:globe" iconColor="#fbbf24">
+    The hosted version at [app.eryxon.eu](https://app.eryxon.eu) is online and free to try. Self-hosting is fully documented for production deployments — but expect Beta-level rough edges.
   </Card>
-  <Card title="Native Apps Coming" icon="seti:mobile" iconColor="#fb923c">
-    Native **Android** (with offline support and fast cold start) and **iOS** apps are in development. The web app remains the primary surface today.
+  <Card title="Native Apps Coming" icon="seti:mobile" iconColor="#34d399">
+    Native **Android** (with offline support and fast cold start) and **iOS** apps are coming soon. The web app remains the primary surface today.
   </Card>
 </Grid>
 </Section>
@@ -172,7 +172,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 />
 </Section>
 
-<Section title="Native <span class='text-primary'>Mobile Apps</span>" description="Native Android and iOS apps in development for shop floor reliability beyond what a browser can deliver.">
+<Section title="Native <span class='text-primary'>Mobile Apps</span>" description="Native Android and iOS apps coming soon — built for shop floor reliability beyond what a browser can deliver.">
 <Grid columns={2}>
   <Card title="Android — Native, Offline-Capable" icon="seti:mobile" iconColor="#34d399">
     Built natively (not a wrapped web view) for **fast cold start** and **offline support** so operators can keep logging time and pulling work even when shop Wi-Fi drops.
@@ -182,7 +182,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Fast app open — operators won't wait between scans
     - Camera for issue photos and barcode scanning
 
-    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">In Development</span>
+    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">Coming Soon</span>
   </Card>
   <Card title="iOS — iPhone & iPad" icon="seti:mobile" iconColor="#a78bfa">
     Native iOS app for managers, supervisors, and operators on Apple devices. Same real-time data as the web app, optimized for touch.
@@ -192,13 +192,13 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Push notifications for issues and approvals
     - Camera capture for NCRs
 
-    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">In Development</span>
+    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">Coming Soon</span>
   </Card>
 </Grid>
 
 <div class="text-center mt-8">
   <p class="text-sm" style="color: color-mix(in srgb, var(--sl-color-white) 60%, transparent);">
-    Today, the responsive web app at <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> works on every browser-capable device. Native apps will land alongside the web app, sharing the same backend and API.
+    Today, the Beta web app at <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> works on every browser-capable device. Native apps will land alongside the web app, sharing the same backend and API.
   </p>
 </div>
 </Section>

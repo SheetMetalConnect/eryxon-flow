@@ -49,12 +49,12 @@ Navigate to **Admin → Data Import** in the web UI.
 
 Best for: Pulling work orders and resources from a dedicated planning system without writing custom REST sync code.
 
-| Adapter | Source | Notes |
-|---------|--------|-------|
-| **FrePPLe** | FrePPLe REST API | Production-ready: pull work orders + resources, push start and completion, Basic Auth, pagination |
-| **Odoo MRP** | Odoo `mrp.production` over JSON-RPC | Scaffold: pull work orders, push execution feedback |
+| Adapter | Source | Status | Notes |
+|---------|--------|--------|-------|
+| **FrePPLe** | FrePPLe REST API | Beta | Pull work orders + resources, push start and completion, Basic Auth, pagination |
+| **Odoo MRP** | Odoo `mrp.production` over JSON-RPC | Beta | Pull work orders, push execution feedback |
 
-Adapters share a single TypeScript interface (`src/lib/planning/`) using ISA-95 aligned vocabulary. Pick one at runtime with `createPlanningAdapter(config)`.
+Both adapters are **Beta** — interfaces and behavior may still change, so pilot them on non-critical work first. Adapters share a single TypeScript interface (`src/lib/planning/`) using ISA-95 aligned vocabulary. Pick one at runtime with `createPlanningAdapter(config)`.
 
 ## Supported Entities
 

@@ -27,9 +27,9 @@ import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
 <div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
-  <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary ring-1 ring-inset ring-primary/20">
-    <span class="inline-block h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-    Nativ im Browser
+  <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
+    <span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+    Web-App — Beta
   </span>
   <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
     Android (Nativ) — Bald Verfügbar
@@ -39,33 +39,33 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
   </span>
 </div>
 
-<Section title="Eine Plattform, <span class='text-primary'>jeder Bildschirm</span>" description="Vom Bürotablet bis zum Werkstatt-Terminal — Eryxon Flow läuft nativ dort, wo Ihr Team arbeitet.">
+<Section title="Eine Plattform, <span class='text-primary'>jeder Bildschirm</span>" description="Vom Bürotablet bis zum Werkstatt-Terminal — Eryxon Flow läuft nativ dort, wo Ihr Team arbeitet. Die meisten Bereiche sind heute Beta; der MCP-Server ist die erste Schnittstelle, die diesen Status verlassen hat.">
 <Grid columns={4}>
-  <Card title="Web-App" icon="seti:globe" iconColor="#38bdf8" size="sm">
-    **Heute live.** Tabletfreundliche, responsive Web-App. Keine Installation — einfach den Browser öffnen. Echtzeit-Updates über WebSockets.
+  <Card title="Web-App" icon="seti:globe" iconColor="#fbbf24" size="sm">
+    **Beta.** Tabletfreundliche, responsive Web-App. Keine Installation — einfach den Browser öffnen. Echtzeit-Updates über WebSockets. Gehostete Version kostenlos testbar.
   </Card>
   <Card title="Android (Nativ)" icon="seti:mobile" iconColor="#34d399" size="sm">
-    **In Entwicklung.** Gebaut für Werkstatt-Zuverlässigkeit mit **Offline-Unterstützung** und **schnellem Start**. Für robuste Tablets und Smartphones.
+    **Bald Verfügbar.** Native Android-App mit **Offline-Unterstützung** und **schnellem Start**. Für robuste Tablets und Smartphones in der Werkstatt.
   </Card>
   <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
-    **In Entwicklung.** Native iPhone- und iPad-App für Manager und Werker auf Apple-Geräten.
+    **Bald Verfügbar.** Native iPhone- und iPad-App für Manager und Werker auf Apple-Geräten.
   </Card>
-  <Card title="REST · MCP · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
-    **Heute live.** 24 REST-Endpunkte, MCP-Server, MQTT und Webhooks. Bauen Sie eigene Clients und Integrationen.
+  <Card title="MCP · REST · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
+    **MCP-Server: Live.** REST-API, Webhooks und MQTT sind in **Beta** zusammen mit der Web-App. Heute 24 REST-Endpunkte.
   </Card>
 </Grid>
 </Section>
 
-<Section title="Aktueller <span class='text-primary'>Status</span>" description="v0.5.x ist die stabile Linie. Native Mobile-Apps sind als nächstes dran.">
+<Section title="Aktueller <span class='text-primary'>Status</span>" description="v0.5.x ist die stabile Linie. Die meisten Oberflächen sind Beta — MCP ist live, native Mobile-Apps folgen.">
 <Grid columns={3}>
   <Card title="Stabile Release" icon="seti:tag" iconColor="#38bdf8">
-    **v0.5.1** ist die aktuelle stabile Release, veröffentlicht am 6. Mai 2026. v0.5.0 brachte Planungs-Adapter, MCP-HTTP-Transport und MQTT-Härtung.
+    **v0.5.1** ist die aktuelle stabile Release, veröffentlicht am 6. Mai 2026. v0.5.0 brachte Planungs-Adapter, MCP-HTTP-Transport und MQTT-Härtung. Die App selbst ist weiterhin **Beta**.
   </Card>
-  <Card title="Gehostete Version" icon="seti:globe" iconColor="#34d399">
-    Die gehostete Version unter [app.eryxon.eu](https://app.eryxon.eu) ist online und kostenlos testbar. Self-Hosting ist für Produktiv-Deployments vollständig dokumentiert.
+  <Card title="Gehostete Version (Beta)" icon="seti:globe" iconColor="#fbbf24">
+    Die gehostete Version unter [app.eryxon.eu](https://app.eryxon.eu) ist online und kostenlos testbar. Self-Hosting ist für Produktiv-Deployments dokumentiert — rechnen Sie mit Beta-typischen Ecken und Kanten.
   </Card>
-  <Card title="Native Apps Kommen" icon="seti:mobile" iconColor="#fb923c">
-    Native **Android**-App (mit Offline-Unterstützung und schnellem Start) und **iOS**-App sind in Entwicklung. Die Web-App bleibt heute die primäre Oberfläche.
+  <Card title="Native Apps Kommen" icon="seti:mobile" iconColor="#34d399">
+    Native **Android**-App (mit Offline-Unterstützung und schnellem Start) und **iOS**-App folgen bald. Die Web-App bleibt heute die primäre Oberfläche.
   </Card>
 </Grid>
 </Section>
@@ -172,7 +172,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 />
 </Section>
 
-<Section title="Native <span class='text-primary'>Mobile-Apps</span>" description="Native Android- und iOS-Apps in Entwicklung — für Werkstatt-Zuverlässigkeit, die ein Browser allein nicht liefern kann.">
+<Section title="Native <span class='text-primary'>Mobile-Apps</span>" description="Native Android- und iOS-Apps bald verfügbar — für Werkstatt-Zuverlässigkeit, die ein Browser allein nicht liefern kann.">
 <Grid columns={2}>
   <Card title="Android — Nativ, Offline-Fähig" icon="seti:mobile" iconColor="#34d399">
     Nativ entwickelt (kein Web-Wrapper) für **schnellen Start** und **Offline-Unterstützung**, sodass Werker auch bei WLAN-Aussetzern weiter Zeit erfassen und Arbeit ziehen können.
@@ -182,7 +182,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Schneller App-Start — Werker warten nicht zwischen Scans
     - Kamera für Problemfotos und Barcode-Scannen
 
-    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">In Entwicklung</span>
+    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">Bald Verfügbar</span>
   </Card>
   <Card title="iOS — iPhone & iPad" icon="seti:mobile" iconColor="#a78bfa">
     Native iOS-App für Manager, Vorarbeiter und Werker auf Apple-Geräten. Dieselben Echtzeit-Daten wie die Web-App, optimiert für Touch.
@@ -192,13 +192,13 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Push-Benachrichtigungen für Probleme und Genehmigungen
     - Kamera-Aufnahme für NCRs
 
-    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">In Entwicklung</span>
+    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">Bald Verfügbar</span>
   </Card>
 </Grid>
 
 <div class="text-center mt-8">
   <p class="text-sm" style="color: color-mix(in srgb, var(--sl-color-white) 60%, transparent);">
-    Heute funktioniert die responsive Web-App unter <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> auf jedem browserfähigen Gerät. Native Apps werden parallel zur Web-App erscheinen — gleiche Backend, gleiche API.
+    Heute funktioniert die Beta-Web-App unter <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> auf jedem browserfähigen Gerät. Native Apps werden parallel zur Web-App erscheinen — gleiche Backend, gleiche API.
   </p>
 </div>
 </Section>
