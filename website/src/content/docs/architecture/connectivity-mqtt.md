@@ -63,7 +63,17 @@ The MQTT client wrapper in `src/lib/mqtt-client.ts` was hardened in v0.5 for sho
 - **Dead letter logging** — final failures are written to the `mqtt_logs` table with the original payload and error so operators can review and replay
 - **Injectable transport** — the wrapper accepts a transport implementation, so deployments can swap broker libraries or stub the transport in tests
 
-If you self-host and need to inspect failed publishes, query `mqtt_logs` filtered by `tenant_id` and `status = 'failed'`.
+If you self-host and need to inspect failed publishes, look at the `mqtt_logs` table. Tenant scope lives on `mqtt_publishers`, so filter by the tenant's publisher IDs and use the `success` boolean:
+
+```sql
+SELECT l.*
+FROM mqtt_logs l
+WHERE l.mqtt_publisher_id IN (
+  SELECT id FROM mqtt_publishers WHERE tenant_id = '<your-tenant-id>'
+)
+  AND l.success = false
+ORDER BY l.created_at DESC;
+```
 
 ---
 
