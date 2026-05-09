@@ -63,29 +63,33 @@ export function ScanDialog({
     if (!open || scannerSupported === null) return;
     if (!scannerSupported) return;
 
+    // AbortController lets the cleanup tell scanOnce to release the camera
+    // immediately. Without it the web BarcodeDetector path would keep the
+    // getUserMedia stream and indicator on until its 30s timeout.
+    const controller = new AbortController();
     let cancelled = false;
     // Loading flag for an async camera handshake — react-hooks lint flags
     // any setState-in-effect, but this is the canonical "kick off a request
     // when conditions become true" pattern.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setBusy(true);
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null);
     void (async () => {
       try {
         const result = await scanOnce({
           previewTarget: isNativeApp() ? null : previewRef.current,
+          signal: controller.signal,
         });
         if (cancelled) return;
         if (result?.value) {
           await haptics.success();
           onResult(result.value);
           onOpenChange(false);
-        } else {
+        } else if (!controller.signal.aborted) {
           setError(t("mobile.scanNoResult", "No code detected. Try again or enter it manually."));
         }
       } catch (e) {
-        if (cancelled) return;
+        if (cancelled || controller.signal.aborted) return;
         await haptics.error();
         setError(
           e instanceof Error
@@ -99,6 +103,7 @@ export function ScanDialog({
 
     return () => {
       cancelled = true;
+      controller.abort();
     };
   }, [open, scannerSupported, onOpenChange, onResult, t]);
 

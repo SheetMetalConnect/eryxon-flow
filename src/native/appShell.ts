@@ -48,8 +48,35 @@ async function keyboardSetup(): Promise<void> {
 }
 
 /**
- * Wire Android hardware back button to React Router. Pops history when there
- * is somewhere to go, otherwise minimises the app. Re-callable safely.
+ * Returns true if there's an open overlay (dialog, sheet, popover, dropdown,
+ * combobox) that should consume the back button before it pops the route.
+ * Operators routinely have an OperationDetailModal open over the queue —
+ * back must close it, not navigate them off the page.
+ */
+function hasOpenOverlay(): boolean {
+  if (typeof document === "undefined") return false;
+  return !!document.querySelector(
+    [
+      '[role="dialog"][data-state="open"]',
+      '[role="alertdialog"][data-state="open"]',
+      '[role="menu"][data-state="open"]',
+      '[role="listbox"][data-state="open"]',
+      '[data-radix-popper-content-wrapper]',
+      '[data-state="open"][data-radix-dialog-content]',
+      '[data-vaul-drawer][data-state="open"]',
+    ].join(",")
+  );
+}
+
+/**
+ * Wire Android hardware back button to React Router.
+ *
+ * Order of precedence:
+ *   1. Open dialog / sheet / popover → dispatch Escape so Radix closes it.
+ *   2. Browser history exists → navigate(-1).
+ *   3. Otherwise → minimise the app (Android convention; never exit hard).
+ *
+ * Re-callable safely; we drop any prior listener before adding a new one.
  */
 export async function wireHardwareBack(navigate: NavigateFunction): Promise<void> {
   if (!isAndroidNative()) return;
@@ -62,6 +89,12 @@ export async function wireHardwareBack(navigate: NavigateFunction): Promise<void
   try {
     const { App } = await import("@capacitor/app");
     const handle = await App.addListener("backButton", ({ canGoBack }) => {
+      if (hasOpenOverlay()) {
+        document.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Escape", bubbles: true })
+        );
+        return;
+      }
       if (canGoBack) {
         navigate(-1);
       } else {

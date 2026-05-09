@@ -44,6 +44,13 @@ function normalizeType(t: string | undefined): ConnectionType {
   }
 }
 
+function defaultStatus(): NetworkStatus {
+  return {
+    online: typeof navigator !== "undefined" ? navigator.onLine : true,
+    connectionType: "unknown",
+  };
+}
+
 export async function getNetworkStatus(): Promise<NetworkStatus> {
   if (isNativeApp()) {
     try {
@@ -56,32 +63,28 @@ export async function getNetworkStatus(): Promise<NetworkStatus> {
         connectionType: normalizeType(s.connectionType),
       };
     } catch {
-      /* fall through */
+      /* fall through to navigator.onLine */
     }
   }
-  return {
-    online: typeof navigator !== "undefined" ? navigator.onLine : true,
-    connectionType: "unknown",
-  };
+  return defaultStatus();
 }
 
 export function useNetworkStatus(): NetworkStatus {
-  const [status, setStatus] = useState<NetworkStatus>(() => ({
-    online: typeof navigator !== "undefined" ? navigator.onLine : true,
-    connectionType: "unknown",
-  }));
+  const [status, setStatus] = useState<NetworkStatus>(defaultStatus);
 
   useEffect(() => {
-    let cleanup: (() => void) | undefined;
-
     if (isNativeApp()) {
+      let cancelled = false;
       let removeFn: (() => Promise<void>) | undefined;
-      (async () => {
+
+      void (async () => {
         try {
           const mod = (await import(
             "@capacitor/network"
           )) as unknown as CapacitorNetworkModule;
+          if (cancelled) return;
           const initial = await mod.Network.getStatus();
+          if (cancelled) return;
           setStatus({
             online: initial.connected,
             connectionType: normalizeType(initial.connectionType),
@@ -94,30 +97,33 @@ export function useNetworkStatus(): NetworkStatus {
                 connectionType: normalizeType(s.connectionType),
               })
           );
+          // If the component unmounted while we were awaiting, the listener is
+          // already orphaned — release it now rather than leaking.
+          if (cancelled) {
+            void handle.remove();
+            return;
+          }
           removeFn = handle.remove;
         } catch {
-          /* ignore */
+          /* network plugin unavailable; keep defaultStatus */
         }
       })();
-      cleanup = () => {
+
+      return () => {
+        cancelled = true;
         if (removeFn) void removeFn();
-      };
-    } else {
-      const update = () =>
-        setStatus({
-          online: navigator.onLine,
-          connectionType: "unknown",
-        });
-      window.addEventListener("online", update);
-      window.addEventListener("offline", update);
-      update();
-      cleanup = () => {
-        window.removeEventListener("online", update);
-        window.removeEventListener("offline", update);
       };
     }
 
-    return () => cleanup?.();
+    const update = () =>
+      setStatus({ online: navigator.onLine, connectionType: "unknown" });
+    window.addEventListener("online", update);
+    window.addEventListener("offline", update);
+    update();
+    return () => {
+      window.removeEventListener("online", update);
+      window.removeEventListener("offline", update);
+    };
   }, []);
 
   return status;

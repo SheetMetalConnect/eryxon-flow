@@ -1,10 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { OfflineBanner } from "./OfflineBanner";
 import { ScanFab } from "./ScanFab";
 import { useHardwareBack } from "@/hooks/useHardwareBack";
-import { isAndroidNative } from "@/native";
-import { cn } from "@/lib/utils";
+import { isAndroidNative, isNativeApp } from "@/native";
 
 interface MobileShellProps {
   children: React.ReactNode;
@@ -14,14 +13,24 @@ interface MobileShellProps {
   scanTargetPath?: string;
 }
 
+/** Touch-class viewport: phones, tablets, small windows, kiosks. */
+const TOUCH_QUERY = "(pointer: coarse), (max-width: 1023px)";
+
+function evaluateMobile(): boolean {
+  if (isNativeApp()) return true;
+  if (typeof window === "undefined" || !window.matchMedia) return false;
+  return window.matchMedia(TOUCH_QUERY).matches;
+}
+
 /**
  * Top-level mobile shell that wraps every authenticated page.
  *
  * - Hardware back wired into router (Android only)
  * - Offline banner pinned to the top
  * - Floating scan FAB on operator routes
- * - Adds the `app-mobile` class to the body so global CSS can apply
- *   safe-area / Material You overrides without leaking into the desktop SPA
+ * - Adds the `app-mobile` class to the body when we're actually on a mobile /
+ *   touch viewport — desktop browser sessions stay on the dense admin layout.
+ *   Reacts to viewport changes (devtools toggling, foldable unfolds).
  */
 export function MobileShell({
   children,
@@ -30,18 +39,33 @@ export function MobileShell({
 }: MobileShellProps) {
   useHardwareBack();
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState<boolean>(evaluateMobile);
 
   useEffect(() => {
-    const cls = isAndroidNative() ? "app-android app-mobile" : "app-mobile";
-    document.body.classList.add(...cls.split(" "));
-    return () => document.body.classList.remove(...cls.split(" "));
+    // Native always evaluates true via evaluateMobile() in the lazy initializer
+    // — no listener needed since the platform doesn't change at runtime.
+    if (isNativeApp()) return;
+    if (typeof window === "undefined" || !window.matchMedia) return;
+    const mq = window.matchMedia(TOUCH_QUERY);
+    const update = () => setIsMobile(mq.matches);
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
   }, []);
 
+  useEffect(() => {
+    if (!isMobile) return;
+    const classes = isAndroidNative()
+      ? ["app-mobile", "app-android"]
+      : ["app-mobile"];
+    document.body.classList.add(...classes);
+    return () => document.body.classList.remove(...classes);
+  }, [isMobile]);
+
   const onOperatorPath = location.pathname.startsWith("/operator/");
-  const fab = showScanFab ?? onOperatorPath;
+  const fab = (showScanFab ?? onOperatorPath) && isMobile;
 
   return (
-    <div className={cn("min-h-screen bg-background")}>
+    <>
       <div className="safe-area-top">
         <OfflineBanner />
       </div>
@@ -52,6 +76,6 @@ export function MobileShell({
           paramName="q"
         />
       )}
-    </div>
+    </>
   );
 }

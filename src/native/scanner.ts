@@ -6,6 +6,10 @@
  * Web:    falls back to BarcodeDetector API (Chromium ≥ 88) which works in dev on
  *         desktop with a webcam, and on Android Chrome. If neither is available
  *         the caller can prompt for manual entry via the UI.
+ *
+ * The web path holds an active `getUserMedia` stream for the duration of the
+ * scan; callers MUST pass an AbortSignal (or be okay with the 30s timeout) so
+ * the camera is released the moment the user dismisses the dialog.
  */
 
 import { isNativeApp } from "./platform";
@@ -35,8 +39,10 @@ export interface ScanResult {
 
 export interface ScanOptions {
   formats?: ScanFormat[];
-  /** Web-only: pass an element to mount the live preview into. */
+  /** Web-only: element to mount the live preview into. */
   previewTarget?: HTMLElement | null;
+  /** Cancel the scan early — releases the camera and resolves null. */
+  signal?: AbortSignal;
 }
 
 interface CapacitorBarcodeScannerModule {
@@ -94,7 +100,7 @@ export async function scanOnce(
     return first ? { value: first.rawValue, format: first.format } : null;
   }
 
-  return scanWithBarcodeDetector(formats, opts.previewTarget ?? null);
+  return scanWithBarcodeDetector(formats, opts.previewTarget ?? null, opts.signal);
 }
 
 interface BarcodeDetectorCtor {
@@ -107,19 +113,30 @@ interface BarcodeDetectorCtor {
 
 async function scanWithBarcodeDetector(
   formats: ScanFormat[],
-  preview: HTMLElement | null
+  preview: HTMLElement | null,
+  signal: AbortSignal | undefined
 ): Promise<ScanResult | null> {
   const Ctor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor })
     .BarcodeDetector;
   if (!Ctor) throw new Error("Scanner unavailable on this platform");
 
+  if (signal?.aborted) return null;
+
   const detector = new Ctor({
-    formats: formats.map((f) => f.toLowerCase().replace(/_/g, "_")),
+    formats: formats.map((f) => f.toLowerCase()),
   });
 
   const stream = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: "environment" },
   });
+
+  // If we got the permission prompt resolved AFTER the caller already aborted,
+  // release the tracks immediately rather than leaving the indicator on.
+  if (signal?.aborted) {
+    stream.getTracks().forEach((t) => t.stop());
+    return null;
+  }
+
   const video = document.createElement("video");
   video.srcObject = stream;
   video.setAttribute("playsinline", "true");
@@ -130,27 +147,59 @@ async function scanWithBarcodeDetector(
     video.style.objectFit = "cover";
     preview.appendChild(video);
   }
-  await video.play();
-
-  const stop = () => stream.getTracks().forEach((t) => t.stop());
+  await video.play().catch((): undefined => undefined);
 
   return new Promise<ScanResult | null>((resolve, reject) => {
     let raf = 0;
-    let cancelled = false;
+    let cleaned = false;
+    // Declared up-front rather than const-at-the-bottom so that an early
+    // signal.aborted path that calls cleanup() before the timeout is scheduled
+    // doesn't trip TDZ. clearTimeout(undefined) is a safe no-op.
+    let timeoutId: number | undefined = undefined;
+
+    function cleanup() {
+      if (cleaned) return;
+      cleaned = true;
+      cancelAnimationFrame(raf);
+      if (timeoutId !== undefined) clearTimeout(timeoutId);
+      try {
+        video.pause();
+        video.srcObject = null;
+      } catch {
+        /* ignore — video is being torn down anyway */
+      }
+      stream.getTracks().forEach((t) => t.stop());
+      if (preview && video.parentNode === preview) {
+        preview.removeChild(video);
+      }
+      signal?.removeEventListener("abort", onAbort);
+    }
+
+    function onAbort() {
+      cleanup();
+      resolve(null);
+    }
+
+    if (signal) {
+      if (signal.aborted) {
+        onAbort();
+        return;
+      }
+      signal.addEventListener("abort", onAbort, { once: true });
+    }
+
     const tick = async () => {
-      if (cancelled) return;
+      if (cleaned) return;
       try {
         const results = await detector.detect(video);
+        if (cleaned) return;
         if (results[0]) {
-          cancelAnimationFrame(raf);
-          stop();
-          if (preview) preview.removeChild(video);
+          cleanup();
           resolve({ value: results[0].rawValue, format: results[0].format });
           return;
         }
       } catch (err) {
-        cancelAnimationFrame(raf);
-        stop();
+        cleanup();
         reject(err);
         return;
       }
@@ -158,12 +207,8 @@ async function scanWithBarcodeDetector(
     };
     raf = requestAnimationFrame(tick);
 
-    setTimeout(() => {
-      if (cancelled) return;
-      cancelled = true;
-      cancelAnimationFrame(raf);
-      stop();
-      if (preview && video.parentNode === preview) preview.removeChild(video);
+    timeoutId = window.setTimeout(() => {
+      cleanup();
       resolve(null);
     }, 30_000);
   });

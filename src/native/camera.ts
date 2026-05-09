@@ -80,24 +80,31 @@ function capturePhotoWeb(
     input.style.display = "none";
     document.body.appendChild(input);
 
+    let settled = false;
+    const settle = (fn: () => void) => {
+      if (settled) return;
+      settled = true;
+      if (input.parentNode === document.body) {
+        document.body.removeChild(input);
+      }
+      fn();
+    };
+
     input.onchange = async () => {
       const file = input.files?.[0];
-      document.body.removeChild(input);
       if (!file) {
-        resolve(null);
+        settle(() => resolve(null));
         return;
       }
       try {
         const result = await downscaleAndEncode(file, quality, maxWidth);
-        resolve(result);
+        settle(() => resolve(result));
       } catch (err) {
-        reject(err);
+        settle(() => reject(err));
       }
     };
-    input.oncancel = () => {
-      document.body.removeChild(input);
-      resolve(null);
-    };
+    // Modern Chromium fires this when the user dismisses the picker.
+    input.oncancel = () => settle(() => resolve(null));
 
     input.click();
   });
@@ -109,26 +116,32 @@ async function downscaleAndEncode(
   maxWidth: number
 ): Promise<PhotoResult> {
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, maxWidth / bitmap.width);
-  const w = Math.round(bitmap.width * scale);
-  const h = Math.round(bitmap.height * scale);
+  try {
+    const scale = Math.min(1, maxWidth / bitmap.width);
+    const w = Math.round(bitmap.width * scale);
+    const h = Math.round(bitmap.height * scale);
 
-  const canvas = document.createElement("canvas");
-  canvas.width = w;
-  canvas.height = h;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) throw new Error("Canvas not supported");
-  ctx.drawImage(bitmap, 0, 0, w, h);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Canvas not supported");
+    ctx.drawImage(bitmap, 0, 0, w, h);
 
-  const blob: Blob = await new Promise((res, rej) =>
-    canvas.toBlob(
-      (b) => (b ? res(b) : rej(new Error("Image encode failed"))),
-      "image/jpeg",
-      quality / 100
-    )
-  );
-  const base64 = await blobToBase64(blob);
-  return { base64, mimeType: "image/jpeg", width: w, height: h };
+    const blob: Blob = await new Promise((res, rej) =>
+      canvas.toBlob(
+        (b) => (b ? res(b) : rej(new Error("Image encode failed"))),
+        "image/jpeg",
+        quality / 100
+      )
+    );
+    const base64 = await blobToBase64(blob);
+    return { base64, mimeType: "image/jpeg", width: w, height: h };
+  } finally {
+    // Release the GPU-backed bitmap; otherwise repeated captures can OOM the
+    // WebView on cheap tablets.
+    bitmap.close();
+  }
 }
 
 function blobToBase64(blob: Blob): Promise<string> {

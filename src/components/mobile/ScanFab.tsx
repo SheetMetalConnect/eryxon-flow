@@ -48,12 +48,12 @@ export function ScanFab({
         }}
         aria-label={t("mobile.scanFab", "Scan code")}
         className={cn(
-          "fixed right-4 z-40 h-14 w-14 rounded-full shadow-lg shadow-primary/30",
+          "fixed right-4 z-50 h-14 w-14 rounded-full p-0 shadow-lg shadow-primary/30",
           "bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95",
           "transition-transform",
-          /* Sit above the bottom nav (h-14) + safe-area on phones; on tablets the nav is hidden so we only need the inset. */
+          /* OperatorLayout always renders a 56px (h-14) bottom nav. Sit clear
+             of it on every breakpoint, plus the device's gesture-bar inset. */
           "bottom-[calc(env(safe-area-inset-bottom,0px)+72px)]",
-          "lg:bottom-[calc(env(safe-area-inset-bottom,0px)+24px)]",
           className
         )}
       >
