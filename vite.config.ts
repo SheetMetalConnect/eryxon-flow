@@ -45,68 +45,25 @@ export default defineConfig(({ mode }) => ({
       // on shop-floor terminals while still surfacing updates promptly.
       registerType: "prompt",
       injectRegister: false,
+      // The hand-curated `public/manifest.webmanifest` is the single source
+      // of truth for the install metadata (operator-route shortcuts, icon
+      // paths, edge-side panel, window-controls-overlay). We disable the
+      // plugin's generator so the static file ships unmodified to dist/.
+      manifest: false,
+      // index.html still owns the `<link rel="manifest">`. Don't let the
+      // plugin inject a competing tag that points at its generated file.
+      injectManifest: undefined,
       includeAssets: [
         "favicon.ico",
         "favicon.svg",
         "apple-touch-icon-180x180.png",
+        "manifest.webmanifest",
+        "icons/icon-192.png",
+        "icons/icon-512.png",
+        "icons/icon-maskable-192.png",
+        "icons/icon-maskable-512.png",
         "robots.txt",
       ],
-      manifest: {
-        id: "/",
-        name: "Eryxon Flow",
-        short_name: "Eryxon",
-        description: "Manufacturing Execution System for job shops",
-        start_url: "/",
-        scope: "/",
-        display: "standalone",
-        display_override: ["standalone", "minimal-ui"],
-        orientation: "any",
-        theme_color: "#2563eb",
-        background_color: "#0f172a",
-        lang: "en",
-        dir: "ltr",
-        categories: ["business", "productivity"],
-        icons: [
-          { src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
-          { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
-          { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
-          {
-            src: "maskable-icon-512x512.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "maskable",
-          },
-          {
-            src: "pwa-icon.svg",
-            sizes: "any",
-            type: "image/svg+xml",
-            purpose: "any",
-          },
-        ],
-        // Operator-friendly launch shortcuts. iOS / iPadOS surface these via
-        // long-press on the home-screen icon; Android shows them in the
-        // launcher. Targets land directly inside the touch shell.
-        shortcuts: [
-          {
-            name: "Work Queue",
-            short_name: "Queue",
-            description: "Jump straight to your active operations.",
-            url: "/m/queue",
-          },
-          {
-            name: "Scan",
-            short_name: "Scan",
-            description: "Open the barcode / QR scanner.",
-            url: "/m/scan",
-          },
-          {
-            name: "My Issues",
-            short_name: "Issues",
-            description: "Review issues you have reported.",
-            url: "/m/issues",
-          },
-        ],
-      },
       workbox: {
         globPatterns: ["**/*.{js,css,html,svg,png,ico,woff,woff2}"],
         globIgnores: ["**/env.js"],

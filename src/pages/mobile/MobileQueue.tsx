@@ -20,6 +20,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { useNative } from "@/hooks/useNative";
 import { useHaptics } from "@/hooks/useHaptics";
+import { useTabletLayout } from "@/hooks/useTabletLayout";
 import { supabase } from "@/integrations/supabase/client";
 import {
   fetchOperationsWithDetails,
@@ -66,6 +67,12 @@ export default function MobileQueue() {
   const profile = useProfile();
   const { activeOperator } = useOperator();
   const native = useNative();
+  // Drive the master/detail decision off the *viewport*, not the UA. This
+  // means iPad Slide Over (which shrinks the WebView below tablet width)
+  // collapses to single-column, and Android freeform / split-screen does
+  // the same. UA-based `isIPad` would lie in both cases.
+  const { isLargeTablet } = useTabletLayout();
+  const useSplit = isLargeTablet;
   const haptics = useHaptics();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -193,13 +200,13 @@ export default function MobileQueue() {
   const onSelect = useCallback(
     (op: OperationWithDetails) => {
       void haptics.selection();
-      if (native.isIPad) {
+      if (useSplit) {
         setSelectedId(op.id);
       } else {
         navigate(`/m/op/${op.id}`);
       }
     },
-    [native.isIPad, navigate, haptics],
+    [useSplit, navigate, haptics],
   );
 
   const list = (
@@ -319,7 +326,7 @@ export default function MobileQueue() {
     </div>
   );
 
-  if (native.isIPad) {
+  if (useSplit) {
     const selected = filtered.find((op) => op.id === selectedId) ?? null;
     return (
       <IPadSplit

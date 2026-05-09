@@ -59,6 +59,11 @@ export {
 
 export { capturePhoto, type PhotoResult } from "./camera";
 
+export {
+  registerPushNotifications,
+  type PushRegistration,
+} from "./push";
+
 // iOS-specific helpers (no-op on Android / web)
 export {
   setStatusBarStyle,

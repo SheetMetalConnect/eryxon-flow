@@ -153,6 +153,63 @@ Push requires a Firebase project — drop `google-services.json` into
 `android/app/`. The build script auto-detects it and applies the
 `google-services` plugin. Without it, push silently no-ops.
 
+## Compatibility (mirrored across all three apps)
+
+| Concern | Android native | iOS / iPadOS native | PWA / Web |
+|---|---|---|---|
+| **Min OS** | Android 7.0 (API 24) — Capacitor 7's floor | iOS / iPadOS 13+ | Chrome 88+, Safari 17+, Edge / Firefox modern |
+| **Auth** | Supabase email + magic link → PIN keypad → optional fingerprint re-unlock | Same, Face ID / Touch ID | Same, no biometric |
+| **Hosted backend** | `app.eryxon.eu` via runtime `env.js` | Same | Same |
+| **Self-hosted backend** | `CAPACITOR_SERVER_URL=http://shop-floor.local:8080` for live-reload, or bake `VITE_SUPABASE_URL` into the AAB. `network_security_config.xml` whitelists `localhost` + `*.local`. | Same `CAPACITOR_SERVER_URL` knob | `VITE_SUPABASE_URL=http://127.0.0.1:54321` works; the meta-CSP localhost strip is auto-skipped when the URL is local. |
+| **Language switching** | `LanguageSwitcher` on `/m/login`, persists via i18next-browser-languagedetector. EN / NL / DE locale parity. | Same | Same |
+| **Viewports** | `viewport-fit=cover`, `100dvh`, safe-area utilities, plus `sw600dp` / `sw720dp` tablet breakpoints in `mobile.css` | Same minus the sw breakpoints; iPad split-view collapses below 768 px | Same |
+| **Devices** | Pixel 6+, Galaxy S20+, Pixel Tablet, Galaxy Tab S7+, Lenovo Tab P12, Z Fold / Flip foldables | iPhone SE (3rd gen) → 16 Pro Max, iPad mini / Air / Pro M-series | Anything modern |
+
+### Login flow (every surface)
+
+1. App launch / tab open.
+2. No Supabase session → `/auth` (email + magic link).
+3. Session but no PIN → `/m/login` (touch shells) or `/operator/login` (desktop terminal).
+4. Operator types badge + 6-digit PIN; biometric unlock available after the first PIN of the day.
+5. Lands on `/m/queue` (mobile) or `/operator/work-queue` (desktop).
+
+### PDF + STEP CAD preview on mobile
+
+`MobileOperationDetail` lazy-loads the same viewers the desktop terminal uses:
+PDF (~127 KB gz) and STEP / Three.js (~520 KB gz). Tapping a `.pdf` or `.step`
+row pre-fetches the file as a Blob (so the loader doesn't trip on signed-URL
+CORS) and opens it in an in-app modal. iPad Pro M-series and Android tablets
+(Pixel Tablet, Galaxy Tab S9+) handle 3D fluidly. blob: URLs are revoked on
+close so cheap tablets don't accumulate GPU memory across captures.
+
+### PWA install — manifest of record
+
+The hand-curated `public/manifest.webmanifest` is the single source of truth
+for PWA install metadata. `vite-plugin-pwa` is configured with
+`manifest: false` so it doesn't overwrite it. The static manifest references
+`/icons/icon-{192,512,maskable-192,maskable-512}.png` which ship from
+`public/icons/`. Home-screen shortcuts:
+
+- **Work Queue** → `/operator/work-queue`
+- **Scan Job** → `/operator/work-queue?scan=1` — `WorkQueue.tsx` watches
+  for `?scan=1` on mount and pops the in-app `ScanDialog`.
+- **My Activity** → `/operator/my-activity`
+
+Operators on phones get the touch-first `/m/*` shell automatically via
+`App.tsx`'s viewport-aware redirect.
+
+### Hardware back / dialog dismissal
+
+Android hardware back is wired into React Router via `useHardwareBack`. In
+order:
+
+1. If a Radix dialog / sheet / popover is open → dispatch Escape to close
+   it. Operators with an `OperationDetailModal` open never get yanked off
+   the page on the first back press.
+2. Otherwise pop one entry off React Router history.
+3. If history is empty → `App.minimizeApp()` instead of exiting, so the
+   operator's state is preserved.
+
 ## Diagnostics
 
 - `adb logcat | grep -i capacitor` for plugin errors.

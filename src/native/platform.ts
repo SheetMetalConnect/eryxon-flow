@@ -7,11 +7,11 @@
  * does not change at runtime.
  */
 
-import type { Capacitor as CapacitorType } from "@capacitor/core";
+import type { Capacitor as CapacitorBridge } from "@capacitor/core";
 
 declare global {
   interface Window {
-    Capacitor?: CapacitorType;
+    Capacitor?: typeof CapacitorBridge;
   }
 }
 
@@ -23,7 +23,7 @@ let cachedIOS: boolean | null = null;
 let cachedPlatform: PlatformId | null = null;
 
 /** Returns the injected Capacitor bridge, if any. */
-function getCapacitor(): CapacitorType | null {
+function getCapacitor(): typeof CapacitorBridge | null {
   if (typeof window === "undefined") return null;
   return window.Capacitor ?? null;
 }

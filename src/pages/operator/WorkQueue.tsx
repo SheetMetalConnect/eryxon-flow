@@ -38,6 +38,7 @@ import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "react-router-dom";
 import { haptics } from "@/native";
+import { ScanDialog } from "@/components/mobile/ScanDialog";
 
 interface PartAssignment {
   part_id: string;
@@ -60,21 +61,36 @@ export default function WorkQueue() {
   const [searchQuery, setSearchQuery] = useState<string>(
     () => searchParams.get("q") ?? ""
   );
+  const [scanOpen, setScanOpen] = useState<boolean>(
+    () => searchParams.get("scan") === "1"
+  );
 
-  // Honour incoming ?q= updates from the floating scan FAB; clear the param
-  // afterwards so the user can edit the search without it being overwritten.
+  // Honour incoming ?q= and ?scan=1 updates. ?q= comes from the floating
+  // scan FAB after a successful scan and pre-fills the search box. ?scan=1
+  // is what the installed-PWA "Scan Job" home-screen shortcut points at —
+  // it pops the scan dialog the moment the operator launches that tile.
+  // Both params are stripped after consumption so the URL stays clean and
+  // a manual refresh doesn't re-fire either action.
   useEffect(() => {
-    const incoming = searchParams.get("q");
-    if (incoming && incoming !== searchQuery) {
-      // Sync external URL state into local — react-hooks lint flags any
-      // setState-in-effect, but this is exactly that bridge.
+    const incomingQ = searchParams.get("q");
+    const incomingScan = searchParams.get("scan");
+    if (!incomingQ && !incomingScan) return;
+    const next = new URLSearchParams(searchParams);
+    let mutated = false;
+    if (incomingQ && incomingQ !== searchQuery) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setSearchQuery(incoming);
+      setSearchQuery(incomingQ);
       void haptics.tap("light");
-      const next = new URLSearchParams(searchParams);
       next.delete("q");
-      setSearchParams(next, { replace: true });
+      mutated = true;
     }
+    if (incomingScan === "1") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setScanOpen(true);
+      next.delete("scan");
+      mutated = true;
+    }
+    if (mutated) setSearchParams(next, { replace: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
   const [cells, setCells] = useState<CellOption[]>([]);
@@ -554,6 +570,19 @@ export default function WorkQueue() {
           ))
         )}
       </div>
+
+      {/* Tap-to-scan dialog wired to the home-screen "Scan Job" shortcut
+          (?scan=1) and to anything else that wants to fire a scan from
+          this page. Result becomes the search query — the operator lands
+          on a queue filtered to whatever they just scanned. */}
+      <ScanDialog
+        open={scanOpen}
+        onOpenChange={setScanOpen}
+        onResult={(value) => {
+          setSearchQuery(value);
+          setScanOpen(false);
+        }}
+      />
     </div>
   );
 }

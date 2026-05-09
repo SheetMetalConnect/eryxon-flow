@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { queryClient } from "@/lib/queryClient";
 import { prefetchCommonData } from "@/lib/cacheInvalidation";
+import { registerPushNotifications } from "@/native";
 
 // SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
 // All actual authorization is enforced server-side via Row Level Security (RLS) policies
@@ -82,6 +83,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
+          // First sign-in inside a Capacitor WebView triggers an APNs / FCM
+          // permission prompt and registers the device token. No-op on the
+          // web (returns null). Backend dispatch isn't wired yet — see
+          // docs/IOS.md "Remaining iOS-only gaps" — but the token is logged
+          // so an admin can verify the handshake before flipping APNs on.
+          if (event === 'SIGNED_IN') {
+            void registerPushNotifications().then((reg) => {
+              if (reg) {
+                logger.debug('AuthContext', 'Push registration', reg.platform);
+              }
+            });
+          }
         } else {
           setProfile(null);
           setTenant(null);
