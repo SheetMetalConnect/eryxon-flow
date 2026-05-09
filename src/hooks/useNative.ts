@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 import {
   getPlatform,
   hasFinePointer,
+  isAndroidNative,
   isIPad,
   isIPhone,
-  isNative,
+  isNativeApp,
   isNativeIOS,
   shouldUseMobileShell,
   type PlatformId,
-} from "@/lib/native";
+} from "@/native";
 
 export interface NativeContext {
   platform: PlatformId;
   isNative: boolean;
   isNativeIOS: boolean;
+  isAndroidNative: boolean;
   isIPad: boolean;
   isIPhone: boolean;
   isMobileShell: boolean;
@@ -21,8 +23,8 @@ export interface NativeContext {
 }
 
 /**
- * Reactive platform context. Re-evaluates when the viewport changes (so
- * iPad split-view + Slide Over kick the layout into the right shell).
+ * Reactive platform context. Re-evaluates when the viewport changes — iPad
+ * Slide Over and Android freeform both trigger us to swap shell variants.
  */
 export function useNative(): NativeContext {
   const [snapshot, setSnapshot] = useState<NativeContext>(() => snapshotNow());
@@ -43,8 +45,9 @@ export function useNative(): NativeContext {
 function snapshotNow(): NativeContext {
   return {
     platform: getPlatform(),
-    isNative: isNative(),
+    isNative: isNativeApp(),
     isNativeIOS: isNativeIOS(),
+    isAndroidNative: isAndroidNative(),
     isIPad: isIPad(),
     isIPhone: isIPhone(),
     isMobileShell: shouldUseMobileShell(),

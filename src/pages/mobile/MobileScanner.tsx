@@ -12,7 +12,8 @@ import {
   scanOnce,
   ScannerPermissionError,
   ScannerUnavailableError,
-} from "@/lib/native/scanner";
+  type ScanResult,
+} from "@/native";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
@@ -98,15 +99,19 @@ export default function MobileScanner() {
   const launchScan = useCallback(async () => {
     setScanning(true);
     try {
-      const result = await scanOnce();
+      const result: ScanResult | null = await scanOnce();
+      if (!result) {
+        // User backed out of the scanner without scanning anything.
+        return;
+      }
       await haptics.success();
-      const opId = await resolvePayload(result.text);
+      const opId = await resolvePayload(result.value);
       if (opId) {
         navigate(`/m/op/${opId}`);
       } else {
         toast.error(
           t("scanner.notFound", "No operation matched: {{value}}", {
-            value: result.text,
+            value: result.value,
           }),
         );
       }
@@ -123,10 +128,7 @@ export default function MobileScanner() {
             "Enable camera access in iOS Settings to scan",
           ),
         );
-      } else if (
-        error instanceof Error &&
-        error.message !== "Scan cancelled."
-      ) {
+      } else if (error instanceof Error) {
         await haptics.error();
         logger.error("MobileScanner", "Scan failed", error);
         toast.error(error.message);

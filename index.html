@@ -3,27 +3,28 @@
     <head>
         <meta charset="UTF-8" />
         <!--
-          `viewport-fit=cover` is the iOS-native opt-in for `env(safe-area-inset-*)`.
-          `maximum-scale=1` blocks Safari from auto-zooming when an operator
-          taps a sub-16px input — we already enforce 16px on touch in CSS but
-          this is the belt-and-suspenders fallback.
+          `viewport-fit=cover` is the iOS / Android opt-in for
+          `env(safe-area-inset-*)`. `user-scalable=no` is set in the native
+          shell to stop accidental pinch-zoom from gloves; mobile Safari /
+          Android browsers still honour Reader / accessibility zoom.
         -->
         <meta
             name="viewport"
-            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
         />
         <title>Eryxon Flow</title>
         <meta
             name="description"
             content="Eryxon Flow - Manufacturing Execution System"
         />
-        <!-- Theme color follows the system scheme. The native iOS shell reads
-             the dark variant; Safari "Add to Dock" reads the matching one. -->
-        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f8fafc" />
-        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111927" />
+        <!-- Theme color follows the system scheme. The native shells read
+             the dark variant; Safari "Add to Dock" / Android Chrome read
+             the matching one. -->
+        <meta name="theme-color" media="(prefers-color-scheme: light)" content="#2563eb" />
+        <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B1220" />
         <meta name="color-scheme" content="dark light" />
 
-        <!-- iOS / iPadOS / desktop PWA install hints -->
+        <!-- iOS / iPadOS / Android home-screen install hints -->
         <meta name="application-name" content="Eryxon Flow" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="mobile-web-app-capable" content="yes" />
@@ -31,7 +32,8 @@
         <meta name="apple-mobile-web-app-title" content="Eryxon" />
         <meta name="format-detection" content="telephone=no" />
 
-        <!-- `manifest-src 'self'` is required by some browsers for the linked manifest. -->
+        <!-- `manifest-src 'self'` is required by some browsers for the
+             vite-plugin-pwa generated manifest. -->
         <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://challenges.cloudflare.com https://cdn.jsdelivr.net; worker-src 'self' blob:; manifest-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co http://127.0.0.1:* http://localhost:* https://challenges.cloudflare.com; connect-src 'self' blob: https://*.supabase.co wss://*.supabase.co http://127.0.0.1:* ws://127.0.0.1:* http://localhost:* ws://localhost:* https://challenges.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' data:; frame-src 'self' https://challenges.cloudflare.com; object-src 'none'; base-uri 'self';" />
 
         <!-- Icons: vite-pwa generates the PNG set; the SVG mask icon doubles

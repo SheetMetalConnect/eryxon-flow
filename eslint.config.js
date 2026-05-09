@@ -5,7 +5,16 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist", "website/dist", "website/.astro", "website/astro.config.mjs"] },
+  {
+    ignores: [
+      "dist",
+      "website/dist",
+      "website/.astro",
+      "website/astro.config.mjs",
+      "android/app/src/main/assets/public/**",
+      "android/**/build/**",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

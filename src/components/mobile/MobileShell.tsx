@@ -1,31 +1,37 @@
 import { useEffect, type ReactNode } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import {
-  ListChecks,
   Clock,
   Flag,
-  ScanLine,
   Gauge,
+  ListChecks,
+  ScanLine,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeMode } from "@/theme/ThemeProvider";
 import { useNative } from "@/hooks/useNative";
+import { useHardwareBack } from "@/hooks/useHardwareBack";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
-import { setStatusBarStyle, hideSplash } from "@/lib/native/status-bar";
-import { BottomTabBar, type MobileTab } from "./BottomTabBar";
+import { hideSplash, isAndroidNative, setStatusBarStyle } from "@/native";
 import { cn } from "@/lib/utils";
+import { BottomTabBar, type MobileTab } from "./BottomTabBar";
+import { OfflineBanner } from "./OfflineBanner";
 
 interface MobileShellProps {
   children?: ReactNode;
 }
 
 /**
- * Top-level shell for the touch-first iOS / iPad experience.
+ * Top-level shell for the touch-first iOS / iPadOS / Android experience.
  *
- * - iPhone: full-bleed page + sticky bottom tab bar.
- * - iPad: same shell, but pages opt-in to the split-view layout via
- *   `<IPadSplit>` so admins reading at a desk see two-pane comfort while
- *   operators on iPad mini stay focused on one view.
+ * - iPhone / Android phone: full-bleed page + sticky bottom tab bar.
+ * - iPad / Android tablet: same shell, but pages opt-in to a split-view
+ *   layout via `<IPadSplit>` so admins on iPad get two-pane comfort while
+ *   operators on smaller tablets stay focused on one view.
+ * - Hardware back (Android) is routed through React Router via
+ *   `useHardwareBack` so the WebView doesn't drop the user out of the app.
+ * - Offline banner is pinned just under the status bar so operators on
+ *   shop-floor WiFi notice connectivity hiccups immediately.
  */
 export function MobileShell({ children }: MobileShellProps) {
   const { t } = useTranslation();
@@ -34,8 +40,22 @@ export function MobileShell({ children }: MobileShellProps) {
   const location = useLocation();
   const { count: pendingIssues } = usePendingIssuesCount();
 
-  // Keep the iOS status bar in lockstep with the React theme. Light/dark mode
-  // toggling without this is jarring because the OS bar lags by a frame.
+  // Wires the Android hardware back button into router history so the
+  // WebView doesn't consume it and exit the app.
+  useHardwareBack();
+
+  // Tag the body so global CSS (`mobile.css`, `mobile-ios.css`) can apply
+  // safe-area / touch-target overrides without leaking into the desktop SPA.
+  useEffect(() => {
+    const classes = isAndroidNative()
+      ? ["app-mobile", "app-android"]
+      : ["app-mobile"];
+    document.body.classList.add(...classes);
+    return () => document.body.classList.remove(...classes);
+  }, []);
+
+  // Keep the native status bar in lockstep with the React theme. Light/dark
+  // mode toggling without this is jarring because the OS bar lags by a frame.
   useEffect(() => {
     void setStatusBarStyle(resolvedTheme);
   }, [resolvedTheme]);
@@ -75,21 +95,22 @@ export function MobileShell({ children }: MobileShellProps) {
     },
   ];
 
-  // Hide tab bar on full-screen flows (scanner, login) so the camera viewport
-  // and PIN keypad get the entire screen.
+  // Hide the tab bar on full-screen flows (scanner, login) so the camera
+  // viewport and PIN keypad get the entire screen.
   const hideTabBar = /^\/m\/(scan|login)/.test(location.pathname);
 
   return (
     <div
       className={cn(
         "flex min-h-screen flex-col bg-background text-foreground",
-        // Reserve space for the home-indicator gutter when the tab bar is
-        // visible, so scrolling content never lands underneath it.
+        // Reserve space for the home-indicator / system-nav gutter when the
+        // tab bar is visible, so scrolling content never lands underneath it.
         !hideTabBar && "pb-[calc(56px+env(safe-area-inset-bottom))]",
       )}
       data-platform={native.platform}
       data-native={native.isNative ? "true" : "false"}
     >
+      <OfflineBanner />
       <main className="flex flex-1 flex-col">
         {children ?? <Outlet />}
       </main>

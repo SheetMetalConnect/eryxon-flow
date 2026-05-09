@@ -1,0 +1,175 @@
+/* ============================================================================
+ * Eryxon Flow — Mobile / Android shell styles
+ *
+ * Loaded after the design system. Targets phones and tablets running the
+ * Capacitor wrapper (`body.app-android`) plus mobile browsers (`body.app-mobile`).
+ *
+ * - Safe-area utilities for status bar / nav bar / display cutouts
+ * - Operator-friendly touch targets (≥48dp / 12 tw units)
+ * - Momentum scrolling, no-zoom, no-callout, no-text-select on kiosks
+ * - Larger type, generous spacing on tablets in landscape
+ * ========================================================================= */
+
+@layer base {
+  /* The viewport meta sets viewport-fit=cover; insets become available here. */
+  :root {
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
+  }
+
+  body.app-mobile {
+    /* Prevent rubber-band overscroll bouncing into white space on Android. */
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.app-android {
+    /* Disable iOS-style callouts and forced text selection on touch UIs. */
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  /* Form fields must always allow text selection / paste even on kiosks. */
+  body.app-android input,
+  body.app-android textarea,
+  body.app-android [contenteditable="true"] {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
+  /* Disable browser pinch-to-zoom only on the native shell, not regular web. */
+  html.is-native-app,
+  body.app-android {
+    touch-action: manipulation;
+  }
+}
+
+@layer utilities {
+  .safe-area-top {
+    padding-top: var(--safe-top);
+  }
+  .safe-area-bottom {
+    padding-bottom: var(--safe-bottom);
+  }
+  .safe-area-x {
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+  }
+  .safe-area-inset {
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
+  }
+
+  /* Pinned bottom bars (operator nav) need to lift above the gesture bar. */
+  .safe-bottom-fixed {
+    bottom: var(--safe-bottom);
+  }
+
+  /* Smooth momentum scrolling for long lists on Android WebView. */
+  .scroll-momentum {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* Material-style elevation overlay for cards on dark Android. */
+  .elev-1 {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), 0 1px 3px rgba(0, 0, 0, 0.15);
+  }
+  .elev-2 {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  .elev-3 {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35), 0 8px 16px rgba(0, 0, 0, 0.25);
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Operator-friendly touch targets on the mobile shell.
+ *
+ * Material Design + WCAG AAA both target 48×48dp. On phones we bump shadcn's
+ * default button heights so a gloved hand can land them; we leave the desktop
+ * SPA alone so admin views stay dense.
+ * -------------------------------------------------------------------------- */
+
+body.app-mobile .h-8 {
+  min-height: 2.5rem;
+}
+body.app-mobile button,
+body.app-mobile [role="button"] {
+  min-height: 2.75rem;
+}
+body.app-mobile button.h-7,
+body.app-mobile button.h-6,
+body.app-mobile [role="button"].h-7,
+body.app-mobile [role="button"].h-6 {
+  /* Inline / chip buttons keep their compact size. */
+  min-height: revert;
+}
+
+/* Bigger tap targets in nav bars and dialogs on phones. */
+@media (max-width: 767px) {
+  body.app-mobile nav button,
+  body.app-mobile [role="dialog"] button {
+    min-height: 3rem;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Tablet (sw600dp+) optimizations.
+ * Pixel Tablet (1600×2560 / 1.0 dp) reports 600+ dp short side.
+ * Galaxy Tab S9 etc reports 800+ dp short side in landscape.
+ * -------------------------------------------------------------------------- */
+
+@media (min-width: 768px) {
+  body.app-mobile {
+    font-size: 15px;
+  }
+  /* Operator bottom nav becomes wider on tablets, with bigger labels. */
+  body.app-mobile nav.fixed.bottom-0 .grid {
+    max-width: 32rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  body.app-mobile {
+    font-size: 16px;
+  }
+  /* On large tablets in landscape we hide the bottom nav entirely if a
+     side-rail / desktop-style chrome is present. The OperatorLayout still
+     ships the bottom nav by default so we keep it but reposition. */
+}
+
+/* Landscape tablets get even more generous main padding. */
+@media (min-width: 768px) and (orientation: landscape) {
+  body.app-mobile main {
+    padding-left: max(1.25rem, var(--safe-left));
+    padding-right: max(1.25rem, var(--safe-right));
+  }
+}
+
+/* Foldables / very large screens — Pixel Fold open, Galaxy Tab Ultra. */
+@media (min-width: 1280px) {
+  body.app-mobile main {
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
+ * Reduce motion on per-user preference (Android system setting maps here).
+ * -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  body.app-mobile *,
+  body.app-mobile *::before,
+  body.app-mobile *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

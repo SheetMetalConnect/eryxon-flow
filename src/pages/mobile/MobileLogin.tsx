@@ -10,10 +10,7 @@ import { PinKeypad } from "@/components/terminal/PinKeypad";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-import {
-  getBiometricAvailability,
-  verifyIdentity,
-} from "@/lib/native/biometric";
+import { getBiometricAvailability, verifyIdentity } from "@/native";
 import { ROUTES } from "@/routes";
 
 const STORED_LAST_BADGE_KEY = "eryxon-flow:last-employee-id";

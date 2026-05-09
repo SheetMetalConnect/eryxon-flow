@@ -27,6 +27,7 @@ import {
 
 import { Auth, AcceptInvitation, ForgotPassword, ResetPassword } from "./pages/auth";
 import { TerminalLogin } from "./pages/operator";
+import { MobileShell } from "./components/mobile/MobileShell";
 
 const OnboardingWizard = lazy(() => import("./components/onboarding").then(m => ({ default: m.OnboardingWizard })));
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -105,7 +106,9 @@ const App = () => (
               <NotificationToastProvider>
                 <McpActivityToasts />
                 <ErrorBoundary>
-                  <AppRoutes />
+                  <MobileShell>
+                    <AppRoutes />
+                  </MobileShell>
                 </ErrorBoundary>
               </NotificationToastProvider>
             </OperatorProvider>
