@@ -54,6 +54,7 @@ coverage/
 credentials/
 dist
 dist-ssr
+dev-dist
 lerna-debug.log*
 logs
 node_modules
