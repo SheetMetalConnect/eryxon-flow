@@ -1,3 +1,5 @@
 /* Eryxon MES - Main Stylesheet */
 /* Import the comprehensive design system */
 @import './styles/design-system.css';
+/* iOS / iPadOS native-shell tuning (safe areas, touch targets, momentum scroll) */
+@import './styles/mobile-ios.css';

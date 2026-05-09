@@ -19,9 +19,26 @@
     "test:api:e2e": "bash scripts/test-api-e2e.sh",
     "analyze": "vite build --mode analyze",
     "deps:graph": "madge --ts-config tsconfig.app.json --extensions ts,tsx --json src/App.tsx > docs/dependency-graph.json",
-    "deps:circular": "madge --ts-config tsconfig.app.json --extensions ts,tsx --circular src/App.tsx"
+    "deps:circular": "madge --ts-config tsconfig.app.json --extensions ts,tsx --circular src/App.tsx",
+    "ios:init": "bash scripts/ios-init.sh",
+    "ios:sync": "npm run build && npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "ios:run": "npm run build && npx cap sync ios && npx cap run ios",
+    "ios:build": "npm run build && npx cap sync ios"
   },
   "dependencies": {
+    "@capacitor/app": "^6.0.2",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/haptics": "^6.0.2",
+    "@capacitor/ios": "^6.2.0",
+    "@capacitor/keyboard": "^6.0.3",
+    "@capacitor/network": "^6.0.3",
+    "@capacitor/preferences": "^6.0.3",
+    "@capacitor/push-notifications": "^6.0.3",
+    "@capacitor/splash-screen": "^6.0.3",
+    "@capacitor/status-bar": "^6.0.2",
+    "@capacitor-mlkit/barcode-scanning": "^6.2.0",
+    "@capgo/capacitor-native-biometric": "^7.0.6",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -94,6 +111,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.2.0",
     "@eslint/js": "^9.39.4",
     "@tailwindcss/typography": "^0.5.19",
     "@testing-library/jest-dom": "^6.9.1",

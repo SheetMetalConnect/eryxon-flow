@@ -14,6 +14,17 @@ export const ROUTES = {
     VIEW: "/operator/view",
   },
 
+  // Touch-first iOS / iPad shell. Same data, different chrome.
+  MOBILE: {
+    LOGIN: "/m/login",
+    QUEUE: "/m/queue",
+    OPERATION: "/m/op/:operationId",
+    SCAN: "/m/scan",
+    ACTIVITY: "/m/activity",
+    ISSUES: "/m/issues",
+    TERMINAL: "/m/terminal",
+  },
+
   ADMIN: {
     DASHBOARD: "/admin/dashboard",
     JOBS: "/admin/jobs",

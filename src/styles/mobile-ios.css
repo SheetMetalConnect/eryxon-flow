@@ -1,0 +1,179 @@
+/**
+ * iOS / iPadOS native shell tuning.
+ *
+ * Loaded after the design system so it can override a few defaults that
+ * make sense on desktop but break on touch (text selection on tab bars,
+ * 100vh sizing under the home indicator, hover-only states).
+ */
+
+/* ============================================================================
+   SAFE AREA UTILITIES
+   ============================================================================ */
+.safe-pt {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-pl {
+  padding-left: env(safe-area-inset-left);
+}
+.safe-pr {
+  padding-right: env(safe-area-inset-right);
+}
+.safe-px {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+.safe-py {
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ============================================================================
+   NATIVE WEBVIEW BASELINE
+   ============================================================================ */
+html,
+body,
+#root {
+  /* Replace 100vh — Mobile Safari subtracts the URL bar after first paint,
+   * which causes layout jumps. dvh = dynamic viewport height. */
+  min-height: 100dvh;
+}
+
+/* Prevent rubber-band scroll bleeding through the WebView background
+ * when a page is shorter than the viewport. */
+html[data-platform="ios"],
+html[data-platform="ipados"] {
+  overscroll-behavior-y: none;
+}
+
+/* On the native shell we are always full-bleed under the status bar. */
+body[data-native="true"] {
+  overscroll-behavior: none;
+}
+
+/* ============================================================================
+   TOUCH HEURISTICS
+   ============================================================================ */
+
+/* Coarse pointer = phones, tablets. Bump tap targets and disable hover
+ * pseudo-classes that fire stuck on tap. */
+@media (pointer: coarse) {
+  button,
+  [role="button"],
+  a {
+    /* iOS HIG minimum hit area. */
+    min-height: 44px;
+  }
+
+  /* Desktop hover styles look "stuck" on touch — kill them when there's no
+   * fine pointer available. */
+  *:hover {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Crisper momentum scrolling for any list-y container. */
+  [data-mobile-scroll],
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================================================================
+   SHELL CHROME
+   ============================================================================ */
+
+/* Tab bars, headers, swipe action panels — never let the system text-select
+ * happen, it just feels broken. */
+[data-mobile-shell-chrome="true"],
+.mobile-no-select {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Disable iOS's automatic input zoom by guaranteeing 16px font-size on form
+ * controls inside the mobile shell — anything smaller triggers the zoom. */
+@media (max-width: 1024px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+/* ============================================================================
+   DYNAMIC TYPE FRIENDLY
+   ============================================================================ */
+
+/* When users have larger system text sizes set, lift our small labels with
+ * them — iOS exposes this via the `prefers` query rather than the value. */
+@media (prefers-reduced-motion: no-preference) {
+  .mobile-fade-in {
+    animation: ios-fade-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+}
+
+@keyframes ios-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   IPAD FORM-FACTOR HINTS
+   ============================================================================ */
+
+/* iPad split-view: when the viewport is below the collapse threshold the
+ * sidebar should hide and the detail goes full bleed. Implemented through
+ * a CSS variable so the React shell can opt in per-page. */
+@media (max-width: 768px) {
+  [data-ipad-split="true"] aside {
+    display: none;
+  }
+}
+
+/* iPad landscape gets a slightly wider master so 8-char part numbers fit
+ * without truncation. */
+@media (min-width: 1024px) and (orientation: landscape) {
+  [data-ipad-split="true"] aside {
+    width: clamp(380px, 32vw, 520px);
+  }
+}
+
+/* ============================================================================
+   FOCUS RINGS — TOUCH FRIENDLY
+   ============================================================================ */
+
+/* Hide focus rings for touch interactions but keep them for keyboard /
+ * Switch Control / Voice Control users. */
+@supports selector(:focus-visible) {
+  button:focus:not(:focus-visible),
+  a:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
+  }
+}
+
+/* ============================================================================
+   ACTIVE / PRESSED FEEDBACK
+   ============================================================================ */
+
+/* Tailwind's `active:` selector is reliable but iOS Safari can be slow to
+ * apply it — provide a CSS fallback for the most common case. */
+@media (hover: none) {
+  .mobile-press {
+    transition: transform 80ms ease, background-color 80ms ease;
+  }
+  .mobile-press:active {
+    transform: scale(0.985);
+  }
+}
