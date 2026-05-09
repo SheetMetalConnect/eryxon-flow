@@ -156,6 +156,14 @@ Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website
 | Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
 | Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
 
+### Native + PWA apps
+
+| Surface | Setup | Deploy + test guide |
+|---------|-------|---------------------|
+| iOS / iPadOS | [`docs/IOS.md`](docs/IOS.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#2-ios--ipados-native-app) |
+| Android | [`docs/ANDROID.md`](docs/ANDROID.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#3-android-native-app) |
+| Installable PWA (web + desktop) | n/a — `npm run build` | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#1-pwa-web--desktop-install) |
+
 ## AI Agent Support
 
 This repo is optimized for AI coding assistants:
