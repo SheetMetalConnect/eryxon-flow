@@ -176,5 +176,12 @@
   "table": {
     "selectAll": "Alle auswählen",
     "selectRow": "Zeile auswählen"
+  },
+  "pwa": {
+    "updateAvailable": "Eine neue Version ist verfügbar",
+    "updateDescription": "Neu laden, um das Update anzuwenden.",
+    "reload": "Neu laden",
+    "later": "Später",
+    "offlineReady": "Eryxon Flow ist bereit für die Offline-Nutzung"
   }
 }

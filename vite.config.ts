@@ -1,8 +1,28 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { VitePWA } from "vite-plugin-pwa";
+
+// Strips dev-only origins (localhost / 127.0.0.1, http + ws) from the meta CSP
+// in index.html for production builds, while leaving them in place for `vite
+// dev` so HMR keeps working. Header-based CSPs in vercel.json / nginx.conf /
+// public/_headers stay untouched and remain the source of truth in prod.
+function stripDevCspForProd(): Plugin {
+  // Strip dev-only origin tokens (with their leading whitespace so no double
+  // space remains) directly from the HTML. These tokens only exist inside the
+  // CSP meta tag, so a global replace is safe.
+  const DEV_ORIGIN =
+    /\s+(?:https?|wss?):\/\/(?:127\.0\.0\.1|localhost)(?::\*)?(?=[\s;"])/g;
+  return {
+    name: "eryxon:strip-dev-csp-for-prod",
+    apply: "build",
+    transformIndexHtml: {
+      order: "post",
+      handler: (html) => html.replace(DEV_ORIGIN, ""),
+    },
+  };
+}
 
 export default defineConfig(({ mode }) => ({
   server: {
@@ -11,9 +31,14 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    stripDevCspForProd(),
     VitePWA({
-      registerType: "autoUpdate",
-      injectRegister: "script",
+      // Prompt the operator before activating a new SW: a Sonner toast in
+      // src/components/PwaUpdatePrompt.tsx calls updateServiceWorker(true)
+      // when the user clicks Reload. This prevents mid-shift forced reloads
+      // on shop-floor terminals while still surfacing updates promptly.
+      registerType: "prompt",
+      injectRegister: false,
       includeAssets: [
         "favicon.ico",
         "favicon.svg",
@@ -59,8 +84,10 @@ export default defineConfig(({ mode }) => ({
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/openapi\.json$/],
         cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true,
+        // No clientsClaim / skipWaiting: in prompt mode the new SW installs
+        // and waits. PwaUpdatePrompt posts SKIP_WAITING when the operator
+        // clicks Reload, which avoids forced mid-shift reloads on shop-floor
+        // terminals while still surfacing updates promptly.
         runtimeCaching: [
           {
             urlPattern: ({ url }) => url.pathname === "/env.js",

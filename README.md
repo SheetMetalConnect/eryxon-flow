@@ -102,7 +102,7 @@ Eryxon Flow ships as an installable Progressive Web App, so it runs as a standal
 
 **Android — Chrome:** *⋮ → Install app*.
 
-The installed app launches in a standalone window with its own icon, supports background updates (auto-applied on next launch via the service worker), and works offline for assets it has already loaded. Runtime config (`/env.js`) and API calls always go to the network.
+The installed app launches in a standalone window with its own icon and works offline for assets it has already loaded. Runtime config (`/env.js`) and API calls always go to the network. When a new version ships, a toast prompts the operator to reload — no forced mid-shift reloads on shop-floor terminals.
 
 ### Regenerating PWA icons
 

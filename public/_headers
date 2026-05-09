@@ -14,13 +14,12 @@
 /index.html
   Cache-Control: no-cache, no-store, must-revalidate
 
-# PWA: never cache the service worker or its registrar — clients must always
-# pick up new versions on next navigation.
+# PWA: never cache the service worker — clients must always pick up new
+# versions on next navigation. Service-Worker-Allowed lets the SW claim the
+# whole origin even if it ever moves out of root.
 /sw.js
   Cache-Control: no-cache, no-store, must-revalidate
   Service-Worker-Allowed: /
-/registerSW.js
-  Cache-Control: no-cache, no-store, must-revalidate
 
 # PWA: manifest can be cached briefly but must revalidate for icon/theme updates.
 /manifest.webmanifest
