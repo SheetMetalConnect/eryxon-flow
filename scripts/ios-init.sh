@@ -74,6 +74,45 @@ if [[ -f "$PLIST" ]]; then
     /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:1 string nl" "$PLIST" 2>/dev/null || true
     /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:2 string de" "$PLIST" 2>/dev/null || true
   fi
+
+  # App Transport Security exception for LAN deployments. Eryxon Flow is
+  # primarily self-hosted; the operator's iPad talks to a plant-internal
+  # host that often runs plain HTTP because the shop hasn't fronted it
+  # with TLS yet. Without this, every Supabase REST / realtime call from
+  # the WebView gets blocked by ATS.
+  #
+  # We allow:
+  #   - `NSAllowsLocalNetworking` so RFC1918 ranges + .local / .lan can
+  #     be reached over cleartext (Apple-blessed escape valve, doesn't
+  #     require a justification at App Store review).
+  #   - `NSAllowsArbitraryLoadsInWebContent` so the WebView itself can
+  #     load HTTP assets from the LAN host (CSS, fonts, images).
+  #
+  # Public-host builds get cleartext blocked at the iOS level — this only
+  # opens up the LAN. Operators standing up a TLS reverse proxy can ignore
+  # all of this; the entries are inert for HTTPS targets.
+  echo "▶ Patching App Transport Security for LAN deployments..."
+  /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity dict" "$PLIST" 2>/dev/null || true
+  /usr/libexec/PlistBuddy -c "Set :NSAppTransportSecurity:NSAllowsLocalNetworking true" "$PLIST" 2>/dev/null \
+    || /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsLocalNetworking bool true" "$PLIST"
+  /usr/libexec/PlistBuddy -c "Set :NSAppTransportSecurity:NSAllowsArbitraryLoadsInWebContent true" "$PLIST" 2>/dev/null \
+    || /usr/libexec/PlistBuddy -c "Add :NSAppTransportSecurity:NSAllowsArbitraryLoadsInWebContent bool true" "$PLIST"
+
+  # Bonjour / mDNS discovery. iOS 14+ requires apps to declare the
+  # Bonjour service types they intend to browse. We claim `_http._tcp`
+  # and `_https._tcp` so an operator can punch in `http://shop-floor.local`
+  # without iOS silently dropping the resolution attempt.
+  if ! /usr/libexec/PlistBuddy -c "Print :NSBonjourServices" "$PLIST" 2>/dev/null | grep -q "_http"; then
+    /usr/libexec/PlistBuddy -c "Add :NSBonjourServices array" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :NSBonjourServices:0 string _http._tcp" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :NSBonjourServices:1 string _https._tcp" "$PLIST" 2>/dev/null || true
+  fi
+
+  # iOS 14+ also requires a usage-string for local-network access (the
+  # OS pops a permission sheet on first connect-attempt). Without it
+  # Bonjour resolution gets blocked on a managed device.
+  /usr/libexec/PlistBuddy -c "Set :NSLocalNetworkUsageDescription 'Eryxon Flow connects to your shop-floor server on the local network for jobs, parts, and time tracking.'" "$PLIST" 2>/dev/null \
+    || /usr/libexec/PlistBuddy -c "Add :NSLocalNetworkUsageDescription string 'Eryxon Flow connects to your shop-floor server on the local network for jobs, parts, and time tracking.'" "$PLIST"
 fi
 
 cat <<'EOF'

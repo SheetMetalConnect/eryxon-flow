@@ -4,28 +4,72 @@ import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { VitePWA } from "vite-plugin-pwa";
 
-// Strips dev-only origins (localhost / 127.0.0.1, http + ws) from the meta CSP
-// in index.html for production builds, while leaving them in place for `vite
-// dev` so HMR keeps working. Header-based CSPs in vercel.json / nginx.conf /
-// public/_headers stay untouched and remain the source of truth in prod.
+// Build-time CSP rewrite for the `<meta http-equiv="Content-Security-Policy">`
+// in index.html. Two transforms run in order:
 //
-// Self-hosting safety: when `VITE_SUPABASE_URL` points at a localhost origin
-// (the documented Docker self-host pattern in `docs/SELF_HOSTING.md`), we
-// keep the localhost tokens in the meta CSP so the browser doesn't block
-// Supabase REST / realtime requests after install.
-function stripDevCspForProd(): Plugin {
+//   1. Inject the configured `VITE_SUPABASE_URL` host into `connect-src` so
+//      LAN deployments (`http://shop-floor.local:54321`,
+//      `http://192.168.1.50:8080`, etc.) work without the browser blocking
+//      every REST / realtime call. Also adds the matching ws / wss origin
+//      for Supabase Realtime. Vite's normal dev server keeps localhost in
+//      the CSP for HMR; we strip those tokens at build time *only* if the
+//      configured Supabase URL isn't itself local.
+//
+//   2. Strip the dev-only `127.0.0.1` / `localhost` origins from the
+//      production meta CSP, unless the configured Supabase URL is local
+//      (the `supabase start` / Docker self-host case).
+//
+// Header-based CSPs in vercel.json / nginx-security-headers.conf /
+// public/_headers stay the source of truth in prod when there's a reverse
+// proxy in front; the meta tag is a defence in depth for direct file
+// hosting (Caddy LAN, static build server).
+function applyCspBuildRewrites(): Plugin {
   const DEV_ORIGIN =
     /\s+(?:https?|wss?):\/\/(?:127\.0\.0\.1|localhost)(?::\*)?(?=[\s;"])/g;
   const supabaseUrl = process.env.VITE_SUPABASE_URL ?? "";
   const supabaseIsLocal = /\/\/(?:127\.0\.0\.1|localhost)(?::|\/|$)/.test(
     supabaseUrl,
   );
+
+  // Pull the host:port out of the configured Supabase URL so we can mint
+  // both an http(s):// and a ws(s):// origin token to add to connect-src.
+  // Empty string when no URL is configured at build time.
+  let supabaseOrigins = "";
+  if (supabaseUrl) {
+    try {
+      const u = new URL(supabaseUrl);
+      const httpOrigin = `${u.protocol}//${u.host}`;
+      const wsScheme = u.protocol === "https:" ? "wss:" : "ws:";
+      const wsOrigin = `${wsScheme}//${u.host}`;
+      supabaseOrigins = ` ${httpOrigin} ${wsOrigin}`;
+    } catch {
+      // Malformed URL — fall through; the developer will see the connect
+      // failure in the WebView console and can fix the env var.
+    }
+  }
+
   return {
-    name: "eryxon:strip-dev-csp-for-prod",
+    name: "eryxon:csp-rewrite",
     apply: "build",
     transformIndexHtml: {
       order: "post",
-      handler: (html) => (supabaseIsLocal ? html : html.replace(DEV_ORIGIN, "")),
+      handler: (html) => {
+        let out = html;
+        // 1. Add the configured Supabase host to connect-src. The CSP
+        //    value is wrapped in double quotes inside the meta tag, and
+        //    contains single-quoted tokens like 'self' / 'unsafe-eval' —
+        //    so the lazy match stops at the next `;` or `"`, NOT at the
+        //    next `'` (which would land us inside `'self'`).
+        if (supabaseOrigins) {
+          out = out.replace(
+            /(connect-src[^";]*?)(\s*;)/,
+            (_, head: string, tail: string) => `${head}${supabaseOrigins}${tail}`,
+          );
+        }
+        // 2. Strip dev-only origins unless the Supabase URL is itself local.
+        if (!supabaseIsLocal) out = out.replace(DEV_ORIGIN, "");
+        return out;
+      },
     },
   };
 }
@@ -37,7 +81,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    stripDevCspForProd(),
+    applyCspBuildRewrites(),
     VitePWA({
       // Prompt the operator before activating a new SW: a Sonner toast in
       // src/components/PwaUpdatePrompt.tsx calls updateServiceWorker(true)
