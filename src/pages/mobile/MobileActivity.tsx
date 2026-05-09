@@ -135,7 +135,11 @@ export default function MobileActivity() {
     );
   }, [entries]);
 
-  const todayMinutes = grouped[0]?.totalMinutes ?? 0;
+  // `grouped[0]` is the most recent day with activity, which is *not* always
+  // today (operator on first sign-in of the morning would otherwise see
+  // yesterday's hours under the "Today" tile). Look up today's key explicitly.
+  const todayKey = format(new Date(), "yyyy-MM-dd");
+  const todayMinutes = grouped.find((day) => day.date === todayKey)?.totalMinutes ?? 0;
   const weekMinutes = grouped.reduce((sum, day) => sum + day.totalMinutes, 0);
 
   return (

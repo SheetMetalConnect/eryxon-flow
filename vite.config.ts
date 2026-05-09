@@ -8,18 +8,24 @@ import { VitePWA } from "vite-plugin-pwa";
 // in index.html for production builds, while leaving them in place for `vite
 // dev` so HMR keeps working. Header-based CSPs in vercel.json / nginx.conf /
 // public/_headers stay untouched and remain the source of truth in prod.
+//
+// Self-hosting safety: when `VITE_SUPABASE_URL` points at a localhost origin
+// (the documented Docker self-host pattern in `docs/SELF_HOSTING.md`), we
+// keep the localhost tokens in the meta CSP so the browser doesn't block
+// Supabase REST / realtime requests after install.
 function stripDevCspForProd(): Plugin {
-  // Strip dev-only origin tokens (with their leading whitespace so no double
-  // space remains) directly from the HTML. These tokens only exist inside the
-  // CSP meta tag, so a global replace is safe.
   const DEV_ORIGIN =
     /\s+(?:https?|wss?):\/\/(?:127\.0\.0\.1|localhost)(?::\*)?(?=[\s;"])/g;
+  const supabaseUrl = process.env.VITE_SUPABASE_URL ?? "";
+  const supabaseIsLocal = /\/\/(?:127\.0\.0\.1|localhost)(?::|\/|$)/.test(
+    supabaseUrl,
+  );
   return {
     name: "eryxon:strip-dev-csp-for-prod",
     apply: "build",
     transformIndexHtml: {
       order: "post",
-      handler: (html) => html.replace(DEV_ORIGIN, ""),
+      handler: (html) => (supabaseIsLocal ? html : html.replace(DEV_ORIGIN, "")),
     },
   };
 }

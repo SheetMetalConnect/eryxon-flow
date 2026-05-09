@@ -37,6 +37,12 @@ export interface ScanOptions {
   formats?: ScanFormat[];
   /** Web-only: pass an element to mount the live preview into. */
   previewTarget?: HTMLElement | null;
+  /**
+   * Abort the in-flight scan. Web fallback: stops the `getUserMedia`
+   * stream and removes the preview element so the camera indicator
+   * goes away the moment the user closes the dialog.
+   */
+  signal?: AbortSignal;
 }
 
 /**
@@ -122,7 +128,11 @@ export async function scanOnce(
   ) {
     throw new ScannerUnavailableError();
   }
-  return scanWithBarcodeDetector(formats, opts.previewTarget ?? null);
+  return scanWithBarcodeDetector(
+    formats,
+    opts.previewTarget ?? null,
+    opts.signal,
+  );
 }
 
 interface BarcodeDetectorCtor {
@@ -135,11 +145,14 @@ interface BarcodeDetectorCtor {
 
 async function scanWithBarcodeDetector(
   formats: ScanFormat[],
-  preview: HTMLElement | null
+  preview: HTMLElement | null,
+  signal?: AbortSignal,
 ): Promise<ScanResult | null> {
   const Ctor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor })
     .BarcodeDetector;
   if (!Ctor) throw new Error("Scanner unavailable on this platform");
+
+  if (signal?.aborted) return null;
 
   const detector = new Ctor({
     formats: formats.map((f) => f.toLowerCase().replace(/_/g, "_")),
@@ -160,24 +173,47 @@ async function scanWithBarcodeDetector(
   }
   await video.play();
 
-  const stop = () => stream.getTracks().forEach((t) => t.stop());
+  const stop = () => {
+    stream.getTracks().forEach((track) => track.stop());
+    if (preview && video.parentNode === preview) preview.removeChild(video);
+  };
 
   return new Promise<ScanResult | null>((resolve, reject) => {
     let raf = 0;
     let cancelled = false;
+    let abortHandler: (() => void) | null = null;
+
+    if (signal) {
+      abortHandler = () => {
+        cancelled = true;
+        cancelAnimationFrame(raf);
+        stop();
+        resolve(null);
+      };
+      // If the caller aborts (e.g. user closes the dialog), tear down the
+      // camera stream immediately so the OS indicator goes off and the
+      // browser tab stops draining battery.
+      if (signal.aborted) {
+        abortHandler();
+        return;
+      }
+      signal.addEventListener("abort", abortHandler, { once: true });
+    }
+
     const tick = async () => {
       if (cancelled) return;
       try {
         const results = await detector.detect(video);
         if (results[0]) {
           cancelAnimationFrame(raf);
+          if (abortHandler) signal?.removeEventListener("abort", abortHandler);
           stop();
-          if (preview) preview.removeChild(video);
           resolve({ value: results[0].rawValue, format: results[0].format });
           return;
         }
       } catch (err) {
         cancelAnimationFrame(raf);
+        if (abortHandler) signal?.removeEventListener("abort", abortHandler);
         stop();
         reject(err);
         return;
@@ -190,8 +226,8 @@ async function scanWithBarcodeDetector(
       if (cancelled) return;
       cancelled = true;
       cancelAnimationFrame(raf);
+      if (abortHandler) signal?.removeEventListener("abort", abortHandler);
       stop();
-      if (preview && video.parentNode === preview) preview.removeChild(video);
       resolve(null);
     }, 30_000);
   });

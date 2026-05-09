@@ -64,6 +64,9 @@ export function ScanDialog({
     if (!scannerSupported) return;
 
     let cancelled = false;
+    // Tear down `getUserMedia` immediately when the dialog closes — without
+    // this the camera indicator stays on until the 30s scan timeout.
+    const abort = new AbortController();
     // Loading flag for an async camera handshake — react-hooks lint flags
     // any setState-in-effect, but this is the canonical "kick off a request
     // when conditions become true" pattern.
@@ -75,6 +78,7 @@ export function ScanDialog({
       try {
         const result = await scanOnce({
           previewTarget: isNativeApp() ? null : previewRef.current,
+          signal: abort.signal,
         });
         if (cancelled) return;
         if (result?.value) {
@@ -99,6 +103,7 @@ export function ScanDialog({
 
     return () => {
       cancelled = true;
+      abort.abort();
     };
   }, [open, scannerSupported, onOpenChange, onResult, t]);
 

@@ -39,8 +39,11 @@ const config: CapacitorConfig = {
     backgroundColor: "#0B1220",
   },
   // Default to the bundled web assets unless an explicit override is set.
-  // `iosScheme: 'https'` matches the iOS bundle origin so cookies / OAuth
-  // callbacks come back consistently. Cleartext stays off in production.
+  // `iosScheme` must be a *custom* scheme — Capacitor explicitly forbids
+  // `http`/`https` for the bundled WebView because WKWebView reserves them
+  // (https://capacitorjs.com/docs/config#schema). We leave the default
+  // `capacitor://` in place; only when a remote URL is configured does it
+  // make sense to point the iOS scheme at the same protocol.
   server: remoteUrl
     ? {
         url: remoteUrl,
@@ -49,7 +52,6 @@ const config: CapacitorConfig = {
         androidScheme: remoteUrl.startsWith("http://") ? "http" : "https",
       }
     : {
-        iosScheme: "https",
         androidScheme: "https",
       },
   plugins: {

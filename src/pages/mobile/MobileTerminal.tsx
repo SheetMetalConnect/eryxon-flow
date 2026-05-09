@@ -18,10 +18,18 @@ import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { MobileTopBar, PullToRefresh } from "@/components/mobile";
 
+interface CellRow {
+  id: string;
+  name: string;
+  color: string | null;
+  sequence: number;
+}
+
 interface CellState {
   id: string;
   name: string;
   color: string | null;
+  sequence: number;
   active: number;
   queued: number;
   onHold: number;
@@ -39,13 +47,27 @@ export default function MobileTerminal() {
   const navigate = useNavigate();
   const profile = useProfile();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
+  const [cellRows, setCellRows] = useState<CellRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
     if (!profile?.tenant_id) return;
     try {
-      const data = await fetchOperationsWithDetails(profile.tenant_id);
+      // Load cells *and* operations side-by-side. Without the explicit
+      // cells fetch, an idle cell (no in-flight operations) wouldn't show
+      // up at all and the screen would render the "No cells configured"
+      // empty state even when cells exist.
+      const [data, cellsResult] = await Promise.all([
+        fetchOperationsWithDetails(profile.tenant_id),
+        supabase
+          .from("cells")
+          .select("id, name, color, sequence")
+          .eq("tenant_id", profile.tenant_id)
+          .eq("active", true)
+          .order("sequence"),
+      ]);
       setOperations(data);
+      if (cellsResult.data) setCellRows(cellsResult.data as CellRow[]);
     } catch (error) {
       logger.error("MobileTerminal", "Failed to load", error);
     } finally {
@@ -79,12 +101,29 @@ export default function MobileTerminal() {
   }, [load, profile?.tenant_id]);
 
   const cells = useMemo<CellState[]>(() => {
+    // Seed the map with every active cell, even ones with zero in-flight
+    // operations, so an idle cell still renders with `0 active / 0 queued`
+    // instead of disappearing into the "No cells configured" empty state.
     const map = new Map<string, CellState>();
+    cellRows.forEach((row) => {
+      map.set(row.id, {
+        id: row.id,
+        name: row.name,
+        color: row.color,
+        sequence: row.sequence,
+        active: 0,
+        queued: 0,
+        onHold: 0,
+        rush: 0,
+        topOperation: null,
+      });
+    });
     operations.forEach((op) => {
       const cell = map.get(op.cell.id) ?? {
         id: op.cell.id,
         name: op.cell.name,
         color: op.cell.color,
+        sequence: op.cell.sequence,
         active: 0,
         queued: 0,
         onHold: 0,
@@ -108,10 +147,8 @@ export default function MobileTerminal() {
       }
       map.set(op.cell.id, cell);
     });
-    return [...map.values()].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
-  }, [operations]);
+    return [...map.values()].sort((a, b) => a.sequence - b.sequence);
+  }, [cellRows, operations]);
 
   return (
     <div className="flex h-full flex-col">
