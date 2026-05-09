@@ -36,6 +36,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "react-router-dom";
+import { haptics } from "@/native";
 
 interface PartAssignment {
   part_id: string;
@@ -52,9 +54,29 @@ export default function WorkQueue() {
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [searchQuery, setSearchQuery] = useState<string>(
+    () => searchParams.get("q") ?? ""
+  );
+
+  // Honour incoming ?q= updates from the floating scan FAB; clear the param
+  // afterwards so the user can edit the search without it being overwritten.
+  useEffect(() => {
+    const incoming = searchParams.get("q");
+    if (incoming && incoming !== searchQuery) {
+      // Sync external URL state into local — react-hooks lint flags any
+      // setState-in-effect, but this is exactly that bridge.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSearchQuery(incoming);
+      void haptics.tap("light");
+      const next = new URLSearchParams(searchParams);
+      next.delete("q");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
   const [cells, setCells] = useState<CellOption[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>("active");
   const [assignedToMe, setAssignedToMe] = useState<boolean>(false);
