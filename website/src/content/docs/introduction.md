@@ -71,7 +71,7 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via [REST API](/architecture/connectivity-rest-api). Eryxon sends completion events back via [webhooks](/architecture/connectivity-mqtt). The [MCP server](/guides/mcp-setup) enables AI/automation integration with Claude Desktop and other AI tools.
+**100% API-driven.** Your ERP pushes jobs, parts, and tasks via 24 [REST API](/architecture/connectivity-rest-api) endpoints. Eryxon sends completion events back via [webhooks or MQTT](/architecture/connectivity-mqtt) — both with retry, circuit breaker, and dead-letter logging in v0.5. The [MCP server](/guides/mcp-setup) enables AI/automation integration with Claude Desktop and other AI tools, with stdio for local clients and Streamable HTTP for trusted self-hosted deployments.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.
@@ -79,8 +79,8 @@ Request a signed upload URL from the API, upload STEP and PDF files directly to 
 ### Custom metadata
 Include JSON payloads on jobs, parts, and tasks for your specific needs—tooling requirements, mold numbers, machine settings, material specifications, anything your shop needs to track.
 
-### ERP Integrations
-Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems. Or build your own using our GitHub starter kits with example code and documentation.
+### ERP & Planning Integrations
+Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems. Or build your own using our GitHub starter kits with example code and documentation. v0.5 also ships pluggable planning adapters for **FrePPLe** (production-ready) and **Odoo MRP** (scaffold) — see the [scheduling feature page](/features/scheduling/) for details.
 
 ### Assembly Tracking
 Parts can have parent-child relationships. Visual grouping shows assemblies with nested components. Non-blocking dependency warnings remind operators when child parts should be complete before starting assembly tasks—but they can override if needed.

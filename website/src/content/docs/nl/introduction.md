@@ -63,7 +63,7 @@ Volg in realtime wie er aanwezig is en waaraan zij werken. Geen gegis, geen vert
 
 ## Integratie-Eerste Architectuur
 
-**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via de REST API. Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks. MCP-server maakt AI/automatisering-integratie mogelijk.
+**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via 24 REST-API-endpoints. Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks of MQTT — beide in v0.5 versterkt met retry, circuit breaker en dead-letter logging. De MCP-server maakt AI/automatisering-integratie mogelijk met stdio voor lokale clients en Streamable HTTP voor vertrouwde zelfgehoste deployments.
 
 ### Bestandsafhandeling
 Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden rechtstreeks naar Supabase Storage en verwijs vervolgens naar het bestandspad bij het maken van orders of onderdelen. Grote bestanden (typisch 5-50MB) worden rechtstreeks naar de storage geüpload—geen timeouts, geen API-knelpunten.
@@ -71,8 +71,8 @@ Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden 
 ### Aangepaste metadata
 Voeg JSON-payloads toe aan orders, onderdelen en taken voor uw specifieke behoeften—gereedschapsvereisten, malnummers, machine-instellingen, materiaalspecificaties, alles wat uw werkplaats moet bijhouden.
 
-### ERP-Integraties
-Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. Of bouw uw eigen integratie met onze GitHub starter kits met voorbeeldcode en documentatie.
+### ERP- & Planning-Integraties
+Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. Of bouw uw eigen integratie met onze GitHub starter kits met voorbeeldcode en documentatie. v0.5 levert ook pluggable planning-adapters voor **FrePPLe** (productiegereed) en **Odoo MRP** (scaffold).
 
 ### Assemblage Volgen
 Onderdelen kunnen ouder-kind relaties hebben. Visuele groepering toont assemblages met geneste componenten. Niet-blokkerende afhankelijkheidswaarschuwingen herinneren operators eraan wanneer onderdelen voltooid moeten zijn voordat assemblage-taken worden gestart—maar ze kunnen dit overschrijven indien nodig.

@@ -65,7 +65,7 @@ Verfolgen Sie in Echtzeit, wer anwesend ist und woran gearbeitet wird. Kein Rate
 
 ## Integration-First-Architektur
 
-**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über die REST-API. Eryxon sendet Abschlussereignisse zurück über Webhooks. Der MCP-Server ermöglicht KI/Automatisierungs-Integration.
+**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über 24 REST-API-Endpunkte. Eryxon sendet Abschlussereignisse zurück über Webhooks oder MQTT — beide in v0.5 mit Retry, Circuit Breaker und Dead-Letter-Logging gehärtet. Der MCP-Server ermöglicht KI/Automatisierungs-Integration mit stdio für lokale Clients und Streamable HTTP für vertrauenswürdige selbstgehostete Deployments.
 
 ### Dateihandhabung
 Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-Dateien direkt in den Supabase Storage hoch und referenzieren Sie dann den Dateipfad beim Erstellen von Aufträgen oder Teilen. Große Dateien (typisch 5-50 MB) werden direkt in den Speicher hochgeladen — keine Timeouts, keine API-Engpässe.
@@ -73,8 +73,8 @@ Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-
 ### Benutzerdefinierte Metadaten
 Fügen Sie JSON-Payloads zu Aufträgen, Teilen und Aufgaben hinzu für Ihre spezifischen Anforderungen — Werkzeuganforderungen, Formnummern, Maschineneinstellungen, Materialspezifikationen, alles was Ihre Werkstatt nachverfolgen muss.
 
-### ERP-Integrationen
-Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation.
+### ERP- & Planungs-Integrationen
+Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation. v0.5 liefert außerdem steckbare Planungs-Adapter für **FrePPLe** (produktionsreif) und **Odoo MRP** (Scaffold).
 
 ### Montage-Verfolgung
 Teile können Eltern-Kind-Beziehungen haben. Visuelle Gruppierung zeigt Baugruppen mit verschachtelten Komponenten. Nicht-blockierende Abhängigkeitswarnungen erinnern Werker daran, wann Unterteile fertig sein sollten, bevor Montageaufgaben beginnen — sie können dies aber bei Bedarf überschreiben.

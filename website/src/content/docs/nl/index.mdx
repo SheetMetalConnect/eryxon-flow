@@ -1,11 +1,11 @@
 ---
 title: Eryxon Flow - MES voor Job Shops
-description: Manufacturing Execution System voor Job Shops. Self-hostable, API-first, en gebouwd voor de werkvloer.
+description: Manufacturing Execution System voor Job Shops. Self-hostable, API-first, met native browser-, Android- en iOS-app voor de werkvloer.
 template: splash
 hero:
   title: |
     MES voor <span class="text-primary">Job Shops</span>
-  tagline: De werkvloer-app die je operators echt gebruiken. Real-time taaktracking, tablet-vriendelijke terminals en ERP-integratie voor maatwerkproductie.
+  tagline: De werkvloer-app die je operators echt gebruiken. Real-time taaktracking in de browser, native Android- en iOS-app — gebouwd voor maatwerkproductie.
   actions:
     - text: Open Hosted Versie
       link: https://app.eryxon.eu
@@ -26,16 +26,46 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
-<Section title="Huidige <span class='text-primary'>Status</span>" description="v0.5.1 is de huidige onderhoudshotfix.">
+<div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
+  <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary ring-1 ring-inset ring-primary/20">
+    <span class="inline-block h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+    Native in de Browser
+  </span>
+  <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+    Android (Native) — Binnenkort
+  </span>
+  <span class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">
+    iOS — Binnenkort
+  </span>
+</div>
+
+<Section title="Eén Platform, <span class='text-primary'>Elk Scherm</span>" description="Van het kantoortablet tot het werkvloer-terminal — Eryxon Flow draait native daar waar uw team werkt.">
+<Grid columns={4}>
+  <Card title="Web App" icon="seti:globe" iconColor="#38bdf8" size="sm">
+    **Vandaag live.** Tablet-vriendelijke responsive web-app. Geen installatie — open de browser. Real-time updates via WebSockets.
+  </Card>
+  <Card title="Android (Native)" icon="seti:mobile" iconColor="#34d399" size="sm">
+    **In ontwikkeling.** Gebouwd voor werkvloer-betrouwbaarheid met **offline-ondersteuning** en **snel opstarten**. Voor robuuste tablets en telefoons.
+  </Card>
+  <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
+    **In ontwikkeling.** Native iPhone- en iPad-app voor managers en operators op Apple-apparaten.
+  </Card>
+  <Card title="REST · MCP · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
+    **Vandaag live.** 24 REST-endpoints, MCP-server, MQTT en webhooks. Bouw je eigen clients en integraties.
+  </Card>
+</Grid>
+</Section>
+
+<Section title="Huidige <span class='text-primary'>Status</span>" description="v0.5.x is de stabiele lijn. Native mobile apps zijn de volgende stap.">
 <Grid columns={3}>
   <Card title="Stabiele Release" icon="seti:tag" iconColor="#38bdf8">
-    v0.5.1 is op 6 mei 2026 gepubliceerd als huidige onderhoudshotfix. v0.5.0 blijft de laatste release met actieve ontwikkeling.
+    **v0.5.1** is de huidige stabiele release, gepubliceerd op 6 mei 2026. v0.5.0 introduceerde planning-adapters, MCP-HTTP-transport en MQTT-versterking.
   </Card>
   <Card title="Hosted Versie" icon="seti:globe" iconColor="#34d399">
-    De hosted versie blijft online zoals hij nu is. Nieuwe productie-installaties kunnen het beste self-hosting of een onderhouden fork gebruiken.
+    De hosted versie op [app.eryxon.eu](https://app.eryxon.eu) is online en gratis te proberen. Self-hosting is volledig gedocumenteerd voor productie-deployments.
   </Card>
-  <Card title="Ontwikkeling Stil" icon="seti:lock" iconColor="#fb923c">
-    Actieve ontwikkeling staat momenteel stil. U bent vrij om Eryxon Flow te gebruiken, forken en aanpassen onder de BSL 1.1 licentievoorwaarden.
+  <Card title="Native Apps Komen" icon="seti:mobile" iconColor="#fb923c">
+    Native **Android**-app (met offline-ondersteuning en snel opstarten) en **iOS**-app zijn in ontwikkeling. De web-app blijft vandaag het primaire oppervlak.
   </Card>
 </Grid>
 </Section>
@@ -143,13 +173,44 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 />
 </Section>
 
+<Section title="Native <span class='text-primary'>Mobile Apps</span>" description="Native Android- en iOS-apps in ontwikkeling — voor werkvloer-betrouwbaarheid die een browser alleen niet kan leveren.">
+<Grid columns={2}>
+  <Card title="Android — Native, Offline" icon="seti:mobile" iconColor="#34d399">
+    Native gebouwd (geen web-wrapper) voor **snel opstarten** en **offline-ondersteuning**, zodat operators kunnen blijven tijd schrijven en werk oppakken ook als de werkvloer-WiFi uitvalt.
+
+    - Native UI voor robuuste tablets en telefoons
+    - Offline-wachtrij voor tijdregistraties en statuswijzigingen, synchroniseert bij herverbinding
+    - Snel openen — operators wachten niet tussen scans
+    - Camera voor probleemfoto's en barcode scannen
+
+    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">In Ontwikkeling</span>
+  </Card>
+  <Card title="iOS — iPhone & iPad" icon="seti:mobile" iconColor="#a78bfa">
+    Native iOS-app voor managers, leidinggevenden en operators op Apple-apparaten. Dezelfde real-time data als de web-app, geoptimaliseerd voor touch.
+
+    - Native iPad- en iPhone-layouts
+    - Real-time orderstatus en operator-activiteit
+    - Push-notificaties voor problemen en goedkeuringen
+    - Camera-opnames voor NCR's
+
+    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">In Ontwikkeling</span>
+  </Card>
+</Grid>
+
+<div class="text-center mt-8">
+  <p class="text-sm" style="color: color-mix(in srgb, var(--sl-color-white) 60%, transparent);">
+    Vandaag werkt de responsive web-app op <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> op elk apparaat met een browser. Native apps verschijnen naast de web-app — zelfde backend, zelfde API.
+  </p>
+</div>
+</Section>
+
 <Section title="Waarom <span class='text-primary'>Eryxon Flow?</span>">
 <Grid columns={2}>
 <Card title="Voor Job Shops" icon="seti:home" iconColor="#38bdf8">
   High mix, low volume. Beheert u duizenden unieke onderdelen? Daarvoor hebben we Eryxon gebouwd.
 </Card>
 <Card title="Ontwikkelaar Vriendelijk" icon="seti:code" iconColor="#34d399">
-  API-first met 22 REST-endpoints, webhooks, MQTT en MCP-server. Bouw integraties op uw manier.
+  API-first met 24 REST-endpoints, webhooks, MQTT, MCP-server en pluggable planning-adapters (FrePPLe, Odoo). Bouw integraties op uw manier.
 </Card>
 </Grid>
 

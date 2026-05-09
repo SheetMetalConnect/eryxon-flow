@@ -53,6 +53,18 @@ Result:
 }
 ```
 
+### Reliability (v0.5)
+
+The MQTT client wrapper in `src/lib/mqtt-client.ts` was hardened in v0.5 for shop-floor reliability:
+
+- **Exponential backoff retry** — 3 attempts with increasing delay before giving up on a publish
+- **Per-attempt timeout** — each publish attempt has its own deadline so a stuck broker can't wedge the worker
+- **Circuit breaker** — after 5 consecutive failures the breaker opens for 30 seconds, dropping new publishes fast instead of piling them up
+- **Dead letter logging** — final failures are written to the `mqtt_logs` table with the original payload and error so operators can review and replay
+- **Injectable transport** — the wrapper accepts a transport implementation, so deployments can swap broker libraries or stub the transport in tests
+
+If you self-host and need to inspect failed publishes, query `mqtt_logs` filtered by `tenant_id` and `status = 'failed'`.
+
 ---
 
 ## Testing Outbound Integrations

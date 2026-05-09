@@ -1,11 +1,11 @@
 ---
 title: Eryxon Flow - MES für Lohnfertiger
-description: Manufacturing Execution System für Lohnfertiger. Self-hostbar, API-first, und für die Werkstatt gebaut.
+description: Manufacturing Execution System für Lohnfertiger. Self-hostbar, API-first, mit nativer Browser-, Android- und iOS-App für die Werkstatt.
 template: splash
 hero:
   title: |
     MES für <span class="text-primary">Lohnfertiger</span>
-  tagline: Die Werkstatt-App, die Ihre Werker tatsächlich nutzen. Echtzeit-Auftragsverfolgung, tabletfreundliche Terminals und ERP-Integration für die Einzelfertigung.
+  tagline: Die Werkstatt-App, die Ihre Werker tatsächlich nutzen. Echtzeit-Auftragsverfolgung im Browser, native Android- und iOS-App — gebaut für die Einzelfertigung.
   actions:
     - text: Gehostete Version Öffnen
       link: https://app.eryxon.eu
@@ -26,16 +26,46 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
-<Section title="Aktueller <span class='text-primary'>Status</span>" description="v0.5.1 ist der aktuelle Wartungs-Hotfix.">
+<div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
+  <span class="inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary ring-1 ring-inset ring-primary/20">
+    <span class="inline-block h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+    Nativ im Browser
+  </span>
+  <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+    Android (Nativ) — Bald Verfügbar
+  </span>
+  <span class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">
+    iOS — Bald Verfügbar
+  </span>
+</div>
+
+<Section title="Eine Plattform, <span class='text-primary'>jeder Bildschirm</span>" description="Vom Bürotablet bis zum Werkstatt-Terminal — Eryxon Flow läuft nativ dort, wo Ihr Team arbeitet.">
+<Grid columns={4}>
+  <Card title="Web-App" icon="seti:globe" iconColor="#38bdf8" size="sm">
+    **Heute live.** Tabletfreundliche, responsive Web-App. Keine Installation — einfach den Browser öffnen. Echtzeit-Updates über WebSockets.
+  </Card>
+  <Card title="Android (Nativ)" icon="seti:mobile" iconColor="#34d399" size="sm">
+    **In Entwicklung.** Gebaut für Werkstatt-Zuverlässigkeit mit **Offline-Unterstützung** und **schnellem Start**. Für robuste Tablets und Smartphones.
+  </Card>
+  <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
+    **In Entwicklung.** Native iPhone- und iPad-App für Manager und Werker auf Apple-Geräten.
+  </Card>
+  <Card title="REST · MCP · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
+    **Heute live.** 24 REST-Endpunkte, MCP-Server, MQTT und Webhooks. Bauen Sie eigene Clients und Integrationen.
+  </Card>
+</Grid>
+</Section>
+
+<Section title="Aktueller <span class='text-primary'>Status</span>" description="v0.5.x ist die stabile Linie. Native Mobile-Apps sind als nächstes dran.">
 <Grid columns={3}>
   <Card title="Stabile Release" icon="seti:tag" iconColor="#38bdf8">
-    v0.5.1 wurde am 6. Mai 2026 als aktueller Wartungs-Hotfix veröffentlicht. v0.5.0 bleibt die letzte Release mit aktiver Entwicklung.
+    **v0.5.1** ist die aktuelle stabile Release, veröffentlicht am 6. Mai 2026. v0.5.0 brachte Planungs-Adapter, MCP-HTTP-Transport und MQTT-Härtung.
   </Card>
   <Card title="Gehostete Version" icon="seti:globe" iconColor="#34d399">
-    Die gehostete Version bleibt online wie sie ist. Neue Produktionseinführungen sollten Self-Hosting oder einen gepflegten Fork einplanen.
+    Die gehostete Version unter [app.eryxon.eu](https://app.eryxon.eu) ist online und kostenlos testbar. Self-Hosting ist für Produktiv-Deployments vollständig dokumentiert.
   </Card>
-  <Card title="Entwicklung Pausiert" icon="seti:lock" iconColor="#fb923c">
-    Die aktive Entwicklung ist derzeit pausiert. Sie können Eryxon Flow unter den BSL 1.1 Lizenzbedingungen nutzen, forken und anpassen.
+  <Card title="Native Apps Kommen" icon="seti:mobile" iconColor="#fb923c">
+    Native **Android**-App (mit Offline-Unterstützung und schnellem Start) und **iOS**-App sind in Entwicklung. Die Web-App bleibt heute die primäre Oberfläche.
   </Card>
 </Grid>
 </Section>
@@ -142,13 +172,44 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 />
 </Section>
 
+<Section title="Native <span class='text-primary'>Mobile-Apps</span>" description="Native Android- und iOS-Apps in Entwicklung — für Werkstatt-Zuverlässigkeit, die ein Browser allein nicht liefern kann.">
+<Grid columns={2}>
+  <Card title="Android — Nativ, Offline-Fähig" icon="seti:mobile" iconColor="#34d399">
+    Nativ entwickelt (kein Web-Wrapper) für **schnellen Start** und **Offline-Unterstützung**, sodass Werker auch bei WLAN-Aussetzern weiter Zeit erfassen und Arbeit ziehen können.
+
+    - Native UI für robuste Tablets und Smartphones
+    - Offline-Warteschlange für Zeitbuchungen und Statusänderungen, Synchronisierung bei Wiederverbindung
+    - Schneller App-Start — Werker warten nicht zwischen Scans
+    - Kamera für Problemfotos und Barcode-Scannen
+
+    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">In Entwicklung</span>
+  </Card>
+  <Card title="iOS — iPhone & iPad" icon="seti:mobile" iconColor="#a78bfa">
+    Native iOS-App für Manager, Vorarbeiter und Werker auf Apple-Geräten. Dieselben Echtzeit-Daten wie die Web-App, optimiert für Touch.
+
+    - Native iPad- und iPhone-Layouts
+    - Echtzeit-Auftragsstatus und Werker-Aktivität
+    - Push-Benachrichtigungen für Probleme und Genehmigungen
+    - Kamera-Aufnahme für NCRs
+
+    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">In Entwicklung</span>
+  </Card>
+</Grid>
+
+<div class="text-center mt-8">
+  <p class="text-sm" style="color: color-mix(in srgb, var(--sl-color-white) 60%, transparent);">
+    Heute funktioniert die responsive Web-App unter <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> auf jedem browserfähigen Gerät. Native Apps werden parallel zur Web-App erscheinen — gleiche Backend, gleiche API.
+  </p>
+</div>
+</Section>
+
 <Section title="Warum <span class='text-primary'>Eryxon Flow?</span>">
 <Grid columns={2}>
 <Card title="Für Lohnfertiger" icon="seti:home" iconColor="#38bdf8">
   High Mix, Low Volume. Tausende einzigartige Teile pro Jahr? Genau dafür haben wir das gebaut.
 </Card>
 <Card title="Entwicklerfreundlich" icon="seti:code" iconColor="#34d399">
-  API-first mit 22 REST-Endpunkten, Webhooks, MQTT und MCP-Server. Bauen Sie Integrationen nach Ihren Wünschen.
+  API-first mit 24 REST-Endpunkten, Webhooks, MQTT, MCP-Server und steckbaren Planungs-Adaptern (FrePPLe, Odoo). Bauen Sie Integrationen nach Ihren Wünschen.
 </Card>
 </Grid>
 
