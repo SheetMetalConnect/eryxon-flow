@@ -15,11 +15,14 @@ import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { MobileTopBar, PullToRefresh } from "@/components/mobile";
 
+// Mirrors the `public.issue_status` Postgres enum exactly.
+type IssueStatus = "pending" | "approved" | "rejected" | "closed";
+
 interface Issue {
   id: string;
   description: string;
   severity: "low" | "medium" | "high" | "critical";
-  status: "open" | "acknowledged" | "resolved" | "rejected";
+  status: IssueStatus;
   created_at: string;
   reviewed_at: string | null;
   resolution_notes: string | null;
@@ -39,12 +42,16 @@ const SEVERITY_TONE: Record<Issue["severity"], string> = {
   critical: "bg-red-500/15 text-red-500 border-red-500/40",
 };
 
-const STATUS_LABEL: Record<Issue["status"], string> = {
-  open: "Open",
-  acknowledged: "Reviewing",
-  resolved: "Resolved",
-  rejected: "Closed",
+const STATUS_LABEL: Record<IssueStatus, string> = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+  closed: "Closed",
 };
+
+// Anything that hasn't been reviewed yet (pending) is "open" from the
+// operator's perspective; everything else is in the historical bucket.
+const isOpenStatus = (status: IssueStatus) => status === "pending";
 
 type Tab = "open" | "resolved";
 
@@ -94,12 +101,8 @@ export default function MobileIssues() {
 
   const counts = useMemo(
     () => ({
-      open: issues.filter(
-        (issue) => issue.status === "open" || issue.status === "acknowledged",
-      ).length,
-      resolved: issues.filter(
-        (issue) => issue.status === "resolved" || issue.status === "rejected",
-      ).length,
+      open: issues.filter((issue) => isOpenStatus(issue.status)).length,
+      resolved: issues.filter((issue) => !isOpenStatus(issue.status)).length,
     }),
     [issues],
   );
@@ -107,9 +110,7 @@ export default function MobileIssues() {
   const filtered = useMemo(
     () =>
       issues.filter((issue) =>
-        tab === "open"
-          ? issue.status === "open" || issue.status === "acknowledged"
-          : issue.status === "resolved" || issue.status === "rejected",
+        tab === "open" ? isOpenStatus(issue.status) : !isOpenStatus(issue.status),
       ),
     [issues, tab],
   );

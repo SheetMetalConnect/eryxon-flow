@@ -60,7 +60,9 @@ export default function MobileLogin() {
         } catch {
           /* ignore */
         }
-        navigate(ROUTES.OPERATOR.WORK_QUEUE, { replace: true });
+        // Stay inside the touch shell — sending the operator to the desktop
+        // route after a phone-side PIN drops the bottom tabs and scanner.
+        navigate(ROUTES.MOBILE.QUEUE, { replace: true });
       } else {
         await haptics.error();
         setError(result.error_message || t("terminalLogin.invalidCredentials"));
