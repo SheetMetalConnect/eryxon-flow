@@ -11,17 +11,17 @@ Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.
 
 ## v0.5.1 - May 6, 2026
 
-Maintenance hotfix for release metadata and final handoff docs.
+Maintenance hotfix for release metadata and handoff docs. (Native Android and iOS app development started after this release.)
 
 ### Fixed
 
 - Refreshed stale OpenTrace knowledge graph counts after regenerating the local index
 - Aligned the README BSL conversion summary with the repository `LICENSE`
-- Marked v0.5.1 as the current maintenance hotfix while preserving v0.5.0 as the final active-development release
+- Tagged v0.5.1 as the current maintenance hotfix on top of v0.5.0
 
 ## v0.5.0 - May 6, 2026
 
-Final active-development release for self-hosted planning integration and shop floor execution.
+Last web-app feature release before the native mobile push. Adds self-hosted planning integration and shop floor execution hardening.
 
 ### Highlights
 

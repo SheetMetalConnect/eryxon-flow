@@ -62,6 +62,6 @@ Eryxon Flow ships with a planning adapter interface in `src/lib/planning/` that 
 | **FrePPLe** | Beta | Basic Auth | Pull work orders + resources, push order start and completion, pagination handling |
 | **Odoo MRP** | Beta | JSON-RPC | Pull work orders from `mrp.production`, push execution feedback |
 
-Both adapters are **Beta** — interfaces and behavior may still change. The FrePPLe adapter is covered by 20 unit tests (connection, mapping, pagination, error handling, auth); the Odoo adapter has narrower coverage. Pilot them on non-critical work first.
+Both adapters are **Beta** — interfaces and behavior may still change. The FrePPLe adapter is covered by 21 unit tests (connection, mapping, pagination, error handling, auth); the Odoo adapter has narrower coverage (2 tests today). Pilot them on non-critical work first.
 
 Select an adapter at runtime with the `createPlanningAdapter(config)` factory. Adapters are not enabled by default — they are an opt-in integration surface for self-hosted deployments and forks.

@@ -73,7 +73,7 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via 24 [REST API](/architecture/connectivity-rest-api) endpoints. Eryxon sends completion events back via [webhooks or MQTT](/architecture/connectivity-mqtt) — both with retry, circuit breaker, and dead-letter logging in v0.5. The [MCP server](/guides/mcp-setup) enables AI/automation integration with Claude Desktop and other AI tools, with stdio for local clients and Streamable HTTP for trusted self-hosted deployments.
+**100% API-driven.** Your ERP pushes jobs, parts, and tasks via 24 [REST API](/architecture/connectivity-rest-api) endpoints (Beta). Eryxon sends completion events back via [webhooks (Beta) or MQTT (Beta)](/architecture/connectivity-mqtt) — the MQTT client adds retry, circuit breaker, and dead-letter logging in v0.5. The [MCP server](/guides/mcp-setup) (Live) enables AI/automation integration with Claude Desktop and other AI tools, with stdio for local clients and Streamable HTTP for trusted self-hosted deployments.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.

@@ -67,7 +67,7 @@ Verfolgen Sie in Echtzeit, wer anwesend ist und woran gearbeitet wird. Kein Rate
 
 ## Integration-First-Architektur
 
-**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über 24 REST-API-Endpunkte. Eryxon sendet Abschlussereignisse zurück über Webhooks oder MQTT — beide in v0.5 mit Retry, Circuit Breaker und Dead-Letter-Logging gehärtet. Der MCP-Server ermöglicht KI/Automatisierungs-Integration mit stdio für lokale Clients und Streamable HTTP für vertrauenswürdige selbstgehostete Deployments.
+**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über 24 REST-API-Endpunkte (Beta). Eryxon sendet Abschlussereignisse zurück über Webhooks (Beta) oder MQTT (Beta) — der MQTT-Client bringt in v0.5 Retry, Circuit Breaker und Dead-Letter-Logging mit. Der MCP-Server (Live) ermöglicht KI/Automatisierungs-Integration mit stdio für lokale Clients und Streamable HTTP für vertrauenswürdige selbstgehostete Deployments.
 
 ### Dateihandhabung
 Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-Dateien direkt in den Supabase Storage hoch und referenzieren Sie dann den Dateipfad beim Erstellen von Aufträgen oder Teilen. Große Dateien (typisch 5-50 MB) werden direkt in den Speicher hochgeladen — keine Timeouts, keine API-Engpässe.
