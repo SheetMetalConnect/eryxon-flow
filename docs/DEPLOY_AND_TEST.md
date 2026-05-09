@@ -2,11 +2,26 @@
 
 End-to-end guide for shipping each of the three Eryxon Flow surfaces. The
 same React 18 bundle ships everywhere; this doc covers what's different
-about getting each surface into testers' hands and onto production stores.
+about getting each surface into operators' hands.
 
-> **Prerequisites that are common to all three:** Node.js 20+, a Supabase
-> project (hosted or self-hosted), and a clean clone of this repo. See
-> [`SELF_HOSTING.md`](SELF_HOSTING.md) for the local Supabase stack.
+> **Eryxon Flow is primarily a self-hosted product.** Most shops run their
+> own Supabase + their own host on the LAN. This guide is organized so
+> that the **Self-host install path** is first-class for every surface;
+> Apple App Store / Google Play Store are noted but only for the rare
+> case where you're standing up a SaaS-style multi-tenant deployment.
+
+> **Common prerequisites:** Node.js 20+, a Supabase project (hosted or
+> self-hosted via `supabase start`), and a clean clone of this repo.
+> [`SELF_HOSTING.md`](SELF_HOSTING.md) covers the local Supabase stack
+> and the LAN networking knobs.
+
+## Self-host install paths at a glance
+
+| Surface | Install for self-host (no store needed) | Store distribution (optional) |
+|---|---|---|
+| **PWA / Web** | Reach the host (`http://shop-floor.local:8080` etc.) → "Install app" in the browser | n/a |
+| **iOS / iPadOS** | Build with Xcode on a Mac → cable-install on a managed iPad / iPhone via the Apple Developer free tier (7-day signing) or a paid Developer account (1-year provisioning); or distribute internally via TestFlight to a list of Apple IDs | App Store via App Store Connect |
+| **Android** | `npm run android:assemble:debug` → `adb install app-debug.apk` over USB. Or build a signed release APK and sideload via "Install unknown apps" on the operator's device (the dominant Android self-host path) | Play Store via Play Console |
 
 ---
 
@@ -193,31 +208,86 @@ Recommended simulators to validate:
 | **Status bar** | Light/dark theme toggle flips the iOS status bar in lockstep |
 | **Hardware back equivalent** | Swipe-from-left dismisses modals before popping routes |
 
-### Internal distribution — TestFlight
+### Self-host distribution (primary path)
+
+You don't need TestFlight or the App Store. Three options, all of them
+work without paying Apple a yearly fee — though the free path is
+inconvenient.
+
+#### Option 1 — cable install via Xcode (free Apple ID)
+
+1. Sign in to Xcode with any Apple ID (Settings → Accounts).
+2. Plug an iPad or iPhone into the Mac via USB-C.
+3. *Signing & Capabilities* → "Automatically manage signing" → pick the
+   **Personal Team** for that Apple ID.
+4. Hit Run. Xcode signs with a 7-day provisioning profile.
+5. The operator must trust the developer cert: Settings → General →
+   VPN & Device Management → tap the developer entry → Trust.
+6. After 7 days the cert expires; re-run from Xcode to refresh.
+
+This is fine for a single shop-floor iPad. For a fleet you'll want one
+of the paid options below.
+
+#### Option 2 — Ad Hoc distribution (paid Apple Developer account)
+
+1. Add up to 100 device UDIDs to your Apple Developer account.
+2. Generate an Ad Hoc provisioning profile.
+3. Xcode → Product → Archive → Organizer → "Distribute App" →
+   "Ad Hoc" → export an `.ipa`.
+4. Sideload via Apple Configurator 2 over USB or via your MDM (Jamf,
+   Mosyle, Intune, etc.).
+5. Profiles last 1 year; renew before they expire.
+
+#### Option 3 — Apple Developer Enterprise Program (large operators)
+
+Required when you have >100 devices or want unlimited internal
+distribution. Apple gates this behind D-U-N-S verification and an
+annual $299 fee. Same workflow as Ad Hoc but unlimited devices.
+
+### Pointing the iOS app at a self-hosted backend
+
+Two ways:
 
 ```bash
-# Bump CFBundleShortVersionString and CFBundleVersion in Xcode first.
-# Then:
-#   Xcode → Product → Archive
-#   Organizer → "Distribute App" → "App Store Connect" → "Upload"
+# (a) Bake it into the build — operators just open the app.
+VITE_SUPABASE_URL=http://shop-floor.local:54321 \
+VITE_SUPABASE_PUBLISHABLE_KEY=ey... \
+  npm run ios:build
+
+# (b) Live-reload during development against the on-prem host.
+CAPACITOR_SERVER_URL=http://shop-floor.local:8080 \
+  npm run ios:run
 ```
 
-After ~10 minutes (Apple processing) the build appears in App Store Connect →
-TestFlight. Internal testers are added by Apple ID; external testers go
-through a 24-hour beta-review pass.
+The `network_security_config.xml` companion on Android already permits
+`localhost` and `*.local`. iOS WKWebView allows arbitrary HTTPS by
+default; if you must talk plaintext HTTP to a LAN host (no certificate),
+add an `NSAppTransportSecurity → NSAllowsArbitraryLoadsInWebContent`
+entry to `Info.plist` *only* for the on-prem build target.
 
-### Production release
+### App Store / TestFlight (only if you ship as SaaS)
 
-1. App Store Connect → My Apps → Eryxon Flow → "+ Version".
-2. Pick the TestFlight build that's been internally tested.
-3. Fill the screenshots + description in **English, Dutch, German**
-   (`CFBundleLocalizations` should declare all three).
-4. Submit for review. Typically 24–48 hours.
+Skip this whole section if you're self-hosting; it's only here for the
+rare hosted-tenant case.
 
-### Remaining iOS-only gaps before App Store
+```bash
+# Bump CFBundleShortVersionString + CFBundleVersion in Xcode.
+# Product → Archive → Organizer → "Distribute App" → "App Store Connect"
+# → Upload. ~10-minute processing, then visible in TestFlight.
+```
 
-These can't be done from the web bundle — they live in Xcode / Apple Developer.
-See [`IOS.md`](IOS.md#remaining-ios-only-gaps-youll-wire-up-before-testflight).
+Production submission is App Store Connect → My Apps → "+ Version" →
+fill screenshots + EN / NL / DE descriptions → Submit. ~24–48h review.
+
+### Remaining iOS-only gaps
+
+These live in Xcode / Apple Developer, not in the web bundle. See
+[`IOS.md`](IOS.md#remaining-ios-only-gaps-youll-wire-up-before-testflight).
+The bootstrap script (`scripts/ios-init.sh`) already patches Info.plist
+with the camera / Face ID / photo library usage strings, the
+`eryxon://` URL scheme registration (so magic-link callbacks work
+without Universal Links / `app.eryxon.eu`), and the EN / NL / DE
+`CFBundleLocalizations`.
 
 ---
 
@@ -290,26 +360,67 @@ Recommended emulators to validate:
 | **Network security** | `network_security_config.xml` permits `localhost` / `*.local` for self-host LAN setups but blocks arbitrary cleartext |
 | **FCM push** | Drop `google-services.json` into `android/app/`, sign in, send a test push from Firebase Console — payload should appear in the system tray |
 
-### Internal distribution
+### Self-host distribution (primary path)
+
+Android is the easier of the two stores to bypass. No yearly fee, no
+provisioning profiles, no review queue.
+
+```bash
+# 1. Build a signed release APK. (Or `bundle:release` for an AAB —
+#    APK is what you sideload, AAB is what Play Store wants.)
+npm run android:assemble:release
+
+# Result: android/app/build/outputs/apk/release/app-release.apk
+```
+
+Distribute the APK to operators via:
+
+- **Direct sideload over USB** (best for a small fleet):
+  ```bash
+  adb install -r android/app/build/outputs/apk/release/app-release.apk
+  ```
+- **Hosted on the on-prem server**: drop the APK at
+  `https://shop-floor.local/eryxon.apk`. Operators visit the URL on
+  their device, accept "Install unknown apps" once, install. Re-download
+  to update.
+- **MDM** (Intune / Knox / Workspace ONE / Mosyle): upload the APK to
+  the MDM and push it to the device fleet. Updates roll out as new APKs.
+
+Sign the APK with a long-lived self-managed keystore (`android/app/`,
+gitignored). Note: Play Store requires AAB-with-Play-App-Signing; sideloading
+requires a stable signing key that you control.
+
+### Pointing the Android app at a self-hosted backend
+
+```bash
+# (a) Bake into the build:
+VITE_SUPABASE_URL=http://shop-floor.local:54321 \
+VITE_SUPABASE_PUBLISHABLE_KEY=ey... \
+  npm run android:assemble:release
+
+# (b) Live-reload during development:
+CAPACITOR_SERVER_URL=http://shop-floor.local:8080 \
+  npm run android:livereload
+```
+
+`android/app/src/main/res/xml/network_security_config.xml` permits
+cleartext to `localhost`, `*.local`, and `10.0.2.2` (the emulator's host
+loopback). Production HTTPS hosts work without any extra config.
+
+### Play Store / Play Console (only if you ship as SaaS)
 
 ```bash
 npm run android:bundle:release    # generates app-release.aab
-                                  # signs with the keystore named in
-                                  # android/app/build.gradle
 ```
 
-Upload the AAB to **Play Console → Internal testing → Create new release**.
-Internal testers (via mailing list) get the build within ~10 minutes.
-Open testing / production releases require a Play review (typically a few
-hours, can be a few days for first submission).
-
-### Production release
-
-1. Play Console → Production → Create new release.
-2. Promote the internal AAB up the tracks: Internal → Closed → Open → Production.
-3. Pick a rollout percentage (10 % is the conservative default).
-4. Localized listings (EN / NL / DE) with screenshots from the Pixel Tablet
-   and a Pixel phone.
+Upload the AAB to **Play Console → Internal testing → Create new
+release**. Internal testers (via mailing list) get the build within
+~10 minutes. Open testing / production releases require a Play review
+(typically a few hours, can be a few days for first submission).
+Promote up the tracks: Internal → Closed → Open → Production. Pick a
+rollout percentage (10 % is the conservative default). Localized
+listings (EN / NL / DE) with screenshots from the Pixel Tablet and a
+Pixel phone.
 
 ### Diagnostics
 

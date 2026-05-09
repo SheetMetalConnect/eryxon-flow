@@ -49,6 +49,31 @@ if [[ -f "$PLIST" ]]; then
     || /usr/libexec/PlistBuddy -c "Add :NSFaceIDUsageDescription string 'Confirms the operator at the shared shop-floor terminal so timers stay accurate.'" "$PLIST"
   /usr/libexec/PlistBuddy -c "Set :NSPhotoLibraryUsageDescription 'Attach photos to issue reports for quality and NCR review.'" "$PLIST" 2>/dev/null \
     || /usr/libexec/PlistBuddy -c "Add :NSPhotoLibraryUsageDescription string 'Attach photos to issue reports for quality and NCR review.'" "$PLIST"
+
+  # Register the `eryxon://` URL scheme so magic-link / deep-link
+  # callbacks come back into the WebView. Self-hosters who don't want
+  # Universal Links (which need app.eryxon.eu / Apple App Site
+  # Association on a public host) can rely on this scheme alone, since
+  # `src/native/appShell.ts` listens for both.
+  if ! /usr/libexec/PlistBuddy -c "Print :CFBundleURLTypes" "$PLIST" 2>/dev/null | grep -q "eryxon"; then
+    echo "▶ Registering CFBundleURLSchemes (eryxon://)..."
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes array" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0 dict" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLName string eu.eryxon.flow" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes array" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleURLTypes:0:CFBundleURLSchemes:0 string eryxon" "$PLIST" 2>/dev/null || true
+  fi
+
+  # App Store listing localizations — match the i18n surface of the web
+  # bundle. Safe to set even on self-host builds.
+  /usr/libexec/PlistBuddy -c "Set :CFBundleDevelopmentRegion en" "$PLIST" 2>/dev/null \
+    || /usr/libexec/PlistBuddy -c "Add :CFBundleDevelopmentRegion string en" "$PLIST"
+  if ! /usr/libexec/PlistBuddy -c "Print :CFBundleLocalizations" "$PLIST" 2>/dev/null | grep -q "nl"; then
+    /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations array" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:0 string en" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:1 string nl" "$PLIST" 2>/dev/null || true
+    /usr/libexec/PlistBuddy -c "Add :CFBundleLocalizations:2 string de" "$PLIST" 2>/dev/null || true
+  fi
 fi
 
 cat <<'EOF'
