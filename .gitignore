@@ -40,8 +40,9 @@
 # .cursorrules — tracked (symlink to .agents/)
 .eggs/
 .env
-.env.*.local
+.env.*
 .env.local
+!.env.example
 .idea
 .idea/workspace.xml
 .vscode/*
@@ -83,6 +84,8 @@ plan.md
 pnpm-debug.log*
 secrets/
 supabase/.temp/
+supabase/.branches/
+.claude/worktrees/
 test.env
 yarn-debug.log*
 yarn-error.log*
