@@ -38,6 +38,7 @@ global.IntersectionObserver = IntersectionObserverMock as unknown as typeof Inte
 // Default runtime env for modules that read Docker-style window.__ERYXON_ENV__.
 Object.defineProperty(window, '__ERYXON_ENV__', {
   writable: true,
+  configurable: true,
   value: {
     VITE_SUPABASE_URL: 'https://test.supabase.co',
     VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
