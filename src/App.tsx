@@ -6,15 +6,24 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { useProfile } from "./hooks/useProfile";
 import { useAuthActions } from "./hooks/useAuthActions";
+import { useNative } from "./hooks/useNative";
 import { OperatorProvider } from "./contexts/OperatorContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
 import { Loader2 } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
 
-import { ProtectedRoute, LazyRoute, OperatorRoutes, AdminRoutes, CommonRoutes } from "./routes";
+import {
+  ProtectedRoute,
+  LazyRoute,
+  OperatorRoutes,
+  AdminRoutes,
+  CommonRoutes,
+  MobileRoutes,
+} from "./routes";
 
 import { Auth, AcceptInvitation, ForgotPassword, ResetPassword } from "./pages/auth";
 import { TerminalLogin } from "./pages/operator";
@@ -25,6 +34,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 function AppRoutes() {
   const profile = useProfile();
   const { loading } = useAuthActions();
+  const native = useNative();
 
   if (loading) {
     return (
@@ -33,6 +43,19 @@ function AppRoutes() {
       </div>
     );
   }
+
+  // Operators inside the iOS app or on a phone-sized viewport land on the
+  // touch-first shell. Admins on iPad still get the desktop UI by default
+  // (they can deep-link into /m if they want the touch chrome).
+  const preferMobileShell = native.isNative || native.isMobileShell;
+  const homeTarget =
+    (profile as { onboarding_completed?: boolean })?.onboarding_completed === false
+      ? "/onboarding"
+      : profile?.role === "admin" && !native.isNative
+        ? "/admin/dashboard"
+        : preferMobileShell
+          ? "/m/queue"
+          : "/operator/work-queue";
 
   return (
     <Routes>
@@ -56,21 +79,11 @@ function AppRoutes() {
 
       <Route
         path="/"
-        element={
-          <Navigate
-            to={
-              (profile as { onboarding_completed?: boolean })?.onboarding_completed === false
-                ? "/onboarding"
-                : profile?.role === "admin"
-                  ? "/admin/dashboard"
-                  : "/operator/work-queue"
-            }
-            replace
-          />
-        }
+        element={<Navigate to={homeTarget} replace />}
       />
 
       {/* Route groups */}
+      {MobileRoutes()}
       {OperatorRoutes()}
       {AdminRoutes()}
       {CommonRoutes()}
@@ -85,6 +98,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        <PwaUpdatePrompt />
         <BrowserRouter>
           <AuthProvider>
             <OperatorProvider>

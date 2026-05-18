@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { queryClient } from "@/lib/queryClient";
 import { prefetchCommonData } from "@/lib/cacheInvalidation";
+import { registerPushNotifications } from "@/native";
 
 // SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
 // All actual authorization is enforced server-side via Row Level Security (RLS) policies
@@ -60,6 +61,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // `SIGNED_IN` fires on first login *and* on every token refresh and on
+    // every browser tab restore — Supabase replays the most recent event to
+    // newly mounted listeners. We only want push registration to happen on
+    // a *fresh* sign-in (user id changed), so we track the last user id we
+    // already registered for.
+    let lastRegisteredUserId: string | null = null;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         // When a token refresh fails, session is null — purge the stale
@@ -72,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setProfile(null);
           setTenant(null);
           setLoading(false);
+          lastRegisteredUserId = null;
           return;
         }
 
@@ -82,6 +91,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
+          // First fresh sign-in inside a Capacitor WebView triggers an
+          // APNs / FCM permission prompt and registers the device token.
+          // Skipped on TOKEN_REFRESHED, on USER_UPDATED, on tab restore, and
+          // when the user id hasn't changed since we last registered.
+          // No-op on the web (returns null). Backend dispatch isn't wired
+          // yet — see docs/IOS.md "Remaining iOS-only gaps" — but the
+          // token is logged so an admin can verify the handshake before
+          // flipping APNs on.
+          if (
+            event === 'SIGNED_IN' &&
+            session.user.id !== lastRegisteredUserId
+          ) {
+            lastRegisteredUserId = session.user.id;
+            void registerPushNotifications().then((reg) => {
+              if (reg) {
+                logger.debug('AuthContext', 'Push registration', reg.platform);
+              }
+            });
+          }
+          if (event === 'SIGNED_OUT') {
+            lastRegisteredUserId = null;
+          }
         } else {
           setProfile(null);
           setTenant(null);

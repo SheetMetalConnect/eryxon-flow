@@ -3,3 +3,4 @@ export { ProtectedRoute } from "./guards";
 export { LazyRoute } from "./LazyRoute";
 export { OperatorRoutes } from "./operatorRoutes";
 export { AdminRoutes, CommonRoutes } from "./adminRoutes";
+export { MobileRoutes } from "./mobileRoutes";

@@ -90,6 +90,30 @@ PostgreSQL + Auth + RLS + Realtime + Storage
 | Deployment | Vercel (frontend), Supabase (backend), Docker (self-hosted) |
 | API | REST with API key auth, rate limiting, webhook dispatch |
 
+## Install as a Desktop App (PWA)
+
+Eryxon Flow ships as an installable Progressive Web App, so it runs as a standalone desktop application with its own Dock/Launchpad/Start-menu tile — no Electron, no extra runtime.
+
+**macOS — Safari 17+ (Sonoma):** open the app, then *File → Add to Dock…*. The app appears in Launchpad and Applications.
+
+**macOS / Windows / Linux — Chrome, Edge, Brave:** click the install icon at the right of the address bar (or *⋮ → Install / Apps → Install this site*). On macOS the resulting `.app` bundle shows up in Launchpad with the Eryxon icon.
+
+**iOS / iPadOS — Safari:** *Share → Add to Home Screen*.
+
+**Android — Chrome:** *⋮ → Install app*.
+
+The installed app launches in a standalone window with its own icon and works offline for assets it has already loaded. Runtime config (`/env.js`) and API calls always go to the network. When a new version ships, a toast prompts the operator to reload — no forced mid-shift reloads on shop-floor terminals.
+
+### Regenerating PWA icons
+
+If you change the brand mark, edit `public/pwa-icon.svg` and rerun:
+
+```bash
+npm run pwa:assets
+```
+
+This regenerates `pwa-{64,192,512}.png`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`, and `favicon.ico` from the SVG source.
+
 ## Self-Hosting
 
 Full self-hosting guide: [eryxon.eu/guides/self-hosting](https://eryxon.eu/guides/self-hosting/)
@@ -131,6 +155,14 @@ Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website
 | Self Hosting | [eryxon.eu/guides/self-hosting](https://eryxon.eu/guides/self-hosting/) |
 | Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
 | Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
+
+### Native + PWA apps
+
+| Surface | Setup | Deploy + test guide |
+|---------|-------|---------------------|
+| iOS / iPadOS | [`docs/IOS.md`](docs/IOS.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#2-ios--ipados-native-app) |
+| Android | [`docs/ANDROID.md`](docs/ANDROID.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#3-android-native-app) |
+| Installable PWA (web + desktop) | n/a — `npm run build` | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#1-pwa-web--desktop-install) |
 
 ## AI Agent Support
 

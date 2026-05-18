@@ -88,17 +88,18 @@ opentraceai index .    # ~3 seconds, writes to .opentrace/index.db
 - Use `traverse_graph` with incoming direction to map blast radius of any change
 - The MCP server exposes 5 tools: `get_stats`, `search_graph`, `list_nodes`, `get_node`, `traverse_graph`
 
-**Claude Code commands:**
-- `/explore <name>` — quick exploration of any component
-- `/graph-status` — overview of what's indexed
-- `/interrogate <question>` — read-only codebase Q&A
+**Codex skills:**
+- `$explore-code` — general codebase exploration
+- `$source-command-explore <name>` — quick exploration of any component
+- `$source-command-graph-status` — overview of what's indexed
+- `$source-command-interrogate <question>` — read-only codebase Q&A
 
-**Claude Code agents:**
-- `@opentrace` — general-purpose (default catch-all)
-- `@code-explorer` — browse files, directories, structure
-- `@dependency-analyzer` — blast radius and impact analysis
-- `@find-usages` — caller/reference lookups
-- `@explain-service` — top-down service walkthroughs
+**Codex subagents:**
+- `opentrace` — general-purpose (default catch-all)
+- `code-explorer` — browse files, directories, structure
+- `dependency-analyzer` — blast radius and impact analysis
+- `find-usages` — caller/reference lookups
+- `explain-service` — top-down service walkthroughs
 
 ## Documentation Index
 

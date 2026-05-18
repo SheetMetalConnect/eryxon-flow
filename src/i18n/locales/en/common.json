@@ -178,5 +178,12 @@
   "table": {
     "selectAll": "Select all",
     "selectRow": "Select row"
+  },
+  "pwa": {
+    "updateAvailable": "A new version is available",
+    "updateDescription": "Reload to apply the update.",
+    "reload": "Reload",
+    "later": "Later",
+    "offlineReady": "Eryxon Flow is ready to work offline"
   }
 }

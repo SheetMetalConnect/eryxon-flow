@@ -2,6 +2,32 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.5.2] - 2026-05-09
+
+### Added
+
+- **Native iOS / iPadOS app** (Capacitor 7) wrapping the existing React bundle. Bottom tab bar on iPhone, split-view master/detail on iPad, pull-to-refresh, swipe-to-act work-queue rows, ML Kit barcode/QR scanner, Face ID / Touch ID unlock, haptics, safe-area aware chrome, status-bar in lockstep with the React theme.
+- **Native Android app** (Capacitor 7) targeting phone + tablet (Pixel Tablet, Galaxy Tab, Lenovo Tab). Hardware-back wired into React Router, offline banner, scan FAB on operator routes, sw600dp / sw720dp tablet layouts, ProGuard rules for ML Kit + biometric, app-bundle splits, deep links (`eryxon://` + `https://app.eryxon.eu`), network-security config restricting cleartext to localhost / LAN.
+- **Installable PWA** (vite-plugin-pwa + workbox) for desktop macOS Launchpad / Windows Start menu / Android home-screen / iOS Add-to-Home-Screen. Web manifest with operator-friendly shortcuts (Queue / Scan / Issues), maskable icons generated from `public/pwa-icon.svg`, prompt-style service worker that surfaces updates without forcing a mid-shift reload.
+- **Touch-first `/m/*` route shell** shared by all three runtimes. New operator screens: work queue, op detail with bottom-anchored Start/Stop/Complete, QR/barcode scanner, activity timeline, issues feed, terminal overview, PIN + biometric login.
+- Native bridge module at `src/native/` (haptics, scanner, biometric, status bar, splash, keyboard, network, camera, app shell + hardware back) — components import from `@/native` only; nothing else touches `@capacitor/*` directly.
+- npm scripts: `ios:init/sync/open/run/build`, `android:sync/open/run/livereload/assemble:debug/assemble:release/bundle:release/clean`, `pwa:assets`.
+- Documentation: `docs/IOS.md`, `docs/ANDROID.md`, README PWA install guide.
+
+### Changed
+
+- Website / docs site refreshed for the v0.5 line: corrected Beta / Live / Coming-Soon status across the web app, REST API (24 endpoints), webhooks, MQTT (with retry / circuit-breaker / dead-letter section), MCP server, and FrePPLe / Odoo planning adapters; new "Native Mobile Apps" landing strip + roadmap entry; localization polish for DE / NL.
+- Capacitor pinned to 7.6 across all plugins for a single peer-dependency line.
+
+### Fixed
+
+- Mobile issue tabs now use the real `public.issue_status` enum (`pending` / `approved` / `rejected` / `closed`) so freshly reported issues appear in the Open tab.
+- Mobile login lands on `/m/queue` after PIN verification so the operator stays inside the touch shell.
+- `PullToRefresh` no longer reads a ref during render; switched to a `dragging` state.
+- `MobileScanner` hoists `launchScan` above its auto-launch effect.
+- Several mobile screens defer their first fetch via `queueMicrotask` so synchronous `setState` no longer fires inside a `useEffect`.
+- MQTT logs example in the docs references the correct `mqtt_publisher_id` / `success` columns.
+
 ## [0.5.1] - 2026-05-06
 
 ### Fixed

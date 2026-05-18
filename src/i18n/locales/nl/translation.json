@@ -557,7 +557,10 @@
     "noOperations": "Geen bewerkingen",
     "operations": "bewerkingen",
     "operation": "bewerking",
-    "failedToLoad": "Werkwachtrij laden mislukt"
+    "failedToLoad": "Werkwachtrij laden mislukt",
+    "empty": "Nu niets in uw werkqueue",
+    "noMatches": "Geen bewerkingen gevonden",
+    "selectPrompt": "Tik op een bewerking om details te zien, een timer te starten of een melding te maken."
   },
   "common": {
     "admin": "Beheerder",
@@ -1816,7 +1819,8 @@
       "unknown": "Onbekend",
       "finalStep": "Laatste stap",
       "cannotProceed": "Kan niet doorgaan - volgende cel op capaciteit"
-    }
+    },
+    "empty": "Nog geen cellen geconfigureerd"
   },
   "activityMonitor": {
     "title": "Activiteitenmonitor",
@@ -2054,5 +2058,50 @@
   "calendar": {
     "title": "Fabriekskalender",
     "description": "Beheer feestdagen, sluitingen en speciale werkdagen"
+  },
+  "mobile": {
+    "scan": "Scannen",
+    "scanTitle": "Barcode of QR scannen",
+    "scanFab": "Code scannen",
+    "scanHint": "Houd het apparaat stil en centreer de code in beeld.",
+    "scanNoResult": "Geen code gevonden. Probeer opnieuw of voer hem handmatig in.",
+    "scanFailed": "Scanner mislukt. Voer de code handmatig in.",
+    "scannerUnavailable": "Live scanner niet ondersteund in deze browser. Voer de code hieronder in.",
+    "codePlaceholder": "Order-, onderdeel- of batchcode",
+    "enterManually": "Code handmatig invoeren",
+    "signIn": "Aanmelden bij uw terminal",
+    "signInBody": "Tik op uw badge of voer hem in om uw werkqueue te openen.",
+    "signedInAs": "Aanmelden als",
+    "enterPin": "PIN invoeren",
+    "badgePlaceholder": "Personeelsbadge",
+    "continue": "Doorgaan",
+    "verifying": "Verifiëren",
+    "unlockFace": "Ontgrendelen met Face ID",
+    "unlockTouch": "Ontgrendelen met Touch ID",
+    "biometricReason": "Bevestig de operator om de werkqueue te openen.",
+    "offline": "U bent offline. Wijzigingen worden gesynchroniseerd wanneer u weer verbinding heeft."
+  },
+  "filters": {
+    "all": "Alles",
+    "mine": "Mijn",
+    "active": "Actief",
+    "rush": "Spoed"
+  },
+  "scanner": {
+    "title": "Scan een order, onderdeel of bewerking",
+    "openCamera": "Camera openen",
+    "available": "Richt de camera op een geprinte QR of barcode. Eryxon springt meteen naar de juiste bewerking.",
+    "fallback": "Camerascannen is alleen beschikbaar in de native iOS-app. Voer hieronder een code in om door te gaan.",
+    "manualPlaceholder": "Order-, onderdeel- of bewerkings-ID",
+    "findManual": "Bewerking zoeken",
+    "notFound": "Geen bewerking gevonden voor: {{value}}",
+    "unavailable": "Scanner is alleen beschikbaar in de iOS-app",
+    "permissionDenied": "Schakel camera-toegang in via iOS Instellingen om te scannen"
+  },
+  "activity": {
+    "today": "Vandaag",
+    "lastWeek": "Laatste 7 dagen",
+    "completedCount": "{{count}} klaar",
+    "empty": "Geen geregistreerde tijd in de laatste 7 dagen"
   }
 }

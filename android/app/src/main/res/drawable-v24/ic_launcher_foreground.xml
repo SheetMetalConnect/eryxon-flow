@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Eryxon Flow adaptive launcher foreground.
+  108×108dp viewport with the standard 72×72dp safe zone (centered) so the
+  Pixel "Themed icons" / Samsung One UI mask doesn't crop the mark.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Subtle vertical gradient backdrop for depth in the safe zone. -->
+    <path
+        android:pathData="M22,22h64v64h-64z"
+        android:fillColor="#10000000" />
+
+    <!-- Stylised flow chevrons forming an "E" — brand blue. -->
+    <group
+        android:translateX="32"
+        android:translateY="28">
+        <path
+            android:fillColor="#3B82F6"
+            android:pathData="M2,2 L42,2 L42,12 L14,12 L14,22 L36,22 L36,32 L14,32 L14,42 L42,42 L42,52 L2,52 Z" />
+        <path
+            android:fillColor="#60A5FA"
+            android:pathData="M2,2 L42,2 L42,12 L14,12 Z" />
+    </group>
+</vector>

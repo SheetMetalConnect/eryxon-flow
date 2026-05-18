@@ -339,7 +339,10 @@
     "noOperations": "No operations",
     "operations": "operations",
     "operation": "operation",
-    "failedToLoad": "Failed to load work queue"
+    "failedToLoad": "Failed to load work queue",
+    "empty": "Nothing on your queue right now",
+    "noMatches": "No operations match your search",
+    "selectPrompt": "Tap an operation to see details, start a timer, or report an issue."
   },
   "common": {
     "admin": "Admin",
@@ -1804,7 +1807,8 @@
       "unknown": "Unknown",
       "finalStep": "Final step",
       "cannotProceed": "Cannot proceed - next cell at capacity"
-    }
+    },
+    "empty": "No cells configured yet"
   },
   "activityMonitor": {
     "title": "Activity Monitor",
@@ -2046,5 +2050,50 @@
     "issueCreatedDesc": "When a quality issue is reported",
     "quantityReportedDesc": "When production quantity is logged",
     "scrapRecordedDesc": "When scrap/defects are recorded"
+  },
+  "mobile": {
+    "scan": "Scan",
+    "scanTitle": "Scan barcode or QR",
+    "scanFab": "Scan code",
+    "scanHint": "Hold the device steady and centre the code in view.",
+    "scanNoResult": "No code detected. Try again or enter it manually.",
+    "scanFailed": "Scanner failed. Enter the code manually.",
+    "scannerUnavailable": "Live scanner not supported in this browser. Enter the code below.",
+    "codePlaceholder": "Job, part, or batch code",
+    "enterManually": "Enter code manually",
+    "signIn": "Sign in to your terminal",
+    "signInBody": "Tap your employee badge or type it in to load your work queue.",
+    "signedInAs": "Signing in as",
+    "enterPin": "Enter PIN",
+    "badgePlaceholder": "Employee badge",
+    "continue": "Continue",
+    "verifying": "Verifying",
+    "unlockFace": "Unlock with Face ID",
+    "unlockTouch": "Unlock with Touch ID",
+    "biometricReason": "Confirm operator to unlock the work queue.",
+    "offline": "You are offline. Changes will sync when you reconnect."
+  },
+  "filters": {
+    "all": "All",
+    "mine": "Mine",
+    "active": "Active",
+    "rush": "Rush"
+  },
+  "scanner": {
+    "title": "Scan a job, part, or operation",
+    "openCamera": "Open camera",
+    "available": "Point the camera at a printed QR or barcode. Eryxon will jump straight to the matching operation.",
+    "fallback": "Camera scanning is only available in the native iOS app. Type a code below to continue.",
+    "manualPlaceholder": "Job, part, or operation ID",
+    "findManual": "Find operation",
+    "notFound": "No operation matched: {{value}}",
+    "unavailable": "Scanner is only available in the iOS app",
+    "permissionDenied": "Enable camera access in iOS Settings to scan"
+  },
+  "activity": {
+    "today": "Today",
+    "lastWeek": "Last 7 days",
+    "completedCount": "{{count}} done",
+    "empty": "No tracked time in the last 7 days"
   }
 }

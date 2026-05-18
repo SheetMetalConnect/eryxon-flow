@@ -5,23 +5,23 @@ description: Release history and current maintenance status for Eryxon Flow.
 
 ## Current Status
 
-The latest release is **v0.5.1**, published on May 6, 2026. Active development is currently on hold. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is.
+The latest stable release is **v0.5.1**, published on May 6, 2026. Most of Eryxon Flow is still **Beta** — including the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **Android** and **iOS** apps are coming soon (Android is being built natively with offline support and fast cold start). The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
 
-Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms. For new production deployments, use the self-hosting guides and plan to maintain your own fork if you need changes beyond v0.5.1.
+Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms. The native mobile apps will share the same backend and REST/MCP/MQTT API as the web app.
 
 ## v0.5.1 - May 6, 2026
 
-Maintenance hotfix for release metadata and final handoff docs.
+Maintenance hotfix for release metadata and handoff docs. (Native Android and iOS app development started after this release.)
 
 ### Fixed
 
 - Refreshed stale OpenTrace knowledge graph counts after regenerating the local index
 - Aligned the README BSL conversion summary with the repository `LICENSE`
-- Marked v0.5.1 as the current maintenance hotfix while preserving v0.5.0 as the final active-development release
+- Tagged v0.5.1 as the current maintenance hotfix on top of v0.5.0
 
 ## v0.5.0 - May 6, 2026
 
-Final active-development release for self-hosted planning integration and shop floor execution.
+Last web-app feature release before the native mobile push. Adds self-hosted planning integration and shop floor execution hardening.
 
 ### Highlights
 
