@@ -50,12 +50,22 @@ Both blockers from run `26370608416` are addressed on branch `engineer/ery-108-i
 
 ### Re-run evidence
 
-- Pending: PR re-run of the split lane on `engineer/ery-108-ios-pod-fix`. Fill in run ID + per-check pass/fail once the workflow completes.
+**Split-lane run 1** — [26370807000](https://github.com/SheetMetalConnect/eryxon-flow/actions/runs/26370807000) on PR [#600](https://github.com/SheetMetalConnect/eryxon-flow/pull/600), `engineer/ery-108-ios-pod-fix`, 2026-05-24.
 
 | Check | Status | Evidence |
 | --- | --- | --- |
-| `npm run ios:init` (add ios + pin target + sync + pod install) | PENDING | — |
-| iOS simulator build of `ios/App/App.xcworkspace` | PENDING | — |
+| iOS `pod install` / `npm run ios:init` (add ios + pin 15.5 + sync) | **PASS** | iOS job step "Bootstrap iOS workspace" succeeded — the 15.5 pin resolves `GoogleMLKit/BarcodeScanning 7.0.0`. This clears the original ERY-108 blocker. |
+| iOS simulator build of `ios/App/App.xcworkspace` | NOT CAPTURED | xcodebuild step was still running; run superseded by the npm-ci fix below (concurrency cancel). Re-proven in run 2. |
+| Job split (Android no longer masked by iOS) | **PASS** | Android job ran to completion and produced its own logs while iOS was still building — confirms the masking fix. |
+| `npm run android:assemble:debug` | FAIL → fixed | `sh: 1: vite: not found`. Root cause: the independent Android job had no `npm ci` step (the old single job inherited `node_modules` from `ios:init`). Fixed by adding an "Install JS dependencies" step. |
+| `npm run android:assemble:release` | FAIL (same cause) | Ran anyway via `if: always()` — confirms the gating works; same `vite: not found` root cause. |
+
+**Split-lane run 2** — pending after the `npm ci` + concurrency commit. Records final iOS simulator build + Android debug/release pass/fail.
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| `npm run ios:init` (pod install) | PENDING | — |
+| iOS simulator build | PENDING | — |
 | `npm run android:assemble:debug` | PENDING | — |
 | `npm run android:assemble:release` | PENDING | — |
 

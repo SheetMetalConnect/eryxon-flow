@@ -16,6 +16,12 @@ on:
       - src/styles/mobile.css
       - src/styles/mobile-ios.css
 
+# Cancel an in-flight run when a newer commit lands on the same ref, so we don't
+# burn two parallel macOS iOS builds while iterating.
+concurrency:
+  group: native-build-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
 # iOS and Android run as independent jobs so a failure in one never masks the
 # other's evidence (ERY-108). GitHub schedules them in parallel; neither
 # `needs` the other, so an iOS pod-resolution failure no longer skips the
@@ -116,6 +122,17 @@ jobs:
             ls "$ANDROID_HOME/platforms" | grep "android-35" || echo "android-35 platform missing"
             ls "$ANDROID_HOME/build-tools" | grep "35" || echo "build-tools 35 missing"
           } 2>&1 | tee artifacts/android-toolchain.log
+
+      # Independent job: install JS deps here. In the old single-job layout the
+      # Android steps inherited node_modules from `npm run ios:init`; the split
+      # job has no such predecessor, so `vite` (and the rest of the toolchain)
+      # must be installed before `android:assemble:*` can run `npm run build`.
+      - name: Install JS dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          npm ci 2>&1 | tee artifacts/android-npm-ci.log
 
       # `if: always()` on the release step guarantees the release assemble runs
       # even if the debug assemble fails, so we always capture pass/fail for both.
