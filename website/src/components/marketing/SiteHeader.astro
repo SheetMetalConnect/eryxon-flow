@@ -1,0 +1,88 @@
+---
+/*
+ * SiteHeader — decision-oriented marketing navigation (ERY-60).
+ *
+ * Fills the `header` slot of MarketingLayout (the wordmark is already rendered by the layout).
+ * IA per the ERY-54 brief: a buyer-decision nav, not a docs index —
+ *   Managed rollout · Documentation · [Open hosted trial] (primary CTA).
+ *
+ * "Home" is reachable via the wordmark, so it is not duplicated as a nav link.
+ * Hosted trial is the primary action and is rendered as the one CTA button in the bar.
+ */
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import type { Locale } from "@/lib/locale";
+
+interface Props {
+  locale?: Locale;
+  /** Marks the current section for aria-current. */
+  active?: "rollout" | "docs" | null;
+}
+
+const { locale = "en", active = null } = Astro.props;
+
+const links = [
+  { key: "rollout", label: "Managed rollout", href: "/managed-rollout/" },
+  { key: "docs", label: "Documentation", href: "/introduction/" },
+] as const;
+---
+
+<nav aria-label="Primary" class="ery-nav">
+  <ul class="ery-nav__list">
+    {
+      links.map((link) => (
+        <li>
+          <a
+            href={link.href}
+            class="ery-nav__link"
+            aria-current={active === link.key ? "page" : undefined}
+          >
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <CtaButton
+    href="https://app.eryxon.eu"
+    ctaId="nav_primary_hosted"
+    surface="site_header"
+    kind="hosted_app"
+    variant="primary"
+    locale={locale}
+    external
+  >
+    Open hosted trial
+  </CtaButton>
+</nav>
+
+<style>
+  .ery-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-6);
+  }
+  .ery-nav__list {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-6);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ery-nav__link {
+    color: var(--ery-text-muted);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+  }
+  .ery-nav__link:hover,
+  .ery-nav__link[aria-current="page"] {
+    color: var(--ery-text);
+  }
+
+  /* On narrow screens the secondary links collapse; the hosted-trial CTA always stays. */
+  @media (max-width: 640px) {
+    .ery-nav__list {
+      display: none;
+    }
+  }
+</style>

@@ -1,0 +1,30 @@
+---
+/*
+ * SiteLayout — the marketing page layout used by the homepage and buyer-path routes (ERY-60).
+ *
+ * Wraps MarketingLayout (ERY-56 frame) and fills its `header`/`footer` slots with the shared
+ * marketing chrome (SiteHeader + SiteFooter). Pages render only their content into the default
+ * slot, so every public marketing surface inherits the same nav, footer IA, token contract, and
+ * preserved analytics adapter without re-declaring chrome.
+ */
+import MarketingLayout from "@/layouts/MarketingLayout.astro";
+import SiteHeader from "@/components/marketing/SiteHeader.astro";
+import SiteFooter from "@/components/marketing/SiteFooter.astro";
+import type { Locale } from "@/lib/locale";
+
+interface Props {
+  title: string;
+  description?: string;
+  locale?: Locale;
+  activeNav?: "rollout" | "docs" | null;
+}
+
+const { title, description, locale = "en", activeNav = null } = Astro.props;
+---
+
+<MarketingLayout title={title} description={description}>
+  <slot name="head" slot="head" />
+  <SiteHeader slot="header" locale={locale} active={activeNav} />
+  <slot />
+  <SiteFooter slot="footer" locale={locale} />
+</MarketingLayout>

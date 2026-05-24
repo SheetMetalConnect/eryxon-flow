@@ -1,0 +1,352 @@
+---
+/*
+ * Homepage — `/` (ERY-60, Slice 2).
+ *
+ * Promotes the redesigned landing page to the site root, replacing the docs-first Starlight
+ * splash that previously owned `/` (the docs tree remains under `/introduction/`, `/guides/...`,
+ * etc.). Built on SiteLayout -> MarketingLayout -> BaseLayout so it inherits the canonical token
+ * contract (ERY-56) and the preserved CTA analytics adapter (ERY-33/ERY-9).
+ *
+ * Structure and copy follow the approved ERY-54 messaging/IA brief: a buyer-decision page, not a
+ * docs index. Section order: hero -> proof strip -> start-here chooser -> why job shops -> product
+ * proof -> rollout-fit -> final CTA cluster. CTA hierarchy: hosted trial (primary), managed
+ * rollout (secondary), documentation (tertiary). No beta badges, endpoint counts, freeze /
+ * maintenance framing, or "open source" wording per the brief's copy constraints.
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import RolloutInquiry from "@/components/RolloutInquiry.astro";
+import operatorShot from "@/assets/lightmode-demo.png";
+import viewerShot from "@/assets/viewer-3d.png";
+import planningShot from "@/assets/overview.png";
+
+const title = "Eryxon Flow — MES for metalworking job shops";
+const description =
+  "A tablet-friendly manufacturing execution system for metalworking job shops: track jobs from ERP to shop floor without losing operator adoption. Open the hosted trial, plan a managed rollout, or evaluate it self-hosted.";
+
+const valueProps = [
+  {
+    head: "Shop-floor visibility",
+    body: "See every job's state across cells and operators in real time, instead of chasing paper travelers and whiteboards.",
+  },
+  {
+    head: "Operator adoption",
+    body: "Tablet-first terminals built for the floor: large touch targets, one job in focus, no ERP training required to clock work.",
+  },
+  {
+    head: "ERP-connected production",
+    body: "Push and pull production data over the REST API and webhooks so the office system and the floor stay in sync.",
+  },
+];
+
+const proof = [
+  { img: operatorShot, alt: "Operator terminal showing a job in focus", cap: "Operator terminals", body: "Tablet-friendly screens that keep one job in focus on the floor." },
+  { img: planningShot, alt: "Capacity and job overview board", cap: "Capacity & planning", body: "Batch management and capacity planning across cells in one board." },
+  { img: viewerShot, alt: "In-browser 3D part viewer", cap: "3D part viewer", body: "Operators check the part geometry in the browser, no CAD seat needed." },
+];
+---
+
+<SiteLayout title={title} description={description}>
+  <!-- 1 · Hero -------------------------------------------------------------- -->
+  <section class="ery-container hero">
+    <p class="eyebrow">Manufacturing execution for metalworking job shops</p>
+    <h1>Track jobs from ERP to shop floor without losing operator adoption</h1>
+    <p class="lede">
+      Eryxon gives job shops a tablet-friendly MES with three clear paths: open the hosted trial,
+      plan a managed rollout, or evaluate it self-hosted.
+    </p>
+    <div class="cta-row">
+      <CtaButton href="https://app.eryxon.eu" ctaId="home_hero_primary_hosted" surface="homepage_hero" kind="hosted_app" variant="primary" external>
+        Open hosted trial
+      </CtaButton>
+      <CtaButton href="/managed-rollout/?cta=home_hero_secondary_rollout" ctaId="home_hero_secondary_rollout" surface="homepage_hero" kind="rollout_page" variant="secondary">
+        Plan a managed rollout
+      </CtaButton>
+      <CtaButton href="/introduction/" ctaId="home_hero_tertiary_docs" surface="homepage_hero" kind="docs" variant="tertiary">
+        Review documentation →
+      </CtaButton>
+    </div>
+  </section>
+
+  <!-- 2 · Proof strip ------------------------------------------------------- -->
+  <section class="ery-container proof-strip" aria-label="At a glance">
+    <ul class="strip">
+      <li><span class="strip__k">Operator terminals</span> built for shop-floor tablets</li>
+      <li><span class="strip__k">ERP integration</span> over REST API and webhooks</li>
+      <li><span class="strip__k">Self-hostable</span> on your own infrastructure</li>
+      <li><span class="strip__k">Source-available</span> under BSL 1.1, free for internal use</li>
+    </ul>
+  </section>
+
+  <!-- 3 · Start-here chooser ------------------------------------------------ -->
+  <section class="ery-container chooser">
+    <header class="section-head">
+      <h2>Start where it makes sense for you</h2>
+      <p>Three ways in. Pick the one that matches where your shop is today.</p>
+    </header>
+    <div class="card-grid card-grid--3">
+      <article class="card">
+        <h3>Hosted trial</h3>
+        <p>Click into the product right now — no install, no setup. Best for a quick first look and hands-on exploration.</p>
+        <CtaButton href="https://app.eryxon.eu" ctaId="home_chooser_hosted" surface="homepage_chooser" kind="hosted_app" variant="secondary" external>
+          Open hosted trial
+        </CtaButton>
+      </article>
+      <article class="card">
+        <h3>Managed rollout</h3>
+        <p>Get help putting Eryxon into production: deployment, ERP integration, and a rollout order the floor can adopt without disruption.</p>
+        <CtaButton href="/managed-rollout/?cta=home_chooser_rollout" ctaId="home_chooser_rollout" surface="homepage_chooser" kind="rollout_page" variant="secondary">
+          Plan a managed rollout
+        </CtaButton>
+      </article>
+      <article class="card">
+        <h3>Self-hosted evaluation</h3>
+        <p>Comparing deployment models or evaluating on your own infrastructure? It's source-available under BSL 1.1 and free for internal use.</p>
+        <CtaButton href="/guides/deployment/" ctaId="home_chooser_selfhost" surface="homepage_chooser" kind="docs" variant="secondary">
+          Read the deployment guide
+        </CtaButton>
+      </article>
+    </div>
+  </section>
+
+  <!-- 4 · Why job shops use it --------------------------------------------- -->
+  <section class="ery-container why">
+    <header class="section-head">
+      <h2>Why job shops run Eryxon</h2>
+      <p>Built for metalworking and fabrication shops, not generic factory software.</p>
+    </header>
+    <div class="card-grid card-grid--3">
+      {valueProps.map((v) => (
+        <article class="card card--plain">
+          <h3>{v.head}</h3>
+          <p>{v.body}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <!-- 5 · Product proof ----------------------------------------------------- -->
+  <section class="ery-container product-proof">
+    <header class="section-head">
+      <h2>What it looks like on the floor</h2>
+      <p>Real screens from the product, tied to how shops actually use it.</p>
+    </header>
+    <div class="card-grid card-grid--3">
+      {proof.map((p) => (
+        <figure class="shot">
+          <img src={p.img.src} width={p.img.width} height={p.img.height} alt={p.alt} loading="lazy" />
+          <figcaption>
+            <span class="shot__cap">{p.cap}</span>
+            <span class="shot__body">{p.body}</span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <!-- 6 · Rollout-fit ------------------------------------------------------- -->
+  <section class="rollout-fit">
+    <div class="ery-container rollout-fit__inner">
+      <div class="rollout-fit__copy">
+        <h2>When a managed rollout makes sense</h2>
+        <p>
+          Most teams can open the hosted trial and start exploring on their own. A managed rollout
+          is for shops that want help getting Eryxon into daily production: deployment, connecting
+          your ERP via the REST API and webhooks, and sequencing the rollout across cells and people.
+        </p>
+        <p class="rollout-fit__note">This is a conversation, not a signup.</p>
+      </div>
+      <div class="rollout-fit__action">
+        <RolloutInquiry label="Start a managed rollout conversation" locale="en" />
+        <p class="rollout-fit__alt">
+          Prefer to read first? <a href="/managed-rollout/?cta=home_rollout_fit_page" data-cta-id="home_rollout_fit_page" data-cta-surface="homepage_rollout_fit" data-cta-kind="rollout_page">See how managed rollout works</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · Final CTA cluster — one CTA per path ------------------------------ -->
+  <section class="ery-container final-cta">
+    <h2>Pick your next step</h2>
+    <div class="cta-row cta-row--final">
+      <CtaButton href="https://app.eryxon.eu" ctaId="home_final_primary_hosted" surface="homepage_final" kind="hosted_app" variant="primary" external>
+        Open hosted trial
+      </CtaButton>
+      <CtaButton href="/managed-rollout/?cta=home_final_secondary_rollout" ctaId="home_final_secondary_rollout" surface="homepage_final" kind="rollout_page" variant="secondary">
+        Plan a managed rollout
+      </CtaButton>
+      <CtaButton href="/introduction/" ctaId="home_final_tertiary_docs" surface="homepage_final" kind="docs" variant="tertiary">
+        Review documentation →
+      </CtaButton>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .section-head {
+    max-inline-size: 60ch;
+    margin-block-end: var(--ery-space-8);
+  }
+  .section-head h2 {
+    font-size: var(--ery-text-2xl);
+  }
+  .section-head p {
+    margin: 0;
+    color: var(--ery-text-muted);
+  }
+
+  /* Hero */
+  .hero {
+    padding-block: var(--ery-pad-hero);
+  }
+  .eyebrow {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    margin: 0 0 var(--ery-space-3);
+  }
+  .hero h1 {
+    font-size: clamp(var(--ery-text-4xl), 5vw, var(--ery-text-5xl));
+    max-inline-size: 20ch;
+  }
+  .lede {
+    font-size: var(--ery-text-lg);
+    color: var(--ery-text-muted);
+    max-inline-size: 62ch;
+  }
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ery-space-3);
+    margin-block-start: var(--ery-space-6);
+  }
+  .cta-row--final {
+    margin-block-start: var(--ery-space-6);
+  }
+
+  /* Proof strip */
+  .proof-strip {
+    padding-block: var(--ery-space-6);
+  }
+  .strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ery-space-3) var(--ery-space-8);
+    margin: 0;
+    padding: var(--ery-space-5) 0;
+    list-style: none;
+    border-block: 1px solid var(--ery-border);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .strip__k {
+    font-weight: 600;
+    color: var(--ery-text);
+  }
+
+  /* Shared section rhythm + cards */
+  .chooser,
+  .why,
+  .product-proof,
+  .final-cta {
+    padding-block: var(--ery-space-16);
+  }
+  .card-grid {
+    display: grid;
+    gap: var(--ery-space-4);
+  }
+  .card-grid--3 {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+    align-items: flex-start;
+    padding: var(--ery-space-6);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius);
+    background-color: var(--ery-surface);
+  }
+  .card h3 {
+    margin: 0;
+    font-size: var(--ery-text-xl);
+  }
+  .card p {
+    margin: 0;
+    color: var(--ery-text-muted);
+    flex: 1;
+  }
+  .card--plain {
+    border-color: transparent;
+    background-color: var(--ery-surface-subtle);
+  }
+
+  /* Product proof shots */
+  .shot {
+    margin: 0;
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius);
+    overflow: hidden;
+    background-color: var(--ery-surface);
+  }
+  .shot img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    border-block-end: 1px solid var(--ery-border);
+  }
+  .shot figcaption {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-1);
+    padding: var(--ery-space-4) var(--ery-space-5);
+  }
+  .shot__cap {
+    font-weight: 600;
+  }
+  .shot__body {
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+
+  /* Rollout-fit band */
+  .rollout-fit {
+    background-color: var(--ery-surface-subtle);
+    border-block: 1px solid var(--ery-border);
+  }
+  .rollout-fit__inner {
+    display: grid;
+    gap: var(--ery-space-8);
+    grid-template-columns: 1.4fr 1fr;
+    align-items: center;
+    padding-block: var(--ery-space-16);
+  }
+  @media (max-width: 760px) {
+    .rollout-fit__inner {
+      grid-template-columns: 1fr;
+    }
+  }
+  .rollout-fit__copy h2 {
+    font-size: var(--ery-text-2xl);
+  }
+  .rollout-fit__copy p {
+    color: var(--ery-text-muted);
+    margin: 0 0 var(--ery-space-3);
+    max-inline-size: 56ch;
+  }
+  .rollout-fit__note {
+    font-weight: 600;
+    color: var(--ery-text) !important;
+  }
+  .rollout-fit__alt {
+    margin-block-start: var(--ery-space-3);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+
+  .final-cta h2 {
+    font-size: var(--ery-text-2xl);
+  }
+</style>

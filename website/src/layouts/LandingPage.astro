@@ -1,0 +1,104 @@
+---
+/*
+ * LandingPage — reusable campaign landing-page template (ERY-60, Slice 2).
+ *
+ * Campaign / intent-specific derivatives of the homepage story per the ERY-54 brief. The template
+ * structurally enforces the brief's landing-page discipline so a campaign page can be created
+ * without re-inventing a narrative hierarchy:
+ *
+ *   - ONE buyer problem (eyebrow + headline + intro)
+ *   - ONE primary CTA (the `primary` prop) — there is no slot for competing primary actions
+ *   - ONE proof block (default slot: screenshot / capability / deployment-path content)
+ *   - ONE secondary proof link into docs or product proof (`secondary` prop, optional)
+ *
+ * Built on SiteLayout so it inherits the shared nav, footer IA, token contract, and the preserved
+ * CTA analytics adapter. The primary/secondary CTAs route through CtaButton, so they emit the same
+ * `website_cta_clicked` event contract as every other buyer-path CTA.
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import type { Locale } from "@/lib/locale";
+
+interface CtaConfig {
+  label: string;
+  href: string;
+  ctaId: string;
+  /** hosted_app | rollout_page | docs | internal | external_site */
+  kind: string;
+  external?: boolean;
+}
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Slug used as the analytics surface, e.g. "erp-connected-production". */
+  slug: string;
+  eyebrow: string;
+  headline: string;
+  intro: string;
+  primary: CtaConfig;
+  secondary?: CtaConfig;
+  locale?: Locale;
+}
+
+const { title, description, slug, eyebrow, headline, intro, primary, secondary, locale = "en" } =
+  Astro.props;
+const surface = `landing_${slug}`;
+---
+
+<SiteLayout title={title} description={description} locale={locale}>
+  <article class="lp">
+    <header class="ery-container lp__hero">
+      <p class="lp__eyebrow">{eyebrow}</p>
+      <h1>{headline}</h1>
+      <p class="lp__intro">{intro}</p>
+      <div class="lp__cta">
+        <CtaButton href={primary.href} ctaId={primary.ctaId} surface={surface} kind={primary.kind} variant="primary" locale={locale} external={primary.external}>
+          {primary.label}
+        </CtaButton>
+      </div>
+    </header>
+
+    <section class="ery-container lp__proof">
+      <slot />
+    </section>
+
+    {secondary && (
+      <section class="ery-container lp__secondary">
+        <CtaButton href={secondary.href} ctaId={secondary.ctaId} surface={surface} kind={secondary.kind} variant="tertiary" locale={locale} external={secondary.external}>
+          {secondary.label} →
+        </CtaButton>
+      </section>
+    )}
+  </article>
+</SiteLayout>
+
+<style>
+  .lp__hero {
+    padding-block: var(--ery-pad-hero);
+  }
+  .lp__eyebrow {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    margin: 0 0 var(--ery-space-3);
+  }
+  .lp__hero h1 {
+    font-size: clamp(var(--ery-text-4xl), 5vw, var(--ery-text-5xl));
+    max-inline-size: 20ch;
+  }
+  .lp__intro {
+    font-size: var(--ery-text-lg);
+    color: var(--ery-text-muted);
+    max-inline-size: 62ch;
+  }
+  .lp__cta {
+    margin-block-start: var(--ery-space-6);
+  }
+  .lp__proof {
+    padding-block-end: var(--ery-space-16);
+  }
+  .lp__secondary {
+    padding-block-end: var(--ery-space-16);
+  }
+</style>

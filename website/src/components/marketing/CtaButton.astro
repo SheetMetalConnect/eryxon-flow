@@ -1,0 +1,105 @@
+---
+/*
+ * CtaButton — the single reusable CTA primitive for the redesign marketing surfaces (ERY-60).
+ *
+ * Every buyer-path CTA on the new homepage, landing template, and marketing routes renders
+ * through this component so the ERY-9 / ERY-33 event contract stays consistent and auditable:
+ *
+ *   - It emits the preserved `data-cta-*` attribute set, which the vendor-neutral analytics
+ *     adapter (`components/Analytics.astro`) delegates into `website_cta_clicked`.
+ *   - It does NOT re-implement tracking; it only opts in by carrying `data-cta-id`.
+ *
+ * Managed-rollout intent that must open the mailto inquiry uses `RolloutInquiry.astro` instead
+ * (that component owns the `website_rollout_*` events). Use this for navigational CTAs:
+ * hosted trial, managed-rollout page, docs, and external proof destinations.
+ */
+type Variant = "primary" | "secondary" | "tertiary";
+
+interface Props {
+  href: string;
+  /** Stable CTA id for analytics. Required — a CTA with no id is not tracked, which is a bug here. */
+  ctaId: string;
+  /** Surface name, e.g. "homepage_hero", "homepage_final", "landing_<slug>". */
+  surface: string;
+  /** Target kind: hosted_app | rollout_page | docs | internal | external_site | email. */
+  kind: string;
+  variant?: Variant;
+  locale?: "en" | "de" | "nl";
+  /** Mark true for off-site destinations (app, GitHub, consulting site). */
+  external?: boolean;
+}
+
+const {
+  href,
+  ctaId,
+  surface,
+  kind,
+  variant = "primary",
+  locale,
+  external = false,
+} = Astro.props;
+
+const rel = external ? "noopener noreferrer" : undefined;
+const target = external ? "_blank" : undefined;
+---
+
+<a
+  class:list={["ery-cta", `ery-cta--${variant}`]}
+  href={href}
+  target={target}
+  rel={rel}
+  data-cta-id={ctaId}
+  data-cta-surface={surface}
+  data-cta-kind={kind}
+  data-cta-locale={locale}
+  data-cta-target={href}
+>
+  <slot />
+</a>
+
+<style>
+  .ery-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--ery-space-2);
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    font-weight: 500;
+    font-size: var(--ery-text-base);
+    border: 1px solid transparent;
+    color: inherit;
+    white-space: nowrap;
+    transition:
+      background-color var(--ery-motion-base) var(--ery-ease),
+      border-color var(--ery-motion-base) var(--ery-ease),
+      color var(--ery-motion-base) var(--ery-ease);
+  }
+
+  .ery-cta--primary {
+    background-color: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+  }
+  .ery-cta--primary:hover {
+    background-color: var(--ery-brand-hover);
+    color: var(--ery-brand-contrast);
+  }
+
+  .ery-cta--secondary {
+    border-color: var(--ery-border-strong);
+    color: var(--ery-text);
+  }
+  .ery-cta--secondary:hover {
+    border-color: var(--ery-brand);
+    color: var(--ery-brand);
+  }
+
+  .ery-cta--tertiary {
+    padding-inline: var(--ery-space-2);
+    color: var(--ery-brand);
+  }
+  .ery-cta--tertiary:hover {
+    color: var(--ery-brand-hover);
+  }
+</style>
