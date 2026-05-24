@@ -104,11 +104,13 @@ jobs:
           node-version: "20"
           cache: npm
 
-      - name: Setup Java 17
+      - name: Setup Java 21
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "17"
+          # Capacitor 7's Android modules (android/app/capacitor.build.gradle)
+          # compile with sourceCompatibility VERSION_21, so the JDK must be ≥ 21.
+          java-version: "21"
 
       - name: Capture Android toolchain versions
         shell: bash
