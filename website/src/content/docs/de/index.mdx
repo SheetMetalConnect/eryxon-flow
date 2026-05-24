@@ -204,11 +204,11 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Section>
 
 <Section title="Lizenz & <span class='text-primary'>Bedingungen</span>">
-  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
+  <div class="p-8 rounded-2xl" style="background: var(--ery-surface-subtle); border: 1px solid var(--ery-border);">
     <div class="grid md:grid-cols-2 gap-8 items-center">
       <div>
         <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
-        <p class="text-gray-400 mb-6">
+        <p class="mb-6" style="color: var(--ery-text-muted);">
           Eryxon Flow ist source-available und kostenlos für Ihre eigenen Fertigungsaktivitäten nutzbar.
           Self-hosted-Installationen haben keine Nutzungslimits.
         </p>
@@ -225,14 +225,14 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
             <div class="text-primary font-bold">&#10003;</div>
             <span>Keine Nutzungslimits beim Self-Hosting</span>
           </div>
-          <div class="flex items-center gap-3 text-red-400">
+          <div class="flex items-center gap-3" style="color: var(--ery-error);">
             <div class="font-bold">&#10007;</div>
             <span>Kein kommerzieller Weiterverkauf oder konkurrierendes SaaS</span>
           </div>
         </div>
       </div>
       <div class="text-center">
-        <p class="mb-6 text-sm italic text-gray-500">
+        <p class="mb-6 text-sm italic" style="color: var(--ery-text-subtle);">
           „Nutzen Sie es, passen Sie es an, machen Sie es zu Ihrem. Hosten Sie es nur nicht, um anderen gegen Bezahlung Zugang zu gewähren."
         </p>
         <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">

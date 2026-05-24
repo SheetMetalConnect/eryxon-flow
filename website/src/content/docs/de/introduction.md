@@ -3,9 +3,36 @@ title: Willkommen bei Eryxon Flow
 description: Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.
 ---
 
-**Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.**
+Eryxon Flow ist ein tabletfreundliches Manufacturing Execution System für metallverarbeitende Lohnfertiger - verfolgen Sie Aufträge vom ERP bis auf den Shopfloor, ohne die Werkerakzeptanz zu verlieren.
 
-> **Jetzt ausprobieren:** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) - keine Installation erforderlich. Sie bleibt online wie sie ist.
+## Wählen Sie Ihren Pfad
+
+Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
+
+<div style="display:grid;gap:var(--ery-space-4);grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:var(--ery-space-6) 0;">
+  <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="hosted_app" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Hosted-Test starten</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Testen Sie die Live-App auf app.eryxon.eu ohne Installation. Ideal für den ersten Eindruck.</span>
+  </a>
+  <a href="/de/managed-rollout/" data-cta-id="docs_intro_rollout_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="rollout_page" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Begleiteten Rollout planen</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Erhalten Sie Unterstützung für Deployment, ERP-Integration und Einführungsplanung.</span>
+  </a>
+  <a href="/de/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Self-Hosting evaluieren</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Betreiben Sie Eryxon auf Ihrer eigenen Infrastruktur. Source-available unter BSL 1.1.</span>
+  </a>
+</div>
+
+![Eryxon Flow admin dashboard](../../../assets/step-1.png)
+
+## Passt es zu Ihrer Werkstatt?
+
+- **Werker** erhalten eine touchfreundliche Arbeitswarteschlange: Arbeit nach Stufe ziehen, Zeit erfassen, STEP/PDF ansehen und Probleme direkt auf dem Shopfloor melden.
+- **Admins** erhalten Echtzeit-Transparenz: wer woran arbeitet, Issue-Freigaben, Termin-Overrides sowie Stufen- und Materialkonfiguration.
+- **Technische Evaluatoren** erhalten ein API-first System: 24 REST-Endpunkte, Webhooks, MQTT, MCP-Server und planungsseitige Adapter für FrePPLe und Odoo.
+
+> **Stand heute:** v0.5.1 ist die aktuelle stabile Linie. Web-App, REST API, Webhooks, MQTT und die FrePPLe/Odoo-Adapter sind **Beta**; der **MCP-Server ist Live**. Native **Android**- und **iOS**-Apps stehen auf der Roadmap - heute ist die Browser-App die Primäroberfläche.
 
 ## Was Es Macht
 

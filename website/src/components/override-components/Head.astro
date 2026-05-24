@@ -53,6 +53,23 @@ const supportedLangs = localeEntries.map(([key, val]) => ({
 
 ---
 
+<!-- Light-first guardrail: if no explicit user theme exists yet, seed light so
+     OS dark preference does not force dark-on-load on docs surfaces. -->
+<script is:inline>
+(() => {
+  try {
+    const storageKey = "starlight-theme";
+    const savedTheme = localStorage.getItem(storageKey);
+    if (savedTheme !== "light" && savedTheme !== "dark") {
+      localStorage.setItem(storageKey, "light");
+      document.documentElement.dataset.theme = "light";
+    }
+  } catch {
+    document.documentElement.dataset.theme = "light";
+  }
+})();
+</script>
+
 {head.map(({ tag: Tag, attrs, content }) => <Tag {...attrs} set:html={content} />)}
 
 <!-- Vendor-neutral CTA analytics adapter (ERY-33) -->
@@ -159,4 +176,3 @@ const supportedLangs = localeEntries.map(([key, val]) => ({
   });
 })();
 </script>
-
