@@ -90,14 +90,25 @@ jobs:
           # seed_runner mimics the hosted seed connection: it can write buckets
           # (BYPASSRLS) and read schemas, but it does NOT own storage.objects, so
           # CREATE POLICY raises 42501 — exactly the ERY-47 failure condition.
+          #
+          # The storage schema/tables are owned by supabase_storage_admin (not by
+          # the `postgres` login in DB_URL), so the storage grants must be issued
+          # under that owner role; otherwise seed.sql dies earlier with
+          # "permission denied for schema storage" — the wrong failure mode.
           psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL' 2>&1 | tee artifacts/role-setup.log
           DROP ROLE IF EXISTS seed_runner;
           CREATE ROLE seed_runner LOGIN PASSWORD 'seed_runner' NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS;
+
+          SET ROLE supabase_storage_admin;
           GRANT USAGE ON SCHEMA storage TO seed_runner;
           GRANT INSERT, SELECT, UPDATE ON storage.buckets TO seed_runner;
           GRANT SELECT ON storage.objects TO seed_runner;
-          GRANT USAGE ON SCHEMA extensions TO seed_runner;
+          RESET ROLE;
+
           DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'extensions') THEN
+              EXECUTE 'GRANT USAGE ON SCHEMA extensions TO seed_runner';
+            END IF;
             IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'cron') THEN
               EXECUTE 'GRANT USAGE ON SCHEMA cron TO seed_runner';
             END IF;
