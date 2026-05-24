@@ -1,0 +1,82 @@
+name: Seed Provisioning Drill
+
+# ERY-107: fresh-provisioning re-drill for the ERY-83 seed fix (b2ba76a).
+# Runs the canonical `supabase db reset` seed path on a Docker-capable runner
+# (GitHub-hosted ubuntu ships Docker) and asserts the seed phase no longer fails
+# with 42501 insufficient_privilege / "must be owner of table objects".
+#
+# Local/ephemeral to the runner only. Does NOT touch production or any shared
+# Supabase environment. Manual dispatch only.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  seed-provisioning-drill:
+    name: supabase db reset (fresh provisioning)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Capture toolchain versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          {
+            echo "supabase $(supabase --version)"
+            echo "docker $(docker --version)"
+          } 2>&1 | tee artifacts/toolchain.log
+
+      - name: Start local Supabase stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          # Boot only the DB + storage services needed for the seed path.
+          supabase start -x studio,inbucket,realtime,imgproxy,edge-runtime,logflare,vector,pgbouncer 2>&1 \
+            | tee artifacts/supabase-start.log
+
+      - name: Fresh provisioning reset (migrations + seed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          # Canonical fresh-provisioning command referenced by ERY-101/ERY-47.
+          # --debug surfaces the per-statement seed output we need as evidence.
+          supabase db reset --debug 2>&1 | tee artifacts/db-reset.log
+
+      - name: Assert seed phase has no storage-policy ownership failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          log=artifacts/db-reset.log
+          echo "Scanning $log for 42501 / insufficient_privilege / ownership failures..."
+          # These are the exact ERY-47 failure signatures the b2ba76a fix targets.
+          if grep -nE "42501|insufficient_privilege|must be owner of (table|relation) objects" "$log"; then
+            echo "::error::Seed phase still hit a storage-policy privilege/ownership failure"
+            exit 1
+          fi
+          # Reset must have actually run the seed; guard against a silently skipped seed.
+          if ! grep -qiE "seed|Seeding|Applying migration|Finished supabase db reset" "$log"; then
+            echo "::error::db reset log does not show a migration/seed phase — drill inconclusive"
+            exit 1
+          fi
+          echo "PASS: seed phase completed with no 42501 / insufficient_privilege / ownership failure."
+
+      - name: Upload drill artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seed-provisioning-drill-${{ github.run_id }}
+          if-no-files-found: warn
+          path: artifacts/*.log
