@@ -21,12 +21,27 @@
 
 ## Native validation status
 
-| Check | Status | Evidence path |
+First macOS lane run: GitHub Actions run [`26370608416`](https://github.com/SheetMetalConnect/eryxon-flow/actions/runs/26370608416) on `macos-15` (PR [#598](https://github.com/SheetMetalConnect/eryxon-flow/pull/598), `pull_request` trigger), 2026-05-24. Conclusion: **failure** at iOS bootstrap; downstream steps skipped. Logs/artifacts: `native-build-smoke-26370608416`.
+
+| Check | Status | Evidence |
 | --- | --- | --- |
-| `npm run ios:init` in a native-capable lane | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
-| iOS simulator build of `ios/App/App.xcworkspace` | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
-| `npm run android:assemble:debug` | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
-| `npm run android:assemble:release` | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
+| macOS toolchain present (Xcode, CocoaPods, Java 17, Android SDK API 35) | PASS | "Capture native toolchain versions" step succeeded — confirms the lane is correctly provisioned |
+| `npm run ios:init` (web build + `npx cap add ios`) | PARTIAL | web `vite build` PASS, `npx cap add ios` PASS (Xcode project + assets generated), then `pod install` FAILED |
+| iOS `pod install` (CocoaPods dependency resolution) | FAIL | `GoogleMLKit/BarcodeScanning (= 7.0.0)` — pulled transitively by `@capacitor-mlkit/barcode-scanning` 7.5.0 — "required a higher minimum deployment target" than the Capacitor-generated Podfile's iOS target. Root cause below. |
+| iOS simulator build of `ios/App/App.xcworkspace` | SKIPPED | iOS step failed before a workspace existed |
+| `npm run android:assemble:debug` | SKIPPED | job halts on first failed step; Android never ran this run |
+| `npm run android:assemble:release` | SKIPPED | job halts on first failed step; Android never ran this run |
+
+## Root cause + proposed fix (iOS)
+
+- `@capacitor-mlkit/barcode-scanning@7.5.0` depends on `GoogleMLKit/BarcodeScanning = 7.0.0`, which requires a higher minimum iOS deployment target than the default Capacitor Podfile emits.
+- Fix: pin the generated iOS deployment target high enough for GoogleMLKit 7.0.0 (iOS 15.5+). Because `ios/` is not committed and `npx cap add ios` runs `pod install` during `add`, the target must be injected before pod resolution — e.g. set a Capacitor iOS `platform`/deployment-target config or generate the Podfile with `platform :ios, '15.5'` (+ a `post_install` target override) prior to `cap add ios`. This is a native-packaging change owned by ERY-71 follow-up, not the smoke-lane itself.
+
+## Workflow follow-up
+
+- The iOS failure masked Android validation (steps skipped). Split iOS and Android into independent jobs (or `if: always()` gating) so a failure in one still produces evidence for the other on the same run.
+
+## Remaining Apple-specific gaps
 
 ## Remaining Apple-specific gaps
 
