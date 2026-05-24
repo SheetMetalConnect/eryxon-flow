@@ -81,55 +81,41 @@ jobs:
           echo "Resolved DB_URL host/port (redacted creds): ${DB_URL#*@}"
           echo "db_url=$DB_URL" >> "$GITHUB_OUTPUT"
 
-      - name: Provision non-owner seed role
+      - name: Verify seed role is a non-owner (fidelity guard)
         shell: bash
         env:
           DB_URL: ${{ steps.db.outputs.db_url }}
         run: |
           set -euo pipefail
-          # seed_runner mimics the hosted seed connection: it can write buckets
-          # (BYPASSRLS) and read schemas, but it does NOT own storage.objects, so
-          # CREATE POLICY raises 42501 — exactly the ERY-47 failure condition.
-          #
-          # The storage schema/tables are owned by supabase_storage_admin (not by
-          # the `postgres` login in DB_URL), so the storage grants must be issued
-          # under that owner role; otherwise seed.sql dies earlier with
-          # "permission denied for schema storage" — the wrong failure mode.
-          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL' 2>&1 | tee artifacts/role-setup.log
-          DROP ROLE IF EXISTS seed_runner;
-          CREATE ROLE seed_runner LOGIN PASSWORD 'seed_runner' NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS;
-
-          SET ROLE supabase_storage_admin;
-          GRANT USAGE ON SCHEMA storage TO seed_runner;
-          GRANT INSERT, SELECT, UPDATE ON storage.buckets TO seed_runner;
-          GRANT SELECT ON storage.objects TO seed_runner;
-          RESET ROLE;
-
-          DO $$ BEGIN
-            IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'extensions') THEN
-              EXECUTE 'GRANT USAGE ON SCHEMA extensions TO seed_runner';
-            END IF;
-            IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'cron') THEN
-              EXECUTE 'GRANT USAGE ON SCHEMA cron TO seed_runner';
-            END IF;
+          # The runbook applies seed via `supabase db execute < seed.sql`, which
+          # connects as `postgres`. On both hosted Supabase and this local stack,
+          # `postgres` is a non-superuser that does NOT own storage.objects (owned
+          # by supabase_storage_admin) — so CREATE POLICY raises 42501. We assert
+          # that here so a future stack change that makes postgres an owner/super
+          # would surface as a fidelity failure rather than a silent false pass.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL' 2>&1 | tee artifacts/role-check.log
+          SELECT current_user AS seed_role,
+                 (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) AS is_superuser,
+                 pg_catalog.pg_get_userbyid(c.relowner) AS storage_objects_owner
+          FROM pg_class c
+          JOIN pg_namespace n ON n.oid = c.relnamespace
+          WHERE n.nspname = 'storage' AND c.relname = 'objects';
+          DO $$
+          DECLARE v_super boolean; v_owner text;
+          BEGIN
+            SELECT rolsuper INTO v_super FROM pg_roles WHERE rolname = current_user;
+            SELECT pg_get_userbyid(c.relowner) INTO v_owner
+              FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE n.nspname='storage' AND c.relname='objects';
+            IF v_super THEN RAISE EXCEPTION 'FIDELITY: seed role % is a superuser; 42501 will not reproduce', current_user; END IF;
+            IF v_owner = current_user THEN RAISE EXCEPTION 'FIDELITY: seed role % owns storage.objects; 42501 will not reproduce', current_user; END IF;
           END $$;
           SQL
-
-      - name: Build non-owner connection string
-        id: seedconn
-        shell: bash
-        env:
-          DB_URL: ${{ steps.db.outputs.db_url }}
-        run: |
-          set -euo pipefail
-          # Swap the user/password to seed_runner, keep host/port/db from the stack.
-          HOSTPART="${DB_URL#*@}"
-          echo "seed_url=postgresql://seed_runner:seed_runner@${HOSTPART}" >> "$GITHUB_OUTPUT"
 
       - name: NEGATIVE control — pre-fix seed MUST fail with 42501
         shell: bash
         env:
-          SEED_URL: ${{ steps.seedconn.outputs.seed_url }}
+          SEED_URL: ${{ steps.db.outputs.db_url }}
         run: |
           set -uo pipefail
           mkdir -p artifacts
@@ -155,7 +141,7 @@ jobs:
       - name: POSITIVE — current fixed seed MUST complete clean
         shell: bash
         env:
-          SEED_URL: ${{ steps.seedconn.outputs.seed_url }}
+          SEED_URL: ${{ steps.db.outputs.db_url }}
         run: |
           set -uo pipefail
           mkdir -p artifacts
