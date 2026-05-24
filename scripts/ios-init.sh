@@ -9,6 +9,14 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
+# Minimum iOS deployment target. GoogleMLKit/BarcodeScanning (= 7.0.0), pulled in
+# transitively by @capacitor-mlkit/barcode-scanning, refuses to resolve below
+# iOS 15.5. Capacitor's stock Podfile ships `platform :ios, '14.0'`, so a plain
+# `pod install` fails with "required a higher minimum deployment target". We
+# floor the generated project to this value before any pod resolution runs.
+# See ERY-109.
+IOS_DEPLOYMENT_TARGET="15.5"
+
 if ! command -v node >/dev/null 2>&1; then
   echo "✖ Node.js 20+ is required." >&2
   exit 1
@@ -41,6 +49,53 @@ ensure_native_build_bindings() {
   fi
 }
 
+# Raise the iOS deployment-target floor across the generated project so the
+# GoogleMLKit barcode pod resolves. Idempotent: safe to re-run on every sync.
+#
+# Capacitor's `cap sync` rewrites only the `def capacitor_pods` block and the
+# `require_relative` line of the Podfile, so the `platform :ios` line and the
+# `post_install` hook we edit here survive subsequent syncs.
+ensure_ios_deployment_floor() {
+  local podfile="ios/App/Podfile"
+  local pbxproj="ios/App/App.xcodeproj/project.pbxproj"
+
+  if [[ -f "$podfile" ]]; then
+    echo "▶ Flooring iOS deployment target to ${IOS_DEPLOYMENT_TARGET} (GoogleMLKit/BarcodeScanning needs ≥ 15.5)..."
+
+    # 1. Podfile platform floor — drives CocoaPods dependency resolution.
+    perl -0777 -pi -e "s/platform :ios, '[^']*'/platform :ios, '${IOS_DEPLOYMENT_TARGET}'/" "$podfile"
+
+    # 2. post_install floor — Capacitor's assertDeploymentTarget only bumps pod
+    #    targets up to 14.0, which is below GoogleMLKit's requirement. Raise any
+    #    pod target still under the floor. Guarded by the ERY-109 marker so the
+    #    block is injected exactly once.
+    if ! grep -q "ERY-109" "$podfile"; then
+      POST_INSTALL_FLOOR=$(cat <<RUBY
+
+  # ERY-109: GoogleMLKit/BarcodeScanning (= 7.0.0) requires iOS ${IOS_DEPLOYMENT_TARGET}+.
+  installer.pods_project.targets.each do |ery_target|
+    ery_target.build_configurations.each do |ery_config|
+      ery_current = ery_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f
+      if ery_current != 0.0 && ery_current < ${IOS_DEPLOYMENT_TARGET}
+        ery_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '${IOS_DEPLOYMENT_TARGET}'
+      end
+    end
+  end
+RUBY
+)
+      export POST_INSTALL_FLOOR
+      perl -0777 -pi -e 's/(\n\s*assertDeploymentTarget\(installer\))/$1 . $ENV{POST_INSTALL_FLOOR}/e' "$podfile"
+      unset POST_INSTALL_FLOOR
+    fi
+  fi
+
+  # 3. App target floor — bump any IPHONEOS_DEPLOYMENT_TARGET below the floor in
+  #    the Xcode project, leaving already-higher values untouched.
+  if [[ -f "$pbxproj" ]]; then
+    perl -pi -e 's/IPHONEOS_DEPLOYMENT_TARGET = ([0-9.]+);/"IPHONEOS_DEPLOYMENT_TARGET = " . (($1 + 0) < '"${IOS_DEPLOYMENT_TARGET}"' ? "'"${IOS_DEPLOYMENT_TARGET}"'" : $1) . ";"/ge' "$pbxproj"
+  fi
+}
+
 if [[ "${OSTYPE:-}" != darwin* ]]; then
   echo "⚠ Capacitor's iOS toolchain only runs on macOS — this script will" >&2
   echo "  configure the project but you must finish 'cap add ios' on a Mac." >&2
@@ -54,16 +109,29 @@ else
 fi
 ensure_native_build_bindings
 
-echo "▶ Building production web bundle..."
-npm run build
-
+# Generate the native iOS project BEFORE building the web bundle. `cap add ios`
+# auto-runs its internal sync — and therefore `pod install` — only when the web
+# build directory already exists. Adding the platform while `dist/` is still
+# absent gives us a generated Podfile we can floor (below) before any pod
+# resolution happens. The real `cap sync ios` after the build installs pods. See
+# ERY-109.
 if [[ ! -d ios ]]; then
   echo "▶ Generating native iOS project (npx cap add ios)..."
   npx cap add ios
 fi
 
+# Floor the deployment target before the build + sync run `pod install`.
+ensure_ios_deployment_floor
+
+echo "▶ Building production web bundle..."
+npm run build
+
 echo "▶ Syncing web bundle and native plugins into ios/..."
 npx cap sync ios
+
+# Re-assert the floor: `cap sync` rewrites parts of the Podfile, and a future
+# Capacitor change could touch the platform line, so confirm it still holds.
+ensure_ios_deployment_floor
 
 # Ensure the generated Info.plist carries the strings ML Kit / Biometric
 # need. Capacitor doesn't inject these automatically — without them iOS will
