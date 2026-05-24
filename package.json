@@ -17,6 +17,7 @@
     "test:ui": "vitest --ui",
     "test:api": "npx tsx scripts/api-test-utils.ts",
     "test:api:e2e": "bash scripts/test-api-e2e.sh",
+    "drill:restore": "bash scripts/restore-drill.sh",
     "analyze": "vite build --mode analyze",
     "pwa:assets": "pwa-assets-generator --preset minimal-2023 public/pwa-icon.svg",
     "deps:graph": "madge --ts-config tsconfig.app.json --extensions ts,tsx --json src/App.tsx > docs/dependency-graph.json",
