@@ -20,9 +20,9 @@ import { logger } from "@/lib/logger";
 import { MobileTopBar } from "@/components/mobile";
 
 /**
- * QR / barcode entry point. Uses the iOS ML Kit scanner when running native;
- * falls back to a manual lookup form on the web. Either way the user lands
- * on the matching operation detail screen.
+ * QR / barcode entry point. Uses the ML Kit scanner when running in the native
+ * iOS or Android shell; falls back to a manual lookup form on the web. Either
+ * way the user lands on the matching operation detail screen.
  */
 export default function MobileScanner() {
   const { t } = useTranslation();
@@ -118,14 +118,17 @@ export default function MobileScanner() {
     } catch (error) {
       if (error instanceof ScannerUnavailableError) {
         toast.error(
-          t("scanner.unavailable", "Scanner is only available in the iOS app"),
+          t(
+            "scanner.unavailable",
+            "Camera scanning is only available in the native iOS and Android apps",
+          ),
         );
       } else if (error instanceof ScannerPermissionError) {
         await haptics.error();
         toast.error(
           t(
             "scanner.permissionDenied",
-            "Enable camera access in iOS Settings to scan",
+            "Enable camera access in your device settings to scan",
           ),
         );
       } else if (error instanceof Error) {
@@ -138,14 +141,16 @@ export default function MobileScanner() {
     }
   }, [haptics, navigate, resolvePayload, t]);
 
-  // On first arrival on a native device, fire the scanner immediately. The
-  // user came here to scan — making them tap a "Start scanning" button is
-  // friction.
+  // On first arrival inside the native shell (iOS or Android), fire the
+  // scanner immediately. The user came here to scan — making them tap a
+  // "Start scanning" button is friction. Web/PWA stays user-initiated via the
+  // camera button below: the route has no live preview target, so an
+  // auto-triggered camera prompt would be a surprise UX regression.
   useEffect(() => {
-    if (native.isNativeIOS && available) {
+    if (native.isNative && available) {
       void launchScan();
     }
-  }, [native.isNativeIOS, available, launchScan]);
+  }, [native.isNative, available, launchScan]);
 
   const handleManual = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -198,7 +203,7 @@ export default function MobileScanner() {
                 )
               : t(
                   "scanner.fallback",
-                  "Camera scanning is only available in the native iOS app. Type a code below to continue.",
+                  "Camera scanning runs in the native iOS and Android apps. Type a code below to continue.",
                 )}
           </p>
         </div>

@@ -1799,7 +1799,8 @@
     "scanHint": "Halten Sie das Gerät ruhig und den Code im Bild zentriert.",
     "scanNoResult": "Kein Code erkannt. Erneut versuchen oder manuell eingeben.",
     "scanFailed": "Scanner fehlgeschlagen. Code manuell eingeben.",
-    "scannerUnavailable": "Live-Scanner in diesem Browser nicht unterstützt. Geben Sie den Code unten ein.",
+    "scanOpening": "Kamera wird geöffnet…",
+    "scannerUnavailable": "Live-Scan läuft in den Eryxon iOS- und Android-Apps. Geben Sie den Code unten ein.",
     "codePlaceholder": "Auftrags-, Teile- oder Chargencode",
     "enterManually": "Code manuell eingeben",
     "signIn": "Bei Ihrem Terminal anmelden",
@@ -1824,12 +1825,12 @@
     "title": "Auftrag, Teil oder Operation scannen",
     "openCamera": "Kamera öffnen",
     "available": "Richten Sie die Kamera auf einen gedruckten QR oder Barcode. Eryxon springt direkt zur passenden Operation.",
-    "fallback": "Kamera-Scan ist nur in der nativen iOS-App verfügbar. Geben Sie unten einen Code ein, um fortzufahren.",
+    "fallback": "Kamera-Scan läuft in den nativen iOS- und Android-Apps. Geben Sie unten einen Code ein, um fortzufahren.",
     "manualPlaceholder": "Auftrags-, Teile- oder Operations-ID",
     "findManual": "Operation suchen",
     "notFound": "Keine Operation gefunden für: {{value}}",
-    "unavailable": "Scanner ist nur in der iOS-App verfügbar",
-    "permissionDenied": "Aktivieren Sie den Kamera-Zugriff in den iOS-Einstellungen, um zu scannen"
+    "unavailable": "Kamera-Scan ist nur in den nativen iOS- und Android-Apps verfügbar",
+    "permissionDenied": "Aktivieren Sie den Kamera-Zugriff in den Geräteeinstellungen, um zu scannen"
   },
   "activity": {
     "today": "Heute",

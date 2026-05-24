@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Camera, Keyboard, Loader2, X } from "lucide-react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -16,9 +16,10 @@ interface ScanDialogProps {
 
 /**
  * Touch-friendly scan dialog used by the operator queue + issue capture.
- * Native: opens ML Kit camera scanner immediately (no in-dialog preview, the
- * plugin presents its own full-screen UI). Web: shows an in-dialog camera
- * preview if BarcodeDetector is available, otherwise falls back to manual entry.
+ * Native (iOS + Android): opens the ML Kit camera scanner immediately — the
+ * plugin presents its own full-screen UI, so the dialog only shows a brief
+ * spinner behind it. Web/PWA: no live scanner (camera blocked by the hosted
+ * Permissions-Policy), so it goes straight to manual entry.
  */
 export function ScanDialog({
   open,
@@ -33,7 +34,6 @@ export function ScanDialog({
   const [manual, setManual] = useState("");
   const [scannerSupported, setScannerSupported] = useState<boolean | null>(null);
   const [prevOpen, setPrevOpen] = useState(open);
-  const previewRef = useRef<HTMLDivElement>(null);
 
   // Reset transient state on the open=false → open=true edge using the
   // React-recommended derived-state-from-props pattern (vs. setState-in-effect
@@ -63,23 +63,19 @@ export function ScanDialog({
     if (!open || scannerSupported === null) return;
     if (!scannerSupported) return;
 
+    // Only reached on native (web reports the scanner unavailable above).
     let cancelled = false;
-    // Tear down `getUserMedia` immediately when the dialog closes — without
-    // this the camera indicator stays on until the 30s scan timeout.
     const abort = new AbortController();
-    // Loading flag for an async camera handshake — react-hooks lint flags
-    // any setState-in-effect, but this is the canonical "kick off a request
-    // when conditions become true" pattern.
+    // Loading flag while the native ML Kit scanner spins up — react-hooks lint
+    // flags any setState-in-effect, but this is the canonical "kick off a
+    // request when conditions become true" pattern.
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setBusy(true);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null);
     void (async () => {
       try {
-        const result = await scanOnce({
-          previewTarget: isNativeApp() ? null : previewRef.current,
-          signal: abort.signal,
-        });
+        const result = await scanOnce({ signal: abort.signal });
         if (cancelled) return;
         if (result?.value) {
           await haptics.success();
@@ -140,23 +136,20 @@ export function ScanDialog({
         </div>
 
         <div className="space-y-3 p-4">
+          {isNativeApp() && busy && (
+            <div className="flex items-center justify-center gap-2 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              {t("mobile.scanOpening", "Opening camera…")}
+            </div>
+          )}
           {!isNativeApp() && (
-            <div
-              ref={previewRef}
-              className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-black/90"
-            >
-              {busy && (
-                <div className="absolute inset-0 flex items-center justify-center text-white/80">
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                </div>
-              )}
-              {!busy && scannerSupported === false && (
-                <div className="absolute inset-0 flex items-center justify-center text-center text-xs text-white/70 px-4">
-                  {t(
-                    "mobile.scannerUnavailable",
-                    "Live scanner not supported in this browser. Enter the code below."
-                  )}
-                </div>
+            // Web/PWA has no live scanner — the hosted camera policy blocks it.
+            // Show a truthful note and route the operator straight to manual
+            // entry instead of a camera affordance that can never open.
+            <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+              {t(
+                "mobile.scannerUnavailable",
+                "Live scanning runs in the Eryxon iOS and Android apps. Enter the code below."
               )}
             </div>
           )}

@@ -2,10 +2,13 @@
  * Barcode/QR scanner abstraction.
  *
  * Native: ML Kit barcode scanner — fast, accurate, supports CODE_128/CODE_39/QR/DATA_MATRIX
- *         used for parts, jobs, batches, CNC programs.
- * Web:    falls back to BarcodeDetector API (Chromium ≥ 88) which works in dev on
- *         desktop with a webcam, and on Android Chrome. If neither is available
- *         the caller can prompt for manual entry via the UI.
+ *         used for parts, jobs, batches, CNC programs. iOS and Android both.
+ * Web/PWA: no live scanner. Hosted deployments ship `Permissions-Policy: camera=()`
+ *          (see `vercel.json` / `public/_headers`), so any `getUserMedia()` call
+ *          is blocked by policy. Rather than promise a camera path that fails the
+ *          moment the user grants it, we report the scanner as unavailable on the
+ *          web and the caller falls back to manual code entry. This keeps the
+ *          in-app affordance truthful for v0.6 (see ERY-70 / ERY-82).
  */
 
 import { isNativeApp } from "./platform";
@@ -35,20 +38,25 @@ export interface ScanResult {
 
 export interface ScanOptions {
   formats?: ScanFormat[];
-  /** Web-only: pass an element to mount the live preview into. */
+  /**
+   * Reserved for a future web live-preview path. No-op today: the web has no
+   * live scanner (camera blocked by `Permissions-Policy`), and the native ML
+   * Kit plugin presents its own full-screen UI, so it never mounts a preview.
+   */
   previewTarget?: HTMLElement | null;
   /**
-   * Abort the in-flight scan. Web fallback: stops the `getUserMedia`
-   * stream and removes the preview element so the camera indicator
-   * goes away the moment the user closes the dialog.
+   * Reserved abort handle. No-op today: the native ML Kit scan is a single
+   * awaited call with its own cancel UI, and the web path throws immediately
+   * without opening a camera stream.
    */
   signal?: AbortSignal;
 }
 
 /**
- * Throw when the caller invokes `scanOnce()` outside the native shell on a
- * device without `BarcodeDetector`. The mobile scanner page catches this and
- * shows a manual-entry fallback rather than failing silently.
+ * Thrown when the caller invokes `scanOnce()` outside the native shell. Hosted
+ * web/PWA has no live scanner (camera is blocked by `Permissions-Policy`), so
+ * the mobile scanner page catches this and shows a manual-entry fallback rather
+ * than failing silently at `getUserMedia()`.
  */
 export class ScannerUnavailableError extends Error {
   constructor() {
@@ -76,19 +84,20 @@ interface CapacitorBarcodeScannerModule {
 }
 
 export async function isScannerAvailable(): Promise<boolean> {
-  if (isNativeApp()) {
-    try {
-      const mod = (await import(
-        "@capacitor-mlkit/barcode-scanning"
-      )) as unknown as CapacitorBarcodeScannerModule;
-      const { supported } = await mod.BarcodeScanner.isSupported();
-      return supported;
-    } catch {
-      return false;
-    }
+  // Web/PWA never has a live scanner: hosted deployments lock the camera via
+  // `Permissions-Policy: camera=()`, so reporting availability here would
+  // promise a path that fails at `getUserMedia()`. Only the native shells
+  // (iOS + Android) run the ML Kit scanner.
+  if (!isNativeApp()) return false;
+  try {
+    const mod = (await import(
+      "@capacitor-mlkit/barcode-scanning"
+    )) as unknown as CapacitorBarcodeScannerModule;
+    const { supported } = await mod.BarcodeScanner.isSupported();
+    return supported;
+  } catch {
+    return false;
   }
-  return typeof (window as unknown as { BarcodeDetector?: unknown })
-    .BarcodeDetector !== "undefined";
 }
 
 async function ensurePermission(): Promise<boolean> {
@@ -120,123 +129,10 @@ export async function scanOnce(
     return first ? { value: first.rawValue, format: first.format } : null;
   }
 
-  // Web fallback uses the BarcodeDetector API; if that's missing too, the
-  // caller should branch on `isScannerAvailable()` first or catch this.
-  if (
-    typeof (window as unknown as { BarcodeDetector?: unknown }).BarcodeDetector ===
-    "undefined"
-  ) {
-    throw new ScannerUnavailableError();
-  }
-  return scanWithBarcodeDetector(
-    formats,
-    opts.previewTarget ?? null,
-    opts.signal,
-  );
-}
-
-interface BarcodeDetectorCtor {
-  new (opts: { formats: string[] }): {
-    detect: (source: CanvasImageSource) => Promise<
-      Array<{ rawValue: string; format: string }>
-    >;
-  };
-}
-
-async function scanWithBarcodeDetector(
-  formats: ScanFormat[],
-  preview: HTMLElement | null,
-  signal?: AbortSignal,
-): Promise<ScanResult | null> {
-  const Ctor = (window as unknown as { BarcodeDetector?: BarcodeDetectorCtor })
-    .BarcodeDetector;
-  if (!Ctor) throw new Error("Scanner unavailable on this platform");
-
-  if (signal?.aborted) return null;
-
-  const detector = new Ctor({
-    formats: formats.map((f) => f.toLowerCase().replace(/_/g, "_")),
-  });
-
-  const stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "environment" },
-  });
-  const video = document.createElement("video");
-  video.srcObject = stream;
-  video.setAttribute("playsinline", "true");
-  video.muted = true;
-  if (preview) {
-    video.style.width = "100%";
-    video.style.height = "100%";
-    video.style.objectFit = "cover";
-    preview.appendChild(video);
-  }
-  await video.play();
-
-  const stop = () => {
-    stream.getTracks().forEach((track) => track.stop());
-    if (preview && video.parentNode === preview) preview.removeChild(video);
-  };
-
-  return new Promise<ScanResult | null>((resolve, reject) => {
-    // Order matters: declare every mutable handle *before* the signal-abort
-    // path so an already-aborted signal doesn't trip a TDZ access on
-    // `timeoutId` / `raf` inside `cleanup`. Function declarations also hoist
-    // so `cleanup` and `onAbort` can reference each other safely.
-    let raf = 0;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    let cancelled = false;
-
-    const cleanup = () => {
-      if (raf) cancelAnimationFrame(raf);
-      if (timeoutId !== undefined) clearTimeout(timeoutId);
-      if (signal && onAbort) signal.removeEventListener("abort", onAbort);
-      stop();
-    };
-
-    const onAbort = () => {
-      if (cancelled) return;
-      cancelled = true;
-      cleanup();
-      resolve(null);
-    };
-
-    if (signal) {
-      // If the caller aborts (e.g. user closes the dialog), tear down the
-      // camera stream immediately so the OS indicator goes off and the
-      // browser tab stops draining battery.
-      if (signal.aborted) {
-        onAbort();
-        return;
-      }
-      signal.addEventListener("abort", onAbort, { once: true });
-    }
-
-    const tick = async () => {
-      if (cancelled) return;
-      try {
-        const results = await detector.detect(video);
-        if (results[0]) {
-          cancelled = true;
-          cleanup();
-          resolve({ value: results[0].rawValue, format: results[0].format });
-          return;
-        }
-      } catch (err) {
-        cancelled = true;
-        cleanup();
-        reject(err);
-        return;
-      }
-      raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-
-    timeoutId = setTimeout(() => {
-      if (cancelled) return;
-      cancelled = true;
-      cleanup();
-      resolve(null);
-    }, 30_000);
-  });
+  // Web/PWA: no live scanner. The hosted camera policy (`Permissions-Policy:
+  // camera=()`) blocks `getUserMedia()`, so we never attempt it — surfacing a
+  // camera affordance here would be a false promise. Callers branch on
+  // `isScannerAvailable()` (false on web) and fall back to manual entry; this
+  // throw is the defensive backstop if one forgets to.
+  throw new ScannerUnavailableError();
 }

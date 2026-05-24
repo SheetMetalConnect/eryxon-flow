@@ -2066,7 +2066,8 @@
     "scanHint": "Houd het apparaat stil en centreer de code in beeld.",
     "scanNoResult": "Geen code gevonden. Probeer opnieuw of voer hem handmatig in.",
     "scanFailed": "Scanner mislukt. Voer de code handmatig in.",
-    "scannerUnavailable": "Live scanner niet ondersteund in deze browser. Voer de code hieronder in.",
+    "scanOpening": "Camera openen…",
+    "scannerUnavailable": "Live scannen werkt in de Eryxon iOS- en Android-apps. Voer de code hieronder in.",
     "codePlaceholder": "Order-, onderdeel- of batchcode",
     "enterManually": "Code handmatig invoeren",
     "signIn": "Aanmelden bij uw terminal",
@@ -2091,12 +2092,12 @@
     "title": "Scan een order, onderdeel of bewerking",
     "openCamera": "Camera openen",
     "available": "Richt de camera op een geprinte QR of barcode. Eryxon springt meteen naar de juiste bewerking.",
-    "fallback": "Camerascannen is alleen beschikbaar in de native iOS-app. Voer hieronder een code in om door te gaan.",
+    "fallback": "Camerascannen werkt in de native iOS- en Android-apps. Voer hieronder een code in om door te gaan.",
     "manualPlaceholder": "Order-, onderdeel- of bewerkings-ID",
     "findManual": "Bewerking zoeken",
     "notFound": "Geen bewerking gevonden voor: {{value}}",
-    "unavailable": "Scanner is alleen beschikbaar in de iOS-app",
-    "permissionDenied": "Schakel camera-toegang in via iOS Instellingen om te scannen"
+    "unavailable": "Camerascannen is alleen beschikbaar in de native iOS- en Android-apps",
+    "permissionDenied": "Schakel camera-toegang in via de apparaatinstellingen om te scannen"
   },
   "activity": {
     "today": "Vandaag",

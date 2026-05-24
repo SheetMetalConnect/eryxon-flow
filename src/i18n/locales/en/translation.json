@@ -2058,7 +2058,8 @@
     "scanHint": "Hold the device steady and centre the code in view.",
     "scanNoResult": "No code detected. Try again or enter it manually.",
     "scanFailed": "Scanner failed. Enter the code manually.",
-    "scannerUnavailable": "Live scanner not supported in this browser. Enter the code below.",
+    "scanOpening": "Opening camera…",
+    "scannerUnavailable": "Live scanning runs in the Eryxon iOS and Android apps. Enter the code below.",
     "codePlaceholder": "Job, part, or batch code",
     "enterManually": "Enter code manually",
     "signIn": "Sign in to your terminal",
@@ -2083,12 +2084,12 @@
     "title": "Scan a job, part, or operation",
     "openCamera": "Open camera",
     "available": "Point the camera at a printed QR or barcode. Eryxon will jump straight to the matching operation.",
-    "fallback": "Camera scanning is only available in the native iOS app. Type a code below to continue.",
+    "fallback": "Camera scanning runs in the native iOS and Android apps. Type a code below to continue.",
     "manualPlaceholder": "Job, part, or operation ID",
     "findManual": "Find operation",
     "notFound": "No operation matched: {{value}}",
-    "unavailable": "Scanner is only available in the iOS app",
-    "permissionDenied": "Enable camera access in iOS Settings to scan"
+    "unavailable": "Camera scanning is only available in the native iOS and Android apps",
+    "permissionDenied": "Enable camera access in your device settings to scan"
   },
   "activity": {
     "today": "Today",
