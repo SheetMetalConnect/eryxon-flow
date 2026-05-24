@@ -122,7 +122,9 @@ jobs:
           # Fetch the seed.sql exactly as it was before the fix (parent of b2ba76a).
           git show b2ba76a~1:supabase/seed.sql > artifacts/seed.prefix.sql
           set +e
-          psql "$SEED_URL" -v ON_ERROR_STOP=1 -f artifacts/seed.prefix.sql \
+          # VERBOSITY=verbose makes psql print the SQLSTATE (42501) alongside the
+          # human-readable "must be owner of table" message.
+          psql "$SEED_URL" -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f artifacts/seed.prefix.sql \
             > artifacts/negative-control.out 2> artifacts/negative-control.err
           RC=$?
           set -e
@@ -132,8 +134,10 @@ jobs:
             echo "::error::Negative control did not fail — harness is NOT reproducing the 42501 non-owner condition. Drill result is untrustworthy."
             exit 1
           fi
-          if ! grep -qiE "42501|insufficient_privilege" artifacts/negative-control.err; then
-            echo "::error::Pre-fix seed failed, but not with 42501/insufficient_privilege — wrong failure mode."
+          # 42501 surfaces as SQLSTATE 42501 / "insufficient_privilege" / the
+          # message "must be owner of table objects" — all the same privilege error.
+          if ! grep -qiE "42501|insufficient_privilege|must be owner of table objects" artifacts/negative-control.err; then
+            echo "::error::Pre-fix seed failed, but not with the 42501 ownership error — wrong failure mode."
             exit 1
           fi
           echo "OK: pre-fix seed aborted with 42501 as expected (harness reproduces the bug)."
@@ -146,7 +150,7 @@ jobs:
           set -uo pipefail
           mkdir -p artifacts
           set +e
-          psql "$SEED_URL" -v ON_ERROR_STOP=1 -f supabase/seed.sql \
+          psql "$SEED_URL" -v ON_ERROR_STOP=1 -v VERBOSITY=verbose -f supabase/seed.sql \
             > artifacts/positive-seed.out 2> artifacts/positive-seed.err
           RC=$?
           set -e
@@ -157,8 +161,10 @@ jobs:
             echo "::error::Fixed seed.sql did NOT complete clean (exit $RC) — seed fix insufficient."
             exit 1
           fi
-          if grep -qiE "ERROR:.*42501|ERROR:.*insufficient_privilege" artifacts/positive-seed.err; then
-            echo "::error::Fixed seed.sql surfaced an unhandled 42501 error."
+          # With the fix, the privilege error is swallowed by the exception handler,
+          # so no ERROR line should reach stderr at all.
+          if grep -qiE "^psql:.*ERROR:|42501|must be owner of table objects" artifacts/positive-seed.err; then
+            echo "::error::Fixed seed.sql surfaced an unhandled privilege error."
             exit 1
           fi
           echo "OK: fixed seed.sql completed clean on a fresh tenant as a non-owner role (no 42501 abort)."
