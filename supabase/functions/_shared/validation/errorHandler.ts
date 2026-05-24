@@ -135,131 +135,132 @@ export function createErrorResponse(
 }
 
 /**
- * Main error handler - converts errors to standardized responses
+ * Mapped, code-stable shape of an error. Used both to build the HTTP response
+ * and to record the same `error_code`/`statusCode` in observability metadata.
  */
-export function handleError(error: unknown): Response {
-  console.error("Error:", error);
+export interface MappedError {
+  code: string;
+  message: string;
+  status: number;
+  details?: any;
+  /** Extra response headers (e.g. rate-limit) to merge into the response. */
+  headers?: Record<string, string>;
+}
 
-  // Validation errors (422)
+/**
+ * Map an unknown error to a stable code + HTTP status, without building a
+ * Response. Single source of truth for the error taxonomy so logs, persisted
+ * activity, and HTTP responses all agree on the `error_code`.
+ */
+export function mapError(error: unknown): MappedError {
   if (error instanceof ValidationException) {
-    return createErrorResponse(
-      "VALIDATION_ERROR",
-      error.validationResult.summary,
-      422,
-      error.validationResult.errors,
-    );
+    return {
+      code: "VALIDATION_ERROR",
+      message: error.validationResult.summary,
+      status: 422,
+      details: error.validationResult.errors,
+    };
   }
-
-  // Not found errors (404)
   if (error instanceof NotFoundError) {
-    return createErrorResponse(
-      "NOT_FOUND",
-      error.message,
-      404,
-    );
+    return { code: "NOT_FOUND", message: error.message, status: 404 };
   }
-
-  // Conflict errors (409)
   if (error instanceof ConflictError) {
-    return createErrorResponse(
-      "CONFLICT",
-      error.message,
-      409,
-    );
+    return { code: "CONFLICT", message: error.message, status: 409 };
   }
-
-  // Unauthorized errors (401)
   if (error instanceof UnauthorizedError) {
-    return createErrorResponse(
-      "UNAUTHORIZED",
-      error.message,
-      401,
-    );
+    return { code: "UNAUTHORIZED", message: error.message, status: 401 };
   }
-
-  // Forbidden errors (403)
   if (error instanceof ForbiddenError) {
-    return createErrorResponse(
-      "FORBIDDEN",
-      error.message,
-      403,
-    );
+    return { code: "FORBIDDEN", message: error.message, status: 403 };
   }
-
-  // Payment required errors (402)
   if (error instanceof PaymentRequiredError) {
-    return createErrorResponse(
-      "QUOTA_EXCEEDED",
-      error.message,
-      402,
-      {
+    return {
+      code: "QUOTA_EXCEEDED",
+      message: error.message,
+      status: 402,
+      details: {
         limitType: error.limitType,
         currentUsage: error.currentUsage,
         limit: error.limit,
       },
-    );
+    };
+  }
+  if (error instanceof RateLimitError) {
+    return {
+      code: "RATE_LIMIT_EXCEEDED",
+      message: error.message,
+      status: 429,
+      details: {
+        remaining: error.rateLimitResult.remaining,
+        resetAt: new Date(error.rateLimitResult.resetAt).toISOString(),
+        retryAfter: error.rateLimitResult.retryAfter,
+      },
+      headers: getRateLimitHeaders(error.rateLimitResult),
+    };
+  }
+  if (error instanceof BadRequestError) {
+    return { code: "BAD_REQUEST", message: error.message, status: 400 };
+  }
+  if (error instanceof InternalServerError) {
+    return { code: "INTERNAL_ERROR", message: error.message, status: 500 };
+  }
+  if (error instanceof Error) {
+    return { code: "INTERNAL_ERROR", message: error.message, status: 500 };
+  }
+  return {
+    code: "INTERNAL_ERROR",
+    message: "An unexpected error occurred",
+    status: 500,
+  };
+}
+
+/**
+ * Main error handler - converts errors to standardized responses.
+ *
+ * When `requestId` is provided it is echoed back in the `x-request-id`
+ * response header so a client/edge log can be correlated with the failure.
+ */
+export function handleError(error: unknown, requestId?: string): Response {
+  console.error("Error:", error);
+
+  const mapped = mapError(error);
+
+  const headers: Record<string, string> = {
+    ...corsHeaders,
+    ...(mapped.headers ?? {}),
+    "Content-Type": "application/json",
+  };
+  if (requestId) {
+    headers["x-request-id"] = requestId;
   }
 
-  // Rate limit errors (429)
+  // Rate-limit responses carry richer error info for backward compatibility.
   if (error instanceof RateLimitError) {
-    const rateLimitHeaders = getRateLimitHeaders(error.rateLimitResult);
     const body = {
       success: false,
       error: {
-        code: "RATE_LIMIT_EXCEEDED",
-        message: error.message,
-        statusCode: 429,
-        rateLimitInfo: {
-          remaining: error.rateLimitResult.remaining,
-          resetAt: new Date(error.rateLimitResult.resetAt).toISOString(),
-          retryAfter: error.rateLimitResult.retryAfter,
-        },
+        code: mapped.code,
+        message: mapped.message,
+        statusCode: mapped.status,
+        rateLimitInfo: mapped.details,
       },
     };
-
-    return new Response(JSON.stringify(body), {
-      status: 429,
-      headers: {
-        ...corsHeaders,
-        ...rateLimitHeaders,
-        "Content-Type": "application/json",
-      },
-    });
+    return new Response(JSON.stringify(body), { status: mapped.status, headers });
   }
 
-  // Bad request errors (400)
-  if (error instanceof BadRequestError) {
-    return createErrorResponse(
-      "BAD_REQUEST",
-      error.message,
-      400,
-    );
+  const body: ApiErrorResponse = {
+    success: false,
+    error: {
+      code: mapped.code,
+      message: mapped.message,
+      statusCode: mapped.status,
+    },
+  };
+  if (mapped.details) {
+    body.error.details = mapped.details;
   }
 
-  // Internal server errors (500)
-  if (error instanceof InternalServerError) {
-    return createErrorResponse(
-      "INTERNAL_ERROR",
-      error.message,
-      500,
-    );
-  }
-
-  // Generic errors (500)
-  if (error instanceof Error) {
-    return createErrorResponse(
-      "INTERNAL_ERROR",
-      error.message,
-      500,
-    );
-  }
-
-  // Unknown errors (500)
-  return createErrorResponse(
-    "INTERNAL_ERROR",
-    "An unexpected error occurred",
-    500,
-  );
+  return new Response(JSON.stringify(body), { status: mapped.status, headers });
 }
 
 /**

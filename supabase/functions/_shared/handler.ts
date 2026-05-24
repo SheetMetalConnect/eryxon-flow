@@ -21,8 +21,16 @@
 
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import { authenticateAndSetContext, AuthResult } from "./auth.ts";
-import { handleOptions, handleError } from "./validation/errorHandler.ts";
+import { handleOptions, handleError, mapError } from "./validation/errorHandler.ts";
 import { corsHeaders } from "./cors.ts";
+import {
+  REQUEST_ID_HEADER,
+  RequestLogContext,
+  edgeLog,
+  persistPilotEvent,
+  resolveRequestId,
+  PilotLogLevel,
+} from "./observability.ts";
 
 /**
  * Context passed to handler functions
@@ -33,6 +41,25 @@ export interface HandlerContext extends AuthResult {
   url: URL;
   pathSegments: string[];
   lastSegment: string;
+  /** Request-correlated observability context for this request. */
+  requestId: string;
+  log: RequestLogContext;
+  /**
+   * Record a pilot-critical lifecycle event into `activity_log` with the
+   * shared `request_id`. Use for success-path events (e.g. issue.created)
+   * that should appear in the pilot incident trace. Persistence is filtered
+   * by {@link shouldPersistPilotEvent} and is best-effort (never throws).
+   */
+  recordPilotEvent: (input: {
+    level?: PilotLogLevel;
+    eventType: string;
+    action: string;
+    description?: string;
+    entityType?: string;
+    entityId?: string;
+    entityName?: string;
+    extra?: Record<string, unknown>;
+  }) => Promise<void>;
 }
 
 /**
@@ -62,6 +89,18 @@ export function createApiHandler(
   options: HandlerOptions = {}
 ): (req: Request) => Promise<Response> {
   return async (req: Request): Promise<Response> => {
+    const url = new URL(req.url);
+    const pathSegments = url.pathname.split("/").filter(Boolean);
+    const lastSegment = pathSegments[pathSegments.length - 1] || "";
+    // Service = the edge function name (first path segment after functions/v1).
+    const service = pathSegments[0] || "edge";
+    const route = url.pathname;
+    const start = Date.now();
+
+    // Resolve request id at the edge boundary: trust valid inbound
+    // `x-request-id`, otherwise mint one. Same id is logged and returned.
+    const requestId = resolveRequestId(req.headers);
+
     // Handle CORS preflight
     if (req.method === "OPTIONS") {
       return handleOptions();
@@ -79,7 +118,11 @@ export function createApiHandler(
         }),
         {
           status: 405,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            [REQUEST_ID_HEADER]: requestId,
+          },
         }
       );
     }
@@ -90,12 +133,10 @@ export function createApiHandler(
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ""
     );
 
-    try {
-      // Parse URL info
-      const url = new URL(req.url);
-      const pathSegments = url.pathname.split("/").filter(Boolean);
-      const lastSegment = pathSegments[pathSegments.length - 1] || "";
+    // Base request-correlation context, enriched after auth.
+    const log: RequestLogContext = { requestId, service, route, method: req.method };
 
+    try {
       let authResult: AuthResult = {
         tenantId: "",
         apiKeyId: "",
@@ -108,6 +149,8 @@ export function createApiHandler(
         authResult = await authenticateAndSetContext(req, supabase);
       }
 
+      log.tenantId = authResult.tenantId || undefined;
+
       // Build context
       const ctx: HandlerContext = {
         ...authResult,
@@ -116,23 +159,70 @@ export function createApiHandler(
         url,
         pathSegments,
         lastSegment,
+        requestId,
+        log,
+        recordPilotEvent: (input) =>
+          persistPilotEvent(supabase, {
+            ctx: { ...log, eventType: input.eventType },
+            level: input.level ?? "info",
+            action: input.action,
+            description: input.description,
+            entityType: input.entityType,
+            entityId: input.entityId,
+            entityName: input.entityName,
+            extra: input.extra,
+          }).then(() => undefined),
       };
 
       // Execute handler
       const result = await handler(req, ctx);
 
-      // If handler returns a Response, use it directly
+      // If handler returns a Response, use it directly (preserve its headers,
+      // add request id for correlation).
       if (result instanceof Response) {
+        result.headers.set(REQUEST_ID_HEADER, requestId);
+        edgeLog("info", "request.completed", {
+          ...log,
+          statusCode: result.status,
+          durationMs: Date.now() - start,
+        });
         return result;
       }
 
       // Otherwise, wrap result as JSON
+      edgeLog("info", "request.completed", {
+        ...log,
+        statusCode: 200,
+        durationMs: Date.now() - start,
+      });
       return new Response(JSON.stringify(result), {
         status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          [REQUEST_ID_HEADER]: requestId,
+        },
       });
     } catch (error) {
-      return handleError(error);
+      const mapped = mapError(error);
+      const errorLog: RequestLogContext = {
+        ...log,
+        statusCode: mapped.status,
+        errorCode: mapped.code,
+        durationMs: Date.now() - start,
+      };
+      edgeLog("error", "request.failed", errorLog);
+
+      // Persist the failure into activity_log with the shared request_id so
+      // CTO can reconcile the edge log with a durable pilot incident row.
+      await persistPilotEvent(supabase, {
+        ctx: errorLog,
+        level: "error",
+        action: "edge.error",
+        description: mapped.message,
+      });
+
+      return handleError(error, requestId);
     }
   };
 }

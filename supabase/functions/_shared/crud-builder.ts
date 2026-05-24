@@ -79,6 +79,14 @@ export interface CrudConfig {
 
   /** Entity key for response wrapping (default: singularized table name). Examples: 'job', 'part', 'operation' */
   entityKey?: string;
+
+  /**
+   * Optional hook fired after a successful POST create, with the created
+   * record. Used to record a pilot-critical lifecycle event (ERY-46) into
+   * `activity_log` with the request-correlated id. Best-effort: failures here
+   * must not break the create response.
+   */
+  onCreated?: (ctx: HandlerContext, record: any) => Promise<void>;
 }
 
 /**
@@ -101,6 +109,7 @@ export function createCrudHandler(config: CrudConfig) {
     enableSync = false,
     syncIdField = 'external_id',
     entityKey,
+    onCreated,
   } = config;
 
   // Compute entity key for singular responses (default: naive singularization)
@@ -142,7 +151,7 @@ export function createCrudHandler(config: CrudConfig) {
         if (customHandlers.post) {
           return customHandlers.post(req, ctx);
         }
-        return handlePost(req, ctx, table, validator, softDelete, responseEntityKey);
+        return handlePost(req, ctx, table, validator, softDelete, responseEntityKey, onCreated);
 
       case 'PATCH':
       case 'PUT':
@@ -319,7 +328,8 @@ async function handlePost(
   table: string,
   validator: any,
   softDelete: boolean,
-  entityKey: string
+  entityKey: string,
+  onCreated?: (ctx: HandlerContext, record: any) => Promise<void>
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
@@ -348,6 +358,16 @@ async function handlePost(
 
   if (error) {
     throw new Error(`Failed to create ${table}: ${error.message}`);
+  }
+
+  if (onCreated) {
+    // Best-effort: a lifecycle-event persistence failure must not fail create.
+    try {
+      await onCreated(ctx, data);
+    } catch (_hookError) {
+      // recordPilotEvent already swallows + logs its own errors; this guard is
+      // only for unexpected throws so the create response is never blocked.
+    }
   }
 
   return createSuccessResponse({ [entityKey]: data }, 201);
