@@ -34,6 +34,11 @@ function AppRoutes() {
     );
   }
 
+  // The wizard is an admin-only first-run flow (team setup, plan, mock data),
+  // so only incomplete admins are routed into it. Operators are never gated.
+  const needsOnboarding =
+    profile?.role === "admin" && profile?.onboarding_completed === false;
+
   return (
     <Routes>
       {/* Auth routes */}
@@ -59,7 +64,7 @@ function AppRoutes() {
         element={
           <Navigate
             to={
-              (profile as { onboarding_completed?: boolean })?.onboarding_completed === false
+              needsOnboarding
                 ? "/onboarding"
                 : profile?.role === "admin"
                   ? "/admin/dashboard"

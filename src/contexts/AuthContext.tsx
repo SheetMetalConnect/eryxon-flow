@@ -19,6 +19,10 @@ interface Profile {
   active: boolean;
   is_machine: boolean;
   is_root_admin: boolean;
+  // First-run onboarding state. The router (src/App.tsx) and the wizard
+  // (OnboardingWizard) gate on these, so they must be hydrated here.
+  onboarding_completed: boolean;
+  onboarding_step: number;
 }
 
 interface TenantInfo {
@@ -48,6 +52,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -121,7 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin")
+        .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin, onboarding_completed, onboarding_step")
         .eq("id", userId)
         .maybeSingle();
 
@@ -133,7 +138,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setProfile(data as Profile);
+      // Columns are nullable in the DB (defaults applied on insert); coerce to
+      // concrete values so the router/wizard gates are deterministic.
+      setProfile({
+        ...(data as Profile),
+        onboarding_completed: data.onboarding_completed ?? false,
+        onboarding_step: data.onboarding_step ?? 0,
+      });
       await fetchTenant();
       prefetchCommonData(queryClient, data.tenant_id, {
         fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
@@ -197,6 +208,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshTenant = async () => {
     await fetchTenant();
+  };
+
+  // Re-hydrate the profile after a mutation that changes durable profile state
+  // (e.g. completing onboarding) so router gates reflect the new state without
+  // requiring a full reload.
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
   };
 
   const signIn = async (email: string, password: string, captchaToken?: string | null) => {
@@ -264,7 +284,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signUp,
         signOut,
         switchTenant,
-        refreshTenant
+        refreshTenant,
+        refreshProfile
       }}
     >
       {children}
