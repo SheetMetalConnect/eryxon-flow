@@ -98,8 +98,24 @@ export default function TerminalLogin() {
       const result = await verifyAndSwitchOperator(employeeId.trim(), pin);
 
       if (result.success) {
+        // Pilot-critical operator lifecycle event (ERY-51).
+        logger.info("Operator login", {
+          component: "TerminalLogin",
+          service: "client",
+          eventType: "operator.login",
+          entityType: "operator",
+          entityId: employeeId.trim(),
+        });
         navigate(ROUTES.OPERATOR.WORK_QUEUE);
       } else {
+        logger.warn("Operator login rejected", {
+          component: "TerminalLogin",
+          service: "client",
+          eventType: "operator.login",
+          failureReason: result.error_code || "operator_login_rejected",
+          entityType: "operator",
+          entityId: employeeId.trim(),
+        });
         setErrorCode(result.error_code || null);
         setError(result.error_message || t("terminalLogin.invalidCredentials"));
         setAttemptsRemaining(result.attempts_remaining ?? null);
@@ -107,7 +123,12 @@ export default function TerminalLogin() {
         setPin("");
       }
     } catch (err: unknown) {
-      logger.error("TerminalLogin", "Login error", err);
+      logger.error("Login error", err, {
+        component: "TerminalLogin",
+        service: "client",
+        eventType: "operator.login",
+        failureReason: "operator_login_error",
+      });
       setError(t("terminalLogin.unexpectedError"));
       setPin("");
     } finally {

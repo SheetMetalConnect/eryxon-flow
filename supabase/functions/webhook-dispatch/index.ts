@@ -3,6 +3,13 @@ import { createClient } from "@supabase/supabase-js";
 import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts";
 import { sanitizeError, constantTimeCompare } from "../_shared/security.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+  REQUEST_ID_HEADER,
+  RequestLogContext,
+  edgeLog,
+  persistPilotEvent,
+  resolveRequestId,
+} from "../_shared/observability.ts";
 
 interface WebhookPayload {
   event: string;
@@ -15,7 +22,8 @@ async function dispatchWebhook(
   secretKey: string,
   payload: WebhookPayload,
   webhookId: string,
-  supabase: any
+  supabase: any,
+  log: RequestLogContext
 ) {
   const payloadString = JSON.stringify(payload);
 
@@ -49,8 +57,31 @@ async function dispatchWebhook(
       error_message: statusCode >= 400 ? responseText : null,
     });
 
+    const delivered = statusCode >= 200 && statusCode < 300;
+
+    // Persist a pilot-critical dispatch failure (ERY-51) so a non-2xx delivery
+    // is traceable from the edge log into activity_log under the shared id.
+    if (!delivered) {
+      const failureLog: RequestLogContext = {
+        ...log,
+        statusCode,
+        eventType: "webhook.dispatch_failed",
+        errorCode: "WEBHOOK_DELIVERY_FAILED",
+      };
+      edgeLog("warn", "webhook.dispatch_failed", failureLog);
+      await persistPilotEvent(supabase, {
+        ctx: failureLog,
+        level: "warn",
+        action: "webhook.dispatch_failed",
+        description: `Webhook ${webhookId} returned ${statusCode} for event ${payload.event}`,
+        entityType: "webhook",
+        entityId: webhookId,
+        extra: { event: payload.event, http_status: statusCode },
+      });
+    }
+
     return {
-      success: statusCode >= 200 && statusCode < 300,
+      success: delivered,
       statusCode,
       response: responseText,
     };
@@ -66,6 +97,24 @@ async function dispatchWebhook(
       error_message: errorMessage,
     });
 
+    // Persist a pilot-critical dispatch failure (ERY-51) for transport errors
+    // (timeout, DNS, connection refused) with the shared request id.
+    const failureLog: RequestLogContext = {
+      ...log,
+      eventType: "webhook.dispatch_failed",
+      errorCode: "WEBHOOK_DELIVERY_ERROR",
+    };
+    edgeLog("error", "webhook.dispatch_failed", failureLog);
+    await persistPilotEvent(supabase, {
+      ctx: failureLog,
+      level: "error",
+      action: "webhook.dispatch_failed",
+      description: `Webhook ${webhookId} delivery failed for event ${payload.event}: ${errorMessage}`,
+      entityType: "webhook",
+      entityId: webhookId,
+      extra: { event: payload.event, error_message: errorMessage },
+    });
+
     return {
       success: false,
       error: errorMessage,
@@ -74,8 +123,18 @@ async function dispatchWebhook(
 }
 
 serve(async (req) => {
+  // Resolve the request id at the boundary: trust a valid inbound id (forwarded
+  // by the lifecycle function that triggered this dispatch) else mint one.
+  const requestId = resolveRequestId(req.headers);
+  const log: RequestLogContext = {
+    requestId,
+    service: "webhook-dispatch",
+    route: new URL(req.url).pathname,
+    method: req.method,
+  };
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: { ...corsHeaders, [REQUEST_ID_HEADER]: requestId } });
   }
 
   const supabase = createClient(
@@ -92,7 +151,7 @@ serve(async (req) => {
       if (!constantTimeCompare(token, internalSecret)) {
         return new Response(
           JSON.stringify({ success: false, error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
         );
       }
     }
@@ -106,9 +165,13 @@ serve(async (req) => {
           success: false,
           error: 'Missing required fields: tenant_id, event_type, data'
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
       );
     }
+
+    // Attribute downstream dispatch-failure events to this tenant.
+    log.tenantId = tenant_id;
+    log.eventType = event_type;
 
     // Fetch all active webhooks for this tenant that are subscribed to this event
     const { data: webhooks, error } = await supabase
@@ -128,7 +191,7 @@ serve(async (req) => {
           message: 'No active webhooks for this tenant',
           dispatched: 0
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
       );
     }
 
@@ -144,7 +207,7 @@ serve(async (req) => {
           message: 'No webhooks subscribed to this event',
           dispatched: 0
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
       );
     }
 
@@ -158,7 +221,7 @@ serve(async (req) => {
     // Dispatch to all subscribed webhooks (in parallel)
     const results = await Promise.all(
       subscribedWebhooks.map(webhook =>
-        dispatchWebhook(webhook.url, webhook.secret_key, payload, webhook.id, supabase)
+        dispatchWebhook(webhook.url, webhook.secret_key, payload, webhook.id, supabase, log)
       )
     );
 
@@ -174,18 +237,32 @@ serve(async (req) => {
         failed: failureCount,
         results: results
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
     );
 
   } catch (error) {
     console.error('Error in webhook-dispatch:', error);
     const sanitized = sanitizeError(error);
+    const errorLog: RequestLogContext = {
+      ...log,
+      statusCode: 500,
+      errorCode: "WEBHOOK_DISPATCH_ERROR",
+    };
+    edgeLog("error", "request.failed", errorLog);
+    // Persist the top-level failure (e.g. webhook fetch query failed) when we
+    // already know the tenant.
+    await persistPilotEvent(supabase, {
+      ctx: { ...errorLog, eventType: "webhook.dispatch_failed" },
+      level: "error",
+      action: "webhook.dispatch_failed",
+      description: sanitized.message,
+    });
     return new Response(
       JSON.stringify({
         success: false,
         error: sanitized.message
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
     );
   }
 });
