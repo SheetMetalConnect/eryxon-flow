@@ -6,6 +6,7 @@ import { PlanSelection, PlanType } from './PlanSelection';
 import { MockDataImport } from './MockDataImport';
 import { TeamSetup } from './TeamSetup';
 import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -19,6 +20,7 @@ type TenantPlan = Exclude<PlanType, 'self_hosted'>;
 export function OnboardingWizard() {
   const navigate = useNavigate();
   const profile = useProfile();
+  const { refreshProfile } = useAuth();
   const { subscription } = useSubscription();
   const { t } = useTranslation();
   const [currentStep, setCurrentStep] = useState(1);
@@ -33,9 +35,7 @@ export function OnboardingWizard() {
   ];
 
   useEffect(() => {
-    // onboarding_step exists in DB profiles table but isn't exposed in the Profile interface
-    const profileWithStep = profile as (typeof profile & { onboarding_step?: number }) | null;
-    const persistedStep = profileWithStep?.onboarding_step;
+    const persistedStep = profile?.onboarding_step;
     if (
       typeof persistedStep === 'number' &&
       Number.isInteger(persistedStep) &&
@@ -116,7 +116,7 @@ export function OnboardingWizard() {
       mock_data_imported: true,
       onboarding_completed: true,
     });
-    completeOnboarding();
+    await completeOnboarding();
   };
 
   const handleMockDataSkip = async () => {
@@ -124,10 +124,28 @@ export function OnboardingWizard() {
       mock_data_imported: false,
       onboarding_completed: true,
     });
-    completeOnboarding();
+    await completeOnboarding();
   };
 
-  const completeOnboarding = () => {
+  const completeOnboarding = async () => {
+    // Stamp tenant-level completion so the tenant record carries a durable
+    // onboarding-finished timestamp (used for analytics / re-onboarding logic),
+    // not just the per-profile boolean.
+    if (profile?.tenant_id) {
+      const { error } = await supabase
+        .from('tenants')
+        .update({ onboarding_completed_at: new Date().toISOString() })
+        .eq('id', profile.tenant_id);
+
+      if (error) {
+        logger.error('OnboardingWizard', 'Error stamping tenant onboarding completion', error);
+      }
+    }
+
+    // Re-hydrate the auth profile so the router no longer gates this admin into
+    // the wizard after we navigate away.
+    await refreshProfile();
+
     toast.success(t('onboarding.onboardingComplete'));
 
     if (profile?.role === 'admin') {

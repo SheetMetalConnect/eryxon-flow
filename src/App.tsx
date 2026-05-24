@@ -48,14 +48,17 @@ function AppRoutes() {
   // touch-first shell. Admins on iPad still get the desktop UI by default
   // (they can deep-link into /m if they want the touch chrome).
   const preferMobileShell = native.isNative || native.isMobileShell;
-  const homeTarget =
-    (profile as { onboarding_completed?: boolean })?.onboarding_completed === false
-      ? "/onboarding"
-      : profile?.role === "admin" && !native.isNative
-        ? "/admin/dashboard"
-        : preferMobileShell
-          ? "/m/queue"
-          : "/operator/work-queue";
+  // The wizard is an admin-only first-run flow (team setup, plan, mock data),
+  // so only incomplete admins are routed into it. Operators never get gated.
+  const needsOnboarding =
+    profile?.role === "admin" && profile?.onboarding_completed === false;
+  const homeTarget = needsOnboarding
+    ? "/onboarding"
+    : profile?.role === "admin" && !native.isNative
+      ? "/admin/dashboard"
+      : preferMobileShell
+        ? "/m/queue"
+        : "/operator/work-queue";
 
   return (
     <Routes>
