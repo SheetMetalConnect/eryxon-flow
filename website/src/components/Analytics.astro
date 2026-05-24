@@ -1,0 +1,69 @@
+---
+// Vendor-neutral CTA analytics adapter (ERY-33 / Phase 1).
+//
+// There is no analytics provider wired into the website yet. This adapter
+// gives us a stable, auditable event contract NOW so that a provider
+// (GTM, Plausible custom events, PostHog, ...) can be attached later without
+// re-touching every CTA.
+//
+// It does two things:
+//   1. Exposes `window.eryxonTrack(event, props)` which pushes onto a
+//      GTM-compatible `window.dataLayer` queue AND dispatches a DOM
+//      CustomEvent (`eryxon:analytics`). Both are no-op-safe with no consumer.
+//   2. Delegated, OPT-IN click tracking: only elements carrying a
+//      `data-cta-id` attribute emit `website_cta_clicked`. Nothing is tracked
+//      automatically, so reused primitives (LinkButton, anchors) stay silent
+//      unless a surface explicitly opts in. This keeps the Phase 1 event set
+//      narrow and auditable per the ERY-9 blast-radius guidance.
+---
+
+<script>
+  type CtaProps = Record<string, string | number | boolean | undefined>;
+
+  declare global {
+    interface Window {
+      dataLayer: Record<string, unknown>[];
+      eryxonTrack: (event: string, props?: CtaProps) => void;
+    }
+  }
+
+  function localeFromPath(pathname: string): "en" | "de" | "nl" {
+    const m = pathname.match(/^\/(de|nl)(\/|$)/);
+    return (m ? (m[1] as "de" | "nl") : "en");
+  }
+
+  function emit(event: string, props: CtaProps = {}) {
+    const payload = { event, ...props, ts: Date.now() };
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push(payload);
+    document.dispatchEvent(new CustomEvent("eryxon:analytics", { detail: payload }));
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.debug("[eryxon-analytics]", payload);
+    }
+  }
+
+  window.eryxonTrack = emit;
+  window.dataLayer = window.dataLayer || [];
+
+  // Opt-in delegated click tracking for Phase 1 CTAs.
+  // Capture phase so we record intent even when the anchor navigates away.
+  document.addEventListener(
+    "click",
+    (e) => {
+      const target = e.target as Element | null;
+      const el = target?.closest?.("[data-cta-id]") as HTMLElement | null;
+      if (!el) return;
+      const href = el.getAttribute("href") || "";
+      emit("website_cta_clicked", {
+        cta_id: el.getAttribute("data-cta-id") || "",
+        surface: el.getAttribute("data-cta-surface") || "",
+        locale: el.getAttribute("data-cta-locale") || localeFromPath(location.pathname),
+        source_page: location.pathname,
+        target_url: el.getAttribute("data-cta-target") || href,
+        target_kind: el.getAttribute("data-cta-kind") || "",
+      });
+    },
+    { capture: true }
+  );
+</script>

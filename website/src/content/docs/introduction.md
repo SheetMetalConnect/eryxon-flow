@@ -3,11 +3,36 @@ title: Welcome to Eryxon Flow
 description: Manufacturing execution system for metals fabrication shops.
 ---
 
-**Manufacturing execution system for metals fabrication shops.**
+Eryxon Flow is a tablet-friendly manufacturing execution system for metalworking job shops — track jobs from your ERP to the shop floor without losing operator adoption.
 
-> **Try it now:** Open the [hosted version at app.eryxon.eu](https://app.eryxon.eu) - no installation required. It remains online as-is.
+## Choose your path
+
+Pick the route that matches where you are in evaluating Eryxon Flow.
+
+<div style="display:grid;gap:var(--ery-space-4);grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:var(--ery-space-6) 0;">
+  <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_path_en" data-cta-surface="docs_intro_path_chooser" data-cta-kind="hosted_app" data-cta-locale="en" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Open the hosted trial</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Try the live app at app.eryxon.eu — no install. Best for a first look.</span>
+  </a>
+  <a href="/managed-rollout/" data-cta-id="docs_intro_rollout_path_en" data-cta-surface="docs_intro_path_chooser" data-cta-kind="rollout_page" data-cta-locale="en" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Plan a managed rollout</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Get help with deployment, ERP integration, and rollout sequencing.</span>
+  </a>
+  <a href="/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_en" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="en" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Evaluate it self-hosted</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Run it on your own infrastructure. Source-available under BSL 1.1.</span>
+  </a>
+</div>
 
 ![Eryxon Flow admin dashboard](../../assets/step-1.png)
+
+## Is it right for your shop?
+
+- **Operators** get a touch-friendly work queue: pull work by stage, log time, view STEP and PDF files, and report issues from the floor.
+- **Admins** get real-time visibility: who is working on what, issue approvals, due-date overrides, and stage/material configuration.
+- **Technical evaluators** get an API-first system: 24 REST endpoints, webhooks, MQTT, an MCP server, and pluggable planning adapters (FrePPLe, Odoo). It self-hosts on Supabase.
+
+> **Where things stand:** v0.5.1 is the current stable line. The web app, REST API, webhooks, MQTT, and the FrePPLe/Odoo adapters are in **Beta**; the **MCP server is Live**. Native **Android** and **iOS** apps are on the roadmap, not yet shipped — the browser app is the primary surface today.
 
 ## What It Does
 
@@ -71,7 +96,7 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via [REST API](/architecture/connectivity-rest-api). Eryxon sends completion events back via [webhooks](/architecture/connectivity-mqtt). The [MCP server](/guides/mcp-setup) enables AI/automation integration with Claude Desktop and other AI tools.
+**100% API-driven.** Your ERP pushes jobs, parts, and tasks via 24 [REST API](/architecture/connectivity-rest-api) endpoints (Beta). Eryxon sends completion events back via [webhooks (Beta) or MQTT (Beta)](/architecture/connectivity-mqtt) — the MQTT client adds retry, circuit breaker, and dead-letter logging in v0.5. The [MCP server](/guides/mcp-setup) (Live) enables AI/automation integration with Claude Desktop and other AI tools, with stdio for local clients and Streamable HTTP for trusted self-hosted deployments.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.
@@ -79,8 +104,8 @@ Request a signed upload URL from the API, upload STEP and PDF files directly to 
 ### Custom metadata
 Include JSON payloads on jobs, parts, and tasks for your specific needs—tooling requirements, mold numbers, machine settings, material specifications, anything your shop needs to track.
 
-### ERP Integrations
-Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems. Or build your own using our GitHub starter kits with example code and documentation.
+### ERP & Planning Integrations
+Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems. Or build your own using our GitHub starter kits with example code and documentation. v0.5 also ships pluggable **Beta** planning adapters for **FrePPLe** and **Odoo MRP** — see the [scheduling feature page](/features/scheduling/) for status details.
 
 ### Assembly Tracking
 Parts can have parent-child relationships. Visual grouping shows assemblies with nested components. Non-blocking dependency warnings remind operators when child parts should be complete before starting assembly tasks—but they can override if needed.

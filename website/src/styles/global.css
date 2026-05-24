@@ -4,32 +4,38 @@
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
 
+/* Canonical redesign token contract (ERY-56 → ERY-61 Slice 4).
+ * The docs chrome now shares the same `--ery-*` contract as the marketing
+ * shell instead of the retired gradient/glass/orb dark-first tokens. */
+@import "./tokens.css";
+
 @plugin "../tailwind-plugin/tw-theme";
 @plugin "../tailwind-plugin/tw-bs-grid";
 
 :root {
-    /* Enforce Dark Mode by default */
-    --sl-color-accent-low: color-mix(in srgb,
-            var(--color-primary),
-            #000 90%);
-    --sl-color-accent: var(--color-primary);
-    --sl-color-accent-high: color-mix(in srgb,
-            var(--color-primary),
-            #fff 70%);
+    /* Light-first default (ERY-117). Public marketing AND docs are light-mode
+     * primary per the canonical UX spec; dark is now the opt-in override below
+     * (`:root[data-theme="dark"]`). The base `:root` carries the light-surface
+     * brand (#0066cc) and light neutral ramp so the no-JS / initial-paint
+     * fallback is light, not dark. Brand never communicates status. */
+    --sl-color-accent-low: color-mix(in srgb, var(--ery-brand), #fff 70%);
+    --sl-color-accent: var(--ery-brand);
+    --sl-color-accent-high: color-mix(in srgb, var(--ery-brand), #000 90%);
 
-    /* Default to Dark Mode colors */
-    --sl-color-white: var(--color-light);
-    --sl-color-gray-1: color-mix(in srgb, var(--color-dark) 6%, var(--color-light) 94%);
-    --sl-color-gray-2: color-mix(in srgb, var(--color-dark) 24%, var(--color-light) 76%);
-    --sl-color-gray-3: color-mix(in srgb, var(--color-dark) 45%, var(--color-light) 55%);
-    --sl-color-gray-4: color-mix(in srgb, var(--color-dark) 65%, var(--color-light) 35%);
-    --sl-color-gray-5: color-mix(in srgb, var(--color-dark) 78%, var(--color-light) 22%);
-    --sl-color-gray-6: color-mix(in srgb, var(--color-dark) 85%, var(--color-light) 15%);
+    /* Light Mode colors (canonical light-surface ramp) */
+    --sl-color-white: var(--color-lightmode-light);
+    --sl-color-gray-1: color-mix(in srgb, var(--color-lightmode-dark) 15%, var(--color-lightmode-light) 85%);
+    --sl-color-gray-2: color-mix(in srgb, var(--color-lightmode-dark) 22%, var(--color-lightmode-light) 78%);
+    --sl-color-gray-3: color-mix(in srgb, var(--color-lightmode-dark) 35%, var(--color-lightmode-light) 65%);
+    --sl-color-gray-4: color-mix(in srgb, var(--color-lightmode-dark) 55%, var(--color-lightmode-light) 45%);
+    --sl-color-gray-5: color-mix(in srgb, var(--color-lightmode-dark) 76%, var(--color-lightmode-light) 24%);
+    --sl-color-gray-6: color-mix(in srgb, var(--color-lightmode-dark) 94%, var(--color-lightmode-light) 6%);
+    --sl-color-gray-7: color-mix(in srgb, var(--color-lightmode-dark) 96%, var(--color-lightmode-light) 4%);
 
-    --sl-color-black: var(--color-dark);
+    --sl-color-black: var(--color-lightmode-dark);
     --sl-sidebar-width: 320px;
-    --sl-color-hairline: color-mix(in srgb, var(--sl-color-white) 10%, transparent);
-    --sl-color-hairline-light: #252525;
+    --sl-color-hairline: color-mix(in srgb, var(--sl-color-black) 10%, transparent);
+    --sl-color-hairline-light: color-mix(in srgb, var(--sl-color-black) 6%, transparent);
 
     /* Semantic Colors */
     --color-success: 140 60% 52%;
@@ -49,34 +55,36 @@
     --status-pending: 220 12% 72%;
 }
 
+/* Retired (ERY-61): the ambient orb / radial-gradient field is part of the
+ * dark-first gradient/glass/orb era the canonical spec retires. Dark sections
+ * now use the flat `.surface-dark` scope from tokens.css instead. */
 .ambient-field {
-    background-color: #111927;
-    background-image:
-        radial-gradient(at 47% 33%, hsl(205.47, 77%, 40%) 0, transparent 59%),
-        radial-gradient(at 82% 65%, hsl(218, 39%, 11%) 0, transparent 55%);
+    background-color: var(--ery-surface-dark);
 }
 
-/* Light mode colors — uses lightmode- prefixed vars from theme.json */
-:root[data-theme="light"] {
-    --sl-color-accent-low: color-mix(in srgb, var(--color-lightmode-primary), #fff 70%);
-    --sl-color-accent: var(--color-lightmode-primary);
-    --sl-color-accent-high: color-mix(in srgb, var(--color-lightmode-primary), #000 90%);
-    --sl-color-white: var(--color-lightmode-light);
-    --sl-color-gray-1: color-mix(in srgb, var(--color-lightmode-dark) 15%, var(--color-lightmode-light) 85%);
-    --sl-color-gray-2: color-mix(in srgb, var(--color-lightmode-dark) 22%, var(--color-lightmode-light) 78%);
-    --sl-color-gray-3: color-mix(in srgb, var(--color-lightmode-dark) 35%, var(--color-lightmode-light) 65%);
-    --sl-color-gray-4: color-mix(in srgb, var(--color-lightmode-dark) 55%, var(--color-lightmode-light) 45%);
-    --sl-color-gray-5: color-mix(in srgb, var(--color-lightmode-dark) 76%, var(--color-lightmode-light) 24%);
-    --sl-color-gray-6: color-mix(in srgb, var(--color-lightmode-dark) 94%, var(--color-lightmode-light) 6%);
-    --sl-color-gray-7: color-mix(in srgb, var(--color-lightmode-dark) 96%, var(--color-lightmode-light) 4%);
-    --sl-color-black: var(--color-lightmode-dark);
+/* Dark mode override (ERY-117) — opt-in via the Starlight theme toggle.
+ * Dark surfaces use the canonical brand-on-dark blue (#1e90ff from tokens.css);
+ * reserved for the explicit dark theme, no longer the default. */
+:root[data-theme="dark"] {
+    --sl-color-accent-low: color-mix(in srgb, var(--ery-brand-on-dark), #000 90%);
+    --sl-color-accent: var(--ery-brand-on-dark);
+    --sl-color-accent-high: color-mix(in srgb, var(--ery-brand-on-dark), #fff 70%);
+    --sl-color-white: var(--color-light);
+    --sl-color-gray-1: color-mix(in srgb, var(--color-dark) 6%, var(--color-light) 94%);
+    --sl-color-gray-2: color-mix(in srgb, var(--color-dark) 24%, var(--color-light) 76%);
+    --sl-color-gray-3: color-mix(in srgb, var(--color-dark) 45%, var(--color-light) 55%);
+    --sl-color-gray-4: color-mix(in srgb, var(--color-dark) 65%, var(--color-light) 35%);
+    --sl-color-gray-5: color-mix(in srgb, var(--color-dark) 78%, var(--color-light) 22%);
+    --sl-color-gray-6: color-mix(in srgb, var(--color-dark) 85%, var(--color-light) 15%);
+    --sl-color-black: var(--color-dark);
+    --sl-color-hairline-light: #252525;
 }
 
 @theme {
-    --color-primary-gradient: linear-gradient(35.65deg,
-            #3a1c71 -10.94%,
-            var(--color-primary) 61.04%,
-            #ffca7b 133.01%);
+    /* Retired (ERY-61): the violet→brand→amber gradient is part of the retired
+     * gradient era. Kept as a solid-brand alias so existing consumers degrade to
+     * a flat canonical fill instead of a gradient. No gradient buttons or text. */
+    --color-primary-gradient: var(--ery-brand);
 }
 
 @import "./base.css";
