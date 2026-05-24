@@ -5,7 +5,7 @@ description: "Application deployment guide for Eryxon Flow."
 
 # Deployment Guide
 
-> **Want to try it first?** Open the [hosted version at app.eryxon.eu](https://app.eryxon.eu) before deploying your own instance. It remains online as-is.
+> **Want to try it first?** Open the <a href="https://app.eryxon.eu" data-cta-id="docs_deployment_hosted_try_first_en" data-cta-surface="deployment" data-cta-kind="hosted_app" data-cta-locale="en">hosted version at app.eryxon.eu</a> before deploying your own instance. It remains online as-is.
 
 ## Quick Start (Automated)
 
@@ -95,10 +95,16 @@ docker run -p 80:80 eryxon-flow
 
 ### Option D: Docker Compose (Production with SSL)
 ```bash
-# Edit Caddyfile - replace domain with yours
-# Edit docker-compose.prod.yml if needed
-docker compose -f docker-compose.prod.yml up -d
+# In docker-compose.yml: uncomment the optional `caddy` service and the
+# `volumes:` block at the bottom, then change the eryxon-flow service from
+# `ports: ["80:80"]` to `expose: ["80"]` so Caddy terminates TLS.
+# Edit Caddyfile - replace the domain with yours.
+docker compose up -d
 ```
+
+> **Database Webhook required.** After edge functions are deployed, configure the
+> `notify-new-signup` Database Webhook in Supabase so new-company signups trigger
+> the notification function. See [Self-Hosting Guide](/guides/self-hosting/) Step 7.
 
 ## Step 3: First Login
 
