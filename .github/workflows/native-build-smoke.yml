@@ -1,0 +1,103 @@
+name: Native Build Smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - .github/workflows/native-build-smoke.yml
+      - android/**
+      - capacitor.config.ts
+      - package.json
+      - package-lock.json
+      - public/**
+      - scripts/ios-init.sh
+      - src/native/**
+      - src/pages/mobile/**
+      - src/styles/mobile.css
+      - src/styles/mobile-ios.css
+
+jobs:
+  native-build-smoke:
+    name: iOS bootstrap + Android smoke
+    runs-on: macos-15
+    timeout-minutes: 60
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Capture native toolchain versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          {
+            echo "Node $(node -v)"
+            echo "npm $(npm -v)"
+            xcodebuild -version
+            echo "CocoaPods $(pod --version)"
+            java -version
+            echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
+            ls "$ANDROID_HOME/platforms" | grep "android-35"
+            ls "$ANDROID_HOME/build-tools" | grep "35.0"
+          } 2>&1 | tee artifacts/toolchain.log
+
+      - name: Bootstrap iOS workspace
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          npm run ios:init 2>&1 | tee artifacts/ios-init.log
+
+      - name: Build iOS simulator target
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "generic/platform=iOS Simulator" \
+            -derivedDataPath ios/App/build \
+            CODE_SIGNING_ALLOWED=NO \
+            build 2>&1 | tee artifacts/ios-build.log | xcbeautify
+
+      - name: Assemble Android debug APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          npm run android:assemble:debug 2>&1 | tee artifacts/android-debug.log
+
+      - name: Assemble Android release APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          npm run android:assemble:release 2>&1 | tee artifacts/android-release.log
+
+      - name: Upload native smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-build-smoke-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            artifacts/*.log
+            android/app/build/outputs/**
+            ios/App/build/**

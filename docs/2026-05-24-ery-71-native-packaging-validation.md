@@ -1,81 +1,33 @@
-# ERY-71 — Native Packaging & Self-Host Distribution Validation Note
+# ERY-71 Native Packaging Validation
 
-Date: 2026-05-24
-Owner: Engineer
-Issue: [ERY-71](/ERY/issues/ERY-71)
-Parent: [ERY-55](/ERY/issues/ERY-55)
-Branch: `engineer/ery-71-native-packaging` (worktree off `17575bb`)
+## Lane decision
 
-This note replaces reliance on the old umbrella PR description as the validation
-record for the native branch. It lists exactly what changed, what was verified
-here, and what is explicitly blocked on build tooling.
+- Selected validation lane: GitHub Actions macOS 15 (`.github/workflows/native-build-smoke.yml`)
+- Why: the current validation host only has Command Line Tools; it does not have `Xcode.app`, CocoaPods, Java, `sdkmanager`, or `adb`, so it cannot satisfy the iOS/Android acceptance checks locally.
+- Scope of the lane: pin Node 20 + Java 17 on GitHub's macOS 15 runner, run `npm run ios:init`, build the generated iOS workspace for the simulator, then run `npm run android:assemble:debug` and `npm run android:assemble:release`, and upload logs/artifacts for review.
 
-## Changes in this branch
+## Local host evidence captured on 2026-05-24
 
-| Deliverable | Change | File(s) |
-|---|---|---|
-| ML Kit offline barcode | Wired the previously-dead `mlkitBarcodeDependencies` placeholder into a real `com.google.mlkit.vision.DEPENDENCIES` meta-data so Google Play fetches the model at install time, not first scan. Documented the GMS caveat + bundled-model path for air-gapped fleets (claim narrowed honestly). | `android/app/src/main/AndroidManifest.xml`, `android/app/build.gradle`, `docs/ANDROID.md` |
-| LAN self-host distribution | Removed the fabricated sample-IP RFC1918 enumeration (false coverage, no CIDR match). Release builds are HTTPS-only; dev/live-reload cleartext is confined to `debug-overrides`; plain-HTTP LAN hosts are supported per-host via a documented custom-build template or TLS fronting (least privilege). | `android/app/src/main/res/xml/network_security_config.xml`, `docs/ANDROID.md`, `docs/IOS.md` |
-| Version alignment | `android/app/build.gradle` versionName `0.5.1 → 0.5.2`, README badge + status line `0.5.1 → 0.5.2`. Now consistent with `package.json` (0.5.2) and `CHANGELOG` (0.5.2). | `android/app/build.gradle`, `README.md` |
+| Check | Result | Evidence |
+| --- | --- | --- |
+| `xcodebuild -version` | FAIL | active developer dir is `/Library/Developer/CommandLineTools`; `Xcode.app` is not installed |
+| `pod --version` | FAIL | `pod: command not found` |
+| `java -version` | FAIL | no Java runtime present |
+| `sdkmanager --version` | FAIL | `sdkmanager: command not found` |
+| `adb version` | FAIL | `adb: command not found` |
+| `npm run build` | PASS | build succeeds after explicitly restoring the missing darwin-arm64 Rollup + SWC native bindings that `npm ci` skipped on this Apple Silicon host |
+| `npm run ios:init` on this host | FAIL | after the Rollup/SWC repair, the script reaches `npx cap add ios` and then stops at the real blocker: `CocoaPods is not installed` |
+| `ios/` workspace produced locally | FAIL | `npx cap add ios` aborted before creating `ios/` because CocoaPods is absent on this host |
 
-Note on target version: surfaces are aligned to the current canonical `0.5.2`.
-The coordinated bump to `0.6.0` (package.json + gradle versionName + versionCode
-increment + README + a new CHANGELOG section) is a release-tagging step under
-[ERY-55](/ERY/issues/ERY-55) and should land atomically at the release cut, not
-piecemeal here. Flagged for CTO decision.
+## Native validation status
 
-## What was verified here (pass)
+| Check | Status | Evidence path |
+| --- | --- | --- |
+| `npm run ios:init` in a native-capable lane | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
+| iOS simulator build of `ios/App/App.xcworkspace` | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
+| `npm run android:assemble:debug` | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
+| `npm run android:assemble:release` | PENDING | first run of `.github/workflows/native-build-smoke.yml` |
 
-- **XML well-formedness** — `network_security_config.xml` and
-  `AndroidManifest.xml` parse cleanly (`python3 xml.dom.minidom`). PASS.
-- **Placeholder wiring** — `mlkitBarcodeDependencies` is now both defined
-  (build.gradle) and consumed (`${mlkitBarcodeDependencies}` in the manifest
-  meta-data). Confirmed by grep. PASS.
-- **Version consistency** — package.json / build.gradle / README / CHANGELOG all
-  report `0.5.2`. PASS.
-- **Least-privilege review** — release artifacts now have zero blanket cleartext
-  exception; cleartext is debug-only or one explicit operator-chosen host. PASS.
+## Remaining Apple-specific gaps
 
-## What is BLOCKED on build tooling (fail / not-run)
-
-This host has **Command Line Tools only (no Xcode.app), no CocoaPods, no JDK, no
-Android SDK**. Probe output:
-
-```
-$ xcode-select -p            -> /Library/Developer/CommandLineTools
-$ xcodebuild -version        -> error: requires Xcode (only CLT present)
-$ pod --version              -> pod: command not found
-$ java -version              -> Unable to locate a Java Runtime
-$ echo $ANDROID_HOME         -> (empty)
-```
-
-Consequently the following could not be executed and remain unproven:
-
-1. **iOS workspace bootstrap** — `npm run ios:init` (`npx cap add ios` + `pod
-   install`) needs Xcode 15+ and CocoaPods. The `ios/` workspace therefore still
-   does not exist as a checked-in/validated artifact. NOT RUN — blocked on
-   toolchain.
-2. **Android build smoke** — `npm run android:assemble:debug` / `:release`
-   (gradle) needs JDK 17 + Android SDK (API 35). The ML Kit meta-data and the new
-   network-security config are correct by inspection and parse cleanly, but have
-   not been proven to compile/package/merge in a real build. NOT RUN — blocked on
-   toolchain.
-
-## Remaining Apple-specific blockers for TestFlight/App Store
-
-Already enumerated in `docs/IOS.md` ("Remaining iOS-only gaps") and unchanged by
-this branch — they require a Mac with Xcode + an Apple Developer account:
-
-1. APNs auth key + `PushNotifications.register()` wiring.
-2. Universal Links / Associated Domains (`applinks:app.eryxon.eu` entitlement +
-   `/.well-known/apple-app-site-association`).
-3. Splash screen assets + 1024×1024 app icon set.
-4. `Info.plist` localizations (`CFBundleLocalizations = [en, nl, de]`).
-
-## Recommended next steps
-
-- CTO: approve commit+push of `engineer/ery-71-native-packaging`.
-- Provision a native-build lane (local Mac with Xcode 15+/CocoaPods and JDK 17 +
-  Android SDK, or a CI macOS runner) so iOS bootstrap and the Android build smoke
-  can produce pass/fail evidence. Tracked as the ERY-71 build-validation follow-up.
-- At the v0.6 release cut, perform the coordinated `0.6.0` version bump atomically.
+- The pre-TestFlight items remain explicitly tracked in [docs/IOS.md](/Users/vanenkhuizen/Documents/GitHub/products/eryxon-flow/docs/IOS.md): APNs wiring, Associated Domains / Universal Links, splash/icon assets, and App Store metadata polish.
