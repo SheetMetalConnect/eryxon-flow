@@ -1,0 +1,160 @@
+---
+/*
+ * Foundation smoke route (ERY-56, Slice 1) — `/foundation/`.
+ *
+ * This is SCAFFOLDING, not a marketing page. It exists to prove the redesign foundation is real:
+ *   1. The marketing-first shell (MarketingLayout -> BaseLayout) renders outside Starlight.
+ *   2. The canonical token contract (tokens.css) is applied — light-mode primary, #0066cc,
+ *      12px radius, 4px spacing, JetBrains Mono pills, no orb/glass motifs.
+ *   3. The preserved CTA analytics contract (data-cta-* -> website_cta_clicked) still fires.
+ *   4. The preserved RolloutInquiry hook (website_rollout_email_intent_opened) still mounts.
+ *
+ * Slice 2 promotes the real landing page to `/`; this route can be deleted once that lands.
+ */
+import MarketingLayout from "@/layouts/MarketingLayout.astro";
+import RolloutInquiry from "@/components/RolloutInquiry.astro";
+---
+
+<MarketingLayout
+  title="Redesign foundation — Eryxon Flow"
+  description="Internal scaffolding route proving the Astro redesign shell and token contract."
+>
+  <section class="hero ery-container">
+    <p class="eyebrow">Redesign foundation</p>
+    <h1>The simple MES you run, not fight.</h1>
+    <p class="lede">
+      This route exists only to prove the redesign shell and design-token contract render
+      correctly outside the docs shell. Marketing surfaces land in a later slice.
+    </p>
+    <div class="cta-row">
+      <a
+        class="btn btn--primary"
+        href="/managed-rollout/"
+        data-cta-id="foundation_primary"
+        data-cta-surface="foundation"
+        data-cta-kind="internal"
+      >
+        Primary CTA
+      </a>
+      <a
+        class="btn btn--secondary"
+        href="/introduction/"
+        data-cta-id="foundation_secondary"
+        data-cta-surface="foundation"
+        data-cta-kind="docs"
+      >
+        Read the docs
+      </a>
+    </div>
+  </section>
+
+  <section class="ery-container token-proof">
+    <h2>Token contract</h2>
+    <div class="card-grid">
+      <article class="card">
+        <span class="pill">source-available</span>
+        <h3>Borders first</h3>
+        <p>Cards use hairline borders and a 12px radius — no glass, no blur, no orbs.</p>
+      </article>
+      <article class="card surface-dark">
+        <span class="pill">BSL 1.1</span>
+        <h3>Dark sections only</h3>
+        <p>Dark surfaces are reserved for code, API, and product-preview frames.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="ery-container rollout-proof">
+    <h2>Preserved conversion hooks</h2>
+    <p>The managed-rollout inquiry instrumentation is mounted unchanged:</p>
+    <RolloutInquiry label="Start a managed rollout conversation" locale="en" />
+  </section>
+</MarketingLayout>
+
+<style>
+  .hero {
+    padding-block: var(--ery-pad-hero);
+  }
+  .eyebrow {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    margin: 0 0 var(--ery-space-3);
+  }
+  h1 {
+    font-size: var(--ery-text-4xl);
+    max-inline-size: 18ch;
+  }
+  .lede {
+    font-size: var(--ery-text-lg);
+    color: var(--ery-text-muted);
+    max-inline-size: 60ch;
+  }
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ery-space-3);
+    margin-block-start: var(--ery-space-6);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: background-color var(--ery-motion-base) var(--ery-ease),
+      border-color var(--ery-motion-base) var(--ery-ease),
+      color var(--ery-motion-base) var(--ery-ease);
+  }
+  .btn--primary {
+    background-color: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+  }
+  .btn--primary:hover {
+    background-color: var(--ery-brand-hover);
+    color: var(--ery-brand-contrast);
+  }
+  .btn--secondary {
+    border-color: var(--ery-border-strong);
+    color: var(--ery-text);
+  }
+  .btn--secondary:hover {
+    border-color: var(--ery-brand);
+    color: var(--ery-brand);
+  }
+
+  .token-proof,
+  .rollout-proof {
+    padding-block-end: var(--ery-pad-section);
+  }
+  .card-grid {
+    display: grid;
+    gap: var(--ery-space-4);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .card {
+    padding: var(--ery-space-6);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius);
+    background-color: var(--ery-surface);
+  }
+  .card h3 {
+    margin-block: var(--ery-space-3) var(--ery-space-2);
+  }
+  .card p {
+    margin: 0;
+    color: var(--ery-text-muted);
+  }
+  .pill {
+    display: inline-block;
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    padding: var(--ery-space-1) var(--ery-space-3);
+    border-radius: var(--ery-radius-pill);
+    border: 1px solid var(--ery-border);
+    color: var(--ery-text-muted);
+  }
+</style>
