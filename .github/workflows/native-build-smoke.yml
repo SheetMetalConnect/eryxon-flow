@@ -103,11 +103,14 @@ jobs:
           node-version: "20"
           cache: npm
 
-      - name: Setup Java 17
+      # Capacitor 7's android module compiles with source/target 21, so the
+      # Gradle build fails under JDK 17 with "invalid source release: 21"
+      # (ERY-108). JDK 21 is the supported toolchain for Capacitor 7 Android.
+      - name: Setup Java 21
         uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "21"
 
       - name: Capture Android toolchain versions
         shell: bash

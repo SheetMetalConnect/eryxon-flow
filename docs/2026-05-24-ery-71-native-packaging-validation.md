@@ -60,12 +60,20 @@ Both blockers from run `26370608416` are addressed on branch `engineer/ery-108-i
 | `npm run android:assemble:debug` | FAIL → fixed | `sh: 1: vite: not found`. Root cause: the independent Android job had no `npm ci` step (the old single job inherited `node_modules` from `ios:init`). Fixed by adding an "Install JS dependencies" step. |
 | `npm run android:assemble:release` | FAIL (same cause) | Ran anyway via `if: always()` — confirms the gating works; same `vite: not found` root cause. |
 
-**Split-lane run 2** — pending after the `npm ci` + concurrency commit. Records final iOS simulator build + Android debug/release pass/fail.
+Note: run 1's iOS job actually completed fully green before the concurrency cancel — `Build iOS simulator target` succeeded, so the iOS acceptance criterion (pod install + simulator build) is met as of run 1.
+
+**Split-lane run 2** — [26370892728](https://github.com/SheetMetalConnect/eryxon-flow/actions/runs/26370892728), commit `4967746`, 2026-05-24.
 
 | Check | Status | Evidence |
 | --- | --- | --- |
-| `npm run ios:init` (pod install) | PENDING | — |
-| iOS simulator build | PENDING | — |
+| Android `npm ci` (split-job dependency install) | **PASS** | "Install JS dependencies" step succeeded — clears the `vite: not found` error from run 1. |
+| `npm run android:assemble:debug` | FAIL → fixed | Gradle now compiles all Capacitor plugins, then fails at `:capacitor-android:compileDebugJavaWithJavac`: `error: invalid source release: 21`. Capacitor 7's android module targets Java 21; the job pinned JDK 17. Fixed by bumping the Android job to `java-version: "21"`. |
+| `npm run android:assemble:release` | FAIL (same cause) | Ran via `if: always()`; same JDK-21 root cause. |
+
+**Split-lane run 3** — pending after the JDK 21 commit. Records final Android debug/release pass/fail (iOS unchanged — already green in run 1).
+
+| Check | Status | Evidence |
+| --- | --- | --- |
 | `npm run android:assemble:debug` | PENDING | — |
 | `npm run android:assemble:release` | PENDING | — |
 
