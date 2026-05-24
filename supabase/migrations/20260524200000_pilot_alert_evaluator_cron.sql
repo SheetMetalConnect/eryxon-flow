@@ -6,12 +6,14 @@
 -- header (matching the function's authenticateCron model).
 --
 -- Deploy-gate prerequisites (set out-of-band, NOT committed):
---   - DB settings, applied by the operator before/after this migration:
---       ALTER DATABASE postgres SET app.pilot_alert.base_url   = 'https://<ref>.supabase.co';
---       ALTER DATABASE postgres SET app.pilot_alert.cron_secret = '<CRON_SECRET>';
---     (base_url falls back to the project URL already used by dispatch_webhook.)
+--   - Vault secret named 'pilot_alert_cron_secret' holding the shared cron
+--     secret, created by the operator before this migration runs, e.g.:
+--       SELECT vault.create_secret('<CRON_SECRET>', 'pilot_alert_cron_secret');
+--     The function reads it via vault.decrypted_secrets at invocation time.
 --   - CRON_SECRET env var set on the pilot-alert-evaluator function, equal to
---     the app.pilot_alert.cron_secret setting above.
+--     the Vault secret above.
+--   - Optional base_url override via the app.pilot_alert.base_url GUC; otherwise
+--     falls back to the project URL already used by dispatch_webhook.
 --   - pg_cron + pg_net enabled (already enabled in this project).
 --
 -- Idempotent: unschedules any prior job of the same name before re-registering.
@@ -29,10 +31,15 @@ BEGIN
   v_base_url    := coalesce(
                      current_setting('app.pilot_alert.base_url', true),
                      'https://vatgianzotsurljznsry.supabase.co');
-  v_cron_secret := current_setting('app.pilot_alert.cron_secret', true);
+
+  SELECT decrypted_secret
+    INTO v_cron_secret
+    FROM vault.decrypted_secrets
+   WHERE name = 'pilot_alert_cron_secret'
+   LIMIT 1;
 
   IF v_cron_secret IS NULL OR v_cron_secret = '' THEN
-    RAISE WARNING 'pilot-alert-evaluator: app.pilot_alert.cron_secret not set; skipping invocation';
+    RAISE WARNING 'pilot-alert-evaluator: vault secret pilot_alert_cron_secret not set; skipping invocation';
     RETURN;
   END IF;
 
