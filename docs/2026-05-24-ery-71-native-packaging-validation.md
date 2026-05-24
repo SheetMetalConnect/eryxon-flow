@@ -70,12 +70,25 @@ Note: run 1's iOS job actually completed fully green before the concurrency canc
 | `npm run android:assemble:debug` | FAIL → fixed | Gradle now compiles all Capacitor plugins, then fails at `:capacitor-android:compileDebugJavaWithJavac`: `error: invalid source release: 21`. Capacitor 7's android module targets Java 21; the job pinned JDK 17. Fixed by bumping the Android job to `java-version: "21"`. |
 | `npm run android:assemble:release` | FAIL (same cause) | Ran via `if: always()`; same JDK-21 root cause. |
 
-**Split-lane run 3** — pending after the JDK 21 commit. Records final Android debug/release pass/fail (iOS unchanged — already green in run 1).
+**Split-lane run 3** — [26370991082](https://github.com/SheetMetalConnect/eryxon-flow/actions/runs/26370991082), commit `031ef00`, 2026-05-24. **All jobs green.**
 
 | Check | Status | Evidence |
 | --- | --- | --- |
-| `npm run android:assemble:debug` | PENDING | — |
-| `npm run android:assemble:release` | PENDING | — |
+| iOS `pod install` / `npm run ios:init` | **PASS** | `Updating iOS native dependencies with pod install in 20.19s` — GoogleMLKit 7.0.0 resolves under the 15.5 pin. |
+| iOS simulator build of `ios/App/App.xcworkspace` | **PASS** | `xcodebuild … build` → `** BUILD SUCCEEDED **`. |
+| `npm run android:assemble:debug` | **PASS** | `BUILD SUCCESSFUL in 2m 23s` → `app/build/outputs/apk/debug/app-debug.apk`. |
+| `npm run android:assemble:release` | **PASS** | `BUILD SUCCESSFUL in 2m 6s` → `app/build/outputs/apk/release/app-release-unsigned.apk`. |
+
+## Acceptance — met (ERY-108)
+
+- ✅ iOS `pod install` resolves and the simulator build of `ios/App/App.xcworkspace` succeeds.
+- ✅ Android debug + release APK smokes run independently of iOS and both produce APKs (`if: always()` + separate jobs).
+- ✅ Evidence recorded above. Both native lanes pass green on run [26370991082](https://github.com/SheetMetalConnect/eryxon-flow/actions/runs/26370991082) — ERY-81 native iOS + Android smoke unblocked.
+
+### Fix summary (PR #600)
+
+- `scripts/ios-init.sh`: add iOS platform before the web build (skips premature pod install) + idempotent `patch_ios_deployment_target` pinning iOS 15.5 in the Podfile, post_install floor, and `App.xcodeproj`.
+- `.github/workflows/native-build-smoke.yml`: independent `ios-smoke` (macos-15) + `android-smoke` (ubuntu-latest, JDK 21) jobs; Android job runs `npm ci`; release assemble gated `if: always()`; concurrency group cancels superseded runs.
 
 ## Remaining Apple-specific gaps
 
