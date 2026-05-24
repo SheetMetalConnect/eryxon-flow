@@ -8,11 +8,17 @@ android {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
-        versionName "0.5.1"
+        versionName "0.5.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        // Bundle ML Kit barcode model in the APK so first scan works offline.
-        // Default behaviour downloads the model on demand which fails for
-        // tablets that boot up on a closed shop floor network.
+        // ML Kit barcode model delivery. `@capacitor-mlkit/barcode-scanning`
+        // uses the Google Play "code scanner" module (`barcode_ui`); the value
+        // below is consumed by the `com.google.mlkit.vision.DEPENDENCIES`
+        // meta-data wired into AndroidManifest.xml so Google Play fetches the
+        // model at *install* time instead of on first scan. This removes the
+        // first-scan stall on tablets, but still needs Google Play services
+        // present at provisioning time. Fully air-gapped / GMS-less rugged
+        // tablets need the bundled-model variant — see docs/ANDROID.md
+        // ("Offline barcode scanning") for that build path.
         manifestPlaceholders = [
             mlkitBarcodeDependencies: "barcode_ui"
         ]

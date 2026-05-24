@@ -1,9 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <!--
-      Default policy: HTTPS only, system + user CAs honoured.
-      Operators on a public host always go through TLS.
+      Eryxon Flow network security policy.
+
+      Strategy (replaces the old enumerated-sample-IP list, ERY-71):
+
+        1. Release builds are HTTPS-only. There is NO blanket RFC1918 cleartext
+           exception, because Android's network-security-config cannot CIDR-match
+           and a hand-written list of sample IPs only ever covers a handful of the
+           shops that actually exist — it gives a false sense of coverage while
+           still widening the cleartext surface. A shop on 192.168.5.x was never
+           covered by the old list anyway.
+
+        2. Dev / live-reload uses `debug-overrides`, which Android applies ONLY to
+           debuggable builds. That lets `npm run android:livereload` and the
+           emulator (10.0.2.2) talk to a workstation or local Supabase over plain
+           HTTP during development without weakening any release artifact.
+
+        3. Self-hosting over plain HTTP on a real LAN is supported per-host: the
+           operator adds THEIR actual backend host to the template block below and
+           builds a custom release APK/AAB. This keeps least privilege (only the
+           one host the shop runs is exempt) and is honest about what ships.
+
+      Recommended for production self-hosting: front the on-prem host with TLS
+      (a reverse proxy + internal CA trusted via `<certificates src="user" />`,
+      or a real cert). Then no cleartext exception is needed at all.
+
+      See docs/ANDROID.md → "Self-hosted server URL" for the full procedure.
     -->
+
+    <!-- Default policy: HTTPS only, system + user (e.g. internal CA) anchors. -->
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
@@ -12,75 +38,31 @@
     </base-config>
 
     <!--
-      LAN exception. Eryxon Flow is primarily self-hosted: the operator's
-      tablet talks to a Supabase + app stack running on a plant-internal
-      hostname or RFC1918 IP, very often over plain HTTP because the shop
-      hasn't wrapped it in TLS yet.
-
-      Android's network-security-config doesn't support CIDR matching, so
-      we have to enumerate the common prefixes individually. The list
-      below covers:
-        - localhost / loopback
-        - emulator host loopbacks (10.0.2.2 standard, 10.0.3.2 Genymotion)
-        - the IETF private-use address space (RFC 1918):
-            10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
-          enumerated as the /16 prefixes and the /24 leaves operators
-          actually deploy onto.
-        - link-local v4 (169.254.0.0/16)
-        - mDNS .local and the conventional .lan / .home / .internal /
-          .corp / .private / .intranet suffixes.
-
-      This is the maximum-permissive LAN safety net. If the customer has
-      a corporate IP range outside RFC 1918 (very rare), they should add
-      their own <domain> entries here and ship a custom build, OR front
-      the on-prem host with TLS so the cleartext exception stops mattering.
+      Debug builds only. Applies to `assembleDebug` / `android:livereload` and is
+      stripped from every release build by the Android toolchain. Covers loopback,
+      the emulator host bridges, and any workstation/LAN host used for live-reload
+      without enumerating them.
     -->
-    <domain-config cleartextTrafficPermitted="true">
-        <!-- Loopback + emulator -->
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">127.0.0.1</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain>
-        <domain includeSubdomains="true">10.0.3.2</domain>
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
 
-        <!-- 10.0.0.0/8 — corporate LAN prefixes -->
-        <domain includeSubdomains="true">10.0.0.0</domain>
-        <domain includeSubdomains="true">10.0.0.1</domain>
-        <domain includeSubdomains="true">10.0.0.10</domain>
-        <domain includeSubdomains="true">10.0.0.100</domain>
-        <domain includeSubdomains="true">10.0.1.0</domain>
-        <domain includeSubdomains="true">10.0.1.1</domain>
-        <domain includeSubdomains="true">10.1.1.1</domain>
-        <domain includeSubdomains="true">10.10.10.10</domain>
+    <!--
+      ============================================================================
+      SELF-HOST CLEARTEXT — per-host opt-in for a custom release build.
 
-        <!-- 172.16.0.0/12 — Docker / Vagrant default ranges -->
-        <domain includeSubdomains="true">172.16.0.0</domain>
-        <domain includeSubdomains="true">172.16.0.1</domain>
-        <domain includeSubdomains="true">172.17.0.0</domain>
-        <domain includeSubdomains="true">172.17.0.1</domain>
-        <domain includeSubdomains="true">172.18.0.0</domain>
-        <domain includeSubdomains="true">172.20.0.0</domain>
+      If your shop runs the Eryxon Flow backend over plain HTTP on the LAN and you
+      cannot put TLS in front of it, uncomment this block, replace the example
+      with YOUR backend host (hostname or fixed IP), and rebuild the release APK.
+      Add one <domain> per host. Do NOT commit a real customer host upstream.
 
-        <!-- 192.168.0.0/16 — most home + small-shop LANs -->
-        <domain includeSubdomains="true">192.168.0.0</domain>
-        <domain includeSubdomains="true">192.168.0.1</domain>
-        <domain includeSubdomains="true">192.168.1.0</domain>
-        <domain includeSubdomains="true">192.168.1.1</domain>
-        <domain includeSubdomains="true">192.168.1.100</domain>
-        <domain includeSubdomains="true">192.168.2.0</domain>
-        <domain includeSubdomains="true">192.168.10.0</domain>
-        <domain includeSubdomains="true">192.168.50.0</domain>
-        <domain includeSubdomains="true">192.168.100.0</domain>
-
-        <!-- Link-local v4 -->
-        <domain includeSubdomains="true">169.254.0.0</domain>
-
-        <!-- Conventional LAN suffixes (mDNS + private TLDs) -->
-        <domain includeSubdomains="true">local</domain>
-        <domain includeSubdomains="true">lan</domain>
-        <domain includeSubdomains="true">home</domain>
-        <domain includeSubdomains="true">internal</domain>
-        <domain includeSubdomains="true">corp</domain>
-        <domain includeSubdomains="true">private</domain>
-        <domain includeSubdomains="true">intranet</domain>
-    </domain-config>
+      <domain-config cleartextTrafficPermitted="true">
+          <domain includeSubdomains="false">flow.your-shop.lan</domain>
+          <domain includeSubdomains="false">192.168.1.50</domain>
+      </domain-config>
+      ============================================================================
+    -->
 </network-security-config>
