@@ -1,0 +1,194 @@
+name: Seed Provisioning Drill
+
+# Fresh-provisioning seed drill for ERY-101 / ERY-107.
+#
+# Proves the ERY-83 seed fix (commit b2ba76a, "tolerate insufficient_privilege
+# on storage policies") makes supabase/seed.sql deterministic on a fresh tenant.
+#
+# Fidelity note: a local `supabase` stack runs seed.sql as a superuser-equivalent
+# role, which does NOT reproduce the hosted non-owner privilege boundary that
+# raised `42501 insufficient_privilege` in the ERY-47 drill. So this drill runs
+# seed.sql as a deliberately non-owner login role (`seed_runner`) against a fresh
+# stack — the same condition the hosted `supabase db execute < seed.sql` runbook
+# step hits, where the connecting role does not own storage.objects.
+#
+# The job is self-validating via a negative control:
+#   * NEGATIVE — the PRE-FIX seed.sql (parent of b2ba76a) MUST abort with 42501.
+#   * POSITIVE — the current (fixed) seed.sql MUST complete clean (no 42501 abort).
+# If the negative control does not reproduce 42501, the harness is not exercising
+# the bug and the run fails loudly rather than giving a false pass.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "engineer/**"
+    paths:
+      - .github/workflows/seed-provisioning-drill.yml
+      - supabase/seed.sql
+      - supabase/migrations/**
+      - supabase/config.toml
+
+jobs:
+  seed-drill:
+    name: Fresh-tenant seed phase (non-owner role)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # need history to fetch the pre-fix seed.sql
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.72.7
+
+      - name: Capture toolchain + commit context
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          {
+            echo "supabase $(supabase --version)"
+            echo "docker $(docker --version)"
+            echo "HEAD $(git rev-parse HEAD)"
+            echo "seed fix commit (b2ba76a) present: $(git merge-base --is-ancestor b2ba76a HEAD && echo yes || echo no)"
+          } 2>&1 | tee artifacts/toolchain.log
+
+      - name: Start fresh Supabase stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          # Fresh stack: applies migrations (storage policies created by the
+          # owner-run 20260127230000_post_schema_setup migration) and runs the
+          # current seed once as the superuser path.
+          supabase start 2>&1 | tee artifacts/supabase-start.log
+
+      - name: Resolve local DB connection
+        id: db
+        shell: bash
+        run: |
+          set -euo pipefail
+          DB_URL="$(supabase status -o env | sed -n 's/^DB_URL="\{0,1\}\([^"]*\)"\{0,1\}$/\1/p')"
+          if [ -z "$DB_URL" ]; then
+            DB_URL="postgresql://postgres:postgres@127.0.0.1:54322/postgres"
+          fi
+          echo "Resolved DB_URL host/port (redacted creds): ${DB_URL#*@}"
+          echo "db_url=$DB_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Provision non-owner seed role
+        shell: bash
+        env:
+          DB_URL: ${{ steps.db.outputs.db_url }}
+        run: |
+          set -euo pipefail
+          # seed_runner mimics the hosted seed connection: it can write buckets
+          # (BYPASSRLS) and read schemas, but it does NOT own storage.objects, so
+          # CREATE POLICY raises 42501 — exactly the ERY-47 failure condition.
+          psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL' 2>&1 | tee artifacts/role-setup.log
+          DROP ROLE IF EXISTS seed_runner;
+          CREATE ROLE seed_runner LOGIN PASSWORD 'seed_runner' NOSUPERUSER NOCREATEDB NOCREATEROLE BYPASSRLS;
+          GRANT USAGE ON SCHEMA storage TO seed_runner;
+          GRANT INSERT, SELECT, UPDATE ON storage.buckets TO seed_runner;
+          GRANT SELECT ON storage.objects TO seed_runner;
+          GRANT USAGE ON SCHEMA extensions TO seed_runner;
+          DO $$ BEGIN
+            IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'cron') THEN
+              EXECUTE 'GRANT USAGE ON SCHEMA cron TO seed_runner';
+            END IF;
+          END $$;
+          SQL
+
+      - name: Build non-owner connection string
+        id: seedconn
+        shell: bash
+        env:
+          DB_URL: ${{ steps.db.outputs.db_url }}
+        run: |
+          set -euo pipefail
+          # Swap the user/password to seed_runner, keep host/port/db from the stack.
+          HOSTPART="${DB_URL#*@}"
+          echo "seed_url=postgresql://seed_runner:seed_runner@${HOSTPART}" >> "$GITHUB_OUTPUT"
+
+      - name: NEGATIVE control — pre-fix seed MUST fail with 42501
+        shell: bash
+        env:
+          SEED_URL: ${{ steps.seedconn.outputs.seed_url }}
+        run: |
+          set -uo pipefail
+          mkdir -p artifacts
+          # Fetch the seed.sql exactly as it was before the fix (parent of b2ba76a).
+          git show b2ba76a~1:supabase/seed.sql > artifacts/seed.prefix.sql
+          set +e
+          psql "$SEED_URL" -v ON_ERROR_STOP=1 -f artifacts/seed.prefix.sql \
+            > artifacts/negative-control.out 2> artifacts/negative-control.err
+          RC=$?
+          set -e
+          echo "pre-fix seed exit code: $RC"
+          cat artifacts/negative-control.err || true
+          if [ "$RC" -eq 0 ]; then
+            echo "::error::Negative control did not fail — harness is NOT reproducing the 42501 non-owner condition. Drill result is untrustworthy."
+            exit 1
+          fi
+          if ! grep -qiE "42501|insufficient_privilege" artifacts/negative-control.err; then
+            echo "::error::Pre-fix seed failed, but not with 42501/insufficient_privilege — wrong failure mode."
+            exit 1
+          fi
+          echo "OK: pre-fix seed aborted with 42501 as expected (harness reproduces the bug)."
+
+      - name: POSITIVE — current fixed seed MUST complete clean
+        shell: bash
+        env:
+          SEED_URL: ${{ steps.seedconn.outputs.seed_url }}
+        run: |
+          set -uo pipefail
+          mkdir -p artifacts
+          set +e
+          psql "$SEED_URL" -v ON_ERROR_STOP=1 -f supabase/seed.sql \
+            > artifacts/positive-seed.out 2> artifacts/positive-seed.err
+          RC=$?
+          set -e
+          echo "fixed seed exit code: $RC"
+          echo "----- stdout -----"; cat artifacts/positive-seed.out || true
+          echo "----- stderr -----"; cat artifacts/positive-seed.err || true
+          if [ "$RC" -ne 0 ]; then
+            echo "::error::Fixed seed.sql did NOT complete clean (exit $RC) — seed fix insufficient."
+            exit 1
+          fi
+          if grep -qiE "ERROR:.*42501|ERROR:.*insufficient_privilege" artifacts/positive-seed.err; then
+            echo "::error::Fixed seed.sql surfaced an unhandled 42501 error."
+            exit 1
+          fi
+          echo "OK: fixed seed.sql completed clean on a fresh tenant as a non-owner role (no 42501 abort)."
+
+      - name: Drill result summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Seed Provisioning Drill — ERY-101 / ERY-107"
+            echo
+            echo "- Stack: fresh \`supabase start\` on ubuntu-latest (Docker)"
+            echo "- Seed run as non-owner role \`seed_runner\` (reproduces hosted 42501 condition)"
+            echo "- Negative control (pre-fix seed): expected abort with 42501"
+            echo "- Positive (fixed seed): expected clean completion"
+            echo "- HEAD: $(git rev-parse HEAD)"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Stop stack
+        if: always()
+        shell: bash
+        run: supabase stop --no-backup || true
+
+      - name: Upload drill artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seed-provisioning-drill-${{ github.run_id }}
+          if-no-files-found: warn
+          path: artifacts/*
