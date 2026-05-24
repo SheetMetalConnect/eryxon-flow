@@ -147,6 +147,12 @@
       ]
     },
     {
+      "label": "Articles",
+      "autogenerate": {
+        "directory": "articles"
+      }
+    },
+    {
       "label": "Help",
       "items": [
         {
