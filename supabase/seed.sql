@@ -12,27 +12,37 @@ VALUES
   ('batch-images', 'batch-images', false, 10485760, ARRAY['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
 ON CONFLICT (id) DO NOTHING;
 
--- Storage policies (Idempotent using DO blocks for PG15 compatibility)
+-- Storage policies (Idempotent using DO blocks for PG15 compatibility).
+--
+-- These policies are also created by the 20260127230000_post_schema_setup
+-- migration, which runs as the storage-table owner. When seed.sql runs after
+-- migrations (e.g. `supabase db reset` seed phase, or `supabase db execute <
+-- seed.sql`), the connecting role is NOT the owner of storage.objects, so
+-- CREATE POLICY raises `42501 insufficient_privilege` BEFORE the duplicate-name
+-- check — which `WHEN duplicate_object` alone does not catch, aborting the
+-- whole block. Tolerating `insufficient_privilege` here makes the seed
+-- deterministic: the policies are already provisioned by the migration, so a
+-- benign privilege error simply means "already done, nothing to do".
 DO $$
 BEGIN
     -- parts-images
-    BEGIN CREATE POLICY "Authenticated users can upload part images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'parts-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
-    BEGIN CREATE POLICY "Authenticated users can view part images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'parts-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
-    BEGIN CREATE POLICY "Authenticated users can delete part images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'parts-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can upload part images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'parts-images'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can view part images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'parts-images'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can delete part images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'parts-images'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
 
     -- issues
-    BEGIN CREATE POLICY "Authenticated users can upload issue attachments" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'issues'); EXCEPTION WHEN duplicate_object THEN NULL; END;
-    BEGIN CREATE POLICY "Authenticated users can view issue attachments" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'issues'); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can upload issue attachments" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'issues'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can view issue attachments" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'issues'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
 
     -- parts-cad
-    BEGIN CREATE POLICY "Authenticated users can upload CAD files" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object THEN NULL; END;
-    BEGIN CREATE POLICY "Authenticated users can view CAD files" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object THEN NULL; END;
-    BEGIN CREATE POLICY "Authenticated users can delete CAD files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can upload CAD files" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can view CAD files" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can delete CAD files" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'parts-cad'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
 
     -- batch-images
-    BEGIN CREATE POLICY "Authenticated users can upload batch images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
-    BEGIN CREATE POLICY "Authenticated users can view batch images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
-    BEGIN CREATE POLICY "Authenticated users can delete batch images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can upload batch images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can view batch images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
+    BEGIN CREATE POLICY "Authenticated users can delete batch images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'batch-images'); EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL; END;
 END $$;
 
 -- Schedule cron jobs (requires pg_cron extension)
