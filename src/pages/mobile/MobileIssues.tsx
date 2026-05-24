@@ -52,7 +52,8 @@ export default function MobileIssues() {
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
-  const operatorId = activeOperator?.id || profile?.id;
+  // Scope the issue list to the verified active operator, not the shared account.
+  const operatorId = activeOperator?.id;
   const [issues, setIssues] = useState<Issue[]>([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<Tab>("open");

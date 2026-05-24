@@ -62,7 +62,8 @@ export default function MobileActivity() {
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
-  const operatorId = activeOperator?.id || profile?.id;
+  // Scope the timeline to the verified active operator, not the shared account.
+  const operatorId = activeOperator?.id;
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
 

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Fingerprint, KeyRound, Loader2, ScanFace } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { getBiometricAvailability, verifyIdentity } from "@/native";
 import { ROUTES } from "@/routes";
+import { resolvePostMobileLoginTarget } from "@/routes/launchTargets";
 
 const STORED_LAST_BADGE_KEY = "eryxon-flow:last-employee-id";
 
@@ -23,6 +24,7 @@ const STORED_LAST_BADGE_KEY = "eryxon-flow:last-employee-id";
 export default function MobileLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const haptics = useHaptics();
   const { verifyAndSwitchOperator } = useOperator();
   const [employeeId, setEmployeeId] = useState("");
@@ -67,7 +69,7 @@ export default function MobileLogin() {
         } catch {
           /* ignore */
         }
-        navigate(ROUTES.OPERATOR.WORK_QUEUE, { replace: true });
+        navigate(resolvePostMobileLoginTarget(location.state), { replace: true });
       } else {
         await haptics.error();
         setError(result.error_message || t("terminalLogin.invalidCredentials"));

@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuthActions } from "@/hooks/useAuthActions";
+import { useNative } from "@/hooks/useNative";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,7 @@ import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
 import { TurnstileWidget, useTurnstile } from "@/components/auth/TurnstileWidget";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
+import { resolvePostAuthTarget } from "@/routes/launchTargets";
 
 const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
@@ -33,15 +35,23 @@ export default function Auth() {
   const profile = useProfile();
   const { signIn, signUp } = useAuthActions();
   const navigate = useNavigate();
+  const location = useLocation();
+  const native = useNative();
 
-  if (profile) {
-    if (profile.role === "admin") {
-      navigate(ROUTES.ADMIN.DASHBOARD);
-    } else {
-      navigate(ROUTES.OPERATOR.WORK_QUEUE);
-    }
-    return null;
-  }
+  const redirectTarget = profile
+    ? resolvePostAuthTarget({
+        role: profile.role,
+        preferMobileShell: native.isNative || native.isMobileShell,
+        state: location.state,
+      })
+    : null;
+
+  useEffect(() => {
+    if (!redirectTarget) return;
+    navigate(redirectTarget, { replace: true });
+  }, [navigate, redirectTarget]);
+
+  if (redirectTarget) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,10 +194,10 @@ export default function Auth() {
           />
           {isLogin && (
             <div className="text-right">
-              <Link
-                to={ROUTES.FORGOT_PASSWORD}
-                className="text-xs text-primary hover:underline"
-              >
+            <Link
+              to={ROUTES.FORGOT_PASSWORD}
+              className="text-xs text-primary hover:underline"
+            >
                 {t("auth.forgotPassword")}
               </Link>
             </div>
