@@ -41,6 +41,38 @@ ensure_native_build_bindings() {
   fi
 }
 
+# @capacitor-mlkit/barcode-scanning@7.5.0 pulls in GoogleMLKit/BarcodeScanning
+# (= 7.0.0), which declares a minimum deployment target of iOS 15.5. The
+# Capacitor 7 template ships a Podfile pinned to `platform :ios, '14.0'`, so a
+# stock `cap add ios` fails CocoaPods resolution before any build runs
+# (ERY-108). Pin the whole project to 15.5 so pod install resolves.
+IOS_DEPLOYMENT_TARGET="15.5"
+
+# Raise the iOS deployment target in the generated (uncommitted) iOS project so
+# CocoaPods can resolve GoogleMLKit 7.0.0. Idempotent: safe to re-run on every
+# init/sync. We touch three places:
+#   - Podfile `platform :ios` line (controls the App pod target floor)
+#   - Podfile post_install (raises every transitive Pods target)
+#   - App.xcodeproj deployment target (so the app target links the 15.5 pods)
+# `cap sync` only rewrites the capacitor_pods block + require_relative line, so
+# these edits survive the sync that runs pod install.
+patch_ios_deployment_target() {
+  local podfile="ios/App/Podfile"
+  local pbxproj="ios/App/App.xcodeproj/project.pbxproj"
+
+  if [[ -f "$podfile" ]]; then
+    echo "▶ Pinning iOS deployment target to ${IOS_DEPLOYMENT_TARGET} (GoogleMLKit 7.0.0 needs >= 15.5)..."
+    sed -i '' -E "s/^platform :ios, '[0-9.]+'/platform :ios, '${IOS_DEPLOYMENT_TARGET}'/" "$podfile"
+    if ! grep -q "ERYXON_DEPLOYMENT_FLOOR" "$podfile"; then
+      perl -0pi -e "s/(post_install do \|installer\|\n)/\$1  # ERYXON_DEPLOYMENT_FLOOR: GoogleMLKit\/BarcodeScanning 7.0.0 requires iOS 15.5+\n  installer.pods_project.targets.each do |t|\n    t.build_configurations.each do |c|\n      if c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < ${IOS_DEPLOYMENT_TARGET}\n        c.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '${IOS_DEPLOYMENT_TARGET}'\n      end\n    end\n  end\n/" "$podfile"
+    fi
+  fi
+
+  if [[ -f "$pbxproj" ]]; then
+    sed -i '' -E "s/IPHONEOS_DEPLOYMENT_TARGET = [0-9.]+;/IPHONEOS_DEPLOYMENT_TARGET = ${IOS_DEPLOYMENT_TARGET};/g" "$pbxproj"
+  fi
+}
+
 if [[ "${OSTYPE:-}" != darwin* ]]; then
   echo "⚠ Capacitor's iOS toolchain only runs on macOS — this script will" >&2
   echo "  configure the project but you must finish 'cap add ios' on a Mac." >&2
@@ -54,15 +86,25 @@ else
 fi
 ensure_native_build_bindings
 
+if [[ ! -d ios ]]; then
+  echo "▶ Generating native iOS project (npx cap add ios)..."
+  # `cap add ios` only runs `cap sync` (and therefore `pod install`) when the
+  # web bundle (dist/) already exists. We deliberately add the platform BEFORE
+  # building so that first pod install is skipped — it would otherwise resolve
+  # against the default 'platform :ios, 14.0' Podfile and fail on GoogleMLKit
+  # 7.0.0. Removing any stale dist/ keeps this deterministic on dev machines.
+  rm -rf dist
+  npx cap add ios
+  patch_ios_deployment_target
+fi
+
 echo "▶ Building production web bundle..."
 npm run build
 
-if [[ ! -d ios ]]; then
-  echo "▶ Generating native iOS project (npx cap add ios)..."
-  npx cap add ios
-fi
-
 echo "▶ Syncing web bundle and native plugins into ios/..."
+# Re-assert the deployment floor before sync in case the iOS project predates
+# this pin, then sync (which runs pod install against the corrected Podfile).
+patch_ios_deployment_target
 npx cap sync ios
 
 # Ensure the generated Info.plist carries the strings ML Kit / Biometric

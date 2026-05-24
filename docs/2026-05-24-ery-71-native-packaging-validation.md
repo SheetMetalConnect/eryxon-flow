@@ -41,6 +41,24 @@ First macOS lane run: GitHub Actions run [`26370608416`](https://github.com/Shee
 
 - The iOS failure masked Android validation (steps skipped). Split iOS and Android into independent jobs (or `if: always()` gating) so a failure in one still produces evidence for the other on the same run.
 
+## ERY-108 fix (2026-05-24)
+
+Both blockers from run `26370608416` are addressed on branch `engineer/ery-108-ios-pod-fix`:
+
+1. **iOS deployment target pinned to 15.5.** `scripts/ios-init.sh` now adds the iOS platform _before_ building the web bundle. Capacitor's `cap add ios` only runs `pod install` (via `cap sync`) when `dist/` already exists, so adding the platform first skips the premature pod install that resolved against the default `platform :ios, '14.0'`. A new `patch_ios_deployment_target` helper then pins the target in three places — the Podfile `platform :ios` line, a `post_install` floor that raises every transitive Pods target, and the `App.xcodeproj` `IPHONEOS_DEPLOYMENT_TARGET` — before `cap sync` runs pod install against the corrected Podfile. The helper is idempotent and re-asserts the floor on every sync. Patch logic verified locally against the extracted Capacitor 7 `ios-pods-template` (Podfile → `15.5`, all four pbxproj configs → `15.5`, `ruby -c` clean); the native toolchain itself is unavailable on the engineer host, so pod resolution + simulator build are proven only in CI.
+2. **iOS and Android split into independent jobs.** `.github/workflows/native-build-smoke.yml` now has separate `ios-smoke` (macos-15) and `android-smoke` (ubuntu-latest) jobs with no `needs` edge, so an iOS failure no longer skips Android. The Android release assemble carries `if: always()` so it runs even when the debug assemble fails — both APK results are always captured. Each job uploads its own artifact bundle.
+
+### Re-run evidence
+
+- Pending: PR re-run of the split lane on `engineer/ery-108-ios-pod-fix`. Fill in run ID + per-check pass/fail once the workflow completes.
+
+| Check | Status | Evidence |
+| --- | --- | --- |
+| `npm run ios:init` (add ios + pin target + sync + pod install) | PENDING | — |
+| iOS simulator build of `ios/App/App.xcworkspace` | PENDING | — |
+| `npm run android:assemble:debug` | PENDING | — |
+| `npm run android:assemble:release` | PENDING | — |
+
 ## Remaining Apple-specific gaps
 
 ## Remaining Apple-specific gaps

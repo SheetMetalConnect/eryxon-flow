@@ -16,11 +16,15 @@ on:
       - src/styles/mobile.css
       - src/styles/mobile-ios.css
 
+# iOS and Android run as independent jobs so a failure in one never masks the
+# other's evidence (ERY-108). GitHub schedules them in parallel; neither
+# `needs` the other, so an iOS pod-resolution failure no longer skips the
+# Android assemble steps.
 jobs:
-  native-build-smoke:
-    name: iOS bootstrap + Android smoke
+  ios-smoke:
+    name: iOS bootstrap + simulator build
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 45
     permissions:
       contents: read
 
@@ -33,13 +37,7 @@ jobs:
           node-version: "20"
           cache: npm
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Capture native toolchain versions
+      - name: Capture iOS toolchain versions
         shell: bash
         run: |
           set -euo pipefail
@@ -49,11 +47,7 @@ jobs:
             echo "npm $(npm -v)"
             xcodebuild -version
             echo "CocoaPods $(pod --version)"
-            java -version
-            echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
-            ls "$ANDROID_HOME/platforms" | grep "android-35"
-            ls "$ANDROID_HOME/build-tools" | grep "35.0"
-          } 2>&1 | tee artifacts/toolchain.log
+          } 2>&1 | tee artifacts/ios-toolchain.log
 
       - name: Bootstrap iOS workspace
         shell: bash
@@ -77,7 +71,56 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build 2>&1 | tee artifacts/ios-build.log | xcbeautify
 
+      - name: Upload iOS smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-smoke-ios-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            artifacts/*.log
+            ios/App/build/**
+
+  android-smoke:
+    name: Android debug + release assemble
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Capture Android toolchain versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          {
+            echo "Node $(node -v)"
+            echo "npm $(npm -v)"
+            java -version
+            echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
+            ls "$ANDROID_HOME/platforms" | grep "android-35" || echo "android-35 platform missing"
+            ls "$ANDROID_HOME/build-tools" | grep "35" || echo "build-tools 35 missing"
+          } 2>&1 | tee artifacts/android-toolchain.log
+
+      # `if: always()` on the release step guarantees the release assemble runs
+      # even if the debug assemble fails, so we always capture pass/fail for both.
       - name: Assemble Android debug APK
+        id: android_debug
         shell: bash
         run: |
           set -euo pipefail
@@ -85,19 +128,19 @@ jobs:
           npm run android:assemble:debug 2>&1 | tee artifacts/android-debug.log
 
       - name: Assemble Android release APK
+        if: always()
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p artifacts
           npm run android:assemble:release 2>&1 | tee artifacts/android-release.log
 
-      - name: Upload native smoke artifacts
+      - name: Upload Android smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: native-build-smoke-${{ github.run_id }}
+          name: native-smoke-android-${{ github.run_id }}
           if-no-files-found: warn
           path: |
             artifacts/*.log
             android/app/build/outputs/**
-            ios/App/build/**
