@@ -130,6 +130,14 @@ jobs:
           set -euo pipefail
           npm ci
 
+      - name: Repair darwin-arm64 native bindings
+        shell: bash
+        run: |
+          set -euo pipefail
+          # macos runners are Apple Silicon; npm ci skips Rollup/SWC arm64
+          # bindings (npm optional-deps bug), which breaks `npm run build`.
+          bash scripts/repair-native-bindings.sh
+
       - name: Assemble Android debug APK
         shell: bash
         run: |

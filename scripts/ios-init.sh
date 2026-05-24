@@ -22,31 +22,10 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
+# Repair darwin-arm64 native bindings (Rollup/SWC) that npm skips on Apple
+# Silicon, so the Vite build is deterministic. Shared with the Android lane.
 ensure_native_build_bindings() {
-  require_binding() {
-    local package_name="$1"
-    node -e "require(require.resolve(process.argv[1]));" "$package_name"
-  }
-
-  # npm ci intermittently skips native optional packages on Apple Silicon.
-  # Vite then fails before Capacitor even runs because Rollup and SWC cannot
-  # load their darwin-arm64 bindings. Repair them once here so native
-  # bootstrap stays deterministic on fresh machines and CI runners.
-  if [[ "$(uname -s)" == "Darwin" && "$(uname -m)" == "arm64" ]]; then
-    if ! require_binding "@rollup/rollup-darwin-arm64" >/dev/null 2>&1 \
-      || ! require_binding "@swc/core-darwin-arm64" >/dev/null 2>&1; then
-      local rollup_version
-      local swc_version
-      rollup_version="$(node -p "require('./node_modules/rollup/package.json').version")"
-      swc_version="$(node -p "require('./node_modules/@swc/core/package.json').version")"
-      echo "▶ Repairing darwin-arm64 native bindings for Rollup and SWC..."
-      npm install --no-save \
-        "@rollup/rollup-darwin-arm64@${rollup_version}" \
-        "@swc/core-darwin-arm64@${swc_version}"
-      require_binding "@rollup/rollup-darwin-arm64" >/dev/null
-      require_binding "@swc/core-darwin-arm64" >/dev/null
-    fi
-  fi
+  bash scripts/repair-native-bindings.sh
 }
 
 # Raise the iOS deployment-target floor across the generated project so the
