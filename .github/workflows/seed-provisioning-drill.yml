@@ -60,18 +60,25 @@ jobs:
         run: |
           set -euo pipefail
           log=artifacts/db-reset.log
-          echo "Scanning $log for 42501 / insufficient_privilege / ownership failures..."
-          # These are the exact ERY-47 failure signatures the b2ba76a fix targets.
-          if grep -nE "42501|insufficient_privilege|must be owner of (table|relation) objects" "$log"; then
-            echo "::error::Seed phase still hit a storage-policy privilege/ownership failure"
+          echo "Scanning $log for real 42501 / ownership ErrorResponse messages..."
+          # IMPORTANT: --debug echoes the seed SQL itself (which now literally contains
+          # the strings "42501" and "insufficient_privilege" in the b2ba76a fix's comment
+          # and EXCEPTION clauses), so a naive grep over the whole log false-matches the
+          # query being SENT. The only signal that matters is a server ERROR RESPONSE.
+          # Match Postgres ErrorResponse lines (severity ERROR) carrying the ERY-47
+          # signature: SQLSTATE 42501 or "must be owner of ... objects".
+          if grep -E '"Type":"ErrorResponse"' "$log" \
+               | grep -E '"Severity":"ERROR"' \
+               | grep -E '"Code":"42501"|must be owner of (table|relation) objects'; then
+            echo "::error::Seed phase still hit a storage-policy privilege/ownership ERROR response"
             exit 1
           fi
           # Reset must have actually run the seed; guard against a silently skipped seed.
-          if ! grep -qiE "seed|Seeding|Applying migration|Finished supabase db reset" "$log"; then
+          if ! grep -qiE "Seeding|Applying migration|Finished supabase db reset" "$log"; then
             echo "::error::db reset log does not show a migration/seed phase — drill inconclusive"
             exit 1
           fi
-          echo "PASS: seed phase completed with no 42501 / insufficient_privilege / ownership failure."
+          echo "PASS: seed phase completed with no 42501 / ownership ERROR response."
 
       - name: Upload drill artifacts
         if: always()
