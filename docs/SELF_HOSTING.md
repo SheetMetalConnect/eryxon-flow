@@ -84,6 +84,23 @@ WHERE id = '<user-id>';
 
 Self-hosted Supabase has no Cloudflare Turnstile. Do **not** set `VITE_TURNSTILE_SITE_KEY` — the frontend automatically skips captcha when the key is absent.
 
+### Admin/security audit logging not needed
+
+The `log_admin_activity()` triggers (`*_admin_audit_trigger` on `api_keys`, `user_roles`, `invitations`, `webhooks`, `installed_integrations`, `mcp_authentication_keys`, `mcp_server_config`, `tenants`) write a managed-pilot audit trail to `activity_log`. This is a **hosted-only** feature — self-hosted installs don't need it and may drop the triggers:
+
+```sql
+DROP TRIGGER IF EXISTS tenants_admin_audit_trigger ON public.tenants;
+DROP TRIGGER IF EXISTS user_roles_admin_audit_trigger ON public.user_roles;
+DROP TRIGGER IF EXISTS api_keys_admin_audit_trigger ON public.api_keys;
+DROP TRIGGER IF EXISTS invitations_admin_audit_trigger ON public.invitations;
+DROP TRIGGER IF EXISTS webhooks_admin_audit_trigger ON public.webhooks;
+DROP TRIGGER IF EXISTS installed_integrations_admin_audit_trigger ON public.installed_integrations;
+DROP TRIGGER IF EXISTS mcp_authentication_keys_admin_audit_trigger ON public.mcp_authentication_keys;
+DROP TRIGGER IF EXISTS mcp_server_config_admin_audit_trigger ON public.mcp_server_config;
+```
+
+As of migration `20260525120000_audit_triggers_non_fatal`, both `log_activity()` and `log_admin_activity()` are non-fatal: a failed audit insert is skipped (logged as a warning) rather than aborting the operation — so a stale FK reference can never lock users out of login again.
+
 ### GoTrue NULL string columns
 
 When manually inserting into `auth.users`, set all token/change columns to empty strings (not NULL):
