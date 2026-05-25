@@ -186,11 +186,16 @@ const getProductionMetrics: ToolHandler = async (args: Record<string, unknown>, 
       validated.start_date ||
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Fetch completed jobs in the period
+    // Fetch completed jobs in the period. The jobs table has no dedicated
+    // completion timestamp, so updated_at (set when status flips to completed)
+    // is the period proxy — without it this would return all-time totals and
+    // break period-over-period comparisons.
     const { data: completedJobs, error: jobsError } = await supabase
       .from("jobs")
-      .select("id, status")
+      .select("id, status, updated_at")
       .eq("status", "completed")
+      .gte("updated_at", startDate)
+      .lte("updated_at", endDate)
       .is("deleted_at", null);
 
     if (jobsError) throw databaseError("Failed to fetch completed jobs", jobsError as Error);

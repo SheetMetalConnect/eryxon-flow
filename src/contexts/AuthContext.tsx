@@ -122,13 +122,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               }
             });
           }
-          if (event === 'SIGNED_OUT') {
-            lastRegisteredUserId = null;
-          }
         } else {
           setProfile(null);
           setTenant(null);
           setLoading(false);
+          // No active user (e.g. SIGNED_OUT carries no session.user): clear the
+          // push-registration cache so signing back in as the same user during
+          // the same runtime re-registers the device token.
+          lastRegisteredUserId = null;
         }
       }
     );
