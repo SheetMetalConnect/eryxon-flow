@@ -16,7 +16,8 @@
  * All CTAs route through the shared CtaButton primitive so the ERY-33 analytics contract holds.
  */
 import CtaButton from "@/components/marketing/CtaButton.astro";
-import { landingCopy } from "@/lib/marketing-content";
+import RolloutInquiry from "@/components/RolloutInquiry.astro";
+import { landingCopy, pricingCopy, type PlanFeature } from "@/lib/marketing-content";
 import { localizePath, type Locale } from "@/lib/locale";
 
 interface Props {
@@ -24,10 +25,15 @@ interface Props {
 }
 const { locale = "en" } = Astro.props;
 const c = landingCopy(locale);
+const p = pricingCopy(locale);
 
 const docsHref = localizePath("/introduction/", locale);
-const rolloutHref = localizePath("/managed-rollout/", locale);
+const pricingHref = localizePath("/pricing/", locale);
 const selfHostHref = localizePath("/guides/self-hosting/", locale);
+
+// Managed rollout now lives inline on this page (#managed-rollout); the hero secondary
+// CTA scrolls there instead of routing to the standalone docs page.
+const rolloutAnchor = "#managed-rollout";
 
 const check =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -44,7 +50,7 @@ const arrow =
     <CtaButton href="https://app.eryxon.eu" ctaId="home_hero_primary_hosted" surface="homepage_hero" kind="hosted_app" variant="primary" locale={locale} external>
       <span>{c.hero.ctaPrimary}</span><Fragment set:html={arrow} />
     </CtaButton>
-    <CtaButton href={`${rolloutHref}?cta=home_hero_secondary_rollout`} ctaId="home_hero_secondary_rollout" surface="homepage_hero" kind="rollout_page" variant="secondary" locale={locale}>
+    <CtaButton href={rolloutAnchor} ctaId="home_hero_secondary_rollout" surface="homepage_hero" kind="rollout_section" variant="secondary" locale={locale}>
       {c.hero.ctaSecondary}
     </CtaButton>
     <CtaButton href={docsHref} ctaId="home_hero_tertiary_docs" surface="homepage_hero" kind="docs" variant="tertiary" locale={locale}>
@@ -177,6 +183,83 @@ const arrow =
         <div class="mk-int-kind">{it.kind}</div>
       </div>
     ))}
+  </div>
+</section>
+
+<!-- 6b · Pricing, inline (kit .mk-pricing-grid / .mk-tier, three tiers) ------ -->
+<section class="mk-section" id="pricing">
+  <div class="mk-section-head">
+    <span class="mk-section-eyebrow">{c.pricing.eyebrow}</span>
+    <h2 class="mk-h2">{c.pricing.h2}</h2>
+    <p class="mk-section-lead">{c.pricing.lead}</p>
+  </div>
+  <div class="mk-pricing-grid">
+    <!-- Tier 1 — Free to start -->
+    <div class="mk-tier">
+      <div class="mk-tier-name">{p.plans.free.name}</div>
+      <div class="mk-tier-price">{p.plans.free.price}<span>{p.plans.free.period}</span></div>
+      <div class="mk-tier-sub">{p.plans.free.sub}</div>
+      <ul class="mk-tier-features">
+        {p.plans.free.features.map((f: PlanFeature) => (
+          <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+        ))}
+      </ul>
+      <CtaButton href="https://app.eryxon.eu" ctaId="home_pricing_free_trial" surface="homepage_pricing" kind="hosted_app" variant="secondary" locale={locale} external>
+        {p.plans.free.cta}
+      </CtaButton>
+    </div>
+
+    <!-- Tier 2 — Hosted, coming soon (featured) -->
+    <div class="mk-tier is-featured is-soon">
+      <span class="mk-tier-flag">{p.plans.hosted.flag}</span>
+      <div class="mk-tier-name">{p.plans.hosted.name}</div>
+      <div class="mk-tier-price">{p.plans.hosted.price}</div>
+      <div class="mk-tier-sub">{p.plans.hosted.sub}</div>
+      <ul class="mk-tier-features">
+        {p.plans.hosted.features.map((f: PlanFeature) => (
+          <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+        ))}
+      </ul>
+      <span class="mk-tier-cta-soon" aria-disabled="true">{p.plans.hosted.ctaSoon}</span>
+    </div>
+
+    <!-- Tier 3 — Managed services -->
+    <div class="mk-tier">
+      <div class="mk-tier-name">{p.plans.managed.name}</div>
+      <div class="mk-tier-price">{p.plans.managed.price}</div>
+      <div class="mk-tier-sub">{p.plans.managed.sub}</div>
+      <ul class="mk-tier-features">
+        {p.plans.managed.features.map((f: PlanFeature) => (
+          <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+        ))}
+      </ul>
+      <a class="mk-tier-link" href={`${rolloutAnchor}`} data-cta-id="home_pricing_managed_rollout" data-cta-surface="homepage_pricing" data-cta-kind="rollout_section">
+        {p.plans.managed.cta}
+      </a>
+    </div>
+  </div>
+  <p class="mk-pricing-all">
+    <a href={pricingHref} data-cta-id="home_pricing_all" data-cta-surface="homepage_pricing" data-cta-kind="internal">{c.pricing.allLink}</a>
+  </p>
+</section>
+
+<!-- 6c · Managed rollout, inline (folded in from the standalone page) -------- -->
+<section class="mk-section mk-rollout" id="managed-rollout">
+  <div class="mk-rollout-grid">
+    <div class="mk-rollout-intro">
+      <span class="mk-section-eyebrow">{c.rollout.eyebrow}</span>
+      <h2 class="mk-h2">{c.rollout.h2}</h2>
+      <p class="mk-section-lead">{c.rollout.lead}</p>
+      <RolloutInquiry label={c.rollout.cta} locale={locale} />
+    </div>
+    <ul class="mk-rollout-points">
+      {c.rollout.points.map((pt) => (
+        <li>
+          <h3 class="mk-rollout-point-h">{pt.h}</h3>
+          <p class="mk-rollout-point-b">{pt.b}</p>
+        </li>
+      ))}
+    </ul>
   </div>
 </section>
 
@@ -587,6 +670,192 @@ const arrow =
     align-items: center;
   }
 
+  /* ---------- Pricing (kit .mk-pricing-grid / .mk-tier) ---------- */
+  .mk-pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ery-space-4);
+    align-items: stretch;
+  }
+  .mk-tier {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-4);
+    background: var(--ery-surface);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    padding: var(--ery-space-6);
+    position: relative;
+  }
+  .mk-tier.is-featured {
+    border-color: color-mix(in srgb, var(--ery-brand) 40%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ery-brand) 20%, transparent),
+      var(--ery-shadow);
+  }
+  .mk-tier-flag {
+    position: absolute;
+    top: calc(-1 * var(--ery-space-3));
+    left: var(--ery-space-6);
+    background: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+    padding: var(--ery-space-1) var(--ery-space-3);
+    border-radius: var(--ery-radius-pill);
+    font-size: var(--ery-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .mk-tier-name {
+    font-size: var(--ery-text-sm);
+    font-weight: 600;
+    color: var(--ery-text-muted);
+  }
+  .mk-tier-price {
+    font-size: var(--ery-text-4xl);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-feature-settings: "tnum";
+  }
+  .mk-tier-price span {
+    margin-left: var(--ery-space-2);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+    color: var(--ery-text-muted);
+  }
+  .mk-tier-sub {
+    margin-block-start: calc(-1 * var(--ery-space-2));
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .mk-tier-features {
+    list-style: none;
+    padding: var(--ery-space-4) 0 0;
+    margin: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+    border-block-start: 1px solid var(--ery-border);
+  }
+  .mk-tier-features li {
+    display: flex;
+    gap: var(--ery-space-2);
+    align-items: flex-start;
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-normal);
+  }
+  .mk-tier-features :global(svg) {
+    color: var(--ery-success);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .mk-tier-features li.muted,
+  .mk-tier-features li.muted :global(svg) {
+    color: var(--ery-text-subtle);
+  }
+  .mk-tier-cta-soon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    border: 1px dashed var(--ery-border-strong);
+    font-size: var(--ery-text-base);
+    font-weight: 500;
+    color: var(--ery-text-subtle);
+    cursor: default;
+  }
+  .mk-tier-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    border: 1px solid var(--ery-border-strong);
+    font-size: var(--ery-text-base);
+    font-weight: 500;
+    color: var(--ery-text);
+    transition: border-color var(--ery-motion-base) var(--ery-ease), color var(--ery-motion-base) var(--ery-ease);
+  }
+  .mk-tier-link:hover {
+    border-color: var(--ery-brand);
+    color: var(--ery-brand);
+  }
+  /* Full-width plan CTAs, kit-style. */
+  .mk-tier :global(.ery-cta),
+  .mk-tier .mk-tier-cta-soon,
+  .mk-tier .mk-tier-link {
+    inline-size: 100%;
+  }
+  .mk-pricing-all {
+    text-align: center;
+    margin-block-start: var(--ery-space-6);
+    font-size: var(--ery-text-sm);
+  }
+  .mk-pricing-all a {
+    color: var(--ery-brand);
+    font-weight: 500;
+  }
+  .mk-pricing-all a:hover { color: var(--ery-brand-hover); }
+
+  /* ---------- Managed rollout (folded-in section) ---------- */
+  .mk-rollout-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--ery-space-16);
+    align-items: center;
+    padding: var(--ery-space-8);
+    background: var(--ery-surface-subtle);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+  }
+  .mk-rollout-intro .mk-section-eyebrow { display: inline-block; }
+  .mk-rollout-intro .mk-h2 { margin-block-start: var(--ery-space-3); }
+  .mk-rollout-intro .mk-section-lead { margin-block-end: var(--ery-space-6); }
+  .mk-rollout-intro :global(.rollout-email-intent) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    background: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+    font-weight: 500;
+    transition: background-color var(--ery-motion-base) var(--ery-ease);
+  }
+  .mk-rollout-intro :global(.rollout-email-intent):hover {
+    background: var(--ery-brand-hover);
+    color: var(--ery-brand-contrast);
+  }
+  .mk-rollout-points {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-5);
+  }
+  .mk-rollout-points li {
+    padding-inline-start: var(--ery-space-4);
+    border-inline-start: 2px solid color-mix(in srgb, var(--ery-brand) 40%, transparent);
+  }
+  .mk-rollout-point-h {
+    font-size: var(--ery-text-base);
+    font-weight: 600;
+    margin: 0 0 var(--ery-space-1);
+    letter-spacing: -0.01em;
+  }
+  .mk-rollout-point-b {
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+
   /* ---------- Responsive (kit @media 980px) ---------- */
   @media (max-width: 980px) {
     .mk-feature-grid { grid-template-columns: 1fr 1fr; }
@@ -596,6 +865,8 @@ const arrow =
     .mk-shot-cards { grid-template-columns: 1fr; }
     .mk-cta-wrap { grid-template-columns: 1fr; text-align: center; }
     .mk-cta-actions { justify-content: center; }
+    .mk-pricing-grid { grid-template-columns: 1fr; max-inline-size: 32rem; margin-inline: auto; }
+    .mk-rollout-grid { grid-template-columns: 1fr; gap: var(--ery-space-8); }
   }
   @media (max-width: 600px) {
     .mk-feature-grid { grid-template-columns: 1fr; }

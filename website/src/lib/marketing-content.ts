@@ -53,6 +53,8 @@ export interface LandingCopy {
   how: { eyebrow: string; h2: string; steps: StepCopy[] };
   api: { eyebrow: string; h2: string; lead: string; bullets: string[] };
   integrations: { eyebrow: string; h2: string; lead: string; items: IntegrationCopy[] };
+  pricing: { eyebrow: string; h2: string; lead: string; allLink: string };
+  rollout: { eyebrow: string; h2: string; lead: string; points: { h: string; b: string }[]; cta: string };
   cta: { h2: string; lead: string; ctaPrimary: string; ctaSecondary: string };
 }
 
@@ -131,6 +133,23 @@ const LANDING: Record<Locale, LandingCopy> = {
         { name: "3D STEP viewer", kind: "CAD" },
       ],
     },
+    pricing: {
+      eyebrow: "Pricing",
+      h2: "One plan per deployment style.",
+      lead: "Try it free for 30 days. Self-host it today, or let us run the rollout for you.",
+      allLink: "See full pricing →",
+    },
+    rollout: {
+      eyebrow: "Managed rollout",
+      h2: "Want help getting it into production?",
+      lead: "Most teams start free and explore on their own. A managed rollout is for shops that want a hand putting Eryxon Flow into daily use.",
+      points: [
+        { h: "We deploy it", b: "Hosted or on your own infrastructure — whichever fits your shop." },
+        { h: "We connect your ERP", b: "Job intent in over REST and webhooks, results back out, no double entry." },
+        { h: "We sequence the floor", b: "Cell by cell, so operators adopt it without disruption." },
+      ],
+      cta: "Get in touch",
+    },
     cta: {
       h2: "Try it on your own shop floor.",
       lead: "Get started free for 30 days on the hosted version. Or pull the Docker image and self-host today.",
@@ -195,6 +214,23 @@ const LANDING: Record<Locale, LandingCopy> = {
         { name: "3D STEP-viewer", kind: "CAD" },
       ],
     },
+    pricing: {
+      eyebrow: "Prijzen",
+      h2: "Eén plan per uitrolvorm.",
+      lead: "Probeer het 30 dagen gratis. Host het vandaag zelf, of laat ons de uitrol doen.",
+      allLink: "Bekijk alle prijzen →",
+    },
+    rollout: {
+      eyebrow: "Begeleide uitrol",
+      h2: "Hulp nodig om het in productie te krijgen?",
+      lead: "De meeste teams beginnen gratis en kijken zelf rond. Een begeleide uitrol is voor shops die hulp willen bij het in gebruik nemen van Eryxon Flow.",
+      points: [
+        { h: "Wij zetten het neer", b: "Gehost of op je eigen infrastructuur — wat bij je shop past." },
+        { h: "Wij koppelen je ERP", b: "Orderintentie binnen via REST en webhooks, resultaten terug, geen dubbele invoer." },
+        { h: "Wij rollen de vloer uit", b: "Cel voor cel, zodat operators het zonder verstoring oppakken." },
+      ],
+      cta: "Neem contact op",
+    },
     cta: {
       h2: "Probeer het op je eigen werkvloer.",
       lead: "Begin 30 dagen gratis op de gehoste versie. Of pak de Docker-image en host vandaag zelf.",
@@ -258,6 +294,23 @@ const LANDING: Record<Locale, LandingCopy> = {
         { name: "MCP", kind: "KI-Agenten" },
         { name: "3D-STEP-Viewer", kind: "CAD" },
       ],
+    },
+    pricing: {
+      eyebrow: "Preise",
+      h2: "Ein Plan je Bereitstellungsart.",
+      lead: "30 Tage kostenlos testen. Heute selbst hosten oder die Einführung von uns übernehmen lassen.",
+      allLink: "Alle Preise ansehen →",
+    },
+    rollout: {
+      eyebrow: "Begleitete Einführung",
+      h2: "Hilfe bei der Inbetriebnahme gewünscht?",
+      lead: "Die meisten Teams starten kostenlos und erkunden es selbst. Eine begleitete Einführung ist für Betriebe, die Unterstützung bei der Inbetriebnahme von Eryxon Flow möchten.",
+      points: [
+        { h: "Wir stellen es bereit", b: "Gehostet oder auf deiner eigenen Infrastruktur — wie es zu deinem Betrieb passt." },
+        { h: "Wir binden dein ERP an", b: "Auftragsabsicht über REST und Webhooks rein, Ergebnisse zurück, keine Doppelerfassung." },
+        { h: "Wir führen die Werkstatt ein", b: "Zelle für Zelle, damit Operatoren es ohne Störung übernehmen." },
+      ],
+      cta: "Kontakt aufnehmen",
     },
     cta: {
       h2: "Teste es auf deiner eigenen Werkstatt.",

@@ -14,12 +14,16 @@ and is validating in CI ahead of the public launch.
 - **Hosted trial reporting pack** — trial usage is summarised for evaluators so a pilot can be reviewed without exporting raw data.
 - Marketing website redesign surfaces: root landing page (`/`), blog (`/blog/`), and changelog / release-notes (`/release-notes/`), built on the canonical Eryxon design-token contract.
 - Marketing **pricing page** (`/pricing/`, linked in the primary nav): three tiers — Free to start (30-day trial), Hosted (coming soon, no price), and Managed services (get-in-touch). Ported from the design-system kit's `services.html` `.svc-plans` 3-tier grid (self-host / hosted trial / managed) onto the site's `--ery-*` token contract; CTAs route through the existing `CtaButton` (hosted app) and `RolloutInquiry` (managed mailto) primitives.
+- **Inline pricing on the landing page** — the three-tier pricing block now renders directly in `Landing.astro` (kit `.mk-pricing-grid` / `.mk-tier`, before the CTA banner), as the kit's `index.html` does with `<Pricing />`. Same three tiers from `pricingCopy`, a "See full pricing →" link to `/pricing/`, across EN / NL / DE.
+- **Inline managed-rollout section on the landing** (`#managed-rollout`) — a compact "want help getting it into production?" block: short intro, three points (we deploy / we connect your ERP / we sequence the floor), and a `RolloutInquiry` get-in-touch button. Folded in from the standalone page, localized EN / NL / DE.
 - Marketing footer creator attribution: a "Created by" card crediting Luke van Enkhuizen — Sheet Metal Connect e.U., with a locally bundled, build-optimised avatar (`website/src/assets/luke-van-enkhuizen.jpg`).
 
 ### Changed
 
 - **Operator preview touch targets** — operator preview frames now use the 56px touch target across phone and tablet runtimes.
 - Website conformance pass against the Eryxon design system: code blocks, the docs search modal, the theme-demo toggle, and feature cards now use solid surfaces, hairline borders, and design tokens — no gradients, glass / backdrop-blur, transform-on-hover, or hardcoded dark hex. Marketing and editorial headings aligned to the canonical 600-weight, sentence-case scale.
+- Removed the standalone "Managed rollout" item from the primary nav — the rollout content now lives inline on the landing (`#managed-rollout`), reachable from the hero secondary CTA and the managed-services pricing tier.
+- Slimmed the standalone `/managed-rollout/` page to a thin pointer (short intro + get-in-touch button + link to the homepage `#managed-rollout` section), dropping the "conversation, not a signup" copy and the long path-chooser tree. Existing deep links (footer, docs intros) keep working.
 
 ### Removed
 
