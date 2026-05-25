@@ -3,7 +3,7 @@ title: Roadmap
 description: Feature considerations and future direction for Eryxon Flow
 ---
 
-> **May 2026 status:** v0.5.x is the current stable line and v0.5.1 is the latest hotfix. Most surfaces — the web app, REST API, webhooks, MQTT, and the FrePPLe/Odoo planning adapters — are still **Beta**. The **MCP server is Live**. The web app is the primary surface today; native mobile apps are on the roadmap. This page lists what is in active development and possible future work for forks and maintainers.
+This page lists what is in active development and possible future work for forks and maintainers.
 
 Track progress and vote on features via [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues).
 

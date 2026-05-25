@@ -32,8 +32,6 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
 - **Admins** get real-time visibility: who is working on what, issue approvals, due-date overrides, and stage/material configuration.
 - **Technical evaluators** get an API-first system: 24 REST endpoints, webhooks, MQTT, an MCP server, and pluggable planning adapters (FrePPLe, Odoo). It self-hosts on Supabase.
 
-> **Where things stand:** v0.6 is the stable line and installs as a desktop PWA. The web app, REST API, webhooks, MQTT, and the FrePPLe/Odoo adapters are in **Beta**; the **MCP server is Live**. Native **Android** and **iOS** apps are on the roadmap, not yet shipped — the browser app is the primary surface today.
-
 ## What It Does
 
 Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Data comes from your ERP via API.

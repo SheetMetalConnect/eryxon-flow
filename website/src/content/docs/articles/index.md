@@ -14,4 +14,4 @@ New articles publish on a biweekly cadence. Use the list in the sidebar to brows
 
 - **See the product flow first:** [Quick Start](/guides/quick-start/) for a self-serve look at the hosted experience and setup path.
 - **Plan a guided deployment:** [Managed Rollout](/managed-rollout/) if you want help with rollout sequencing, deployment, and ERP fit.
-- **Validate what has shipped:** [Changelog](/guides/changelog/) for current product status and recent release proof.
+- **Validate what has shipped:** [Changelog](/guides/changelog/) for current product status and recent releases.

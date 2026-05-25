@@ -32,8 +32,6 @@ Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
 - **Admins** erhalten Echtzeit-Transparenz: wer woran arbeitet, Issue-Freigaben, Termin-Overrides sowie Stufen- und Materialkonfiguration.
 - **Technische Evaluatoren** erhalten ein API-first System: 24 REST-Endpunkte, Webhooks, MQTT, MCP-Server und planungsseitige Adapter für FrePPLe und Odoo.
 
-> **Stand heute:** v0.6 ist die stabile Linie und installiert sich als Desktop-PWA. Web-App, REST API, Webhooks, MQTT und die FrePPLe/Odoo-Adapter sind **Beta**; der **MCP-Server ist Live**. Native **Android**- und **iOS**-Apps stehen auf der Roadmap, noch nicht veröffentlicht — heute ist die Browser-App die Primäroberfläche.
-
 ## Was Es Macht
 
 Eryxon verfolgt Aufträge, Teile und Aufgaben durch die Produktion mit einer mobil- und tabletfreundlichen Oberfläche. Daten kommen über eine API aus Ihrem ERP.
