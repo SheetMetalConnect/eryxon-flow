@@ -47,6 +47,8 @@ const alternates = SUPPORTED_LOCALES.map((lang) => ({
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
 
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
     <link rel="canonical" href={canonical} />
     {alternates.map(({ lang, href }) => <link rel="alternate" hreflang={lang} href={href} />)}
     <link rel="alternate" hreflang="x-default" href={`${siteUrl}${basePath}`} />

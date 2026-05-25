@@ -16,6 +16,7 @@
  */
 import { Image } from "astro:assets";
 import CtaButton from "@/components/marketing/CtaButton.astro";
+import Wordmark from "@/components/marketing/Wordmark.astro";
 import lukePhoto from "@/assets/luke-van-enkhuizen.jpg";
 import type { Locale } from "@/lib/locale";
 
@@ -31,6 +32,8 @@ const repository = [
 ];
 const resources = [
   { label: "Documentation", href: "/introduction/" },
+  { label: "Blog", href: "/blog/" },
+  { label: "Changelog", href: "/release-notes/" },
   { label: "Self-hosting guide", href: "/guides/self-hosting/" },
   { label: "REST API reference", href: "/api/rest-api-reference/" },
 ];
@@ -38,7 +41,7 @@ const resources = [
 
 <div class="ery-fcols">
   <div class="ery-fcol ery-fcol--brand">
-    <p class="ery-fbrand">Eryxon Flow</p>
+    <Wordmark href={null} />
     <p class="ery-fnote">
       Manufacturing execution for metalworking job shops. Source-available under
       <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">BSL 1.1</a>
@@ -63,7 +66,7 @@ const resources = [
       ))}
       <li>
         <CtaButton href="https://app.eryxon.eu" ctaId="footer_resources_hosted" surface="site_footer" kind="hosted_app" variant="tertiary" locale={locale} external>
-          Hosted trial
+          Get started for free
         </CtaButton>
       </li>
     </ul>
@@ -111,10 +114,8 @@ const resources = [
     }
   }
 
-  .ery-fbrand {
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    margin: 0 0 var(--ery-space-3);
+  .ery-fcol--brand :global(.ery-wordmark) {
+    margin-block-end: var(--ery-space-3);
   }
   .ery-fnote {
     margin: 0;

@@ -12,6 +12,7 @@
  * are intentionally minimal placeholders so the foundation builds and proves the shell.
  */
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Wordmark from "@/components/marketing/Wordmark.astro";
 import config from "@/config/config.json";
 
 interface Props {
@@ -20,7 +21,6 @@ interface Props {
 }
 
 const { title, description } = Astro.props;
-const { site } = config;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -28,7 +28,7 @@ const { site } = config;
 
   <header class="ery-header">
     <div class="ery-container ery-header__inner">
-      <a class="ery-wordmark" href="/">{site.logo_text}</a>
+      <Wordmark href="/" />
       <slot name="header">
         <!-- Slice 2 replaces this with the real marketing nav + primary CTA. -->
         <nav aria-label="Primary" class="ery-header__nav"></nav>
@@ -69,14 +69,6 @@ const { site } = config;
     align-items: center;
     justify-content: space-between;
     block-size: 100%;
-  }
-  .ery-wordmark {
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    color: var(--ery-text);
-  }
-  .ery-wordmark:hover {
-    color: var(--ery-brand);
   }
 
   .ery-main {
