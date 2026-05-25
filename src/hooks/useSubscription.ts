@@ -98,8 +98,8 @@ export const useSubscription = () => {
     const planNames: Record<SubscriptionPlan, string> = {
       free: 'Hosted Trial',
       pro: 'Pro Plan',
-      premium: 'Managed Hosting',
-      enterprise: 'Managed Hosting',
+      premium: 'Premium', // legacy SaaS — Luke + select clients, not publicly offered
+      enterprise: 'Managed Hosting', // custom tenant: own DB, isolation, backups, whitelabel
       self_hosted: 'Self-Hosted',
     };
     return planNames[plan] || 'Unknown Plan';
