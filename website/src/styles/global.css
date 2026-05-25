@@ -13,29 +13,56 @@
 @plugin "../tailwind-plugin/tw-bs-grid";
 
 :root {
-    /* Light-first default (ERY-117). Public marketing AND docs are light-mode
-     * primary per the canonical UX spec; dark is now the opt-in override below
-     * (`:root[data-theme="dark"]`). The base `:root` carries the light-surface
-     * brand (#0066cc) and light neutral ramp so the no-JS / initial-paint
-     * fallback is light, not dark. Brand never communicates status. */
+    /* Light-first default (ERY-117 → docs-chrome redesign). Public marketing AND
+     * docs are light-mode primary per the canonical UX spec; dark is the opt-in
+     * override below (`:root[data-theme="dark"]`).
+     *
+     * The Starlight chrome variables are derived DIRECTLY from the canonical
+     * `--ery-*` token contract (tokens.css) instead of the legacy bluish-slate
+     * `theme.json` ramp. The neutral ramp is pure gray (HSL hue 0 / sat 0%) so
+     * the docs chrome reads identically calm to the marketing shell. Brand blue
+     * (#0066cc) is the only accent and never communicates status. */
     --sl-color-accent-low: color-mix(in srgb, var(--ery-brand), #fff 70%);
     --sl-color-accent: var(--ery-brand);
     --sl-color-accent-high: color-mix(in srgb, var(--ery-brand), #000 90%);
+    --sl-color-text-accent: var(--ery-brand);
 
-    /* Light Mode colors (canonical light-surface ramp) */
-    --sl-color-white: var(--color-lightmode-light);
-    --sl-color-gray-1: color-mix(in srgb, var(--color-lightmode-dark) 15%, var(--color-lightmode-light) 85%);
-    --sl-color-gray-2: color-mix(in srgb, var(--color-lightmode-dark) 22%, var(--color-lightmode-light) 78%);
-    --sl-color-gray-3: color-mix(in srgb, var(--color-lightmode-dark) 35%, var(--color-lightmode-light) 65%);
-    --sl-color-gray-4: color-mix(in srgb, var(--color-lightmode-dark) 55%, var(--color-lightmode-light) 45%);
-    --sl-color-gray-5: color-mix(in srgb, var(--color-lightmode-dark) 76%, var(--color-lightmode-light) 24%);
-    --sl-color-gray-6: color-mix(in srgb, var(--color-lightmode-dark) 94%, var(--color-lightmode-light) 6%);
-    --sl-color-gray-7: color-mix(in srgb, var(--color-lightmode-dark) 96%, var(--color-lightmode-light) 4%);
+    /* Neutralise the starlight-tailwind indigo accent ramp at its source. The
+     * plugin seeds `--color-accent-*` from `--color-indigo-*`; any chrome that
+     * reads the numbered ramp directly (not just `--sl-color-accent`) would
+     * otherwise resolve to indigo #4f46e5. Re-point the whole ramp at the
+     * Eryxon brand so the docs chrome can never fall back to violet. */
+    --color-accent-50: color-mix(in srgb, var(--ery-brand), #fff 92%);
+    --color-accent-100: color-mix(in srgb, var(--ery-brand), #fff 85%);
+    --color-accent-200: color-mix(in srgb, var(--ery-brand), #fff 70%);
+    --color-accent-300: color-mix(in srgb, var(--ery-brand), #fff 50%);
+    --color-accent-400: color-mix(in srgb, var(--ery-brand), #fff 25%);
+    --color-accent-500: var(--ery-brand);
+    --color-accent-600: var(--ery-brand);
+    --color-accent-700: var(--ery-brand-hover);
+    --color-accent-800: color-mix(in srgb, var(--ery-brand), #000 35%);
+    --color-accent-900: color-mix(in srgb, var(--ery-brand), #000 55%);
+    --color-accent-950: color-mix(in srgb, var(--ery-brand), #000 70%);
 
-    --sl-color-black: var(--color-lightmode-dark);
+    /* Light mode — canonical neutral ramp.
+     * --sl-color-white  = strongest foreground (headings, active labels)
+     * --sl-color-black  = page background base
+     * gray-1..4         = text steps (muted → subtle)
+     * gray-5..7         = surface / border steps (subtle fills, hairlines) */
+    --sl-color-white: var(--ery-text);            /* #1a1a1a neutral fg */
+    --sl-color-gray-1: var(--ery-text);            /* #1a1a1a */
+    --sl-color-gray-2: var(--ery-text-muted);      /* #595959 */
+    --sl-color-gray-3: var(--ery-text-subtle);     /* #8c8c8c */
+    --sl-color-gray-4: var(--ery-border-strong);   /* #cccccc */
+    --sl-color-gray-5: var(--ery-border);          /* #e5e5e5 */
+    --sl-color-gray-6: var(--ery-surface-inset);   /* #f5f5f5 */
+    --sl-color-gray-7: var(--ery-surface-subtle);  /* #fafafa */
+
+    --sl-color-black: var(--ery-surface);          /* #ffffff page bg */
+    --sl-color-text: var(--ery-text-muted);        /* body copy */
     --sl-sidebar-width: 320px;
-    --sl-color-hairline: color-mix(in srgb, var(--sl-color-black) 10%, transparent);
-    --sl-color-hairline-light: color-mix(in srgb, var(--sl-color-black) 6%, transparent);
+    --sl-color-hairline: var(--ery-border);
+    --sl-color-hairline-light: color-mix(in srgb, var(--ery-text) 6%, transparent);
 
     /* Semantic Colors */
     --color-success: 140 60% 52%;
@@ -55,29 +82,48 @@
     --status-pending: 220 12% 72%;
 }
 
-/* Retired (ERY-61): the ambient orb / radial-gradient field is part of the
- * dark-first gradient/glass/orb era the canonical spec retires. Dark sections
- * now use the flat `.surface-dark` scope from tokens.css instead. */
-.ambient-field {
-    background-color: var(--ery-surface-dark);
-}
+/* The ambient orb / radial-gradient field and the factory-texture / dark-doc
+ * background layers (dark-first gradient/glass/orb era) are fully retired by the
+ * canonical spec and removed from PageFrame. Dark sections, where needed, use the
+ * flat `.surface-dark` scope from tokens.css. */
 
 /* Dark mode override (ERY-117) — opt-in via the Starlight theme toggle.
  * Dark surfaces use the canonical brand-on-dark blue (#1e90ff from tokens.css);
  * reserved for the explicit dark theme, no longer the default. */
 :root[data-theme="dark"] {
+    /* Dark surfaces use the canonical brand-on-dark blue (#1e90ff) and the
+     * pure-neutral dark ramp from tokens.css — not the legacy bluish slate.
+     * Reserved for the explicit dark theme toggle. */
     --sl-color-accent-low: color-mix(in srgb, var(--ery-brand-on-dark), #000 90%);
     --sl-color-accent: var(--ery-brand-on-dark);
     --sl-color-accent-high: color-mix(in srgb, var(--ery-brand-on-dark), #fff 70%);
-    --sl-color-white: var(--color-light);
-    --sl-color-gray-1: color-mix(in srgb, var(--color-dark) 6%, var(--color-light) 94%);
-    --sl-color-gray-2: color-mix(in srgb, var(--color-dark) 24%, var(--color-light) 76%);
-    --sl-color-gray-3: color-mix(in srgb, var(--color-dark) 45%, var(--color-light) 55%);
-    --sl-color-gray-4: color-mix(in srgb, var(--color-dark) 65%, var(--color-light) 35%);
-    --sl-color-gray-5: color-mix(in srgb, var(--color-dark) 78%, var(--color-light) 22%);
-    --sl-color-gray-6: color-mix(in srgb, var(--color-dark) 85%, var(--color-light) 15%);
-    --sl-color-black: var(--color-dark);
-    --sl-color-hairline-light: #252525;
+
+    /* Dark accent ramp — re-point off indigo onto the brand-on-dark blue. */
+    --color-accent-50: color-mix(in srgb, var(--ery-brand-on-dark), #000 80%);
+    --color-accent-100: color-mix(in srgb, var(--ery-brand-on-dark), #000 70%);
+    --color-accent-200: color-mix(in srgb, var(--ery-brand-on-dark), #000 55%);
+    --color-accent-300: color-mix(in srgb, var(--ery-brand-on-dark), #000 35%);
+    --color-accent-400: color-mix(in srgb, var(--ery-brand-on-dark), #000 15%);
+    --color-accent-500: var(--ery-brand-on-dark);
+    --color-accent-600: var(--ery-brand-on-dark);
+    --color-accent-700: color-mix(in srgb, var(--ery-brand-on-dark), #fff 20%);
+    --color-accent-800: color-mix(in srgb, var(--ery-brand-on-dark), #fff 45%);
+    --color-accent-900: color-mix(in srgb, var(--ery-brand-on-dark), #fff 65%);
+    --color-accent-950: color-mix(in srgb, var(--ery-brand-on-dark), #fff 80%);
+    --sl-color-text-accent: var(--ery-brand-on-dark);
+
+    --sl-color-white: var(--ery-text-on-dark);        /* #ebebeb fg */
+    --sl-color-gray-1: var(--ery-text-on-dark);        /* #ebebeb */
+    --sl-color-gray-2: var(--ery-text-on-dark-muted);  /* #a6a6a6 */
+    --sl-color-gray-3: color-mix(in srgb, var(--ery-text-on-dark-muted) 70%, var(--ery-surface-dark));
+    --sl-color-gray-4: var(--ery-border-dark);         /* #383838 */
+    --sl-color-gray-5: var(--ery-surface-dark-2);      /* #1f1f1f */
+    --sl-color-gray-6: var(--ery-surface-dark);        /* #141414 */
+    --sl-color-gray-7: var(--ery-surface-dark);        /* #141414 */
+    --sl-color-black: var(--ery-bg-dark);              /* #0a0a0a page bg */
+    --sl-color-text: var(--ery-text-on-dark-muted);
+    --sl-color-hairline: var(--ery-border-dark);
+    --sl-color-hairline-light: color-mix(in srgb, var(--ery-text-on-dark) 8%, transparent);
 }
 
 @theme {
@@ -91,3 +137,4 @@
 @import "./navigation.css";
 @import "./components.css";
 @import "./button.css";
+@import "./chrome.css";

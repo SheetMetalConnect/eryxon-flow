@@ -12,8 +12,17 @@ h3,
 h4,
 h5,
 h6 {
-  @apply  font-bold leading-tight;
-  color: var(--sl-color-white);
+  /* Calm, precise: semibold + slight squeeze (Inter benefits at large sizes),
+   * neutral foreground. No gradient text, no extra-bold weights. */
+  @apply font-semibold leading-tight;
+  color: var(--ery-text);
+  letter-spacing: var(--ery-tracking-tight);
+}
+
+h4,
+h5,
+h6 {
+  letter-spacing: normal;
 }
 
 h1,
