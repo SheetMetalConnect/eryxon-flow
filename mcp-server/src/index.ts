@@ -36,11 +36,13 @@ const config = loadConfig();
 console.error(`Eryxon Flow MCP Server v2.4.0`);
 console.error(`Mode: ${getModeDescription(config.mode)}`);
 
-// Create direct Supabase client and extract the raw SupabaseClient
-// Tool handlers call supabase.from() directly, so they need the raw client,
-// not the UnifiedClient wrapper which only exposes .select()/.insert()/etc.
+// Create direct Supabase client and extract a SupabaseClient for tool handlers.
+// Handlers call supabase.from() directly, so they need a raw-style client — but
+// the service-role key bypasses RLS, so getScopedClient() returns a tenant-scoped
+// wrapper when TENANT_ID is set (and the raw client otherwise). This keeps tool
+// queries constrained to the configured tenant instead of unscoped admin access.
 const unifiedClient = createClient(config);
-const supabaseClient = (unifiedClient as DirectSupabaseClient).getSupabaseClient();
+const supabaseClient = (unifiedClient as DirectSupabaseClient).getScopedClient();
 
 // Create and configure the tool registry with all modules
 const toolRegistry = createConfiguredRegistry();

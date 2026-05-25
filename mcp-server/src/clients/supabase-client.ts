@@ -6,6 +6,56 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
 import type { UnifiedClient, QueryResult, CountResult, SelectOptions } from "../types/client.js";
 
+/**
+ * Wrap a service-role SupabaseClient so that every `.from(table)` call is
+ * automatically constrained to a single tenant. The MCP server uses the
+ * service-role key, which bypasses RLS, so without this the only tenant
+ * boundary (the DirectSupabaseClient methods) is lost the moment a tool
+ * handler calls `supabase.from()` directly. This re-applies that boundary:
+ *   - select / delete  → chained `.eq('tenant_id', tenantId)`
+ *   - update           → chained `.eq('tenant_id', tenantId)`
+ *   - insert / upsert   → `tenant_id` stamped into the payload
+ * Only used when TENANT_ID is configured; otherwise the raw client is returned.
+ */
+export function createTenantScopedClient(
+  client: SupabaseClient,
+  tenantId: string
+): SupabaseClient {
+  const stamp = (values: any) =>
+    Array.isArray(values)
+      ? values.map((v) => ({ ...v, tenant_id: tenantId }))
+      : { ...values, tenant_id: tenantId };
+
+  return new Proxy(client, {
+    get(target, prop, receiver) {
+      if (prop === "from") {
+        return (table: string) => {
+          const builder = (target as any).from(table);
+          return new Proxy(builder, {
+            get(b, p) {
+              const orig = (b as any)[p];
+              if (typeof orig !== "function") return orig;
+              if (p === "select" || p === "delete") {
+                return (...args: any[]) => orig.apply(b, args).eq("tenant_id", tenantId);
+              }
+              if (p === "update") {
+                return (values: any, ...rest: any[]) =>
+                  orig.call(b, values, ...rest).eq("tenant_id", tenantId);
+              }
+              if (p === "insert" || p === "upsert") {
+                return (values: any, ...rest: any[]) => orig.call(b, stamp(values), ...rest);
+              }
+              return orig.bind(b);
+            },
+          });
+        };
+      }
+      const val = (target as any)[prop];
+      return typeof val === "function" ? val.bind(target) : val;
+    },
+  }) as SupabaseClient;
+}
+
 export class DirectSupabaseClient implements UnifiedClient {
   private client: SupabaseClient;
   private enforcedTenantId: string | undefined;
@@ -258,5 +308,16 @@ export class DirectSupabaseClient implements UnifiedClient {
    */
   getSupabaseClient(): SupabaseClient {
     return this.client;
+  }
+
+  /**
+   * Get a SupabaseClient for tool handlers that call `.from()` directly.
+   * When TENANT_ID is set, returns a tenant-scoped wrapper so service-role
+   * queries stay constrained to that tenant; otherwise returns the raw client.
+   */
+  getScopedClient(): SupabaseClient {
+    return this.enforcedTenantId
+      ? createTenantScopedClient(this.client, this.enforcedTenantId)
+      : this.client;
   }
 }

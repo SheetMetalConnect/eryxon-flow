@@ -112,7 +112,7 @@ const addSubstep: ToolHandler = async (args: Record<string, unknown>, supabase: 
         operation_id,
         name,
         sequence: finalSequence,
-        status: "pending",
+        status: "not_started",
       })
       .select()
       .single();
