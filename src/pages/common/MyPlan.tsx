@@ -19,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/spinner";
-import { DOCS_SELF_HOSTING_URL } from "@/lib/config";
+import { DOCS_SELF_HOSTING_URL, isSelfHosted as isSelfHostedDeployment } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { useSubscription } from "@/hooks/useSubscription";
 
@@ -52,7 +52,10 @@ const MyPlan: React.FC = () => {
   }
 
   const currentPlan = subscription?.plan || "free";
-  const isSelfHosted = currentPlan === "self_hosted" || !subscription?.max_jobs;
+  // Self-hosted is a deployment fact (own Supabase / explicit flag), NOT inferred
+  // from "limits are null". On the hosted SaaS this is always false, so trial
+  // tenants see the hosted plan + their limits instead of an unlimited card.
+  const isSelfHosted = isSelfHostedDeployment();
 
   return (
     <div className="pb-8">

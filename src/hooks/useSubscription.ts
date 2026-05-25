@@ -96,10 +96,10 @@ export const useSubscription = () => {
 
   const getPlanDisplayName = (plan: SubscriptionPlan): string => {
     const planNames: Record<SubscriptionPlan, string> = {
-      free: 'Hosted Alpha Trial',
+      free: 'Hosted Trial',
       pro: 'Pro Plan',
-      premium: 'Premium Plan',
-      enterprise: 'Enterprise Plan',
+      premium: 'Managed Hosting',
+      enterprise: 'Managed Hosting',
       self_hosted: 'Self-Hosted',
     };
     return planNames[plan] || 'Unknown Plan';
