@@ -209,8 +209,8 @@ const arrow =
       </CtaButton>
     </div>
 
-    <!-- Tier 2 — Hosted, coming soon (featured) -->
-    <div class="mk-tier is-featured is-soon">
+    <!-- Tier 2 — Hosted, flat rate / unlimited users (featured) -->
+    <div class="mk-tier is-featured">
       <span class="mk-tier-flag">{p.plans.hosted.flag}</span>
       <div class="mk-tier-name">{p.plans.hosted.name}</div>
       <div class="mk-tier-price">{p.plans.hosted.price}</div>
@@ -220,7 +220,9 @@ const arrow =
           <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
         ))}
       </ul>
-      <span class="mk-tier-cta-soon" aria-disabled="true">{p.plans.hosted.ctaSoon}</span>
+      <a class="mk-tier-link" href={`${rolloutAnchor}`} data-cta-id="home_pricing_hosted_inquiry" data-cta-surface="homepage_pricing" data-cta-kind="rollout_section">
+        {p.plans.hosted.ctaSoon}
+      </a>
     </div>
 
     <!-- Tier 3 — Managed services -->

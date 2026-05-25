@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Self-hosted Planning & Shop Floor Execution for Job Shops</strong>
+  <strong>Open-source Planning & Shop Floor Execution for Job Shops</strong>
 </p>
 
 <p align="center">
@@ -13,8 +13,8 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.5.2-blue" alt="Version" />
-  <img src="https://img.shields.io/badge/license-BSL--1.1-green" alt="License" />
+  <img src="https://img.shields.io/badge/version-0.6-blue" alt="Version" />
+  <img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
   <img src="https://img.shields.io/badge/typescript-strict-3178C6?logo=typescript" alt="TypeScript" />
@@ -22,7 +22,7 @@
 
 ---
 
-> **Project Status (May 2026):** Stable v0.5.2 maintenance hotfix. v0.5.0 remains the final active-development release; active development is currently on hold, and the hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is. This is a self-hosted planning integration and shop floor execution tool; you are free to use, fork, and adapt it as you wish under the BSL 1.1 license terms. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
+> **Project Status (May 2026):** v0.6 is the current stable release and ships as an installable PWA — add it to your desktop straight from Chrome or Edge on Windows and macOS. Eryxon Flow is fully open source under Apache 2.0 — use, fork, and adapt it however you like. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
 
 Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP/planning system — all from one self-hosted platform.
 
@@ -54,7 +54,7 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 - Multi-language (English, Dutch, German)
 - Multi-tenant SaaS with row-level security
 - Self-hostable via Docker Compose
-- BSL 1.1 license (free for your business, converts to Apache 2.0 after the BSL change date)
+- Apache 2.0 license — fully open source, free for any use
 
 ## Quick Start
 
@@ -194,12 +194,11 @@ Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <questio
 
 ## License
 
-**Business Source License 1.1**
+**Apache License 2.0**
 
-- Free to use for your own manufacturing business
-- Source available for modification and self-hosting
-- Cannot offer as a competing hosted service
-- Converts to **Apache 2.0** after the BSL change date
+- Fully open source — free for any use, including commercial
+- Use, modify, fork, and self-host without restriction
+- Patent grant included
 
 See [LICENSE](LICENSE) for full terms.
 

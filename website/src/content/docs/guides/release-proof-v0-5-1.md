@@ -1,11 +1,11 @@
 ---
 title: v0.5.1 Hotfix Proof Snapshot
-description: Historical snapshot of what the v0.5.1 hotfix line proved for self-hosted and integration-heavy job shops before v0.5.2 changed the current release posture.
+description: Historical snapshot of what the v0.5.1 hotfix line proved for self-hosted and integration-heavy job shops before the v0.6 line became the current release posture.
 ---
 
 # v0.5.1 Hotfix Proof Snapshot
 
-`v0.5.1` is not the current stable release. This page is a historical proof snapshot of what the May 6, 2026 hotfix clarified for self-hosted and integration-heavy shops before `v0.5.2` changed the current release posture.
+`v0.5.1` is not the current stable release. This page is a historical proof snapshot of what the May 6, 2026 hotfix clarified for self-hosted and integration-heavy shops before the `v0.6` line became the current release posture.
 
 It matters because the hotfix tightened the rollout story around docs, batch execution, and MCP integration without pretending to be a feature launch.
 

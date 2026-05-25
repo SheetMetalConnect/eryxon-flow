@@ -546,17 +546,19 @@
       ]
     },
     "license": {
-      "title": "Licentie (BSL 1.1)",
-      "tldr": "Gebruik het, pas het aan, host het zelf. Host het alleen niet en vraag anderen geld voor toegang.",
-      "allowed": "Toegestaan",
-      "notAllowed": "Niet toegestaan",
+      "title": "Licentie (Apache 2.0)",
+      "tldr": "Volledig open source. Gebruik het, pas het aan, host het zelf en gebruik het commercieel — geen beperkingen.",
+      "allowed": "U mag",
+      "note": "Goed om te weten",
       "allowedItems": {
-        "selfHost": "Zelf hosten voor uw eigen activiteiten",
+        "selfHost": "Zelf hosten voor uw eigen activiteiten, gratis",
         "modify": "Fork en pas aan voor uw behoeften",
+        "commercial": "Commercieel gebruiken, inclusief hosten voor anderen",
         "consulting": "Gebruik voor ontwikkeling, testen, educatie"
       },
-      "notAllowedItems": {
-        "resell": "Hosten en verkopen als SaaS aan anderen"
+      "noteItems": {
+        "attribution": "Behoud de licentie- en copyrightvermelding in kopieën",
+        "patent": "Bevat een expliciete patentlicentie"
       }
     }
   },

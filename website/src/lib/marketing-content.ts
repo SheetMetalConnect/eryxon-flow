@@ -8,8 +8,10 @@
  *
  * Voice: kit voice — calm, utilitarian, short, direct. NL is nl-NL (Dutch directness, no
  * AI filler). DE is plain Hochdeutsch. No invented testimonials/stats, no customer names
- * (Luke's hard rule), no €199/€699 pricing — Luke's three-tier model only:
- *   Free to start (30-day trial) / Hosted (coming soon) / Managed services (get in touch).
+ * (Luke's hard rule). FOSS-first three-way model:
+ *   Free / self-hosted (Apache 2.0, push the free trial as the low-friction entry) /
+ *   Hosted (paid, flat rate, unlimited users — we host it) /
+ *   Managed (installed on-prem at the customer, with updates, monitoring, backups).
  */
 import type { Locale } from "@/lib/locale";
 
@@ -78,15 +80,15 @@ const productCards = [
 
 const LANDING: Record<Locale, LandingCopy> = {
   en: {
-    title: "Eryxon Flow — A calm MES for job shops that ship",
+    title: "Eryxon Flow — A calm, open-source MES for job shops that ship",
     description:
-      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly — from one tablet on the shop floor to the planner's desktop. Get started for free, plan a managed rollout, or self-host.",
+      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly — from one tablet on the shop floor to the planner's desktop. Free and open source. Self-host it, let us host it, or have it run on-prem for you.",
     hero: {
-      tag: "v0.6 · self-hostable · BSL 1.1",
-      h1: "A calm MES for job shops that ship.",
-      lead: "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly — from one tablet on the floor to the planner's desk. No spreadsheets, no whiteboards, no decorative noise.",
-      ctaPrimary: "Get started for free",
-      ctaSecondary: "Plan a managed rollout",
+      tag: "Open source · Apache 2.0 · self-hostable",
+      h1: "A calm, open-source MES for job shops that ship.",
+      lead: "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly — from one tablet on the floor to the planner's desk. Free and open source, with excellent self-hosting. No spreadsheets, no whiteboards, no decorative noise.",
+      ctaPrimary: "Start free trial",
+      ctaSecondary: "Self-host it free",
       ctaTertiary: "Read the docs →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laser cutting", queueTitle: "Work queue", cards: productCards },
@@ -99,7 +101,7 @@ const LANDING: Record<Locale, LandingCopy> = {
         { title: "Job & part tracking", body: "Full production visibility through cutting, bending, welding, assembly, finishing. Routing visualisation across cells, WIP limits, and a capacity overview." },
         { title: "3D STEP viewer", body: "Browser-based CAD, no software install. Measurement, exploded views, embedded inside the operator detail modal." },
         { title: "REST API & webhooks", body: "Filtering, pagination, search, and webhook dispatch for every lifecycle event. Built for ERP-to-MES sync, not just point-and-click." },
-        { title: "Self-hostable, source-available", body: "BSL 1.1 — free for internal use. Self-host via Docker Compose, or use the hosted version. Converts to Apache 2.0 after the BSL change date." },
+        { title: "Free and open source", body: "Apache 2.0 — free for any use, including commercial. Self-host via Docker Compose with no feature gates, or let us host it. Fork it, audit it, keep it." },
         { title: "Multi-tenant, multi-language", body: "Row-level security on PostgreSQL. EN / NL / DE out of the box. Built for shops with one site and groups of shops with many." },
       ],
     },
@@ -135,39 +137,39 @@ const LANDING: Record<Locale, LandingCopy> = {
     },
     pricing: {
       eyebrow: "Pricing",
-      h2: "One plan per deployment style.",
-      lead: "Try it free for 30 days. Self-host it today, or let us run the rollout for you.",
+      h2: "Three ways to run it.",
+      lead: "Self-host it free and open source. Let us host it at a flat rate, unlimited users. Or have it run on-prem with updates, monitoring, and backups handled.",
       allLink: "See full pricing →",
     },
     rollout: {
-      eyebrow: "Managed rollout",
-      h2: "Want help getting it into production?",
-      lead: "Most teams start free and explore on their own. A managed rollout is for shops that want a hand putting Eryxon Flow into daily use.",
+      eyebrow: "Hosted & managed",
+      h2: "Rather not run it yourself?",
+      lead: "The software is free and open source — self-host it whenever you want. If you'd rather not, we'll host it for you, or install and run it on your own infrastructure.",
       points: [
-        { h: "We deploy it", b: "Hosted or on your own infrastructure — whichever fits your shop." },
-        { h: "We connect your ERP", b: "Job intent in over REST and webhooks, results back out, no double entry." },
-        { h: "We sequence the floor", b: "Cell by cell, so operators adopt it without disruption." },
+        { h: "Hosted", b: "We run it for you at a flat rate. Unlimited users, daily backups, updates handled." },
+        { h: "Managed on-prem", b: "Installed on your infrastructure, with updates, monitoring, and backups taken care of." },
+        { h: "ERP connected", b: "Job intent in over REST and webhooks, results back out, no double entry." },
       ],
       cta: "Get in touch",
     },
     cta: {
       h2: "Try it on your own shop floor.",
-      lead: "Get started free for 30 days on the hosted version. Or pull the Docker image and self-host today.",
-      ctaPrimary: "Get started for free",
+      lead: "Start a free trial in minutes. Or pull the Docker image and self-host it free — it's open source, no strings.",
+      ctaPrimary: "Start free trial",
       ctaSecondary: "Read the self-host guide",
     },
   },
 
   nl: {
-    title: "Eryxon Flow — Een rustige MES voor jobshops die leveren",
+    title: "Eryxon Flow — Een rustige, open-source MES voor jobshops die leveren",
     description:
-      "Eryxon Flow volgt orders door snijden, kanten, lassen en assemblage — van één tablet op de werkvloer tot het bureau van de planner. Begin gratis, plan een begeleide uitrol, of host zelf.",
+      "Eryxon Flow volgt orders door snijden, kanten, lassen en assemblage — van één tablet op de werkvloer tot het bureau van de planner. Gratis en open source. Host zelf, laat ons hosten, of laat het on-prem bij je draaien.",
     hero: {
-      tag: "v0.6 · zelf te hosten · BSL 1.1",
-      h1: "Een rustige MES voor jobshops die leveren.",
-      lead: "Eryxon Flow volgt orders door snijden, kanten, lassen en assemblage — van één tablet op de vloer tot het bureau van de planner. Geen spreadsheets, geen whiteboards, geen ruis.",
-      ctaPrimary: "Begin gratis",
-      ctaSecondary: "Plan een begeleide uitrol",
+      tag: "Open source · Apache 2.0 · zelf te hosten",
+      h1: "Een rustige, open-source MES voor jobshops die leveren.",
+      lead: "Eryxon Flow volgt orders door snijden, kanten, lassen en assemblage — van één tablet op de vloer tot het bureau van de planner. Gratis en open source, met uitstekende self-hosting. Geen spreadsheets, geen whiteboards, geen ruis.",
+      ctaPrimary: "Start gratis trial",
+      ctaSecondary: "Host zelf, gratis",
       ctaTertiary: "Lees de docs →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Lasersnijden", queueTitle: "Werkwachtrij", cards: productCards },
@@ -180,7 +182,7 @@ const LANDING: Record<Locale, LandingCopy> = {
         { title: "Order- en onderdeel-tracking", body: "Volledig zicht door snijden, kanten, lassen, assemblage, afwerking. Routing per cel, WIP-limieten en een capaciteitsoverzicht." },
         { title: "3D STEP-viewer", body: "CAD in de browser, geen installatie. Meten, exploded views, ingebouwd in de operator-detailweergave." },
         { title: "REST API & webhooks", body: "Filtering, paginering, zoeken en webhook-dispatch voor elke gebeurtenis. Gebouwd voor ERP-naar-MES-synchronisatie." },
-        { title: "Zelf te hosten, source-available", body: "BSL 1.1 — gratis voor intern gebruik. Zelf hosten via Docker Compose, of de gehoste versie gebruiken. Wordt Apache 2.0 na de BSL-wijzigingsdatum." },
+        { title: "Gratis en open source", body: "Apache 2.0 — gratis voor elk gebruik, ook commercieel. Zelf hosten via Docker Compose zonder feature-slot, of laat ons hosten. Forken, auditen, houden." },
         { title: "Multi-tenant, meertalig", body: "Row-level security op PostgreSQL. EN / NL / DE standaard. Voor shops met één locatie en groepen met meerdere." },
       ],
     },
@@ -216,39 +218,39 @@ const LANDING: Record<Locale, LandingCopy> = {
     },
     pricing: {
       eyebrow: "Prijzen",
-      h2: "Eén plan per uitrolvorm.",
-      lead: "Probeer het 30 dagen gratis. Host het vandaag zelf, of laat ons de uitrol doen.",
+      h2: "Drie manieren om het te draaien.",
+      lead: "Host zelf, gratis en open source. Laat ons hosten tegen een vast tarief, onbeperkt gebruikers. Of laat het on-prem draaien met updates, monitoring en back-ups geregeld.",
       allLink: "Bekijk alle prijzen →",
     },
     rollout: {
-      eyebrow: "Begeleide uitrol",
-      h2: "Hulp nodig om het in productie te krijgen?",
-      lead: "De meeste teams beginnen gratis en kijken zelf rond. Een begeleide uitrol is voor shops die hulp willen bij het in gebruik nemen van Eryxon Flow.",
+      eyebrow: "Gehost & managed",
+      h2: "Liever niet zelf draaien?",
+      lead: "De software is gratis en open source — host zelf wanneer je wilt. Wil je dat liever niet, dan hosten wij het voor je, of installeren en draaien we het op je eigen infrastructuur.",
       points: [
-        { h: "Wij zetten het neer", b: "Gehost of op je eigen infrastructuur — wat bij je shop past." },
-        { h: "Wij koppelen je ERP", b: "Orderintentie binnen via REST en webhooks, resultaten terug, geen dubbele invoer." },
-        { h: "Wij rollen de vloer uit", b: "Cel voor cel, zodat operators het zonder verstoring oppakken." },
+        { h: "Gehost", b: "Wij draaien het voor je tegen een vast tarief. Onbeperkt gebruikers, dagelijkse back-ups, updates geregeld." },
+        { h: "Managed on-prem", b: "Geïnstalleerd op je eigen infrastructuur, met updates, monitoring en back-ups geregeld." },
+        { h: "ERP gekoppeld", b: "Orderintentie binnen via REST en webhooks, resultaten terug, geen dubbele invoer." },
       ],
       cta: "Neem contact op",
     },
     cta: {
       h2: "Probeer het op je eigen werkvloer.",
-      lead: "Begin 30 dagen gratis op de gehoste versie. Of pak de Docker-image en host vandaag zelf.",
-      ctaPrimary: "Begin gratis",
+      lead: "Start binnen een paar minuten een gratis trial. Of pak de Docker-image en host het zelf, gratis — het is open source, zonder addertjes.",
+      ctaPrimary: "Start gratis trial",
       ctaSecondary: "Lees de self-host-gids",
     },
   },
 
   de: {
-    title: "Eryxon Flow — Ein ruhiges MES für Lohnfertiger, die liefern",
+    title: "Eryxon Flow — Ein ruhiges, quelloffenes MES für Lohnfertiger, die liefern",
     description:
-      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage — von einem Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos starten, begleitete Einführung planen oder selbst hosten.",
+      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage — von einem Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos und quelloffen. Selbst hosten, von uns hosten lassen oder on-prem betreiben lassen.",
     hero: {
-      tag: "v0.6 · selbst hostbar · BSL 1.1",
-      h1: "Ein ruhiges MES für Lohnfertiger, die liefern.",
-      lead: "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage — von einem Tablet in der Werkstatt bis zum Schreibtisch des Planers. Keine Tabellen, keine Whiteboards, kein Rauschen.",
-      ctaPrimary: "Kostenlos starten",
-      ctaSecondary: "Begleitete Einführung planen",
+      tag: "Open Source · Apache 2.0 · selbst hostbar",
+      h1: "Ein ruhiges, quelloffenes MES für Lohnfertiger, die liefern.",
+      lead: "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage — von einem Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos und quelloffen, mit erstklassigem Self-Hosting. Keine Tabellen, keine Whiteboards, kein Rauschen.",
+      ctaPrimary: "Kostenlos testen",
+      ctaSecondary: "Selbst hosten, kostenlos",
       ctaTertiary: "Doku lesen →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laserschneiden", queueTitle: "Arbeitsliste", cards: productCards },
@@ -261,7 +263,7 @@ const LANDING: Record<Locale, LandingCopy> = {
         { title: "Auftrags- und Teileverfolgung", body: "Volle Transparenz durch Schneiden, Kanten, Schweißen, Montage, Finish. Routing je Zelle, WIP-Limits und eine Kapazitätsübersicht." },
         { title: "3D-STEP-Viewer", body: "CAD im Browser, keine Installation. Messen, Explosionsansichten, eingebettet in der Operator-Detailansicht." },
         { title: "REST-API & Webhooks", body: "Filterung, Paginierung, Suche und Webhook-Versand für jedes Ereignis. Gebaut für ERP-zu-MES-Synchronisierung." },
-        { title: "Selbst hostbar, quelloffen verfügbar", body: "BSL 1.1 — kostenlos für den internen Gebrauch. Selbst hosten per Docker Compose oder die gehostete Version nutzen. Wird nach dem BSL-Stichtag zu Apache 2.0." },
+        { title: "Kostenlos und quelloffen", body: "Apache 2.0 — kostenlos für jeden Einsatz, auch kommerziell. Selbst hosten per Docker Compose ohne Feature-Sperren oder von uns hosten lassen. Forken, prüfen, behalten." },
         { title: "Mandantenfähig, mehrsprachig", body: "Row-Level-Security auf PostgreSQL. EN / NL / DE ab Werk. Für Betriebe mit einem Standort und Gruppen mit vielen." },
       ],
     },
@@ -297,25 +299,25 @@ const LANDING: Record<Locale, LandingCopy> = {
     },
     pricing: {
       eyebrow: "Preise",
-      h2: "Ein Plan je Bereitstellungsart.",
-      lead: "30 Tage kostenlos testen. Heute selbst hosten oder die Einführung von uns übernehmen lassen.",
+      h2: "Drei Wege, es zu betreiben.",
+      lead: "Selbst hosten, kostenlos und quelloffen. Von uns hosten lassen zum Pauschalpreis, unbegrenzte Nutzer. Oder on-prem betreiben lassen mit Updates, Monitoring und Backups.",
       allLink: "Alle Preise ansehen →",
     },
     rollout: {
-      eyebrow: "Begleitete Einführung",
-      h2: "Hilfe bei der Inbetriebnahme gewünscht?",
-      lead: "Die meisten Teams starten kostenlos und erkunden es selbst. Eine begleitete Einführung ist für Betriebe, die Unterstützung bei der Inbetriebnahme von Eryxon Flow möchten.",
+      eyebrow: "Gehostet & Managed",
+      h2: "Lieber nicht selbst betreiben?",
+      lead: "Die Software ist kostenlos und quelloffen — hoste sie selbst, wann immer du willst. Wenn nicht, hosten wir sie für dich oder installieren und betreiben sie auf deiner eigenen Infrastruktur.",
       points: [
-        { h: "Wir stellen es bereit", b: "Gehostet oder auf deiner eigenen Infrastruktur — wie es zu deinem Betrieb passt." },
-        { h: "Wir binden dein ERP an", b: "Auftragsabsicht über REST und Webhooks rein, Ergebnisse zurück, keine Doppelerfassung." },
-        { h: "Wir führen die Werkstatt ein", b: "Zelle für Zelle, damit Operatoren es ohne Störung übernehmen." },
+        { h: "Gehostet", b: "Wir betreiben es für dich zum Pauschalpreis. Unbegrenzte Nutzer, tägliche Backups, Updates erledigt." },
+        { h: "Managed on-prem", b: "Auf deiner Infrastruktur installiert, mit Updates, Monitoring und Backups." },
+        { h: "ERP angebunden", b: "Auftragsabsicht über REST und Webhooks rein, Ergebnisse zurück, keine Doppelerfassung." },
       ],
       cta: "Kontakt aufnehmen",
     },
     cta: {
       h2: "Teste es auf deiner eigenen Werkstatt.",
-      lead: "30 Tage kostenlos auf der gehosteten Version starten. Oder das Docker-Image ziehen und heute selbst hosten.",
-      ctaPrimary: "Kostenlos starten",
+      lead: "Starte in wenigen Minuten kostenlos. Oder zieh das Docker-Image und hoste es selbst, kostenlos — es ist quelloffen, ohne Haken.",
+      ctaPrimary: "Kostenlos testen",
       ctaSecondary: "Self-Hosting-Anleitung lesen",
     },
   },
@@ -324,42 +326,109 @@ const LANDING: Record<Locale, LandingCopy> = {
 const PRICING: Record<Locale, PricingCopy> = {
   en: {
     title: "Pricing — Eryxon Flow",
-    description: "Start free for 30 days, run a managed rollout, or use the hosted version when it lands. One plan per deployment style.",
-    hero: { eyebrow: "Pricing", h1: "One plan per deployment style.", lead: "Try it free for 30 days. Run it self-hosted today, or let us put it into production for you." },
+    description: "Self-host it free and open source, let us host it at a flat rate with unlimited users, or have it run on-prem with updates, monitoring, and backups. Three ways to run it.",
+    hero: { eyebrow: "Pricing", h1: "Three ways to run it.", lead: "The software is free and open source. Self-host it, let us host it at a flat rate, or have it run on-prem for you." },
     plans: {
-      free: { head: "Free to start", name: "Free to start", price: "Free", period: "· 30-day trial", sub: "Run the full product for 30 days. No card.", cta: "Start free",
-        features: [{ text: "Full feature access for 30 days" }, { text: "Operator terminals on your tablets" }, { text: "REST API and webhooks" }, { text: "No card up front" }] },
-      hosted: { head: "Hosted", name: "Hosted", flag: "Coming soon", price: "Coming soon", sub: "Fully managed at app.eryxon.eu. Pricing lands soon.", ctaSoon: "Coming soon",
-        features: [{ text: "Hosted and run for you" }, { text: "Daily backups" }, { text: "Updates handled automatically" }, { text: "Pricing to be announced", muted: true }] },
-      managed: { head: "Managed services", name: "Managed services", price: "Let's talk", sub: "We deploy it, connect your ERP, and roll it out across the floor.", cta: "Get in touch",
-        features: [{ text: "Deployment on your infrastructure" }, { text: "ERP integration over REST and webhooks" }, { text: "Rollout sequenced cell by cell" }, { text: "Scoped to your shop" }] },
+      free: { head: "Free / self-hosted", name: "Free / self-hosted", price: "Free", period: "· open source", sub: "Apache 2.0, no feature gates. Self-host it forever, or start a free trial.", cta: "Start free trial",
+        features: [{ text: "Full product, no feature gates" }, { text: "Self-host via Docker Compose" }, { text: "Operator terminals on your tablets" }, { text: "REST API and webhooks" }, { text: "Apache 2.0 — fork it, keep it" }] },
+      hosted: { head: "Hosted", name: "Hosted", flag: "Unlimited users", price: "Flat rate", sub: "We host it for you at app.eryxon.eu. One flat rate, unlimited users.", ctaSoon: "Get in touch",
+        features: [{ text: "We host and run it for you" }, { text: "Flat rate, unlimited users" }, { text: "Daily backups" }, { text: "Updates handled automatically" }] },
+      managed: { head: "Managed on-prem", name: "Managed on-prem", price: "Let's talk", sub: "Installed on your own infrastructure, with updates, monitoring, and backups handled.", cta: "Get in touch",
+        features: [{ text: "Installed on your infrastructure" }, { text: "Updates, monitoring, and backups" }, { text: "ERP integration over REST and webhooks" }, { text: "Scoped to your shop" }] },
     },
   },
   nl: {
     title: "Prijzen — Eryxon Flow",
-    description: "Begin 30 dagen gratis, kies een begeleide uitrol, of gebruik de gehoste versie zodra die er is. Eén plan per uitrolvorm.",
-    hero: { eyebrow: "Prijzen", h1: "Eén plan per uitrolvorm.", lead: "Probeer het 30 dagen gratis. Host het vandaag zelf, of laat ons het voor je in productie zetten." },
+    description: "Host zelf, gratis en open source, laat ons hosten tegen een vast tarief met onbeperkt gebruikers, of laat het on-prem draaien met updates, monitoring en back-ups. Drie manieren om het te draaien.",
+    hero: { eyebrow: "Prijzen", h1: "Drie manieren om het te draaien.", lead: "De software is gratis en open source. Host zelf, laat ons hosten tegen een vast tarief, of laat het on-prem voor je draaien." },
     plans: {
-      free: { head: "Begin gratis", name: "Begin gratis", price: "Gratis", period: "· proef van 30 dagen", sub: "Draai het volledige product 30 dagen. Geen kaart.", cta: "Begin gratis",
-        features: [{ text: "Volledige toegang voor 30 dagen" }, { text: "Operatorterminals op je tablets" }, { text: "REST API en webhooks" }, { text: "Geen kaart vooraf" }] },
-      hosted: { head: "Gehost", name: "Gehost", flag: "Binnenkort", price: "Binnenkort", sub: "Volledig beheerd op app.eryxon.eu. Prijs volgt binnenkort.", ctaSoon: "Binnenkort",
-        features: [{ text: "Gehost en voor je gedraaid" }, { text: "Dagelijkse back-ups" }, { text: "Updates automatisch geregeld" }, { text: "Prijs wordt aangekondigd", muted: true }] },
-      managed: { head: "Managed services", name: "Managed services", price: "Even overleggen", sub: "Wij zetten het neer, koppelen je ERP en rollen het uit over de vloer.", cta: "Neem contact op",
-        features: [{ text: "Uitrol op jouw infrastructuur" }, { text: "ERP-koppeling via REST en webhooks" }, { text: "Uitrol cel voor cel ingepland" }, { text: "Toegesneden op jouw shop" }] },
+      free: { head: "Gratis / self-hosted", name: "Gratis / self-hosted", price: "Gratis", period: "· open source", sub: "Apache 2.0, geen feature-slot. Host voor altijd zelf, of start een gratis trial.", cta: "Start gratis trial",
+        features: [{ text: "Volledig product, geen feature-slot" }, { text: "Zelf hosten via Docker Compose" }, { text: "Operatorterminals op je tablets" }, { text: "REST API en webhooks" }, { text: "Apache 2.0 — forken, houden" }] },
+      hosted: { head: "Gehost", name: "Gehost", flag: "Onbeperkt gebruikers", price: "Vast tarief", sub: "Wij hosten het voor je op app.eryxon.eu. Eén vast tarief, onbeperkt gebruikers.", ctaSoon: "Neem contact op",
+        features: [{ text: "Wij hosten en draaien het voor je" }, { text: "Vast tarief, onbeperkt gebruikers" }, { text: "Dagelijkse back-ups" }, { text: "Updates automatisch geregeld" }] },
+      managed: { head: "Managed on-prem", name: "Managed on-prem", price: "Even overleggen", sub: "Geïnstalleerd op je eigen infrastructuur, met updates, monitoring en back-ups geregeld.", cta: "Neem contact op",
+        features: [{ text: "Geïnstalleerd op jouw infrastructuur" }, { text: "Updates, monitoring en back-ups" }, { text: "ERP-koppeling via REST en webhooks" }, { text: "Toegesneden op jouw shop" }] },
     },
   },
   de: {
     title: "Preise — Eryxon Flow",
-    description: "30 Tage kostenlos starten, eine begleitete Einführung wählen oder die gehostete Version nutzen, sobald sie da ist. Ein Plan je Bereitstellungsart.",
-    hero: { eyebrow: "Preise", h1: "Ein Plan je Bereitstellungsart.", lead: "30 Tage kostenlos testen. Heute selbst hosten oder von uns in Produktion bringen lassen." },
+    description: "Selbst hosten, kostenlos und quelloffen, von uns hosten lassen zum Pauschalpreis mit unbegrenzten Nutzern oder on-prem betreiben lassen mit Updates, Monitoring und Backups. Drei Wege, es zu betreiben.",
+    hero: { eyebrow: "Preise", h1: "Drei Wege, es zu betreiben.", lead: "Die Software ist kostenlos und quelloffen. Selbst hosten, von uns hosten lassen zum Pauschalpreis oder on-prem für dich betreiben lassen." },
     plans: {
-      free: { head: "Kostenlos starten", name: "Kostenlos starten", price: "Kostenlos", period: "· 30-Tage-Test", sub: "Das vollständige Produkt 30 Tage nutzen. Keine Karte.", cta: "Kostenlos starten",
-        features: [{ text: "Voller Zugriff für 30 Tage" }, { text: "Operator-Terminals auf deinen Tablets" }, { text: "REST-API und Webhooks" }, { text: "Keine Karte vorab" }] },
-      hosted: { head: "Gehostet", name: "Gehostet", flag: "Demnächst", price: "Demnächst", sub: "Voll verwaltet auf app.eryxon.eu. Preise folgen in Kürze.", ctaSoon: "Demnächst",
-        features: [{ text: "Gehostet und für dich betrieben" }, { text: "Tägliche Backups" }, { text: "Updates automatisch erledigt" }, { text: "Preise werden bekanntgegeben", muted: true }] },
-      managed: { head: "Managed Services", name: "Managed Services", price: "Sprechen wir", sub: "Wir stellen es bereit, binden dein ERP an und führen es über die Werkstatt ein.", cta: "Kontakt aufnehmen",
-        features: [{ text: "Bereitstellung auf deiner Infrastruktur" }, { text: "ERP-Anbindung über REST und Webhooks" }, { text: "Einführung Zelle für Zelle geplant" }, { text: "Auf deinen Betrieb zugeschnitten" }] },
+      free: { head: "Kostenlos / selbst gehostet", name: "Kostenlos / selbst gehostet", price: "Kostenlos", period: "· Open Source", sub: "Apache 2.0, keine Feature-Sperren. Für immer selbst hosten oder kostenlos testen.", cta: "Kostenlos testen",
+        features: [{ text: "Volles Produkt, keine Feature-Sperren" }, { text: "Selbst hosten per Docker Compose" }, { text: "Operator-Terminals auf deinen Tablets" }, { text: "REST-API und Webhooks" }, { text: "Apache 2.0 — forken, behalten" }] },
+      hosted: { head: "Gehostet", name: "Gehostet", flag: "Unbegrenzte Nutzer", price: "Pauschalpreis", sub: "Wir hosten es für dich auf app.eryxon.eu. Ein Pauschalpreis, unbegrenzte Nutzer.", ctaSoon: "Kontakt aufnehmen",
+        features: [{ text: "Wir hosten und betreiben es für dich" }, { text: "Pauschalpreis, unbegrenzte Nutzer" }, { text: "Tägliche Backups" }, { text: "Updates automatisch erledigt" }] },
+      managed: { head: "Managed on-prem", name: "Managed on-prem", price: "Sprechen wir", sub: "Auf deiner eigenen Infrastruktur installiert, mit Updates, Monitoring und Backups.", cta: "Kontakt aufnehmen",
+        features: [{ text: "Auf deiner Infrastruktur installiert" }, { text: "Updates, Monitoring und Backups" }, { text: "ERP-Anbindung über REST und Webhooks" }, { text: "Auf deinen Betrieb zugeschnitten" }] },
     },
+  },
+};
+
+/* ---------- Roadmap (public Canny board) ---------- */
+export interface RoadmapCopy {
+  title: string;
+  description: string;
+  hero: { eyebrow: string; h1: string; lead: string };
+  /** Intro shown above the embedded board. */
+  intro: string;
+  /** Fallback link-out card for when the embed is blocked. */
+  fallback: { label: string; note: string; cta: string };
+  /** Button that opens the board in a new tab. */
+  openLabel: string;
+}
+
+/** Public Canny roadmap board. Single source of truth for the embed + link-out. */
+export const CANNY_ROADMAP_URL = "https://eryxon.canny.io/";
+
+const ROADMAP: Record<Locale, RoadmapCopy> = {
+  en: {
+    title: "Roadmap — Eryxon Flow",
+    description: "What's planned, in progress, and shipped for Eryxon Flow. Public roadmap, open to feedback and votes.",
+    hero: {
+      eyebrow: "Roadmap",
+      h1: "What's next for Eryxon Flow.",
+      lead: "Our roadmap is public. See what's planned, in progress, and shipped — and tell us what matters to your shop.",
+    },
+    intro: "The board below is live from our public roadmap. Vote on what you need, or post an idea.",
+    fallback: {
+      label: "Public roadmap",
+      note: "If the board doesn't load here, it opens directly on Canny.",
+      cta: "Open the roadmap",
+    },
+    openLabel: "Open in Canny ↗",
+  },
+  nl: {
+    title: "Roadmap — Eryxon Flow",
+    description: "Wat gepland, in uitvoering en uitgebracht is voor Eryxon Flow. Publieke roadmap, open voor feedback en stemmen.",
+    hero: {
+      eyebrow: "Roadmap",
+      h1: "Wat komt er aan voor Eryxon Flow.",
+      lead: "Onze roadmap is openbaar. Zie wat gepland, in uitvoering en uitgebracht is — en laat ons weten wat voor jouw shop telt.",
+    },
+    intro: "Het board hieronder komt live van onze publieke roadmap. Stem op wat je nodig hebt, of plaats een idee.",
+    fallback: {
+      label: "Publieke roadmap",
+      note: "Als het board hier niet laadt, opent het rechtstreeks op Canny.",
+      cta: "Open de roadmap",
+    },
+    openLabel: "Open in Canny ↗",
+  },
+  de: {
+    title: "Roadmap — Eryxon Flow",
+    description: "Was geplant, in Arbeit und veröffentlicht ist für Eryxon Flow. Öffentliche Roadmap, offen für Feedback und Stimmen.",
+    hero: {
+      eyebrow: "Roadmap",
+      h1: "Was als Nächstes für Eryxon Flow kommt.",
+      lead: "Unsere Roadmap ist öffentlich. Sieh, was geplant, in Arbeit und veröffentlicht ist — und sag uns, was für deinen Betrieb zählt.",
+    },
+    intro: "Das Board unten kommt live von unserer öffentlichen Roadmap. Stimme über das ab, was du brauchst, oder poste eine Idee.",
+    fallback: {
+      label: "Öffentliche Roadmap",
+      note: "Wenn das Board hier nicht lädt, öffnet es direkt auf Canny.",
+      cta: "Roadmap öffnen",
+    },
+    openLabel: "In Canny öffnen ↗",
   },
 };
 
@@ -368,4 +437,7 @@ export function landingCopy(locale: Locale): LandingCopy {
 }
 export function pricingCopy(locale: Locale): PricingCopy {
   return PRICING[locale];
+}
+export function roadmapCopy(locale: Locale): RoadmapCopy {
+  return ROADMAP[locale];
 }

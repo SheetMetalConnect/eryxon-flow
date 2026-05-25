@@ -4,8 +4,8 @@
  *
  * Ports the kit services/plans template (`ui_kits/marketing/services.html` `.svc-*`) as the
  * existing `/pricing/` route did, lifted into a shared component so en/nl/de render one markup.
- * Luke's three-tier model: Free to start (30-day trial) / Hosted (coming soon, no price) /
- * Managed services (get in touch). Kit `mk-*`/`svc-*` classes mapped to the `--ery-*` contract.
+ * FOSS-first three-way model: Free / self-hosted (Apache 2.0, free trial) / Hosted (flat rate,
+ * unlimited users) / Managed on-prem (get in touch). Kit `svc-*` classes map to `--ery-*`.
  */
 import CtaButton from "@/components/marketing/CtaButton.astro";
 import RolloutInquiry from "@/components/RolloutInquiry.astro";
@@ -54,8 +54,8 @@ const featureItem = (f: PlanFeature) => f;
     </CtaButton>
   </article>
 
-  <!-- Tier 2 — Hosted, coming soon (kit Plan B, featured) -->
-  <article class="svc-plan is-featured is-soon">
+  <!-- Tier 2 — Hosted, flat rate / unlimited users (kit Plan B, featured) -->
+  <article class="svc-plan is-featured">
     <span class="svc-plan-flag">{c.plans.hosted.flag}</span>
     <div class="svc-plan-head">
       <span class="svc-plan-dot"></span>
@@ -70,7 +70,7 @@ const featureItem = (f: PlanFeature) => f;
         <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
       ))}
     </ul>
-    <span class="svc-plan-cta-soon" aria-disabled="true">{c.plans.hosted.ctaSoon}</span>
+    <RolloutInquiry label={c.plans.hosted.ctaSoon} locale={locale} />
   </article>
 
   <!-- Tier 3 — Managed services (kit Plan C) -->

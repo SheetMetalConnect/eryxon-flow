@@ -17,7 +17,7 @@ Open with the operator/operations problem, not the product. Who is this for and 
 
 ## What changed
 
-Anchor the claim in something real: a shipped feature, a docs reference, a screenshot, or a release note. Never describe Eryxon Flow as "open source" — it is source-available under BSL 1.1. Lead with hosted, managed, and supported deployment when the context is buyer-facing.
+Anchor the claim in something real: a shipped feature, a docs reference, a screenshot, or a release note. Eryxon Flow is free and open source under Apache 2.0 — say so plainly. When the context is buyer-facing, lead with the hosted (flat rate, unlimited users) and managed on-prem options on top of the open-source core.
 
 ## Proof
 

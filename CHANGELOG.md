@@ -2,24 +2,30 @@
 
 All notable changes to Eryxon Flow are documented here.
 
-## [0.6.0] - 2026-05-24
+## [Unreleased] — v0.6 (in development)
 
-Beta. Mirrors the website release note `v0.6` ("Native mobile scanning and the operator preview").
-Shipped items below are live on the hosted version; the native build is still behind a Beta flag
-and is validating in CI ahead of the public launch.
+The v0.6 line is in development and **not yet tagged or released**. Mirrors the website release note
+`v0.6`. The installable PWA and the touch-first operator preview are usable in preview builds. The
+native iOS and Android apps are still in development and have not been released.
 
 ### Added
 
+- **Public roadmap page** (`/roadmap/`, linked in the primary nav, EN / NL / DE) — embeds the public Canny board (`https://eryxon.canny.io/`) inside the marketing design system with a link-out fallback, built on the `--ery-*` token contract. Native iOS / Android apps are surfaced here as in-development work.
 - **Pilot activation card** on the onboarding dashboard — new evaluators land on a single activation card that walks through their first work order.
 - **Hosted trial reporting pack** — trial usage is summarised for evaluators so a pilot can be reviewed without exporting raw data.
 - Marketing website redesign surfaces: root landing page (`/`), blog (`/blog/`), and changelog / release-notes (`/release-notes/`), built on the canonical Eryxon design-token contract.
-- Marketing **pricing page** (`/pricing/`, linked in the primary nav): three tiers — Free to start (30-day trial), Hosted (coming soon, no price), and Managed services (get-in-touch). Ported from the design-system kit's `services.html` `.svc-plans` 3-tier grid (self-host / hosted trial / managed) onto the site's `--ery-*` token contract; CTAs route through the existing `CtaButton` (hosted app) and `RolloutInquiry` (managed mailto) primitives.
+- Marketing **pricing page** (`/pricing/`, linked in the primary nav): three tiers — Free / self-hosted (Apache 2.0, free trial), Hosted (flat rate, unlimited users), and Managed on-prem (get-in-touch). Ported from the design-system kit's `services.html` `.svc-plans` 3-tier grid onto the site's `--ery-*` token contract; CTAs route through the existing `CtaButton` (hosted app) and `RolloutInquiry` (contact mailto) primitives.
 - **Inline pricing on the landing page** — the three-tier pricing block now renders directly in `Landing.astro` (kit `.mk-pricing-grid` / `.mk-tier`, before the CTA banner), as the kit's `index.html` does with `<Pricing />`. Same three tiers from `pricingCopy`, a "See full pricing →" link to `/pricing/`, across EN / NL / DE.
-- **Inline managed-rollout section on the landing** (`#managed-rollout`) — a compact "want help getting it into production?" block: short intro, three points (we deploy / we connect your ERP / we sequence the floor), and a `RolloutInquiry` get-in-touch button. Folded in from the standalone page, localized EN / NL / DE.
+- **Inline hosted-and-managed section on the landing** (`#managed-rollout`) — a compact "rather not run it yourself?" block: short intro, three points (hosted / managed on-prem / ERP connected), and a `RolloutInquiry` get-in-touch button. Folded in from the standalone page, localized EN / NL / DE.
 - Marketing footer creator attribution: a "Created by" card crediting Luke van Enkhuizen — Sheet Metal Connect e.U., with a locally bundled, build-optimised avatar (`website/src/assets/luke-van-enkhuizen.jpg`).
 
 ### Changed
 
+- **Relicensed to Apache 2.0 — fully open source.** Replaced the BSL 1.1 `LICENSE` (root + `website/`) with the Apache License 2.0, copyright "Sheet Metal Connect e.U.". Updated `license` fields in `package.json` / `mcp-server/package.json` to `Apache-2.0`, the Dockerfile OCI label, and the in-app license panel (`src/pages/common/Pricing.tsx` + `en`/`nl`/`de` admin locales) to state Apache 2.0 freedoms. Removed every "source-available" / "BSL 1.1" mention across README, footers, docs, design-system copy rules, social, and solutions surfaces.
+- **FOSS-first positioning across the marketing surfaces (EN / NL / DE):** landing, pricing, and the inline landing pricing now lead with "free and open source", with a three-way model — Free / self-hosted (Apache 2.0, free trial), Hosted (flat rate, unlimited users), and Managed on-prem.
+- **v0.6 framed as the stable, installable PWA** across the website release note, docs homepages, introductions, and the docs changelog — install from Chrome / Edge on Windows and macOS. The v0.6 line builds on the last cut tag, v0.5.1.
+- **Native iOS / Android apps corrected to "in development" everywhere** — removed the unreleased-as-shipped and "coming soon" framing from the docs homepages and introductions (EN / NL / DE), pointing them at the roadmap instead. There is no v0.5.2 release; stray `v0.5.2` references in the deployment / self-hosting / release-proof guides were corrected to the v0.6 line.
+- **Release-note history backfilled** from the real git tags (v0.1.0, v0.3.3, v0.4.0, v0.4.1, v0.5.0, v0.5.1) with honest Added / Changed / Fixed entries; the phantom `v0-5-2` website release note was removed.
 - **Operator preview touch targets** — operator preview frames now use the 56px touch target across phone and tablet runtimes.
 - Website conformance pass against the Eryxon design system: code blocks, the docs search modal, the theme-demo toggle, and feature cards now use solid surfaces, hairline borders, and design tokens — no gradients, glass / backdrop-blur, transform-on-hover, or hardcoded dark hex. Marketing and editorial headings aligned to the canonical 600-weight, sentence-case scale.
 - Removed the standalone "Managed rollout" item from the primary nav — the rollout content now lives inline on the landing (`#managed-rollout`), reachable from the hero secondary CTA and the managed-services pricing tier.
@@ -30,12 +36,16 @@ and is validating in CI ahead of the public launch.
 - Dead `AccordionContainer.astro` website component (gradient-border + scale-animation legacy, unreferenced).
 - Marketing footer "Contact" column (managed-rollout, email, LinkedIn, and vanenkhuizen.com links) — replaced by the creator attribution card.
 
-## [0.5.2] - 2026-05-09
+## [Unreleased] — native shells + PWA (in development)
+
+> **Status:** this work lives in the repository but has **not** been tagged or released. There is no
+> v0.5.2 release. The installable PWA is usable today; the native iOS and Android shells below are
+> **in development and not yet released** — do not treat them as shipped.
 
 ### Added
 
-- **Native iOS / iPadOS app** (Capacitor 7) wrapping the existing React bundle. Bottom tab bar on iPhone, split-view master/detail on iPad, pull-to-refresh, swipe-to-act work-queue rows, ML Kit barcode/QR scanner, Face ID / Touch ID unlock, haptics, safe-area aware chrome, status-bar in lockstep with the React theme.
-- **Native Android app** (Capacitor 7) targeting phone + tablet (Pixel Tablet, Galaxy Tab, Lenovo Tab). Hardware-back wired into React Router, offline banner, scan FAB on operator routes, sw600dp / sw720dp tablet layouts, ProGuard rules for ML Kit + biometric, app-bundle splits, deep links (`eryxon://` + `https://app.eryxon.eu`), network-security config restricting cleartext to localhost / LAN.
+- **Native iOS / iPadOS shell** (Capacitor 7, in development) wrapping the existing React bundle. Bottom tab bar on iPhone, split-view master/detail on iPad, pull-to-refresh, swipe-to-act work-queue rows, ML Kit barcode/QR scanner, Face ID / Touch ID unlock, haptics, safe-area aware chrome, status-bar in lockstep with the React theme.
+- **Native Android shell** (Capacitor 7, in development) targeting phone + tablet (Pixel Tablet, Galaxy Tab, Lenovo Tab). Hardware-back wired into React Router, offline banner, scan FAB on operator routes, sw600dp / sw720dp tablet layouts, ProGuard rules for ML Kit + biometric, app-bundle splits, deep links (`eryxon://` + `https://app.eryxon.eu`), network-security config restricting cleartext to localhost / LAN.
 - **Installable PWA** (vite-plugin-pwa + workbox) for desktop macOS Launchpad / Windows Start menu / Android home-screen / iOS Add-to-Home-Screen. Web manifest with operator-friendly shortcuts (Queue / Scan / Issues), maskable icons generated from `public/pwa-icon.svg`, prompt-style service worker that surfaces updates without forcing a mid-shift reload.
 - **Touch-first `/m/*` route shell** shared by all three runtimes. New operator screens: work queue, op detail with bottom-anchored Start/Stop/Complete, QR/barcode scanner, activity timeline, issues feed, terminal overview, PIN + biometric login.
 - Native bridge module at `src/native/` (haptics, scanner, biometric, status bar, splash, keyboard, network, camera, app shell + hardware back) — components import from `@/native` only; nothing else touches `@capacitor/*` directly.
@@ -61,7 +71,7 @@ and is validating in CI ahead of the public launch.
 ### Fixed
 
 - Refreshed stale OpenTrace knowledge graph counts in the README and agent docs after regenerating the local index
-- Aligned the README BSL conversion summary with the `LICENSE` change-date wording instead of a hard-coded calendar date
+- Aligned the README licensing summary with the repository `LICENSE`
 - Marked v0.5.1 as the current maintenance hotfix across README and website release docs
 
 ## [0.5.0] - 2026-05-06
@@ -93,7 +103,7 @@ and is validating in CI ahead of the public launch.
 ### Changed
 
 - ESLint `no-explicit-any` rule enabled as warning
-- Finalized release handoff messaging: active development is on hold, the hosted version remains online as-is, and users are free to use, fork, and adapt Eryxon Flow under the BSL 1.1 terms
+- Finalized release handoff messaging: the hosted version remains online, and users are free to use, fork, and adapt Eryxon Flow under the Apache 2.0 license
 - Added a website changelog page so the README, release notes, and docs site point to the same release history
 - `as any` casts reduced from 72 to 7 across codebase
 - Supabase types regenerated with latest schema

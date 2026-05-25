@@ -20,7 +20,7 @@ Kies het pad dat past bij uw evaluatie van Eryxon Flow.
   </a>
   <a href="/nl/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_nl" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="nl" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
     <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Evalueer self-hosting</strong>
-    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Draai Eryxon op uw eigen infrastructuur. Source-available onder BSL 1.1.</span>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Draai Eryxon op uw eigen infrastructuur. Gratis en open source onder Apache 2.0.</span>
   </a>
 </div>
 
@@ -32,9 +32,7 @@ Kies het pad dat past bij uw evaluatie van Eryxon Flow.
 - **Admins** krijgen realtime zicht: wie waaraan werkt, issue-goedkeuringen, datum-overschrijvingen en configuratie van stadia/materialen.
 - **Technische evaluatoren** krijgen een API-first systeem: 24 REST-endpoints, webhooks, MQTT, een MCP-server en planningadapters voor FrePPLe en Odoo.
 
-> **Huidige status:** v0.5.1 is de huidige stabiele lijn. Web-app, REST API, webhooks, MQTT en de FrePPLe/Odoo-adapters zijn **Beta**; de **MCP-server is Live**. Native **Android**- en **iOS**-apps staan op de roadmap - vandaag is de browser-app het primaire oppervlak.
-
-> **Status:** Het grootste deel van Eryxon Flow is in **Beta** — web-app, REST-API, webhooks, MQTT en de planning-adapters voor FrePPLe en Odoo. De **MCP-server is Live**. Native **Android**- en **iOS**-apps komen binnenkort.
+> **Huidige status:** v0.6 is de stabiele lijn en installeer je als desktop-PWA. Web-app, REST API, webhooks, MQTT en de FrePPLe/Odoo-adapters zijn **Beta**; de **MCP-server is Live**. Native **Android**- en **iOS**-apps zijn in ontwikkeling op de roadmap, nog niet uitgebracht — vandaag is de browser-app het primaire oppervlak.
 
 > **Probeer het nu:** Open de <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_try_now_nl" data-cta-surface="docs_intro" data-cta-kind="hosted_app" data-cta-locale="nl">hosted versie op app.eryxon.eu</a> — geen installatie vereist.
 

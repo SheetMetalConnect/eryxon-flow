@@ -1,0 +1,18 @@
+---
+/*
+ * Roadmap — `/roadmap/` (root locale = en).
+ *
+ * Thin shell over the shared `Roadmap.astro` component, which surfaces the public Canny roadmap
+ * (https://eryxon.canny.io/) inside the marketing design system. Localized variants render the
+ * same component at `/nl/roadmap/` and `/de/roadmap/` (`pages/[locale]/roadmap.astro`).
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Roadmap from "@/components/marketing/Roadmap.astro";
+import { roadmapCopy } from "@/lib/marketing-content";
+
+const c = roadmapCopy("en");
+---
+
+<SiteLayout title={c.title} description={c.description} locale="en" activeNav="roadmap">
+  <Roadmap locale="en" />
+</SiteLayout>

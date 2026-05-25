@@ -16,7 +16,7 @@ interface Props {
   title: string;
   description?: string;
   locale?: Locale;
-  activeNav?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | null;
+  activeNav?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | "roadmap" | null;
 }
 
 const { title, description, locale = "en", activeNav = null } = Astro.props;

@@ -22,10 +22,9 @@ This system covers every Eryxon surface in one shared visual language.
 
 **Eryxon Flow** is the flagship: a Manufacturing Execution System (MES) for high-mix, low-volume job shops — sheet metal, machine shops, custom fabrication. It tracks jobs through cutting, bending, welding, assembly, finishing; runs on touch-friendly operator terminals; and includes a 3D STEP viewer, planning integrations (FrePPLe, Odoo MRP), MQTT/UMH connectivity, and a 30+ endpoint REST API.
 
-> **License copy reminder.** Eryxon Flow is **source-available under BSL 1.1**
-> (converts to Apache 2.0 after the BSL change date). **Never write "open
-> source" in any Eryxon copy.** Use "source-available", "self-hostable", or
-> "BSL-licensed".
+> **License copy reminder.** Eryxon Flow is **fully open source under the
+> Apache License 2.0**. Say "open source", "Apache 2.0", or "self-hostable".
+> Do not describe it as "source-available" or "BSL" — that is no longer true.
 
 ### Source repos (browse for deeper context)
 
@@ -75,7 +74,7 @@ like good documentation, not marketing.
   ≤ 2 words where possible — the longest of the three locales must still
   fit the touch target.
 - **Prohibited copy.**
-  - "Open source" → use "source-available" / "self-hostable" / "BSL-1.1".
+  - "Source-available" / "BSL" → Eryxon Flow is open source (Apache 2.0); say so.
   - "Revolutionary", "seamless", "magical", "delightful" → cut.
   - "Powered by AI" → say what it does instead.
 
@@ -86,7 +85,7 @@ like good documentation, not marketing.
 | Awesome! Job created 🎉 | Job WO-4218 created. |
 | Oops, something went wrong | Time entry already open on PN-902 — stop it first. |
 | Our revolutionary platform unifies your shop floor. | Track jobs across cutting, bending, welding, and assembly from one tablet. |
-| Open-source MES for fabricators | Source-available MES for fabricators. Self-host or use the hosted version. |
+| Proprietary MES, license per seat | Open-source MES for fabricators. Self-host for free or use the hosted version. |
 | Welcome back, John! Ready to crush some jobs? | Hi John. 4 operations on your queue. |
 
 ---

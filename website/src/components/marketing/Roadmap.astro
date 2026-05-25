@@ -1,0 +1,156 @@
+---
+/*
+ * Roadmap.astro — public roadmap surface (`/roadmap/`, v0.6).
+ *
+ * Surfaces the public Canny roadmap (https://eryxon.canny.io/) inside the marketing design
+ * system. Canny recommends pointing at the full board rather than the JS widget (which needs a
+ * board token), so we embed the public board in an iframe and pair it with a visible link-out
+ * card. If the board is blocked from framing, the link-out keeps the page useful. EN/NL/DE copy
+ * comes from `marketing-content.ts`; styling uses the shared `--ery-*` token contract only.
+ */
+import { roadmapCopy, CANNY_ROADMAP_URL } from "@/lib/marketing-content";
+import type { Locale } from "@/lib/locale";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = "en" } = Astro.props;
+const c = roadmapCopy(locale);
+---
+
+<section class="ery-container rm-hero">
+  <p class="eyebrow">{c.hero.eyebrow}</p>
+  <h1>{c.hero.h1}</h1>
+  <p class="lede">{c.hero.lead}</p>
+  <a class="rm-open" href={CANNY_ROADMAP_URL} target="_blank" rel="noopener" data-cta-id="roadmap_open_canny" data-cta-surface="roadmap" data-cta-kind="external">
+    {c.openLabel}
+  </a>
+</section>
+
+<section class="ery-container rm-board" aria-label="Roadmap">
+  <p class="rm-intro">{c.intro}</p>
+
+  <!-- Link-out card: always rendered, sits behind the embed as the guaranteed fallback. -->
+  <div class="rm-fallback">
+    <div>
+      <h2 class="rm-fallback-label">{c.fallback.label}</h2>
+      <p class="rm-fallback-note">{c.fallback.note}</p>
+    </div>
+    <a class="rm-fallback-cta" href={CANNY_ROADMAP_URL} target="_blank" rel="noopener" data-cta-id="roadmap_fallback_canny" data-cta-surface="roadmap" data-cta-kind="external">
+      {c.fallback.cta}
+    </a>
+  </div>
+
+  <iframe
+    class="rm-frame"
+    src={CANNY_ROADMAP_URL}
+    title={c.fallback.label}
+    loading="lazy"
+    referrerpolicy="no-referrer-when-downgrade"
+  ></iframe>
+</section>
+
+<style>
+  .rm-hero {
+    text-align: center;
+    max-inline-size: 52rem;
+    padding-block: var(--ery-pad-hero) var(--ery-space-6);
+  }
+  .eyebrow {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    margin: 0 0 var(--ery-space-3);
+  }
+  .rm-hero h1 {
+    font-size: clamp(var(--ery-text-3xl), 4.5vw, var(--ery-text-5xl));
+    line-height: var(--ery-leading-tight);
+    text-wrap: balance;
+    margin: 0 0 var(--ery-space-4);
+  }
+  .lede {
+    font-size: var(--ery-text-lg);
+    color: var(--ery-text-muted);
+    max-inline-size: 40rem;
+    margin-inline: auto;
+  }
+  .rm-open {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    margin-block-start: var(--ery-space-6);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    background: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+    font-size: var(--ery-text-base);
+    font-weight: 500;
+  }
+
+  .rm-board {
+    padding-block-end: var(--ery-space-16);
+  }
+  .rm-intro {
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    margin: 0 0 var(--ery-space-4);
+  }
+
+  .rm-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ery-space-4);
+    padding: var(--ery-space-5);
+    margin-block-end: var(--ery-space-4);
+    background: var(--ery-surface);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+  }
+  .rm-fallback-label {
+    margin: 0 0 var(--ery-space-1);
+    font-size: var(--ery-text-base);
+    font-weight: 600;
+  }
+  .rm-fallback-note {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .rm-fallback-cta {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    border: 1px solid var(--ery-border-strong);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+    color: var(--ery-text);
+  }
+  .rm-fallback-cta:hover {
+    background: var(--ery-surface-subtle);
+  }
+
+  .rm-frame {
+    inline-size: 100%;
+    block-size: 80vh;
+    min-block-size: 600px;
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    background: var(--ery-surface);
+  }
+
+  @media (max-width: 640px) {
+    .rm-fallback {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .rm-fallback-cta {
+      inline-size: 100%;
+    }
+  }
+</style>

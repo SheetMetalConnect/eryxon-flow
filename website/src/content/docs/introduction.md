@@ -20,7 +20,7 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
   </a>
   <a href="/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_en" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="en" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
     <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Evaluate it self-hosted</strong>
-    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Run it on your own infrastructure. Source-available under BSL 1.1.</span>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Run it on your own infrastructure. Free and open source under Apache 2.0.</span>
   </a>
 </div>
 
@@ -32,7 +32,7 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
 - **Admins** get real-time visibility: who is working on what, issue approvals, due-date overrides, and stage/material configuration.
 - **Technical evaluators** get an API-first system: 24 REST endpoints, webhooks, MQTT, an MCP server, and pluggable planning adapters (FrePPLe, Odoo). It self-hosts on Supabase.
 
-> **Where things stand:** v0.5.1 is the current stable line. The web app, REST API, webhooks, MQTT, and the FrePPLe/Odoo adapters are in **Beta**; the **MCP server is Live**. Native **Android** and **iOS** apps are on the roadmap, not yet shipped — the browser app is the primary surface today.
+> **Where things stand:** v0.6 is the stable line and installs as a desktop PWA. The web app, REST API, webhooks, MQTT, and the FrePPLe/Odoo adapters are in **Beta**; the **MCP server is Live**. Native **Android** and **iOS** apps are on the roadmap, not yet shipped — the browser app is the primary surface today.
 
 ## What It Does
 
