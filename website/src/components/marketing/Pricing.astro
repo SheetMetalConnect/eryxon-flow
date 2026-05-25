@@ -1,0 +1,260 @@
+---
+/*
+ * Pricing.astro — locale-driven pricing body (v0.6 locale buildout).
+ *
+ * Ports the kit services/plans template (`ui_kits/marketing/services.html` `.svc-*`) as the
+ * existing `/pricing/` route did, lifted into a shared component so en/nl/de render one markup.
+ * Luke's three-tier model: Free to start (30-day trial) / Hosted (coming soon, no price) /
+ * Managed services (get in touch). Kit `mk-*`/`svc-*` classes mapped to the `--ery-*` contract.
+ */
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import RolloutInquiry from "@/components/RolloutInquiry.astro";
+import { pricingCopy } from "@/lib/marketing-content";
+import type { Locale } from "@/lib/locale";
+import type { PlanFeature } from "@/lib/marketing-content";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = "en" } = Astro.props;
+const c = pricingCopy(locale);
+
+const check =
+  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
+
+const featureItem = (f: PlanFeature) => f;
+---
+
+<!-- Hero — kit .svc-hero -->
+<section class="ery-container svc-hero">
+  <p class="eyebrow">{c.hero.eyebrow}</p>
+  <h1>{c.hero.h1}</h1>
+  <p class="lede">{c.hero.lead}</p>
+</section>
+
+<!-- Plan grid — kit .svc-plans, 3 tiers -->
+<section class="ery-container svc-plans" aria-label="Plans">
+  <!-- Tier 1 — Free to start (kit Plan A) -->
+  <article class="svc-plan">
+    <div class="svc-plan-head">
+      <span class="svc-plan-dot svc-plan-dot--neutral"></span>
+      <span>{c.plans.free.head}</span>
+    </div>
+    <h2 class="svc-plan-name">{c.plans.free.name}</h2>
+    <div class="svc-plan-price">{c.plans.free.price}<span>{c.plans.free.period}</span></div>
+    <p class="svc-plan-sub">{c.plans.free.sub}</p>
+    <hr class="svc-plan-divider" />
+    <ul class="svc-plan-features">
+      {c.plans.free.features.map((f) => (
+        <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+      ))}
+    </ul>
+    <CtaButton href="https://app.eryxon.eu" ctaId="pricing_free_trial" surface="pricing_plans" kind="hosted_app" variant="secondary" locale={locale} external>
+      {c.plans.free.cta}
+    </CtaButton>
+  </article>
+
+  <!-- Tier 2 — Hosted, coming soon (kit Plan B, featured) -->
+  <article class="svc-plan is-featured is-soon">
+    <span class="svc-plan-flag">{c.plans.hosted.flag}</span>
+    <div class="svc-plan-head">
+      <span class="svc-plan-dot"></span>
+      <span>{c.plans.hosted.head}</span>
+    </div>
+    <h2 class="svc-plan-name">{c.plans.hosted.name}</h2>
+    <div class="svc-plan-price">{c.plans.hosted.price}</div>
+    <p class="svc-plan-sub">{c.plans.hosted.sub}</p>
+    <hr class="svc-plan-divider" />
+    <ul class="svc-plan-features">
+      {c.plans.hosted.features.map((f) => (
+        <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+      ))}
+    </ul>
+    <span class="svc-plan-cta-soon" aria-disabled="true">{c.plans.hosted.ctaSoon}</span>
+  </article>
+
+  <!-- Tier 3 — Managed services (kit Plan C) -->
+  <article class="svc-plan">
+    <div class="svc-plan-head">
+      <span class="svc-plan-dot svc-plan-dot--warning"></span>
+      <span>{c.plans.managed.head}</span>
+    </div>
+    <h2 class="svc-plan-name">{c.plans.managed.name}</h2>
+    <div class="svc-plan-price">{c.plans.managed.price}</div>
+    <p class="svc-plan-sub">{c.plans.managed.sub}</p>
+    <hr class="svc-plan-divider" />
+    <ul class="svc-plan-features">
+      {c.plans.managed.features.map((f) => (
+        <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+      ))}
+    </ul>
+    <RolloutInquiry label={c.plans.managed.cta} locale={locale} />
+  </article>
+</section>
+
+<style>
+  .svc-hero {
+    text-align: center;
+    max-inline-size: 52rem;
+    padding-block: var(--ery-pad-hero) var(--ery-space-8);
+  }
+  .eyebrow {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    margin: 0 0 var(--ery-space-3);
+  }
+  .svc-hero h1 {
+    font-size: clamp(var(--ery-text-3xl), 4.5vw, var(--ery-text-5xl));
+    line-height: var(--ery-leading-tight);
+    text-wrap: balance;
+    margin: 0 0 var(--ery-space-4);
+  }
+  .lede {
+    font-size: var(--ery-text-lg);
+    color: var(--ery-text-muted);
+    max-inline-size: 40rem;
+    margin-inline: auto;
+  }
+
+  .svc-plans {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ery-space-4);
+    padding-block-end: var(--ery-space-16);
+    align-items: stretch;
+  }
+  @media (max-width: 860px) {
+    .svc-plans {
+      grid-template-columns: 1fr;
+      max-inline-size: 32rem;
+      margin-inline: auto;
+    }
+  }
+
+  .svc-plan {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-4);
+    padding: var(--ery-space-6);
+    background-color: var(--ery-surface);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    position: relative;
+  }
+  .svc-plan.is-featured {
+    border-color: color-mix(in srgb, var(--ery-brand) 40%, transparent);
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--ery-brand) 20%, transparent),
+      var(--ery-shadow);
+  }
+  .svc-plan-flag {
+    position: absolute;
+    top: calc(-1 * var(--ery-space-3));
+    left: var(--ery-space-6);
+    background-color: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+    padding: var(--ery-space-1) var(--ery-space-3);
+    border-radius: var(--ery-radius-pill);
+    font-size: var(--ery-text-xs);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+
+  .svc-plan-head {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-2);
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ery-text-muted);
+  }
+  .svc-plan-dot {
+    inline-size: 8px;
+    block-size: 8px;
+    border-radius: 50%;
+    background-color: var(--ery-brand);
+  }
+  .svc-plan-dot--neutral { background-color: var(--ery-text-subtle); }
+  .svc-plan-dot--warning { background-color: var(--ery-warning); }
+
+  .svc-plan-name {
+    margin: 0;
+    font-size: var(--ery-text-xl);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+  .svc-plan-price {
+    font-size: var(--ery-text-4xl);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-feature-settings: "tnum";
+  }
+  .svc-plan-price span {
+    margin-left: var(--ery-space-2);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+    color: var(--ery-text-muted);
+  }
+  .svc-plan-sub {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .svc-plan-divider {
+    border: 0;
+    block-size: 1px;
+    background-color: var(--ery-border);
+    margin: 0;
+  }
+
+  .svc-plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+    flex: 1;
+  }
+  .svc-plan-features li {
+    display: flex;
+    gap: var(--ery-space-2);
+    align-items: flex-start;
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-normal);
+  }
+  .svc-plan-features :global(svg) {
+    color: var(--ery-success);
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .svc-plan-features li.muted,
+  .svc-plan-features li.muted :global(svg) {
+    color: var(--ery-text-subtle);
+  }
+
+  .svc-plan-cta-soon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    border: 1px dashed var(--ery-border-strong);
+    font-size: var(--ery-text-base);
+    font-weight: 500;
+    color: var(--ery-text-subtle);
+    cursor: default;
+  }
+
+  .svc-plan :global(.ery-cta),
+  .svc-plan :global(.rollout-email-intent),
+  .svc-plan .svc-plan-cta-soon {
+    inline-size: 100%;
+  }
+</style>
