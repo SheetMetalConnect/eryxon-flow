@@ -54,7 +54,7 @@ function AppRoutes() {
     profile?.role === "admin" && profile?.onboarding_completed === false;
   const homeTarget = needsOnboarding
     ? "/onboarding"
-    : profile?.role === "admin" && !native.isNative
+    : profile?.role === "admin"
       ? "/admin/dashboard"
       : preferMobileShell
         ? "/m/queue"
