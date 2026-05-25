@@ -3,11 +3,10 @@
  * SiteFooter — marketing footer for the redesign surfaces (ERY-60).
  *
  * Fills the `footer` slot of MarketingLayout. IA per the ERY-54 brief:
- *   - the legacy "Open Source" group is renamed to "Repository" (BSL 1.1 is source-available,
- *     never "open source")
+ *   - the "Open Source" group lists the repository links (Apache 2.0, fully open source)
  *   - managed rollout stays in the contact column
  *   - docs + self-hosting stay under resources
- *   - BSL / source-available language is factual and compact
+ *   - licensing language is factual and compact (Apache 2.0, free and open source)
  *
  * This footer is authored directly (not from `config/menu.*.json`) because that menu model still
  * drives the Starlight docs footer override and is owned by the docs-chrome migration (ERY-61,
@@ -43,9 +42,8 @@ const resources = [
   <div class="ery-fcol ery-fcol--brand">
     <Wordmark href={null} />
     <p class="ery-fnote">
-      Manufacturing execution for metalworking job shops. Source-available under
-      <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">BSL 1.1</a>
-      and free for internal use.
+      Manufacturing execution for metalworking job shops. Free and open source under
+      <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>.
     </p>
   </div>
 
@@ -66,7 +64,7 @@ const resources = [
       ))}
       <li>
         <CtaButton href="https://app.eryxon.eu" ctaId="footer_resources_hosted" surface="site_footer" kind="hosted_app" variant="tertiary" locale={locale} external>
-          Get started for free
+          Start free trial
         </CtaButton>
       </li>
     </ul>
@@ -93,8 +91,8 @@ const resources = [
 
 <p class="ery-flegal">
   <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener">Sheet Metal Connect e.U.</a>
-  &copy; 2026 · Released under
-  <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">BSL 1.1</a>
+  &copy; 2026 · Open source under
+  <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>
 </p>
 
 <style>

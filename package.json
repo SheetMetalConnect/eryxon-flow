@@ -1,8 +1,8 @@
 {
   "name": "eryxon-flow",
   "private": true,
-  "version": "0.5.2",
-  "license": "BSL-1.1",
+  "version": "0.6.0-dev",
+  "license": "Apache-2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

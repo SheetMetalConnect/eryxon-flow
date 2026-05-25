@@ -397,17 +397,19 @@
       ]
     },
     "license": {
-      "title": "License (BSL 1.1)",
-      "tldr": "Use it, modify it, self-host it. Just don't host it and charge others for access.",
-      "allowed": "Allowed",
-      "notAllowed": "Not Allowed",
+      "title": "License (Apache 2.0)",
+      "tldr": "Fully open source. Use it, modify it, self-host it, and use it commercially — no restrictions.",
+      "allowed": "You can",
+      "note": "Good to know",
       "allowedItems": {
-        "selfHost": "Self-host for your own operations",
+        "selfHost": "Self-host for your own operations, free",
         "modify": "Fork and modify for your needs",
+        "commercial": "Use it commercially, including hosting it for others",
         "consulting": "Use for development, testing, education"
       },
-      "notAllowedItems": {
-        "resell": "Host it and sell access as a SaaS"
+      "noteItems": {
+        "attribution": "Keep the license and copyright notice in copies",
+        "patent": "Includes an express patent grant"
       }
     }
   },

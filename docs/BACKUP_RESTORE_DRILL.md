@@ -4,7 +4,7 @@ Engineer-owned, repeatable version of the ERY-41 manual restore drill. One comma
 Flow's application-owned state, restores it into a **disposable** target, and runs smoke checks
 that go beyond row counts.
 
-> Source-available under BSL 1.1. This drill validates recovery of the local self-hosted
+> Open source under Apache 2.0. This drill validates recovery of the local self-hosted
 > Supabase stack. It never touches production (`app.eryxon.eu`) or the live working database —
 > restores land in a throwaway scratch database and temp directory.
 

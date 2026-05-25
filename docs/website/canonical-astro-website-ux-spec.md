@@ -89,7 +89,7 @@ Observed repo reality:
 
 - Use calm, precise, operator-respecting copy.
 - Use second person and plain technical manufacturing language.
-- Never describe Eryxon Flow as open source. Use `source-available`, `self-hostable`, or `BSL 1.1`.
+- Eryxon Flow is open source under Apache 2.0. Use `open source`, `Apache 2.0`, or `self-hostable`. Do not use `source-available` or `BSL`.
 - No hype terms such as `revolutionary`, `magical`, or `seamless`.
 - No emoji in product-facing website UI.
 - Brand in body copy is `Eryxon` and `Eryxon Flow`.
@@ -220,7 +220,7 @@ Use or create Astro components that map to the canonical kit:
 
 - Remove consultant-personal framing from the core product homepage.
 - Move support, services, and contact content into a deliberate product/company pattern instead of appending them to a docs-heavy scroll.
-- Replace `Open Source` footer/resource wording with `Source-available` or a neutral resource label.
+- `Open Source` footer/resource wording is accurate — Eryxon Flow is Apache 2.0. Keep or pair it with the license name.
 
 ## Gap List: Current Repo vs Canonical Package
 
