@@ -1,0 +1,104 @@
+---
+// Managed-rollout inquiry action + page-view instrumentation (ERY-33).
+//
+// Emits two Phase 1 events:
+//   - website_rollout_page_viewed        (once per page; entry_cta_id from ?cta=, source_page from ?from= or referrer)
+//   - website_rollout_email_intent_opened (per inquiry-button click, before the mailto opens)
+//
+// Astro bundles this component's <script> once per page even when the
+// component is rendered multiple times, so the script selects ALL inquiry
+// buttons by class and fires the page-view exactly once.
+//
+// The inquiry button intentionally has no `data-cta-id`, so the global
+// delegated click tracker does not also emit `website_cta_clicked` for it.
+const {
+  email = "office@vanenkhuizen.com",
+  label = "Start a managed rollout conversation",
+  locale = "en",
+} = Astro.props;
+---
+
+<a
+  class="rollout-email-intent btn btn-primary inline-flex items-center justify-center"
+  href={`mailto:${email}`}
+  data-rollout-email={email}
+  data-rollout-locale={locale}
+>
+  {label}
+</a>
+
+<script>
+  type Props = Record<string, string | number | undefined>;
+
+  function localeFromPath(pathname: string): "en" | "de" | "nl" {
+    const m = pathname.match(/^\/(de|nl)(\/|$)/);
+    return m ? (m[1] as "de" | "nl") : "en";
+  }
+
+  function track(event: string, props: Props) {
+    if (typeof window.eryxonTrack === "function") {
+      window.eryxonTrack(event, props);
+    }
+  }
+
+  function init() {
+    const params = new URLSearchParams(window.location.search);
+    const entryCtaId = params.get("cta") || "";
+    const sourcePage = params.get("from") || document.referrer || "";
+    const pageLocale = localeFromPath(location.pathname);
+
+    // Fire the page-view exactly once per page load.
+    if (!(window as any).__eryxonRolloutViewed) {
+      (window as any).__eryxonRolloutViewed = true;
+      track("website_rollout_page_viewed", {
+        entry_cta_id: entryCtaId,
+        source_page: sourcePage,
+        locale: pageLocale,
+      });
+    }
+
+    const buttons = document.querySelectorAll<HTMLAnchorElement>(".rollout-email-intent");
+    buttons.forEach((btn) => {
+      if (btn.dataset.rolloutBound) return;
+      btn.dataset.rolloutBound = "1";
+
+      const locale = btn.getAttribute("data-rollout-locale") || pageLocale;
+      const email = btn.getAttribute("data-rollout-email") || "office@vanenkhuizen.com";
+
+      const subject = "Eryxon Flow — managed rollout inquiry";
+      const bodyLines = [
+        "Hi,",
+        "",
+        "I'd like to talk about a managed rollout of Eryxon Flow.",
+        "",
+        "A few details about my shop / situation:",
+        "- ",
+        "",
+        "---",
+        `Source CTA: ${entryCtaId || "(direct)"}`,
+        `From page: ${sourcePage || "(unknown)"}`,
+        `Locale: ${locale}`,
+      ];
+      btn.setAttribute(
+        "href",
+        `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+          bodyLines.join("\n")
+        )}`
+      );
+
+      btn.addEventListener("click", () => {
+        track("website_rollout_email_intent_opened", {
+          entry_cta_id: entryCtaId,
+          source_page: sourcePage,
+          locale,
+        });
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init, { once: true });
+  } else {
+    init();
+  }
+</script>

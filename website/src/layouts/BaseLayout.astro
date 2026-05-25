@@ -100,8 +100,11 @@ const alternates = SUPPORTED_LOCALES.map((lang) => ({
   h4,
   h5,
   h6 {
+    /* Canonical package: semibold (600) headings with tight tracking, sentence case.
+     * No 700-bold, no gradient text. */
     line-height: var(--ery-leading-tight);
-    font-weight: 700;
+    font-weight: 600;
+    letter-spacing: var(--ery-tracking-tight);
     margin: 0 0 var(--ery-space-4);
   }
   a {

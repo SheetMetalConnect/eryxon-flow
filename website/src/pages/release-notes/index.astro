@@ -1,0 +1,87 @@
+---
+/*
+ * Release-notes index / changelog (ERY-72, Slice 3) — `/release-notes/`.
+ *
+ * Mirrors the design-system kit (`ui_kits/marketing/blog/changelog.html` + `blog.css`): a single
+ * changelog surface listing every release newest-first, each with a sticky version/date/badge
+ * meta column and Keep-a-Changelog-style change items (Added/Fixed/Changed/Removed).
+ *
+ * Per the ERY-54 brief the release-level channel badge (Stable/Preview/Beta) is kept distinct
+ * from the change-type tags and from the dated roadmap block, version + date always lead, and no
+ * freeze / maintenance / "development is on hold" framing appears. The docs changelog cross-links
+ * here so release notes stay anchored in the documentation system.
+ */
+import { getCollection } from "astro:content";
+import EditorialLayout from "@/layouts/EditorialLayout.astro";
+
+const releases = (await getCollection("releaseNotes", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "long" });
+const badgeLabel = { stable: "Stable", preview: "Preview", beta: "Beta" } as const;
+const tagLabel = { added: "Added", fixed: "Fixed", changed: "Changed", removed: "Removed" } as const;
+---
+
+<EditorialLayout
+  title="Changelog — Eryxon Flow"
+  description="Every release of Eryxon Flow in plain language: what shipped, what is in Beta, and what is next."
+>
+  <div class="changelog-shell">
+    <div class="index-head">
+      <div class="index-eyebrow">Changelog</div>
+      <h1 class="index-h1">What shipped, when.</h1>
+      <p class="index-lead">
+        Every release of Eryxon Flow in plain language. Each entry separates shipped changes from
+        Beta status and dated roadmap context, and links to the relevant setup docs.
+      </p>
+    </div>
+
+    {
+      releases.length === 0 ? (
+        <p class="index-lead">No release notes published yet.</p>
+      ) : (
+        releases.map((rel) => (
+          <article class="release">
+            <header class="release-meta">
+              <a class="release-version" href={`/release-notes/${rel.id}/`}>{rel.data.version}</a>
+              <div class="release-date">{dateFmt.format(rel.data.date)}</div>
+              <span class:list={["release-badge", rel.data.status]}>{badgeLabel[rel.data.status]}</span>
+            </header>
+            <div>
+              <h2 class="release-h">{rel.data.title}</h2>
+              <p class="release-sub">{rel.data.summary}</p>
+
+              {rel.data.items.length > 0 && (
+                <div class="release-items">
+                  {rel.data.items.map((item) => (
+                    <div class="release-item">
+                      <span class:list={["release-tag", item.type]}>{tagLabel[item.type]}</span>
+                      <div>
+                        <h3 class="release-item-h">{item.title}</h3>
+                        <p class="release-item-b" set:html={item.body} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {rel.data.roadmap.length > 0 && (
+                <div class="release-roadmap">
+                  <p class="release-roadmap-label">On the roadmap — dated context, not a commitment</p>
+                  <ul>
+                    {rel.data.roadmap.map((r) => (
+                      <li>
+                        {r.href ? <a href={r.href}>{r.label}</a> : r.label}
+                        {r.note && <span> — {r.note}</span>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </article>
+        ))
+      )
+    }
+  </div>
+</EditorialLayout>

@@ -1,0 +1,158 @@
+---
+/*
+ * SiteFooter — marketing footer for the redesign surfaces (ERY-60).
+ *
+ * Fills the `footer` slot of MarketingLayout. IA per the ERY-54 brief:
+ *   - the legacy "Open Source" group is renamed to "Repository" (BSL 1.1 is source-available,
+ *     never "open source")
+ *   - managed rollout stays in the contact column
+ *   - docs + self-hosting stay under resources
+ *   - BSL / source-available language is factual and compact
+ *
+ * This footer is authored directly (not from `config/menu.*.json`) because that menu model still
+ * drives the Starlight docs footer override and is owned by the docs-chrome migration (ERY-61,
+ * Slice 4). Keeping the marketing footer independent ships the corrected IA now without touching
+ * live docs chrome.
+ */
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import type { Locale } from "@/lib/locale";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = "en" } = Astro.props;
+
+const repository = [
+  { label: "GitHub repository", href: "https://github.com/SheetMetalConnect/eryxon-flow", external: true },
+  { label: "Discussions", href: "https://github.com/SheetMetalConnect/eryxon-flow/discussions", external: true },
+  { label: "Report an issue", href: "https://github.com/SheetMetalConnect/eryxon-flow/issues", external: true },
+];
+const resources = [
+  { label: "Documentation", href: "/introduction/" },
+  { label: "Self-hosting guide", href: "/guides/self-hosting/" },
+  { label: "REST API reference", href: "/api/rest-api-reference/" },
+];
+---
+
+<div class="ery-fcols">
+  <div class="ery-fcol ery-fcol--brand">
+    <p class="ery-fbrand">Eryxon Flow</p>
+    <p class="ery-fnote">
+      Manufacturing execution for metalworking job shops. Source-available under
+      <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">BSL 1.1</a>
+      and free for internal use.
+    </p>
+  </div>
+
+  <nav class="ery-fcol" aria-label="Repository">
+    <h2 class="ery-fhead">Repository</h2>
+    <ul class="ery-flist">
+      {repository.map((l) => (
+        <li><a href={l.href} target="_blank" rel="noopener">{l.label}</a></li>
+      ))}
+    </ul>
+  </nav>
+
+  <nav class="ery-fcol" aria-label="Resources">
+    <h2 class="ery-fhead">Resources</h2>
+    <ul class="ery-flist">
+      {resources.map((l) => (
+        <li><a href={l.href}>{l.label}</a></li>
+      ))}
+      <li>
+        <CtaButton href="https://app.eryxon.eu" ctaId="footer_resources_hosted" surface="site_footer" kind="hosted_app" variant="tertiary" locale={locale} external>
+          Hosted trial
+        </CtaButton>
+      </li>
+    </ul>
+  </nav>
+
+  <nav class="ery-fcol" aria-label="Contact">
+    <h2 class="ery-fhead">Contact</h2>
+    <ul class="ery-flist">
+      <li>
+        <CtaButton href="/managed-rollout/?cta=footer_contact_managed_rollout" ctaId="footer_contact_managed_rollout" surface="site_footer" kind="rollout_page" variant="tertiary" locale={locale}>
+          Managed rollout
+        </CtaButton>
+      </li>
+      <li>
+        <CtaButton href="mailto:office@vanenkhuizen.com" ctaId="footer_contact_email" surface="site_footer" kind="email" variant="tertiary" locale={locale}>
+          office@vanenkhuizen.com
+        </CtaButton>
+      </li>
+      <li><a href="https://www.linkedin.com/in/lvanenkhuizen/" target="_blank" rel="noopener">LinkedIn</a></li>
+      <li>
+        <CtaButton href="https://www.vanenkhuizen.com/" ctaId="footer_contact_consulting_site" surface="site_footer" kind="external_site" variant="tertiary" locale={locale} external>
+          vanenkhuizen.com
+        </CtaButton>
+      </li>
+    </ul>
+  </nav>
+</div>
+
+<p class="ery-flegal">
+  <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener">Sheet Metal Connect e.U.</a>
+  &copy; 2026 · Released under
+  <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">BSL 1.1</a>
+</p>
+
+<style>
+  .ery-fcols {
+    display: grid;
+    gap: var(--ery-space-8);
+    grid-template-columns: 1.5fr repeat(3, 1fr);
+  }
+  @media (max-width: 860px) {
+    .ery-fcols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .ery-fcols {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ery-fbrand {
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin: 0 0 var(--ery-space-3);
+  }
+  .ery-fnote {
+    margin: 0;
+    max-inline-size: 36ch;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .ery-fhead {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ery-text-subtle);
+    margin: 0 0 var(--ery-space-4);
+    font-weight: 500;
+  }
+  .ery-flist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-2);
+  }
+  .ery-flist a {
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .ery-flist a:hover {
+    color: var(--ery-brand);
+  }
+  .ery-flegal {
+    margin: var(--ery-space-10) 0 0;
+    padding-block-start: var(--ery-space-6);
+    border-block-start: 1px solid var(--ery-border);
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-subtle);
+  }
+</style>

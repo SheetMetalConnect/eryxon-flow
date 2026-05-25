@@ -1,5 +1,15 @@
 ---
-const { label, link, variant } = Astro.props;
+// `ctaId` is opt-in (ERY-33): tracking attributes only render when provided.
+const { label, link, variant, ctaId, ctaSurface, ctaKind, ctaTarget } = Astro.props;
+
+const ctaAttrs = ctaId
+  ? {
+      "data-cta-id": ctaId,
+      "data-cta-surface": ctaSurface,
+      "data-cta-kind": ctaKind,
+      "data-cta-target": ctaTarget ?? link,
+    }
+  : {};
 ---
 
-<a href={link} class={`btn btn-${variant}`}>{label}</a>
+<a href={link} {...ctaAttrs} class={`btn btn-${variant}`}>{label}</a>

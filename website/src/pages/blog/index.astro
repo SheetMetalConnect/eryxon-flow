@@ -1,0 +1,103 @@
+---
+/*
+ * Blog index (ERY-72, Slice 3) — `/blog/`.
+ *
+ * Follows the design-system kit (`ui_kits/marketing/blog/index.html`): eyebrow + headline + lead,
+ * a category tab bar with counts, a featured hero card, and a 3-up post grid. Global marketing
+ * nav is owned by Slice 2 (ERY-60); this route renders the editorial collection inside the shared
+ * MarketingLayout frame.
+ */
+import { getCollection } from "astro:content";
+import EditorialLayout from "@/layouts/EditorialLayout.astro";
+import { readingMinutes, initials } from "@/lib/editorial";
+
+const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+);
+
+// Featured = explicitly flagged post, else the newest.
+const featured = posts.find((p) => p.data.featured) ?? posts[0];
+const rest = posts.filter((p) => p.id !== featured?.id);
+
+// Category tabs with real counts (design-kit IA).
+const counts = new Map<string, number>();
+for (const p of posts) counts.set(p.data.category, (counts.get(p.data.category) ?? 0) + 1);
+const categories = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+
+const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
+---
+
+<EditorialLayout
+  title="Blog — Eryxon Flow"
+  description="Rollout journals and engineering notes for high-mix, low-volume metalworking shops."
+>
+  <div class="index-shell">
+    <div class="index-head">
+      <div class="index-eyebrow">Blog</div>
+      <h1 class="index-h1">Notes from the shop floor.</h1>
+      <p class="index-lead">
+        Rollout journals, engineering notes, and the occasional opinion on what makes an MES
+        actually work for high-mix, low-volume metalworking shops.
+      </p>
+    </div>
+
+    {
+      posts.length === 0 ? (
+        <p class="index-lead">No posts published yet.</p>
+      ) : (
+        <>
+          <nav class="index-tabs" aria-label="Categories">
+            <span class="index-tab is-active">
+              All <span class="index-tab-count">{posts.length}</span>
+            </span>
+            {categories.map(([cat, n]) => (
+              <span class="index-tab">
+                {cat} <span class="index-tab-count">{n}</span>
+              </span>
+            ))}
+          </nav>
+
+          {featured && (
+            <a class="featured-post" href={`/blog/${featured.id}/`}>
+              <div class="featured-img">[ {featured.data.category} ]</div>
+              <div>
+                <span class="featured-tag">★ Featured · {featured.data.category}</span>
+                <h2 class="featured-h">{featured.data.title}</h2>
+                <p class="featured-sub">{featured.data.description}</p>
+                <div class="featured-meta">
+                  <span class="article-author">
+                    <span class="article-avatar" style="width:28px;height:28px;font-size:11px">
+                      {initials(featured.data.author)}
+                    </span>
+                    <span>{featured.data.author}</span>
+                  </span>
+                  <span>·</span>
+                  <span>{dateFmt.format(featured.data.pubDate)}</span>
+                  <span>·</span>
+                  <span>{readingMinutes(featured.body)} min read</span>
+                </div>
+              </div>
+            </a>
+          )}
+
+          {rest.length > 0 && (
+            <div class="post-grid">
+              {rest.map((post) => (
+                <a class="post-card" href={`/blog/${post.id}/`}>
+                  <div class="post-img" />
+                  <span class="post-tag">{post.data.category}</span>
+                  <h3 class="post-h">{post.data.title}</h3>
+                  <div class="post-meta">
+                    <span>{post.data.author}</span>
+                    <span>·</span>
+                    <span>{readingMinutes(post.body)} min</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          )}
+        </>
+      )
+    }
+  </div>
+</EditorialLayout>

@@ -1,0 +1,29 @@
+---
+/*
+ * EditorialLayout — thin shared wrapper for the redesign's editorial surfaces (ERY-72, Slice 3).
+ *
+ * Both the blog-post and release-note templates render through this layout so they sit on the
+ * redesign foundation (MarketingLayout → BaseLayout, tokens.css) and share one stylesheet
+ * (`editorial.css`, ported from the design-system kit) instead of the legacy Starlight docs shell.
+ *
+ * It deliberately imposes no container or prose wrapper: each surface owns its own kit shell
+ * (`article-shell` / `changelog-shell` / `index-shell`). This layout only mounts the shared
+ * editorial styles and forwards head + body slots.
+ */
+import MarketingLayout from "@/layouts/MarketingLayout.astro";
+import type { Locale } from "@/lib/locale";
+import "@/styles/editorial.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  locale?: Locale;
+}
+
+const { title, description } = Astro.props;
+---
+
+<MarketingLayout title={title} description={description}>
+  <slot name="head" slot="head" />
+  <slot />
+</MarketingLayout>

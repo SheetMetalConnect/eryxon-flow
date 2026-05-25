@@ -1,17 +1,55 @@
 ---
 title: Changelog
-description: Release history and current maintenance status for Eryxon Flow.
+description: Release history and current release status for Eryxon Flow.
 ---
 
 ## Current Status
 
-The latest stable release is **v0.5.1**, published on May 6, 2026. Most of Eryxon Flow is still **Beta** — including the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **Android** and **iOS** apps are coming soon (Android is being built natively with offline support and fast cold start). The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
+The latest stable release is **v0.5.2**, published on May 9, 2026. Most of Eryxon Flow is still **Beta** — including the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **iOS / iPadOS**, **Android**, and the installable **PWA** shipped in `v0.5.2`. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
 
-Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms. The native mobile apps will share the same backend and REST/MCP/MQTT API as the web app.
+Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms.
+
+Need the historical rollout-oriented summary for the `v0.5.1` hotfix line? Read the [v0.5.1 hotfix proof snapshot](/guides/release-proof-v0-5-1/).
+
+For per-release summaries that separate shipped updates from Beta status and roadmap context, see the [release notes](/release-notes/).
+
+## v0.5.2 - May 9, 2026
+
+Native-device and installable-web release that moved the product posture beyond the `v0.5.1` hotfix line.
+
+### Why it matters
+
+- Adds native iOS / iPadOS and Android shells plus an installable PWA around the existing React app
+- Introduces a touch-first `/m/*` route shell for operators across phone, tablet, and installable web runtimes
+- Refreshes website and docs status language for the `v0.5.x` line
+
+### Added
+
+- Native iOS / iPadOS app
+- Native Android app
+- Installable PWA
+- Touch-first `/m/*` route shell with queue, scanner, activity timeline, and terminal overview flows
+
+### Changed
+
+- Website and docs status language refreshed across the `v0.5.x` line
+- Capacitor plugin line pinned to `7.6`
+
+### Fixed
+
+- Mobile issue tab status mapping
+- Mobile login landing route
+- MQTT docs example columns
 
 ## v0.5.1 - May 6, 2026
 
-Maintenance hotfix for release metadata and handoff docs. (Native Android and iOS app development started after this release.)
+Maintenance hotfix for release metadata and handoff docs. It clarified the `v0.5.0` rollout story for self-hosted and integration-heavy shops before `v0.5.2` became current.
+
+### Why it matters
+
+- Keeps the release story aligned with the current [Deployment Guide](/guides/deployment/), [Batch & Nesting Management](/features/batch-management/), and [MCP Server Reference](/api/mcp-server-reference/)
+- Separates shipped proof from Beta status and roadmap context
+- Adds a buyer-facing historical summary in the [v0.5.1 hotfix proof snapshot](/guides/release-proof-v0-5-1/)
 
 ### Fixed
 

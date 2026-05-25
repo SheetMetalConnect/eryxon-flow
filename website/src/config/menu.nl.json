@@ -15,7 +15,7 @@
   ],
   "footer": {
     "community": {
-      "title": "Open Source",
+      "title": "Code & Community",
       "links": [
         {
           "name": "GitHub Repository",
@@ -36,7 +36,9 @@
       "links": [
         {
           "name": "Hosted Versie",
-          "url": "https://app.eryxon.eu"
+          "url": "https://app.eryxon.eu",
+          "ctaId": "footer_resources_hosted",
+          "ctaKind": "hosted_app"
         },
         {
           "name": "Documentatie",
@@ -56,8 +58,16 @@
       "title": "Contact",
       "links": [
         {
+          "name": "Begeleide uitrol",
+          "url": "/managed-rollout/?cta=footer_contact_managed_rollout",
+          "ctaId": "footer_contact_managed_rollout",
+          "ctaKind": "rollout_page"
+        },
+        {
           "name": "office@vanenkhuizen.com",
-          "url": "mailto:office@vanenkhuizen.com"
+          "url": "mailto:office@vanenkhuizen.com",
+          "ctaId": "footer_contact_email",
+          "ctaKind": "email"
         },
         {
           "name": "LinkedIn",
@@ -65,7 +75,9 @@
         },
         {
           "name": "vanenkhuizen.com",
-          "url": "https://www.vanenkhuizen.com/"
+          "url": "https://www.vanenkhuizen.com/",
+          "ctaId": "footer_contact_consulting_site",
+          "ctaKind": "external_site"
         }
       ]
     }

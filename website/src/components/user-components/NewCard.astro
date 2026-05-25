@@ -50,38 +50,22 @@ const { icon, title, iconColor, size = "large" } = Astro.props;
 
 <style>
   @layer starlight.components {
+    /* Calm hover per the Eryxon design system: background tints up one step
+       and the border strengthens. No transforms, no glow, no gradient border. */
     .card {
       display: flex;
       flex-direction: column;
       border-radius: 1rem;
       position: relative;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      transition:
+        background-color 180ms cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 180ms cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid var(--sl-color-gray-6);
     }
 
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px -8px rgba(30, 144, 255, 0.08);
-    }
-   
-    .card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      padding: 1px;
-      background: var(--color-primary-gradient);
-      border-radius: inherit;
-      mask:
-        linear-gradient(#fff 0 0) content-box,
-        linear-gradient(#fff 0 0);
-      mask-composite: exclude;
-      -webkit-mask-composite: xor;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-    }
-
-    .card:hover::before {
-      opacity: 1;
+      background-color: var(--sl-color-gray-7, var(--sl-color-gray-6));
+      border-color: var(--sl-color-gray-5);
     }
 
     .title {

@@ -2,6 +2,27 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.6.0] - 2026-05-24
+
+Beta. Mirrors the website release note `v0.6` ("Native mobile scanning and the operator preview").
+Shipped items below are live on the hosted version; the native build is still behind a Beta flag
+and is validating in CI ahead of the public launch.
+
+### Added
+
+- **Pilot activation card** on the onboarding dashboard — new evaluators land on a single activation card that walks through their first work order.
+- **Hosted trial reporting pack** — trial usage is summarised for evaluators so a pilot can be reviewed without exporting raw data.
+- Marketing website redesign surfaces: root landing page (`/`), blog (`/blog/`), and changelog / release-notes (`/release-notes/`), built on the canonical Eryxon design-token contract.
+
+### Changed
+
+- **Operator preview touch targets** — operator preview frames now use the 56px touch target across phone and tablet runtimes.
+- Website conformance pass against the Eryxon design system: code blocks, the docs search modal, the theme-demo toggle, and feature cards now use solid surfaces, hairline borders, and design tokens — no gradients, glass / backdrop-blur, transform-on-hover, or hardcoded dark hex. Marketing and editorial headings aligned to the canonical 600-weight, sentence-case scale.
+
+### Removed
+
+- Dead `AccordionContainer.astro` website component (gradient-border + scale-animation legacy, unreferenced).
+
 ## [0.5.2] - 2026-05-09
 
 ### Added

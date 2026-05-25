@@ -256,10 +256,10 @@ if ((project as any)?.trailingSlash === "never")
       display: flex;
     }
 
+    /* Modal scrim only — no glass/backdrop-blur per the Eryxon design system
+       (saves GPU on shop-floor tablets, reads cleaner). */
     dialog::backdrop {
       background-color: var(--sl-color-backdrop-overlay);
-      -webkit-backdrop-filter: blur(0.25rem);
-      backdrop-filter: blur(0.25rem);
     }
 
     .dialog-frame {

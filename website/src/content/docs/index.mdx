@@ -26,15 +26,18 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
+{/* Status pills migrated off dark-assuming Tailwind palette (amber/emerald/sky -400)
+    onto the canonical `--ery-*` status tokens (ERY-117). Tint background + hairline ring
+    + token-colored text read correctly on the light-first surface and adapt with the theme. */}
 <div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
-  <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
-    <span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
+  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-warning); background: color-mix(in srgb, var(--ery-warning) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-warning) 28%, transparent);">
+    <span class="inline-block h-2 w-2 rounded-full animate-pulse" style="background: currentColor;"></span>
     Web App — Beta
   </span>
-  <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-success); background: color-mix(in srgb, var(--ery-success) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-success) 28%, transparent);">
     Android (Native) — Coming Soon
   </span>
-  <span class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">
+  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-info); background: color-mix(in srgb, var(--ery-info) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-info) 28%, transparent);">
     iOS — Coming Soon
   </span>
 </div>
@@ -182,7 +185,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Fast app open — operators won't wait between scans
     - Camera for issue photos and barcode scanning
 
-    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">Coming Soon</span>
+    <span class="inline-flex items-center rounded-full px-3 py-1 mt-4 text-sm font-medium" style="color: var(--ery-success); background: color-mix(in srgb, var(--ery-success) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-success) 28%, transparent);">Coming Soon</span>
   </Card>
   <Card title="iOS — iPhone & iPad" icon="seti:mobile" iconColor="#a78bfa">
     Native iOS app for managers, supervisors, and operators on Apple devices. Same real-time data as the web app, optimized for touch.
@@ -192,12 +195,12 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Push notifications for issues and approvals
     - Camera capture for NCRs
 
-    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">Coming Soon</span>
+    <span class="inline-flex items-center rounded-full px-3 py-1 mt-4 text-sm font-medium" style="color: var(--ery-info); background: color-mix(in srgb, var(--ery-info) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-info) 28%, transparent);">Coming Soon</span>
   </Card>
 </Grid>
 
 <div class="text-center mt-8">
-  <p class="text-sm" style="color: color-mix(in srgb, var(--sl-color-white) 60%, transparent);">
+  <p class="text-sm" style="color: var(--ery-text-muted);">
     Today, the Beta web app at <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> works on every browser-capable device. Native apps will land alongside the web app, sharing the same backend and API.
   </p>
 </div>
@@ -214,9 +217,9 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Grid>
 
 <div class="flex flex-wrap justify-center gap-4 mt-12 pb-12">
-    <LinkButton href="https://app.eryxon.eu" variant="primary">Open Hosted Version</LinkButton>
-    <LinkButton href="/guides/quick-start/" variant="minimal">Start Quick Guide</LinkButton>
-    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal">Star on GitHub</LinkButton>
+    <LinkButton href="https://app.eryxon.eu" variant="primary" ctaId="home_final_primary_hosted" ctaSurface="homepage_final" ctaKind="hosted_app">Open Hosted Version</LinkButton>
+    <LinkButton href="/guides/quick-start/" variant="minimal" ctaId="home_final_secondary_quickstart" ctaSurface="homepage_final" ctaKind="docs">Start Quick Guide</LinkButton>
+    <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow" variant="minimal" ctaId="home_final_secondary_github" ctaSurface="homepage_final" ctaKind="github">Star on GitHub</LinkButton>
 </div>
 </Section>
 
@@ -265,11 +268,11 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Section>
 
 <Section title="License & <span class='text-primary'>Terms</span>">
-  <div class="bg-dark/50 p-8 rounded-2xl border border-white/5">
+  <div class="p-8 rounded-2xl" style="background: var(--ery-surface-subtle); border: 1px solid var(--ery-border);">
     <div class="grid md:grid-cols-2 gap-8 items-center">
       <div>
         <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
-        <p class="text-gray-400 mb-6">
+        <p class="mb-6" style="color: var(--ery-text-muted);">
           Eryxon Flow is source-available and free to use for your own manufacturing operations.
           Self-hosted installations have no usage limits.
         </p>
@@ -286,14 +289,14 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
             <div class="text-primary font-bold">&#10003;</div>
             <span>No usage limits when self-hosted</span>
           </div>
-          <div class="flex items-center gap-3 text-red-400">
+          <div class="flex items-center gap-3" style="color: var(--ery-error);">
             <div class="font-bold">&#10007;</div>
             <span>No commercial resale or competitive SaaS</span>
           </div>
         </div>
       </div>
       <div class="text-center">
-        <p class="mb-6 text-sm italic text-gray-500">
+        <p class="mb-6 text-sm italic" style="color: var(--ery-text-subtle);">
           "Use it, modify it, make it yours. Just don't host it and charge others for access."
         </p>
         <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">

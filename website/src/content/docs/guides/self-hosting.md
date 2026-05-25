@@ -5,6 +5,7 @@ description: "Production-ready self-hosting guide for Eryxon Flow MES"
 
 Deploy Eryxon Flow on your own infrastructure with full control.
 
+For the current `v0.5.2` self-hosted proof trail, treat this guide as the authoritative public production checklist, the [Deployment Guide](/guides/deployment/) as the shortest setup path, and the [Changelog](/guides/changelog/) as the current release-status source. The `v0.5.1` proof snapshot is historical context, not the current rollout path.
 
 ## Quick Start (Recommended)
 
@@ -179,17 +180,20 @@ npm run preview
 # Pull latest image
 docker pull ghcr.io/sheetmetalconnect/eryxon-flow:latest
 
-# Run container
+# Run container with your runtime VITE_* configuration
 docker run -d \
   -p 80:80 \
   --name eryxon-flow \
   --restart unless-stopped \
+  --env-file .env \
   ghcr.io/sheetmetalconnect/eryxon-flow:latest
 ```
 
-> **Note:** Pre-built images have demo Supabase credentials. For production, build your own image.
+The shipped image reads your `VITE_*` variables at container start and writes them to `/env.js`, so you can point the same image at your own Supabase project without rebuilding it.
 
 ### Build Custom Image
+
+If you want your own image artifact or build-time defaults, you can still build one locally:
 
 ```bash
 docker build \
@@ -203,13 +207,13 @@ docker run -d -p 80:80 --name eryxon-flow eryxon-flow
 
 ### Docker Compose (Recommended)
 
-The repository ships with a ready-to-use `docker-compose.yml`. To use the pre-built image:
+The repository ships with a ready-to-use `docker-compose.yml`. In the current `v0.5.2` repo, this is the single self-hosted Docker entry point and it already reads `.env` through `env_file`.
 
 ```bash
 docker compose up -d
 ```
 
-To build a custom image with your own Supabase credentials baked in, replace the `image` line in `docker-compose.yml` with a `build` block:
+To build your own image instead of using `ghcr.io/sheetmetalconnect/eryxon-flow:latest`, replace the `image` line in `docker-compose.yml` with a `build` block:
 
 ```yaml
 services:
@@ -243,60 +247,19 @@ docker compose up -d --build
 
 ### Docker Compose with SSL (Production)
 
-The repository includes `docker-compose.prod.yml` with Caddy reverse proxy for automatic HTTPS:
+The repo no longer uses a separate `docker-compose.prod.yml`. For HTTPS in the current `0.5.2` line, stay on the shipped `docker-compose.yml` and enable the optional Caddy service that is already commented into that file:
 
-```yaml
-services:
-  app:
-    image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
-    container_name: eryxon-flow
-    restart: unless-stopped
-    expose:
-      - "80"
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+1. Uncomment the `caddy` service and the `volumes:` block in `docker-compose.yml`
+2. Change the `eryxon-flow` service from `ports: ["80:80"]` to `expose: ["80"]`
+3. Edit the included `Caddyfile`
+4. Start the stack with `docker compose up -d`
 
-  caddy:
-    image: caddy:alpine
-    container_name: caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy_data:/data
-      - caddy_config:/config
-    depends_on:
-      - app
+The shipped `Caddyfile` supports two real deployment modes:
 
-volumes:
-  caddy_data:
-  caddy_config:
-```
+- a public hostname with automatic Let's Encrypt certificates
+- a LAN-only rollout with Caddy `tls internal`, a `.local` host, and a trusted local root certificate for operator devices
 
-Edit the included `Caddyfile` — replace the domain with yours:
-
-```caddyfile
-your-domain.com {
-    reverse_proxy app:80
-
-    header {
-        X-Frame-Options "DENY"
-        X-Content-Type-Options "nosniff"
-        X-XSS-Protection "1; mode=block"
-        Referrer-Policy "strict-origin-when-cross-origin"
-    }
-}
-```
-
-Save the above Docker Compose configuration as `docker-compose.prod.yml`, then deploy:
-```bash
-docker compose -f docker-compose.prod.yml up -d
-```
+Use the section that matches your environment and replace the example domain, `LAN_HOST`, or `LAN_IP` values before you bring the stack up.
 
 ---
 

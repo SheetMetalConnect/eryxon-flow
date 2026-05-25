@@ -13,6 +13,7 @@ const menu = await getTranslations(locale || "en");
 const footer = menu.footer;
 const currentLocal = Astro.currentLocale || "en";
 const { hasSidebar } = Astro.locals.starlightRoute;
+const currentPath = Astro.url.pathname;
 
 // Build locale switcher data
 const pathname = Astro.url.pathname;
@@ -32,6 +33,36 @@ const languageLinks = localeEntries.map(([key, val]) => ({
   active: val.lang === currentLocal || (key === "root" && currentLocal === "en"),
 }));
 const languageLabel = Astro.locals.t("footer.language", "Language");
+
+// Opt-in CTA tracking attributes for Phase 1 footer links (ERY-33).
+// Only links that declare `ctaId` in the menu config emit tracking attributes.
+const ctaAttrs = (link: any) =>
+  link?.ctaId
+    ? (() => {
+        const isRolloutPath = (link?.ctaKind === "rollout_page" && typeof link.url === "string" && link.url.startsWith("/managed-rollout/"));
+        const parsedHref =
+          isRolloutPath && currentPath
+            ? `${link.url}${link.url.includes("?") ? "&" : "?"}from=${encodeURIComponent(currentPath)}`
+            : link.url;
+        return {
+          "data-cta-id": link.ctaId,
+          "data-cta-surface": link.ctaSurface ?? "footer",
+          "data-cta-kind": link.ctaKind,
+          "data-cta-target": parsedHref,
+        };
+      })()
+    : {};
+
+const ctaHref = (link: any) => {
+  if (!link || typeof link.url !== "string") return "#";
+  if (
+    link.ctaKind === "rollout_page" &&
+    link.url.startsWith("/managed-rollout/")
+  ) {
+    return `${link.url}${link.url.includes("?") ? "&" : "?"}from=${encodeURIComponent(currentPath)}`;
+  }
+  return link.url;
+};
 ---
 
 {
@@ -46,7 +77,7 @@ const languageLabel = Astro.locals.t("footer.language", "Language");
                 <ul>
                   {footer.community?.links.map((link: any) => (
                     <li>
-                      <a href={link.url}>{link.name}</a>
+                      <a href={ctaHref(link)} {...ctaAttrs(link)}>{link.name}</a>
                     </li>
                   ))}
                 </ul>
@@ -60,7 +91,7 @@ const languageLabel = Astro.locals.t("footer.language", "Language");
                 <ul>
                   {footer.help_links?.links.map((link: any) => (
                     <li>
-                      <a href={link.url}>{link.name}</a>
+                      <a href={ctaHref(link)} {...ctaAttrs(link)}>{link.name}</a>
                     </li>
                   ))}
                 </ul>
@@ -74,7 +105,7 @@ const languageLabel = Astro.locals.t("footer.language", "Language");
                 <ul>
                   {footer.company?.links.map((link: any) => (
                     <li>
-                      <a href={link.url}>{link.name}</a>
+                      <a href={ctaHref(link)} {...ctaAttrs(link)}>{link.name}</a>
                     </li>
                   ))}
                 </ul>

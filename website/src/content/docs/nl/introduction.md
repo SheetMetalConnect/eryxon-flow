@@ -7,7 +7,7 @@ description: Het eenvoudige, elegante en krachtige manufacturing execution syste
 
 > **Status:** Het grootste deel van Eryxon Flow is in **Beta** — web-app, REST-API, webhooks, MQTT en de planning-adapters voor FrePPLe en Odoo. De **MCP-server is Live**. Native **Android**- en **iOS**-apps komen binnenkort.
 
-> **Probeer het nu:** Open de [hosted versie op app.eryxon.eu](https://app.eryxon.eu) — geen installatie vereist.
+> **Probeer het nu:** Open de <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_try_now_nl" data-cta-surface="docs_intro" data-cta-kind="hosted_app" data-cta-locale="nl">hosted versie op app.eryxon.eu</a> — geen installatie vereist.
 
 ## Wat Het Doet
 

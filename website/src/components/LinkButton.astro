@@ -1,5 +1,16 @@
 ---
-const { href, variant = "primary", className } = Astro.props;
+// `ctaId` is opt-in: when omitted, no tracking attributes are emitted, so the
+// many non-Phase-1 LinkButton usages stay untracked (ERY-33 / ERY-9 blast radius).
+const { href, variant = "primary", className, ctaId, ctaSurface, ctaKind, ctaTarget } = Astro.props;
+
+const ctaAttrs = ctaId
+  ? {
+      "data-cta-id": ctaId,
+      "data-cta-surface": ctaSurface,
+      "data-cta-kind": ctaKind,
+      "data-cta-target": ctaTarget ?? href,
+    }
+  : {};
 
 let classes = 'btn '
 
@@ -15,7 +26,7 @@ if (variant === "primary") {
 
 ---
 
-<a href={href} class={`${classes} ${className} flex items-center justify-center gap-2! no-underline!`}>
+<a href={href} {...ctaAttrs} class={`${classes} ${className} flex items-center justify-center gap-2! no-underline!`}>
   <slot />
   <svg
     width="9"
