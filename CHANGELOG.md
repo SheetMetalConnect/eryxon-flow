@@ -13,6 +13,7 @@ and is validating in CI ahead of the public launch.
 - **Pilot activation card** on the onboarding dashboard — new evaluators land on a single activation card that walks through their first work order.
 - **Hosted trial reporting pack** — trial usage is summarised for evaluators so a pilot can be reviewed without exporting raw data.
 - Marketing website redesign surfaces: root landing page (`/`), blog (`/blog/`), and changelog / release-notes (`/release-notes/`), built on the canonical Eryxon design-token contract.
+- Marketing **pricing page** (`/pricing/`, linked in the primary nav): three tiers — Free to start (30-day trial), Hosted (coming soon, no price), and Managed services (get-in-touch). Ported from the design-system kit's `services.html` `.svc-plans` 3-tier grid (self-host / hosted trial / managed) onto the site's `--ery-*` token contract; CTAs route through the existing `CtaButton` (hosted app) and `RolloutInquiry` (managed mailto) primitives.
 - Marketing footer creator attribution: a "Created by" card crediting Luke van Enkhuizen — Sheet Metal Connect e.U., with a locally bundled, build-optimised avatar (`website/src/assets/luke-van-enkhuizen.jpg`).
 
 ### Changed
