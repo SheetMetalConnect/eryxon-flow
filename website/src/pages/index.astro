@@ -22,7 +22,7 @@ import planningShot from "@/assets/overview.png";
 
 const title = "Eryxon Flow — MES for metalworking job shops";
 const description =
-  "A tablet-friendly manufacturing execution system for metalworking job shops: track jobs from ERP to shop floor without losing operator adoption. Open the hosted trial, plan a managed rollout, or evaluate it self-hosted.";
+  "A tablet-friendly manufacturing execution system for metalworking job shops: track jobs from ERP to shop floor without losing operator adoption. Get started for free, plan a managed rollout, or run it self-hosted.";
 
 const valueProps = [
   {
@@ -36,6 +36,8 @@ const valueProps = [
   {
     head: "ERP-connected production",
     body: "Push and pull production data over the REST API and webhooks so the office system and the floor stay in sync.",
+    href: "/solutions/erp-connected-production/",
+    linkLabel: "How ERP sync works",
   },
 ];
 
@@ -52,18 +54,18 @@ const proof = [
     <p class="eyebrow">Manufacturing execution for metalworking job shops</p>
     <h1>Track jobs from ERP to shop floor without losing operator adoption</h1>
     <p class="lede">
-      Eryxon gives job shops a tablet-friendly MES with three clear paths: open the hosted trial,
-      plan a managed rollout, or evaluate it self-hosted.
+      A tablet-friendly MES for job shops. Get started for free, plan a managed rollout, or run it
+      self-hosted.
     </p>
     <div class="cta-row">
       <CtaButton href="https://app.eryxon.eu" ctaId="home_hero_primary_hosted" surface="homepage_hero" kind="hosted_app" variant="primary" external>
-        Open hosted trial
+        Get started for free
       </CtaButton>
       <CtaButton href="/managed-rollout/?cta=home_hero_secondary_rollout" ctaId="home_hero_secondary_rollout" surface="homepage_hero" kind="rollout_page" variant="secondary">
         Plan a managed rollout
       </CtaButton>
       <CtaButton href="/introduction/" ctaId="home_hero_tertiary_docs" surface="homepage_hero" kind="docs" variant="tertiary">
-        Review documentation →
+        Read the docs →
       </CtaButton>
     </div>
   </section>
@@ -81,15 +83,15 @@ const proof = [
   <!-- 3 · Start-here chooser ------------------------------------------------ -->
   <section class="ery-container chooser">
     <header class="section-head">
-      <h2>Start where it makes sense for you</h2>
-      <p>Three ways in. Pick the one that matches where your shop is today.</p>
+      <h2>Three ways in</h2>
+      <p>Pick the one that matches where your shop is today.</p>
     </header>
     <div class="card-grid card-grid--3">
       <article class="card">
         <h3>Hosted trial</h3>
-        <p>Click into the product right now — no install, no setup. Best for a quick first look and hands-on exploration.</p>
+        <p>Open the product now. No install, no setup. Best for a quick first look.</p>
         <CtaButton href="https://app.eryxon.eu" ctaId="home_chooser_hosted" surface="homepage_chooser" kind="hosted_app" variant="secondary" external>
-          Open hosted trial
+          Get started for free
         </CtaButton>
       </article>
       <article class="card">
@@ -120,6 +122,11 @@ const proof = [
         <article class="card card--plain">
           <h3>{v.head}</h3>
           <p>{v.body}</p>
+          {v.href && (
+            <a class="card__link" href={v.href} data-cta-id="home_why_erp_solution" data-cta-surface="homepage_why" data-cta-kind="internal">
+              {v.linkLabel} →
+            </a>
+          )}
         </article>
       ))}
     </div>
@@ -148,13 +155,13 @@ const proof = [
   <section class="rollout-fit">
     <div class="ery-container rollout-fit__inner">
       <div class="rollout-fit__copy">
-        <h2>When a managed rollout makes sense</h2>
+        <h2>Want help getting it live?</h2>
         <p>
-          Most teams can open the hosted trial and start exploring on their own. A managed rollout
-          is for shops that want help getting Eryxon into daily production: deployment, connecting
-          your ERP via the REST API and webhooks, and sequencing the rollout across cells and people.
+          Most teams start free and explore on their own. A managed rollout is for shops that want
+          us to handle deployment, connect your ERP over the REST API and webhooks, and sequence the
+          rollout across cells and people.
         </p>
-        <p class="rollout-fit__note">This is a conversation, not a signup.</p>
+        <p class="rollout-fit__note">A conversation, not a signup.</p>
       </div>
       <div class="rollout-fit__action">
         <RolloutInquiry label="Start a managed rollout conversation" locale="en" />
@@ -170,13 +177,13 @@ const proof = [
     <h2>Pick your next step</h2>
     <div class="cta-row cta-row--final">
       <CtaButton href="https://app.eryxon.eu" ctaId="home_final_primary_hosted" surface="homepage_final" kind="hosted_app" variant="primary" external>
-        Open hosted trial
+        Get started for free
       </CtaButton>
       <CtaButton href="/managed-rollout/?cta=home_final_secondary_rollout" ctaId="home_final_secondary_rollout" surface="homepage_final" kind="rollout_page" variant="secondary">
         Plan a managed rollout
       </CtaButton>
       <CtaButton href="/introduction/" ctaId="home_final_tertiary_docs" surface="homepage_final" kind="docs" variant="tertiary">
-        Review documentation →
+        Read the docs →
       </CtaButton>
     </div>
   </section>
@@ -285,6 +292,11 @@ const proof = [
   .card--plain {
     border-color: transparent;
     background-color: var(--ery-surface-subtle);
+  }
+  .card__link {
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+    color: var(--ery-brand);
   }
 
   /* Product proof shots */
