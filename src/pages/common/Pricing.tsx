@@ -16,19 +16,19 @@ export default function Pricing() {
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-        {/* Hosted Demo */}
+      <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+        {/* Hosted Trial */}
         <Card className="border-white/10">
           <CardHeader>
             <div className="flex items-center gap-2">
               <Cloud className="h-6 w-6 text-muted-foreground" />
-              <CardTitle className="text-muted-foreground">{t("pricing.hostedDemo.name")}</CardTitle>
+              <CardTitle className="text-muted-foreground">{t("pricing.hostedTrial.name")}</CardTitle>
             </div>
-            <p className="text-sm text-muted-foreground">{t("pricing.hostedDemo.description")}</p>
+            <p className="text-sm text-muted-foreground">{t("pricing.hostedTrial.description")}</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <ul className="space-y-2">
-              {(t("pricing.hostedDemo.features", { returnObjects: true }) as string[]).map((feature, i) => (
+              {(t("pricing.hostedTrial.features", { returnObjects: true }) as string[]).map((feature, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm text-muted-foreground">
                   <CheckCircle className="h-4 w-4 text-muted-foreground mt-0.5 flex-shrink-0" />
                   <span>{feature}</span>
@@ -36,7 +36,7 @@ export default function Pricing() {
               ))}
             </ul>
             <p className="text-xs text-muted-foreground italic">
-              {t("pricing.hostedDemo.note")}
+              {t("pricing.hostedTrial.note")}
             </p>
             <Button variant="outline" asChild className="w-full">
               <a
@@ -44,7 +44,38 @@ export default function Pricing() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                {t("pricing.hostedDemo.tryDemo")}
+                {t("pricing.hostedTrial.tryDemo")}
+                <ExternalLink className="h-4 w-4 ml-2" />
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Managed Hosting */}
+        <Card className="border-white/10">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Cloud className="h-6 w-6 text-primary" />
+              <CardTitle>{t("pricing.managedHosting.name")}</CardTitle>
+            </div>
+            <p className="text-sm text-muted-foreground">{t("pricing.managedHosting.description")}</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <ul className="space-y-2">
+              {(t("pricing.managedHosting.features", { returnObjects: true }) as string[]).map((feature, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm">
+                  <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span>{feature}</span>
+                </li>
+              ))}
+            </ul>
+            <Button asChild className="w-full">
+              <a
+                href="https://www.sheetmetalconnect.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("pricing.managedHosting.cta")}
                 <ExternalLink className="h-4 w-4 ml-2" />
               </a>
             </Button>
@@ -57,9 +88,6 @@ export default function Pricing() {
             <div className="flex items-center gap-2">
               <Server className="h-6 w-6 text-primary" />
               <CardTitle>{t("pricing.selfHosted.name")}</CardTitle>
-              <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                {t("pricing.recommended")}
-              </span>
             </div>
             <p className="text-sm text-muted-foreground">{t("pricing.selfHosted.description")}</p>
           </CardHeader>
@@ -72,13 +100,23 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
-            <Button asChild className="w-full">
+            <Button asChild className="w-full mb-2">
               <a
                 href={DOCS_SELF_HOSTING_URL}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 {t("pricing.selfHosted.getStarted")}
+                <ExternalLink className="h-4 w-4 ml-2" />
+              </a>
+            </Button>
+            <Button variant="outline" asChild className="w-full">
+              <a
+                href="https://www.sheetmetalconnect.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t("pricing.selfHosted.consulting")}
                 <ExternalLink className="h-4 w-4 ml-2" />
               </a>
             </Button>

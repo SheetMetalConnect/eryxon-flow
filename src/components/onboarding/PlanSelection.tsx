@@ -28,20 +28,20 @@ export function PlanSelection({ onPlanSelect, onSkip }: PlanSelectionProps) {
       <div className="text-center space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">{t('onboarding.planSelection.title')}</h2>
         <p className="text-muted-foreground text-lg">
-          {t('onboarding.planSelection.comingSoon')}
+          {t('onboarding.planSelection.subtitle')}
         </p>
       </div>
 
-      <Card className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border-primary/20">
+      <Card className="border-primary/20">
         <CardContent className="p-8 text-center">
           <Clock className="h-16 w-16 mx-auto mb-4 text-primary" />
-          <h3 className="text-2xl font-bold mb-3">{t('pricing.comingSoonTitle')}</h3>
+          <h3 className="text-2xl font-bold mb-3">{t('onboarding.planSelection.trialTitle')}</h3>
           <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-            {t('pricing.comingSoonDescription')}
+            {t('onboarding.planSelection.trialDescription')}
           </p>
           <Button size="lg" onClick={handleContactUs} variant="outline">
             <Mail className="h-4 w-4 mr-2" />
-            {t('pricing.contactUs')}
+            {t('onboarding.planSelection.contactUs')}
           </Button>
         </CardContent>
       </Card>
@@ -58,7 +58,7 @@ export function PlanSelection({ onPlanSelect, onSkip }: PlanSelectionProps) {
       </div>
 
       <div className="text-center text-sm text-muted-foreground">
-        <p>{t('onboarding.planSelection.freeForNow')}</p>
+        <p>{t('onboarding.planSelection.trialNote')}</p>
       </div>
     </div>
   );

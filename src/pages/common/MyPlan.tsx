@@ -83,13 +83,13 @@ const MyPlan: React.FC = () => {
                   <Cloud className="h-6 w-6" />
                 )}
                 <h2 className="text-2xl font-bold">
-                  {isSelfHosted ? t("myPlan.selfHosted") : t("myPlan.hostedDemo")}
+                  {isSelfHosted ? t("myPlan.selfHosted") : t("myPlan.hostedTrial")}
                 </h2>
               </div>
               <p className="text-white/90">
                 {isSelfHosted
                   ? t("myPlan.selfHostedDescription")
-                  : t("myPlan.hostedDemoDescription")}
+                  : t("myPlan.hostedTrialDescription")}
               </p>
             </div>
             {!isSelfHosted && (
@@ -272,43 +272,92 @@ const MyPlan: React.FC = () => {
           </div>
         </div>
 
-        {/* Self-Host Info */}
+        {/* Paths beyond the trial */}
         <div className="space-y-6">
           {!isSelfHosted && (
-            <Card className="glass-card border-primary/30 bg-primary/5">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-2 mb-3">
-                  <Server className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">{t("myPlan.unlimitedWithSelfHost")}</h3>
-                </div>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {t("myPlan.selfHostBenefits")}
-                </p>
-                <ul className="space-y-2 mb-4">
-                  {[
-                    t("myPlan.benefit.unlimitedJobs"),
-                    t("myPlan.benefit.unlimitedParts"),
-                    t("myPlan.benefit.fullApi"),
-                    t("myPlan.benefit.yourData"),
-                  ].map((benefit, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
-                      <span>{benefit}</span>
-                    </li>
-                  ))}
-                </ul>
-                <Button asChild className="w-full">
-                  <a
-                    href={DOCS_SELF_HOSTING_URL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {t("myPlan.viewGuide")}
-                    <ExternalLink className="h-4 w-4 ml-2" />
-                  </a>
-                </Button>
-              </CardContent>
-            </Card>
+            <>
+              {/* Managed Hosting */}
+              <Card className="glass-card border-primary/30 bg-primary/5">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Cloud className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold">{t("myPlan.managedHosting.title")}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {t("myPlan.managedHosting.description")}
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    {[
+                      t("myPlan.managedHosting.benefit.isolated"),
+                      t("myPlan.managedHosting.benefit.backups"),
+                      t("myPlan.managedHosting.benefit.versions"),
+                      t("myPlan.managedHosting.benefit.whitelabel"),
+                    ].map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button asChild className="w-full">
+                    <a
+                      href="https://www.sheetmetalconnect.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t("myPlan.managedHosting.cta")}
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              {/* Self-Hosted */}
+              <Card className="glass-card">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Server className="h-5 w-5 text-primary" />
+                    <h3 className="font-semibold">{t("myPlan.selfHostedCard.title")}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    {t("myPlan.selfHostedCard.description")}
+                  </p>
+                  <ul className="space-y-2 mb-4">
+                    {[
+                      t("myPlan.benefit.unlimitedJobs"),
+                      t("myPlan.benefit.unlimitedParts"),
+                      t("myPlan.benefit.fullApi"),
+                      t("myPlan.benefit.yourData"),
+                    ].map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                        <span>{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button asChild className="w-full mb-2">
+                    <a
+                      href={DOCS_SELF_HOSTING_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t("myPlan.viewGuide")}
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </a>
+                  </Button>
+                  <Button variant="outline" asChild className="w-full">
+                    <a
+                      href="https://www.sheetmetalconnect.com/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {t("myPlan.selfHostedCard.consulting")}
+                      <ExternalLink className="h-4 w-4 ml-2" />
+                    </a>
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
           )}
 
           {/* Help */}

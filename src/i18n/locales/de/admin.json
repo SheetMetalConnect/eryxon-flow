@@ -260,34 +260,45 @@
     "reviewed": "Überprüft"
   },
   "pricing": {
-    "title": "Loslegen",
-    "subtitle": "Das MES für Metallverarbeitung, mit dem Sie gerne arbeiten. Self-Hosting für alle Funktionen.",
-    "contactUs": "Kontaktieren Sie uns",
-    "recommended": "Empfohlen",
-    "needHelp": "Hilfe bei Self-Hosting oder Anpassung benötigt?",
-    "hostedDemo": {
-      "name": "Gehostete Demo",
-      "description": "Online ausprobieren mit begrenzter Nutzung",
-      "tryDemo": "Live-Demo testen",
-      "note": "Nur für Evaluation und Bildungszwecke",
+    "title": "Pläne",
+    "subtitle": "Eryxon Flow ist Open Source unter Apache 2.0. Starten Sie mit der gehosteten Testversion, lassen Sie es von uns betreiben, oder hosten Sie selbst auf Ihrer eigenen Infrastruktur.",
+    "contactUs": "Kontakt aufnehmen",
+    "needHelp": "Hilfe bei Self-Hosting oder Einrichtung benötigt?",
+    "hostedTrial": {
+      "name": "Gehostete Testversion",
+      "description": "Betreiben Sie Eryxon Flow 30 Tage auf unserer gehosteten SaaS.",
+      "tryDemo": "Test starten",
+      "note": "Zur Evaluation. Während des Tests gelten Limits.",
       "features": [
-        "Begrenzte Aufträge und Teile",
-        "Begrenzter Speicher",
-        "Begrenzter API-Zugriff",
-        "Nur Dokumentation"
+        "30-tägiger Test",
+        "100 Aufträge pro Monat",
+        "500 Teile pro Monat",
+        "2 GB Speicher",
+        "100 API-Anfragen pro Tag"
+      ]
+    },
+    "managedHosting": {
+      "name": "Verwaltetes Hosting",
+      "description": "Eine dedizierte, isolierte Instanz, die wir für Sie betreiben.",
+      "cta": "Kontakt aufnehmen",
+      "features": [
+        "Eigene, vollständig isolierte Datenbank",
+        "Backups und Versionsverwaltung",
+        "Whitelabeling",
+        "Von uns betrieben und gewartet"
       ]
     },
     "selfHosted": {
       "name": "Self-Hosted",
-      "description": "Alle Funktionen auf Ihrer eigenen Infrastruktur",
-      "getStarted": "Self-Hosting Anleitung ansehen",
+      "description": "Vollständig Open Source auf Ihrer eigenen Infrastruktur.",
+      "getStarted": "Self-Hosting Anleitung",
+      "consulting": "Hilfe bei der Einrichtung",
       "features": [
+        "Open Source, Apache 2.0",
         "Unbegrenzte Aufträge und Teile",
         "Unbegrenzter Speicher",
         "Vollständiger API-Zugriff",
-        "Vollständige Webhook-Unterstützung",
-        "MCP Server inklusive",
-        "Vollständige Datenkontrolle"
+        "Ihre eigene Infrastruktur"
       ]
     },
     "license": {
@@ -309,25 +320,25 @@
   },
   "myPlan": {
     "title": "Mein Plan",
-    "subtitle": "Nutzung und Deployment-Optionen ansehen",
-    "contactUs": "Kontaktieren Sie uns",
+    "subtitle": "Sehen Sie Ihre Nutzung und die Optionen nach dem Test",
+    "contactUs": "Kontakt aufnehmen",
     "activeJobs": "Aktive Aufträge",
     "admins": "Administratoren",
     "completedJobs": "Abgeschlossene Aufträge",
     "operators": "Bediener",
     "parts": "Teile",
-    "partsLimitReached": "Demo-Limit erreicht. Self-Hosting für unbegrenzte Nutzung.",
+    "partsLimitReached": "Testlimit erreicht. Sehen Sie Ihre Planoptionen, um weiterzuarbeiten.",
     "storage": "Speicher",
     "totalJobs": "Aufträge gesamt",
     "usageThisMonth": "Nutzung diesen Monat",
-    "apiRequests": "API Anfragen",
+    "apiRequests": "API-Anfragen",
     "today": "heute",
     "requestsThisMonth": "Anfragen diesen Monat",
     "hostedDemo": "Gehostete Demo",
     "hostedDemoDescription": "Begrenzte Nutzung für Evaluation und Bildungszwecke",
     "selfHosted": "Self-Hosted",
     "selfHostedDescription": "Alle Funktionen, unbegrenzte Nutzung auf Ihrer Infrastruktur",
-    "goSelfHosted": "Self-Hosting starten",
+    "goSelfHosted": "Self-Hosting Anleitung",
     "unlimitedWithSelfHost": "Unbegrenzt mit Self-Hosting",
     "selfHostBenefits": "Self-Hosting von Eryxon Flow für unbegrenzte Nutzung und vollständige Kontrolle über Ihre Daten.",
     "benefit": {
@@ -336,20 +347,38 @@
       "fullApi": "Vollständiger API-Zugriff",
       "yourData": "Vollständige Kontrolle über Ihre Daten"
     },
-    "viewGuide": "Self-Hosting Anleitung ansehen",
+    "viewGuide": "Self-Hosting Anleitung",
     "needHelp": "Hilfe benötigt?",
-    "helpDescription": "Sheet Metal Connect e.U. kann Ihnen bei der Einrichtung und Anpassung von Eryxon Flow helfen."
+    "helpDescription": "Sheet Metal Connect e.U. hilft Ihnen, Eryxon Flow für Ihren Betrieb einzurichten und zu betreiben.",
+    "hostedTrial": "Gehostete Testversion",
+    "hostedTrialDescription": "Gehostete SaaS, 30-tägiger Test mit monatlichen Limits",
+    "managedHosting": {
+      "title": "Verwaltetes Hosting",
+      "description": "Eine dedizierte, isolierte Instanz, die wir für Sie betreiben — Ihre eigene Datenbank, Backups und Versionsverwaltung.",
+      "cta": "Kontakt aufnehmen",
+      "benefit": {
+        "isolated": "Ihre eigene isolierte Datenbank",
+        "backups": "Backups von uns übernommen",
+        "versions": "Versionsverwaltung",
+        "whitelabel": "Whitelabeling"
+      }
+    },
+    "selfHostedCard": {
+      "title": "Self-Hosted",
+      "description": "Vollständig Open Source unter Apache 2.0. Betreiben Sie es auf Ihrer eigenen Infrastruktur.",
+      "consulting": "Hilfe bei der Einrichtung"
+    }
   },
   "trialBanner": {
-    "title": "Sie nutzen die kostenlose Testversion",
-    "titleWithDate": "Ihre kostenlose Testversion endet am {{date}}",
-    "description": "Dateien und Daten werden nach dem Testzeitraum nicht aufbewahrt. Hosten Sie Eryxon Flow selbst für unbegrenzte Nutzung und vollständige Datenkontrolle.",
+    "title": "Sie nutzen die gehostete Testversion",
+    "titleWithDate": "Ihre gehostete Testversion endet am {{date}}",
+    "description": "Daten werden nach dem Test nicht aufbewahrt. Sehen Sie Ihre Planoptionen, um weiterzuarbeiten.",
     "daysRemaining": "{{count}} Tag verbleibend",
     "daysRemaining_plural": "{{count}} Tage verbleibend",
     "expired": "Ihre Testversion ist abgelaufen",
-    "expiredDescription": "Ihr Testzeitraum ist beendet. Hosten Sie Eryxon Flow selbst, um Ihre Daten zu behalten und alle Funktionen weiter zu nutzen.",
-    "upgradeCta": "Self-Hosting Anleitung ansehen",
-    "viewPlan": "Plan ansehen"
+    "expiredDescription": "Der Testzeitraum ist beendet. Sehen Sie Ihre Planoptionen, um Ihre Daten zu behalten und weiterzuarbeiten.",
+    "seePlans": "Pläne ansehen",
+    "viewPlan": "Pläne ansehen"
   },
   "featureFlags": {
     "title": "Feature-Flags",

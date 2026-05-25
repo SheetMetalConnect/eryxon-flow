@@ -193,39 +193,24 @@ const arrow =
     <p class="mk-section-lead">{c.pricing.lead}</p>
   </div>
   <div class="mk-pricing-grid">
-    <!-- Tier 1 — Free to start -->
+    <!-- Tier 1 — Hosted trial (free, 30 days, usage limits) -->
     <div class="mk-tier">
-      <div class="mk-tier-name">{p.plans.free.name}</div>
-      <div class="mk-tier-price">{p.plans.free.price}<span>{p.plans.free.period}</span></div>
-      <div class="mk-tier-sub">{p.plans.free.sub}</div>
+      <div class="mk-tier-name">{p.plans.trial.name}</div>
+      <div class="mk-tier-price">{p.plans.trial.price}<span>{p.plans.trial.period}</span></div>
+      <div class="mk-tier-sub">{p.plans.trial.sub}</div>
       <ul class="mk-tier-features">
-        {p.plans.free.features.map((f: PlanFeature) => (
+        {p.plans.trial.features.map((f: PlanFeature) => (
           <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
         ))}
       </ul>
-      <CtaButton href="https://app.eryxon.eu" ctaId="home_pricing_free_trial" surface="homepage_pricing" kind="hosted_app" variant="secondary" locale={locale} external>
-        {p.plans.free.cta}
+      <CtaButton href="https://app.eryxon.eu" ctaId="home_pricing_trial_signup" surface="homepage_pricing" kind="hosted_app" variant="secondary" locale={locale} external>
+        {p.plans.trial.cta}
       </CtaButton>
     </div>
 
-    <!-- Tier 2 — Hosted, flat rate / unlimited users (featured) -->
+    <!-- Tier 2 — Managed hosting (by request, dedicated isolated instance, featured) -->
     <div class="mk-tier is-featured">
-      <span class="mk-tier-flag">{p.plans.hosted.flag}</span>
-      <div class="mk-tier-name">{p.plans.hosted.name}</div>
-      <div class="mk-tier-price">{p.plans.hosted.price}</div>
-      <div class="mk-tier-sub">{p.plans.hosted.sub}</div>
-      <ul class="mk-tier-features">
-        {p.plans.hosted.features.map((f: PlanFeature) => (
-          <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
-        ))}
-      </ul>
-      <a class="mk-tier-link" href={`${rolloutAnchor}`} data-cta-id="home_pricing_hosted_inquiry" data-cta-surface="homepage_pricing" data-cta-kind="rollout_section">
-        {p.plans.hosted.ctaSoon}
-      </a>
-    </div>
-
-    <!-- Tier 3 — Managed services -->
-    <div class="mk-tier">
+      <span class="mk-tier-flag">{p.plans.managed.flag}</span>
       <div class="mk-tier-name">{p.plans.managed.name}</div>
       <div class="mk-tier-price">{p.plans.managed.price}</div>
       <div class="mk-tier-sub">{p.plans.managed.sub}</div>
@@ -234,8 +219,26 @@ const arrow =
           <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
         ))}
       </ul>
-      <a class="mk-tier-link" href={`${rolloutAnchor}`} data-cta-id="home_pricing_managed_rollout" data-cta-surface="homepage_pricing" data-cta-kind="rollout_section">
+      <a class="mk-tier-link" href={`${rolloutAnchor}`} data-cta-id="home_pricing_managed_inquiry" data-cta-surface="homepage_pricing" data-cta-kind="rollout_section">
         {p.plans.managed.cta}
+      </a>
+    </div>
+
+    <!-- Tier 3 — Self-hosted (Apache 2.0, unlimited, DIY) -->
+    <div class="mk-tier">
+      <div class="mk-tier-name">{p.plans.selfHosted.name}</div>
+      <div class="mk-tier-price">{p.plans.selfHosted.price}<span>{p.plans.selfHosted.period}</span></div>
+      <div class="mk-tier-sub">{p.plans.selfHosted.sub}</div>
+      <ul class="mk-tier-features">
+        {p.plans.selfHosted.features.map((f: PlanFeature) => (
+          <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+        ))}
+      </ul>
+      <CtaButton href={selfHostHref} ctaId="home_pricing_selfhost_guide" surface="homepage_pricing" kind="docs" variant="secondary" locale={locale}>
+        {p.plans.selfHosted.ctaGuide}
+      </CtaButton>
+      <a class="mk-tier-link" href={`${rolloutAnchor}`} data-cta-id="home_pricing_selfhost_consulting" data-cta-surface="homepage_pricing" data-cta-kind="rollout_section">
+        {p.plans.selfHosted.ctaConsulting}
       </a>
     </div>
   </div>

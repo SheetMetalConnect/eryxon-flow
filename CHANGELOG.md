@@ -8,6 +8,19 @@ The v0.6 line is in development and **not yet tagged or released**. Mirrors the 
 `v0.6`. The installable PWA and the touch-first operator preview are usable in preview builds. The
 native iOS and Android apps are still in development and have not been released.
 
+### Changed
+
+- **Plan model presented as four tiers** across the app (plan / pricing / onboarding / trial banner) and the marketing site, in EN / NL / DE:
+  - **Hosted Trial** — free, hosted, 30-day, with usage limits (100 jobs, 500 parts/month, 2 GB storage, 100 API requests/day).
+  - **Managed Hosting** — by request: a dedicated, isolated instance we run for you (your own database, data isolation, backups, version management, whitelabeling). CTA: get in touch.
+  - **Self-Hosted** — open source (Apache 2.0), unlimited, on your own infrastructure. CTA: self-hosting guide + optional setup help (consulting).
+  - The legacy Premium tier is internal/select-clients only and is no longer surfaced as a public option.
+- **My Plan** no longer mislabels hosted trial tenants as "Self-Hosted / unlimited" — the self-hosted view is determined by the deployment, not by the absence of limits.
+
+### Fixed
+
+- Sign-in / sign-up reliability: removed the unreliable captcha widget from the auth forms, fixed a post-login loading hang for accounts whose active tenant was misconfigured, and made activity-log audit triggers non-fatal so they can never block login or user management. Fixed an unreadable (low-contrast) auth notification.
+
 ### Added
 
 - **Public roadmap page** (`/roadmap/`, linked in the primary nav, EN / NL / DE) — our own three-column status board (Shipped / In progress / Planned) built on the `--ery-*` token contract, with real items and status accents from the semantic state tokens. The public Canny board (`https://eryxon.canny.io/`) is paired in as a "vote on the public board" call-to-action rather than a bare iframe. Native iOS / Android apps are surfaced under "In progress" as in-development work.

@@ -4,12 +4,13 @@
  *
  * Ports the kit services/plans template (`ui_kits/marketing/services.html` `.svc-*`) as the
  * existing `/pricing/` route did, lifted into a shared component so en/nl/de render one markup.
- * FOSS-first three-way model: Free / self-hosted (Apache 2.0, free trial) / Hosted (flat rate,
- * unlimited users) / Managed on-prem (get in touch). Kit `svc-*` classes map to `--ery-*`.
+ * Three public tiers: Hosted trial (free, 30 days, usage limits) / Managed hosting (by request,
+ * dedicated isolated instance) / Self-hosted (Apache 2.0, unlimited, DIY). Kit `svc-*` → `--ery-*`.
  */
 import CtaButton from "@/components/marketing/CtaButton.astro";
 import RolloutInquiry from "@/components/RolloutInquiry.astro";
 import { pricingCopy } from "@/lib/marketing-content";
+import { localizePath } from "@/lib/locale";
 import type { Locale } from "@/lib/locale";
 import type { PlanFeature } from "@/lib/marketing-content";
 
@@ -18,6 +19,7 @@ interface Props {
 }
 const { locale = "en" } = Astro.props;
 const c = pricingCopy(locale);
+const selfHostHref = localizePath("/guides/self-hosting/", locale);
 
 const check =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -34,49 +36,31 @@ const featureItem = (f: PlanFeature) => f;
 
 <!-- Plan grid — kit .svc-plans, 3 tiers -->
 <section class="ery-container svc-plans" aria-label="Plans">
-  <!-- Tier 1 — Free to start (kit Plan A) -->
+  <!-- Tier 1 — Hosted trial (free, 30 days, usage limits) -->
   <article class="svc-plan">
     <div class="svc-plan-head">
       <span class="svc-plan-dot svc-plan-dot--neutral"></span>
-      <span>{c.plans.free.head}</span>
+      <span>{c.plans.trial.head}</span>
     </div>
-    <h2 class="svc-plan-name">{c.plans.free.name}</h2>
-    <div class="svc-plan-price">{c.plans.free.price}<span>{c.plans.free.period}</span></div>
-    <p class="svc-plan-sub">{c.plans.free.sub}</p>
+    <h2 class="svc-plan-name">{c.plans.trial.name}</h2>
+    <div class="svc-plan-price">{c.plans.trial.price}<span>{c.plans.trial.period}</span></div>
+    <p class="svc-plan-sub">{c.plans.trial.sub}</p>
     <hr class="svc-plan-divider" />
     <ul class="svc-plan-features">
-      {c.plans.free.features.map((f) => (
+      {c.plans.trial.features.map((f) => (
         <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
       ))}
     </ul>
-    <CtaButton href="https://app.eryxon.eu" ctaId="pricing_free_trial" surface="pricing_plans" kind="hosted_app" variant="secondary" locale={locale} external>
-      {c.plans.free.cta}
+    <CtaButton href="https://app.eryxon.eu" ctaId="pricing_trial_signup" surface="pricing_plans" kind="hosted_app" variant="secondary" locale={locale} external>
+      {c.plans.trial.cta}
     </CtaButton>
   </article>
 
-  <!-- Tier 2 — Hosted, flat rate / unlimited users (kit Plan B, featured) -->
+  <!-- Tier 2 — Managed hosting (by request, dedicated isolated instance, featured) -->
   <article class="svc-plan is-featured">
-    <span class="svc-plan-flag">{c.plans.hosted.flag}</span>
+    <span class="svc-plan-flag">{c.plans.managed.flag}</span>
     <div class="svc-plan-head">
       <span class="svc-plan-dot"></span>
-      <span>{c.plans.hosted.head}</span>
-    </div>
-    <h2 class="svc-plan-name">{c.plans.hosted.name}</h2>
-    <div class="svc-plan-price">{c.plans.hosted.price}</div>
-    <p class="svc-plan-sub">{c.plans.hosted.sub}</p>
-    <hr class="svc-plan-divider" />
-    <ul class="svc-plan-features">
-      {c.plans.hosted.features.map((f) => (
-        <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
-      ))}
-    </ul>
-    <RolloutInquiry label={c.plans.hosted.ctaSoon} locale={locale} />
-  </article>
-
-  <!-- Tier 3 — Managed services (kit Plan C) -->
-  <article class="svc-plan">
-    <div class="svc-plan-head">
-      <span class="svc-plan-dot svc-plan-dot--warning"></span>
       <span>{c.plans.managed.head}</span>
     </div>
     <h2 class="svc-plan-name">{c.plans.managed.name}</h2>
@@ -89,6 +73,27 @@ const featureItem = (f: PlanFeature) => f;
       ))}
     </ul>
     <RolloutInquiry label={c.plans.managed.cta} locale={locale} />
+  </article>
+
+  <!-- Tier 3 — Self-hosted (Apache 2.0, unlimited, DIY) -->
+  <article class="svc-plan">
+    <div class="svc-plan-head">
+      <span class="svc-plan-dot svc-plan-dot--neutral"></span>
+      <span>{c.plans.selfHosted.head}</span>
+    </div>
+    <h2 class="svc-plan-name">{c.plans.selfHosted.name}</h2>
+    <div class="svc-plan-price">{c.plans.selfHosted.price}<span>{c.plans.selfHosted.period}</span></div>
+    <p class="svc-plan-sub">{c.plans.selfHosted.sub}</p>
+    <hr class="svc-plan-divider" />
+    <ul class="svc-plan-features">
+      {c.plans.selfHosted.features.map((f) => (
+        <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+      ))}
+    </ul>
+    <CtaButton href={selfHostHref} ctaId="pricing_selfhost_guide" surface="pricing_plans" kind="docs" variant="secondary" locale={locale}>
+      {c.plans.selfHosted.ctaGuide}
+    </CtaButton>
+    <RolloutInquiry label={c.plans.selfHosted.ctaConsulting} locale={locale} />
   </article>
 </section>
 

@@ -65,9 +65,12 @@ export interface PricingCopy {
   description: string;
   hero: { eyebrow: string; h1: string; lead: string };
   plans: {
-    free: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
-    hosted: { head: string; name: string; flag: string; price: string; sub: string; features: PlanFeature[]; ctaSoon: string };
-    managed: { head: string; name: string; price: string; sub: string; features: PlanFeature[]; cta: string };
+    /** Tier 1 — free, hosted 30-day trial with usage limits. CTA links to the app. */
+    trial: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
+    /** Tier 2 — managed hosting, by request. Dedicated, isolated instance we run for you. Featured. */
+    managed: { head: string; name: string; flag: string; price: string; sub: string; features: PlanFeature[]; cta: string };
+    /** Tier 3 — self-hosted, fully open source (Apache 2.0), unlimited, DIY. CTA = guide + consulting. */
+    selfHosted: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; ctaGuide: string; ctaConsulting: string };
   };
 }
 
@@ -138,7 +141,7 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Pricing",
       h2: "Three ways to run it.",
-      lead: "Self-host it free and open source. Let us host it at a flat rate, unlimited users. Or have it run on-prem with updates, monitoring, and backups handled.",
+      lead: "Start free on a hosted trial. Have us run a dedicated, isolated instance for you. Or self-host it free and open source.",
       allLink: "See full pricing →",
     },
     rollout: {
@@ -219,7 +222,7 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Prijzen",
       h2: "Drie manieren om het te draaien.",
-      lead: "Host het zelf, gratis en open source. Laat het ons hosten voor een vast bedrag, onbeperkt gebruikers. Of laat het op je eigen locatie draaien, met updates, monitoring en back-ups erbij.",
+      lead: "Begin gratis met een gehoste proefversie. Laat ons een eigen, afgeschermde instance voor je draaien. Of host het zelf, gratis en open source.",
       allLink: "Bekijk alle prijzen →",
     },
     rollout: {
@@ -300,7 +303,7 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Preise",
       h2: "Drei Wege, es zu betreiben.",
-      lead: "Selbst hosten, kostenlos und quelloffen. Von uns hosten lassen zum Pauschalpreis, unbegrenzte Nutzer. Oder on-prem betreiben lassen mit Updates, Monitoring und Backups.",
+      lead: "Starte kostenlos mit einer gehosteten Testversion. Lass eine eigene, isolierte Instanz von uns betreiben. Oder hoste es selbst, kostenlos und quelloffen.",
       allLink: "Alle Preise ansehen →",
     },
     rollout: {
@@ -326,41 +329,41 @@ const LANDING: Record<Locale, LandingCopy> = {
 const PRICING: Record<Locale, PricingCopy> = {
   en: {
     title: "Pricing — Eryxon Flow",
-    description: "Self-host it free and open source, let us host it at a flat rate with unlimited users, or have it run on-prem with updates, monitoring, and backups. Three ways to run it.",
-    hero: { eyebrow: "Pricing", h1: "Three ways to run it.", lead: "The software is free and open source. Self-host it, let us host it at a flat rate, or have it run on-prem for you." },
+    description: "Start free on a hosted trial, have us run a dedicated managed instance for you, or self-host it under Apache 2.0. Three ways to run it.",
+    hero: { eyebrow: "Pricing", h1: "Three ways to run it.", lead: "Start free on a hosted trial. Have us run a dedicated, isolated instance for you. Or self-host it free and open source on your own infrastructure." },
     plans: {
-      free: { head: "Free / self-hosted", name: "Free / self-hosted", price: "Free", period: "· open source", sub: "Apache 2.0, no feature gates. Self-host it forever, or start a free trial.", cta: "Start free trial",
-        features: [{ text: "Full product, no feature gates" }, { text: "Self-host via Docker Compose" }, { text: "Operator terminals on your tablets" }, { text: "REST API and webhooks" }, { text: "Apache 2.0 — fork it, keep it" }] },
-      hosted: { head: "Hosted", name: "Hosted", flag: "Unlimited users", price: "Flat rate", sub: "We host it for you at app.eryxon.eu. One flat rate, unlimited users.", ctaSoon: "Get in touch",
-        features: [{ text: "We host and run it for you" }, { text: "Flat rate, unlimited users" }, { text: "Daily backups" }, { text: "Updates handled automatically" }] },
-      managed: { head: "Managed on-prem", name: "Managed on-prem", price: "Let's talk", sub: "Installed on your own infrastructure, with updates, monitoring, and backups handled.", cta: "Get in touch",
-        features: [{ text: "Installed on your infrastructure" }, { text: "Updates, monitoring, and backups" }, { text: "ERP integration over REST and webhooks" }, { text: "Scoped to your shop" }] },
+      trial: { head: "Hosted trial", name: "Hosted trial", price: "Free", period: "· 30 days", sub: "A hosted instance to try on your own shop floor. No install, no card. Usage limits apply during the trial.", cta: "Start free trial",
+        features: [{ text: "Hosted by us, runs in minutes" }, { text: "30-day trial" }, { text: "Up to 100 jobs and 500 parts per month" }, { text: "2 GB storage, 100 API requests per day" }, { text: "Full product, no feature gates" }] },
+      managed: { head: "Managed hosting", name: "Managed hosting", flag: "By request", price: "Let's talk", sub: "A dedicated, isolated instance we run for you. Set up and scoped to your shop.", cta: "Get in touch",
+        features: [{ text: "Your own database, isolated from other tenants" }, { text: "Data isolation end to end" }, { text: "Backups handled for you" }, { text: "Version management and updates" }, { text: "Whitelabeling to your brand" }] },
+      selfHosted: { head: "Self-hosted", name: "Self-hosted", price: "Free", period: "· open source", sub: "Run it yourself on your own infrastructure. Apache 2.0, unlimited, no feature gates.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
+        features: [{ text: "Apache 2.0 — fork it, audit it, keep it" }, { text: "Unlimited jobs, parts, users, and storage" }, { text: "Self-host via Docker Compose" }, { text: "Full product, no feature gates" }, { text: "REST API and webhooks" }] },
     },
   },
   nl: {
     title: "Prijzen — Eryxon Flow",
-    description: "Host zelf, gratis en open source, laat ons hosten tegen een vast tarief met onbeperkt gebruikers, of laat het op je eigen locatie draaien met updates, monitoring en back-ups. Drie manieren om het te draaien.",
-    hero: { eyebrow: "Prijzen", h1: "Drie manieren om het te draaien.", lead: "De software is gratis en open source. Host zelf, laat ons hosten tegen een vast tarief, of laat het op je eigen locatie voor je draaien." },
+    description: "Begin gratis met een gehoste proefversie, laat ons een eigen beheerde instance voor je draaien, of host het zelf onder Apache 2.0. Drie manieren om het te draaien.",
+    hero: { eyebrow: "Prijzen", h1: "Drie manieren om het te draaien.", lead: "Begin gratis met een gehoste proefversie. Laat ons een eigen, afgeschermde instance voor je draaien. Of host het zelf, gratis en open source, op je eigen infrastructuur." },
     plans: {
-      free: { head: "Gratis / zelf gehost", name: "Gratis / zelf gehost", price: "Gratis", period: "· open source", sub: "Apache 2.0, niks afgeschermd. Host voor altijd zelf, of probeer het eerst gratis uit.", cta: "Gratis uitproberen",
-        features: [{ text: "Het hele product, niks afgeschermd" }, { text: "Zelf hosten via Docker Compose" }, { text: "Operatorterminals op je tablets" }, { text: "REST API en webhooks" }, { text: "Apache 2.0 — forken en houden" }] },
-      hosted: { head: "Gehost", name: "Gehost", flag: "Onbeperkt gebruikers", price: "Vast tarief", sub: "Wij hosten het voor je op app.eryxon.eu. Eén vast tarief, onbeperkt gebruikers.", ctaSoon: "Neem contact op",
-        features: [{ text: "Wij hosten en draaien het voor je" }, { text: "Vast tarief, onbeperkt gebruikers" }, { text: "Dagelijkse back-ups" }, { text: "Updates automatisch geregeld" }] },
-      managed: { head: "Beheerd op locatie", name: "Beheerd op locatie", price: "Even overleggen", sub: "Geïnstalleerd op je eigen infrastructuur, met updates, monitoring en back-ups geregeld.", cta: "Neem contact op",
-        features: [{ text: "Geïnstalleerd op jouw infrastructuur" }, { text: "Updates, monitoring en back-ups" }, { text: "ERP-koppeling via REST en webhooks" }, { text: "Toegesneden op jouw bedrijf" }] },
+      trial: { head: "Gehoste proefversie", name: "Gehoste proefversie", price: "Gratis", period: "· 30 dagen", sub: "Een gehoste instance om op je eigen werkvloer uit te proberen. Niks installeren, geen creditcard. Tijdens de proef gelden gebruikslimieten.", cta: "Gratis uitproberen",
+        features: [{ text: "Door ons gehost, binnen enkele minuten klaar" }, { text: "Proefperiode van 30 dagen" }, { text: "Tot 100 orders en 500 onderdelen per maand" }, { text: "2 GB opslag, 100 API-verzoeken per dag" }, { text: "Het hele product, niks afgeschermd" }] },
+      managed: { head: "Beheerde hosting", name: "Beheerde hosting", flag: "Op aanvraag", price: "Even overleggen", sub: "Een eigen, afgeschermde instance die wij voor je draaien. Opgezet en toegesneden op jouw bedrijf.", cta: "Neem contact op",
+        features: [{ text: "Je eigen database, los van andere klanten" }, { text: "Data volledig afgeschermd" }, { text: "Back-ups door ons geregeld" }, { text: "Versiebeheer en updates" }, { text: "Whitelabeling in jouw huisstijl" }] },
+      selfHosted: { head: "Zelf gehost", name: "Zelf gehost", price: "Gratis", period: "· open source", sub: "Draai het zelf op je eigen infrastructuur. Apache 2.0, onbeperkt, niks afgeschermd.", ctaGuide: "Lees de zelf-hosten-gids", ctaConsulting: "Hulp bij de installatie",
+        features: [{ text: "Apache 2.0 — forken, inzien, houden" }, { text: "Onbeperkt orders, onderdelen, gebruikers en opslag" }, { text: "Zelf hosten via Docker Compose" }, { text: "Het hele product, niks afgeschermd" }, { text: "REST API en webhooks" }] },
     },
   },
   de: {
     title: "Preise — Eryxon Flow",
-    description: "Selbst hosten, kostenlos und quelloffen, von uns hosten lassen zum Pauschalpreis mit unbegrenzten Nutzern oder on-prem betreiben lassen mit Updates, Monitoring und Backups. Drei Wege, es zu betreiben.",
-    hero: { eyebrow: "Preise", h1: "Drei Wege, es zu betreiben.", lead: "Die Software ist kostenlos und quelloffen. Selbst hosten, von uns hosten lassen zum Pauschalpreis oder on-prem für dich betreiben lassen." },
+    description: "Kostenlos mit einer gehosteten Testversion starten, eine eigene gemanagte Instanz von uns betreiben lassen oder selbst hosten unter Apache 2.0. Drei Wege, es zu betreiben.",
+    hero: { eyebrow: "Preise", h1: "Drei Wege, es zu betreiben.", lead: "Starte kostenlos mit einer gehosteten Testversion. Lass eine eigene, isolierte Instanz von uns betreiben. Oder hoste es selbst, kostenlos und quelloffen, auf deiner eigenen Infrastruktur." },
     plans: {
-      free: { head: "Kostenlos / selbst gehostet", name: "Kostenlos / selbst gehostet", price: "Kostenlos", period: "· Open Source", sub: "Apache 2.0, keine Feature-Sperren. Für immer selbst hosten oder kostenlos testen.", cta: "Kostenlos testen",
-        features: [{ text: "Volles Produkt, keine Feature-Sperren" }, { text: "Selbst hosten per Docker Compose" }, { text: "Operator-Terminals auf deinen Tablets" }, { text: "REST-API und Webhooks" }, { text: "Apache 2.0 — forken, behalten" }] },
-      hosted: { head: "Gehostet", name: "Gehostet", flag: "Unbegrenzte Nutzer", price: "Pauschalpreis", sub: "Wir hosten es für dich auf app.eryxon.eu. Ein Pauschalpreis, unbegrenzte Nutzer.", ctaSoon: "Kontakt aufnehmen",
-        features: [{ text: "Wir hosten und betreiben es für dich" }, { text: "Pauschalpreis, unbegrenzte Nutzer" }, { text: "Tägliche Backups" }, { text: "Updates automatisch erledigt" }] },
-      managed: { head: "Managed on-prem", name: "Managed on-prem", price: "Sprechen wir", sub: "Auf deiner eigenen Infrastruktur installiert, mit Updates, Monitoring und Backups.", cta: "Kontakt aufnehmen",
-        features: [{ text: "Auf deiner Infrastruktur installiert" }, { text: "Updates, Monitoring und Backups" }, { text: "ERP-Anbindung über REST und Webhooks" }, { text: "Auf deinen Betrieb zugeschnitten" }] },
+      trial: { head: "Gehostete Testversion", name: "Gehostete Testversion", price: "Kostenlos", period: "· 30 Tage", sub: "Eine gehostete Instanz zum Testen auf deiner eigenen Werkstatt. Keine Installation, keine Karte. Während des Tests gelten Nutzungslimits.", cta: "Kostenlos testen",
+        features: [{ text: "Von uns gehostet, in wenigen Minuten startklar" }, { text: "30 Tage Testzeitraum" }, { text: "Bis zu 100 Aufträge und 500 Teile pro Monat" }, { text: "2 GB Speicher, 100 API-Anfragen pro Tag" }, { text: "Volles Produkt, keine Feature-Sperren" }] },
+      managed: { head: "Gemanagtes Hosting", name: "Gemanagtes Hosting", flag: "Auf Anfrage", price: "Sprechen wir", sub: "Eine eigene, isolierte Instanz, die wir für dich betreiben. Eingerichtet und auf deinen Betrieb zugeschnitten.", cta: "Kontakt aufnehmen",
+        features: [{ text: "Deine eigene Datenbank, isoliert von anderen Kunden" }, { text: "Datenisolierung durchgängig" }, { text: "Backups von uns erledigt" }, { text: "Versionsverwaltung und Updates" }, { text: "Whitelabeling in deinem Markenauftritt" }] },
+      selfHosted: { head: "Selbst gehostet", name: "Selbst gehostet", price: "Kostenlos", period: "· Open Source", sub: "Betreibe es selbst auf deiner eigenen Infrastruktur. Apache 2.0, unbegrenzt, keine Feature-Sperren.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
+        features: [{ text: "Apache 2.0 — forken, prüfen, behalten" }, { text: "Unbegrenzte Aufträge, Teile, Nutzer und Speicher" }, { text: "Selbst hosten per Docker Compose" }, { text: "Volles Produkt, keine Feature-Sperren" }, { text: "REST-API und Webhooks" }] },
     },
   },
 };

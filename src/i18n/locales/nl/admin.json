@@ -515,34 +515,45 @@
     "reviewed": "Beoordeeld"
   },
   "pricing": {
-    "title": "Aan de slag",
-    "subtitle": "De MES voor metaalbewerking waar u graag mee werkt. Zelf hosten voor alle functies.",
+    "title": "Abonnementen",
+    "subtitle": "Eryxon Flow is open source onder Apache 2.0. Begin met de gehoste proefversie, laat ons het draaien, of host zelf op uw eigen infrastructuur.",
     "contactUs": "Neem contact op",
-    "recommended": "Aanbevolen",
-    "needHelp": "Hulp nodig bij zelf hosten of aanpassen?",
-    "hostedDemo": {
-      "name": "Gehoste Demo",
-      "description": "Probeer het online met beperkt gebruik",
-      "tryDemo": "Probeer Live Demo",
-      "note": "Alleen voor evaluatie en educatieve doeleinden",
+    "needHelp": "Hulp nodig bij zelf hosten of opzetten?",
+    "hostedTrial": {
+      "name": "Gehoste proef",
+      "description": "Draai Eryxon Flow 30 dagen op onze gehoste SaaS.",
+      "tryDemo": "Start proef",
+      "note": "Voor evaluatie. Tijdens de proef gelden limieten.",
       "features": [
-        "Beperkte opdrachten en onderdelen",
-        "Beperkte opslag",
-        "Beperkte API-toegang",
-        "Alleen documentatie"
+        "Proefperiode van 30 dagen",
+        "100 opdrachten per maand",
+        "500 onderdelen per maand",
+        "2 GB opslag",
+        "100 API-verzoeken per dag"
+      ]
+    },
+    "managedHosting": {
+      "name": "Beheerde hosting",
+      "description": "Een eigen, geïsoleerde omgeving die wij voor u draaien.",
+      "cta": "Neem contact op",
+      "features": [
+        "Uw eigen database, volledig geïsoleerd",
+        "Back-ups en versiebeheer",
+        "Whitelabeling",
+        "Gedraaid en onderhouden door ons"
       ]
     },
     "selfHosted": {
-      "name": "Zelf Gehost",
-      "description": "Alle functies op uw eigen infrastructuur",
-      "getStarted": "Bekijk Self-Hosting Handleiding",
+      "name": "Zelf gehost",
+      "description": "Volledig open source op uw eigen infrastructuur.",
+      "getStarted": "Self-hosting handleiding",
+      "consulting": "Hulp bij opzetten",
       "features": [
+        "Open source, Apache 2.0",
         "Onbeperkte opdrachten en onderdelen",
         "Onbeperkte opslag",
         "Volledige API-toegang",
-        "Volledige webhook ondersteuning",
-        "MCP Server inbegrepen",
-        "Volledige controle over gegevens"
+        "Uw eigen infrastructuur"
       ]
     },
     "license": {
@@ -563,26 +574,26 @@
     }
   },
   "myPlan": {
-    "title": "Mijn Plan",
-    "subtitle": "Bekijk uw gebruik en deployment opties",
+    "title": "Mijn abonnement",
+    "subtitle": "Bekijk uw gebruik en de opties na de proef",
     "contactUs": "Neem contact op",
     "activeJobs": "Actieve opdrachten",
     "admins": "Beheerders",
     "completedJobs": "Voltooide opdrachten",
     "operators": "Operators",
     "parts": "Onderdelen",
-    "partsLimitReached": "Demo limiet bereikt. Host zelf voor onbeperkt gebruik.",
+    "partsLimitReached": "Prooflimiet bereikt. Bekijk uw abonnementsopties om door te gaan.",
     "storage": "Opslag",
     "totalJobs": "Totaal opdrachten",
     "usageThisMonth": "Gebruik deze maand",
-    "apiRequests": "API Verzoeken",
+    "apiRequests": "API-verzoeken",
     "today": "vandaag",
     "requestsThisMonth": "verzoeken deze maand",
     "hostedDemo": "Gehoste Demo",
     "hostedDemoDescription": "Beperkt gebruik voor evaluatie en educatieve doeleinden",
-    "selfHosted": "Zelf Gehost",
+    "selfHosted": "Zelf gehost",
     "selfHostedDescription": "Alle functies, onbeperkt gebruik op uw infrastructuur",
-    "goSelfHosted": "Ga Zelf Hosten",
+    "goSelfHosted": "Self-hosting handleiding",
     "unlimitedWithSelfHost": "Onbeperkt met Zelf Hosten",
     "selfHostBenefits": "Host Eryxon Flow zelf voor onbeperkt gebruik en volledige controle over uw gegevens.",
     "benefit": {
@@ -591,25 +602,43 @@
       "fullApi": "Volledige API-toegang",
       "yourData": "Volledige controle over uw gegevens"
     },
-    "viewGuide": "Bekijk Self-Hosting Handleiding",
-    "needHelp": "Hulp Nodig?",
-    "helpDescription": "Sheet Metal Connect e.U. kan u helpen bij het opzetten en aanpassen van Eryxon Flow voor uw activiteiten.",
+    "viewGuide": "Self-hosting handleiding",
+    "needHelp": "Hulp nodig?",
+    "helpDescription": "Sheet Metal Connect e.U. kan u helpen Eryxon Flow op te zetten en te draaien voor uw activiteiten.",
     "users": "Gebruikers",
     "upgradeRequest": {
       "subject": "Upgrade Aanvraag: {{planName}}",
       "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"
+    },
+    "hostedTrial": "Gehoste proef",
+    "hostedTrialDescription": "Gehoste SaaS, 30 dagen proef met maandelijkse limieten",
+    "managedHosting": {
+      "title": "Beheerde hosting",
+      "description": "Een eigen, geïsoleerde omgeving die wij voor u draaien — uw eigen database, back-ups en versiebeheer.",
+      "cta": "Neem contact op",
+      "benefit": {
+        "isolated": "Uw eigen geïsoleerde database",
+        "backups": "Back-ups door ons geregeld",
+        "versions": "Versiebeheer",
+        "whitelabel": "Whitelabeling"
+      }
+    },
+    "selfHostedCard": {
+      "title": "Zelf gehost",
+      "description": "Volledig open source onder Apache 2.0. Draai het op uw eigen infrastructuur.",
+      "consulting": "Hulp bij opzetten"
     }
   },
   "trialBanner": {
-    "title": "U gebruikt de gratis proefversie",
-    "titleWithDate": "Uw gratis proefperiode eindigt op {{date}}",
-    "description": "Bestanden en gegevens worden niet bewaard na de proefperiode. Host Eryxon Flow zelf voor onbeperkt gebruik en volledig eigenaarschap van uw gegevens.",
+    "title": "U gebruikt de gehoste proefversie",
+    "titleWithDate": "Uw gehoste proefperiode eindigt op {{date}}",
+    "description": "Gegevens worden niet bewaard na de proef. Bekijk uw abonnementsopties om door te gaan.",
     "daysRemaining": "{{count}} dag resterend",
     "daysRemaining_plural": "{{count}} dagen resterend",
     "expired": "Uw proefperiode is verlopen",
-    "expiredDescription": "Uw proefperiode is beëindigd. Host Eryxon Flow zelf om uw gegevens te behouden en alle functies te blijven gebruiken.",
-    "upgradeCta": "Bekijk Self-Hosting Handleiding",
-    "viewPlan": "Bekijk Plan"
+    "expiredDescription": "De proefperiode is beëindigd. Bekijk uw abonnementsopties om uw gegevens te behouden en door te gaan.",
+    "seePlans": "Bekijk opties",
+    "viewPlan": "Bekijk opties"
   },
   "featureFlags": {
     "title": "Functievlaggen",

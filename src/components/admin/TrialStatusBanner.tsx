@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useTenant } from "@/hooks/useTenant";
-import { AlertTriangle, Clock, ExternalLink } from "lucide-react";
+import { AlertTriangle, ArrowRight, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
-import { DOCS_SELF_HOSTING_URL } from "@/lib/config";
 import { cn } from "@/lib/utils";
 
 export function TrialStatusBanner() {
@@ -79,14 +78,6 @@ export function TrialStatusBanner() {
       <div className="flex items-center gap-2 shrink-0">
         <Link
           to="/admin/my-plan"
-          className="text-xs font-medium hover:underline whitespace-nowrap"
-        >
-          {t("trialBanner.viewPlan")}
-        </Link>
-        <a
-          href={DOCS_SELF_HOSTING_URL}
-          target="_blank"
-          rel="noopener noreferrer"
           className={cn(
             "inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors",
             isExpired
@@ -96,9 +87,9 @@ export function TrialStatusBanner() {
                 : "bg-primary/10 text-primary hover:bg-primary/20"
           )}
         >
-          {t("trialBanner.upgradeCta")}
-          <ExternalLink className="h-3 w-3" />
-        </a>
+          {t("trialBanner.seePlans")}
+          <ArrowRight className="h-3 w-3" />
+        </Link>
       </div>
     </div>
   );

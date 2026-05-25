@@ -19,55 +19,50 @@
   "apiDocumentation": "API-documentatie",
   "myPlan": {
     "title": "Mijn abonnement",
-    "subtitle": "Beheer uw abonnement en gebruik",
-    "comingSoon": "Binnenkort",
-    "comingSoonTitle": "Abonnementsbeheer komt binnenkort",
-    "comingSoonSubtitle": "Professionele abonnementsfuncties worden afgerond",
-    "comingSoonDescription": "We bouwen een uitgebreid abonnementsbeheer systeem. Momenteel zijn alle functies gratis beschikbaar.",
+    "subtitle": "Bekijk uw gebruik en de opties na de proef",
     "contactUs": "Neem contact op",
-    "currentlyFree": "Momenteel gratis voor alle gebruikers",
-    "currentlyFreeDescription": "Alle functies zijn kostenlos beschikbaar terwijl we onze prijsstructuur afronden.",
     "activeJobs": "Actieve opdrachten",
     "admins": "Beheerders",
-    "amount": "Bedrag",
-    "apiCalls": "API-aanroepen",
-    "billingCycle": "Factureringscyclus",
-    "billingHistory": "Factureringsgeschiedenis",
-    "cancel": "Abonnement opzeggen",
     "completedJobs": "Voltooide opdrachten",
-    "contactToUpgrade": "Neem contact op voor een upgrade",
-    "currentPlan": "Huidig abonnement",
-    "download": "Downloaden",
-    "downgrade": "Abonnement downgraden",
-    "failed": "Mislukt",
-    "invoiceDate": "Factuurdatum",
-    "managePayment": "Betaalmethode beheren",
-    "manufacturingCells": "Productiecellen",
-    "mostPopular": "Meest populair",
-    "nextBillingDate": "Volgende factureringsdatum",
-    "noSalesCalls": "Geen verkoopgesprekken vereist",
     "operators": "Operators",
-    "paid": "Betaald",
     "parts": "Onderdelen",
-    "partsLimitReached": "Onderdelenlimiet bereikt",
-    "pending": "In behandeling",
-    "perMonth": "per maand",
-    "plan": "Abonnement",
-    "planFeatures": "Abonnementskenmerken",
-    "readyToUpgrade": "Klaar om te upgraden?",
-    "requestUpgrade": "Upgrade aanvragen",
-    "status": "Status",
+    "partsLimitReached": "Prooflimiet bereikt. Bekijk uw abonnementsopties om door te gaan.",
     "storage": "Opslag",
     "totalJobs": "Totaal opdrachten",
-    "unlimited": "Onbeperkt",
-    "unknown": "Onbekend",
-    "upgrade": "Abonnement upgraden",
-    "upgradeFromFree": "Upgraden van Gratis",
-    "upgradeFromPro": "Upgraden van Pro",
-    "upgradePlan": "Abonnement upgraden",
-    "usage": "Gebruik",
     "usageThisMonth": "Gebruik deze maand",
-    "users": "Gebruikers"
+    "apiRequests": "API-verzoeken",
+    "today": "vandaag",
+    "requestsThisMonth": "verzoeken deze maand",
+    "hostedTrial": "Gehoste proef",
+    "hostedTrialDescription": "Gehoste SaaS, 30 dagen proef met maandelijkse limieten",
+    "selfHosted": "Zelf gehost",
+    "selfHostedDescription": "Alle functies, onbeperkt gebruik op uw infrastructuur",
+    "goSelfHosted": "Self-hosting handleiding",
+    "managedHosting": {
+      "title": "Beheerde hosting",
+      "description": "Een eigen, geïsoleerde omgeving die wij voor u draaien — uw eigen database, back-ups en versiebeheer.",
+      "cta": "Neem contact op",
+      "benefit": {
+        "isolated": "Uw eigen geïsoleerde database",
+        "backups": "Back-ups door ons geregeld",
+        "versions": "Versiebeheer",
+        "whitelabel": "Whitelabeling"
+      }
+    },
+    "selfHostedCard": {
+      "title": "Zelf gehost",
+      "description": "Volledig open source onder Apache 2.0. Draai het op uw eigen infrastructuur.",
+      "consulting": "Hulp bij opzetten"
+    },
+    "benefit": {
+      "unlimitedJobs": "Onbeperkte opdrachten",
+      "unlimitedParts": "Onbeperkte onderdelen",
+      "fullApi": "Volledige API-toegang",
+      "yourData": "Volledige controle over uw gegevens"
+    },
+    "viewGuide": "Self-hosting handleiding",
+    "needHelp": "Hulp nodig?",
+    "helpDescription": "Sheet Metal Connect e.U. kan u helpen Eryxon Flow op te zetten en te draaien voor uw activiteiten."
   },
   "help": {
     "title": "Hulp",
@@ -630,7 +625,17 @@
     "resetting": "Resetten...",
     "sampleDataNote": "U kunt deze voorbeeldgegevens later verwijderen in de beheerinstellingen of op elk moment opnieuw importeren.",
     "tourComplete": "Rondleiding voltooid! U kunt deze op elk moment opnieuw starten vanuit instellingen.",
-    "onboardingComplete": "Onboarding voltooid! Welkom bij Eryxon Flow 🎉"
+    "onboardingComplete": "Onboarding voltooid! Welkom bij Eryxon Flow 🎉",
+    "planSelection": {
+      "title": "Uw abonnement",
+      "subtitle": "Begin met de gehoste proef. U kunt altijd overstappen naar beheerde hosting of zelf hosten.",
+      "trialTitle": "Gehoste proef",
+      "trialDescription": "Draai Eryxon Flow 30 dagen op onze gehoste SaaS: 100 opdrachten en 500 onderdelen per maand, 2 GB opslag, 100 API-verzoeken per dag.",
+      "contactUs": "Neem contact op",
+      "continue": "Start proef",
+      "skip": "Nu overslaan",
+      "trialNote": "Na de proef: beheerde hosting of zelf de open-source app hosten."
+    }
   },
   "jobs": {
     "title": "Opdrachtbeheer",
@@ -1510,72 +1515,63 @@
     }
   },
   "pricing": {
-    "title": "Prijzen",
-    "subtitle": "Eenvoudige, transparante prijzen voor Europese metaalbedrijven. Geen verkoopgesprekken, geen verborgen kosten.",
-    "comingSoonTitle": "Prijzen komen binnenkort",
-    "comingSoonSubtitle": "Professionele abonnementen worden momenteel afgerond",
-    "comingSoonDescription": "We bereiden transparante, eerlijke prijzen voor Europese fabrikanten voor. Neem contact op voor vroege toegang en op maat gemaakte offertes.",
+    "title": "Abonnementen",
+    "subtitle": "Eryxon Flow is open source onder Apache 2.0. Begin met de gehoste proefversie, laat ons het draaien, of host zelf op uw eigen infrastructuur.",
     "contactUs": "Neem contact op",
-    "monthly": "Maandelijks",
-    "annually": "Jaarlijks",
-    "save20": "20% besparen",
-    "currentPlan": "Huidig abonnement",
-    "choosePlan": "Abonnement kiezen",
-    "upgrade": "Upgrade aanvragen",
-    "downgrade": "Downgraden",
-    "contactSales": "Contact verkoop",
-    "managePlan": "Abonnement beheren",
-    "hostedPlans": "Gehoste abonnementen",
-    "hostedPlansDescription": "Volledig beheerde clouddienst gehost in de EU. Wij regelen alles.",
-    "free": {
-      "name": "Gratis",
-      "price": "€0",
-      "description": "Begin en evalueer",
+    "needHelp": "Hulp nodig bij zelf hosten of opzetten?",
+    "hostedTrial": {
+      "name": "Gehoste proef",
+      "description": "Draai Eryxon Flow 30 dagen op onze gehoste SaaS.",
+      "tryDemo": "Start proef",
+      "note": "Voor evaluatie. Tijdens de proef gelden limieten.",
       "features": [
-        "25 opdrachten per maand",
-        "250 onderdelen per maand",
-        "500MB opslag",
-        "Beperkte API-toegang",
-        "Webhooks inbegrepen",
-        "MCP Server inbegrepen",
-        "Alleen documentatie"
+        "Proefperiode van 30 dagen",
+        "100 opdrachten per maand",
+        "500 onderdelen per maand",
+        "2 GB opslag",
+        "100 API-verzoeken per dag"
       ]
     },
-    "pro": {
-      "name": "Pro",
-      "price": "€97",
-      "description": "Voor productiebedrijven",
+    "managedHosting": {
+      "name": "Beheerde hosting",
+      "description": "Een eigen, geïsoleerde omgeving die wij voor u draaien.",
+      "cta": "Neem contact op",
       "features": [
-        "500 opdrachten per maand",
-        "5.000 onderdelen per maand",
-        "10GB opslag",
+        "Uw eigen database, volledig geïsoleerd",
+        "Back-ups en versiebeheer",
+        "Whitelabeling",
+        "Gedraaid en onderhouden door ons"
+      ]
+    },
+    "selfHosted": {
+      "name": "Zelf gehost",
+      "description": "Volledig open source op uw eigen infrastructuur.",
+      "getStarted": "Self-hosting handleiding",
+      "consulting": "Hulp bij opzetten",
+      "features": [
+        "Open source, Apache 2.0",
+        "Onbeperkte opdrachten en onderdelen",
+        "Onbeperkte opslag",
         "Volledige API-toegang",
-        "Webhooks",
-        "MCP Server",
-        "E-mailondersteuning (geen SLA)",
-        "Extra opslag op aanvraag"
+        "Uw eigen infrastructuur"
       ]
     },
-    "premium": {
-      "name": "Premium",
-      "price": "€497",
-      "description": "Voor groeiende bedrijven",
-      "features": [
-        "Fair use (hoge limieten)",
-        "100GB opslag",
-        "Volledige API-toegang",
-        "Webhooks",
-        "MCP Server",
-        "SSO/SAML authenticatie",
-        "White-label (optioneel)",
-        "Prioriteit e-mailondersteuning",
-        "Extra opslag op aanvraag"
-      ]
-    },
-    "perMonth": "/maand",
-    "perYear": "/jaar",
-    "billedMonthly": "Maandelijks gefactureerd",
-    "billedAnnually": "Jaarlijks gefactureerd"
+    "license": {
+      "title": "Licentie (Apache 2.0)",
+      "tldr": "Volledig open source. Gebruik het, pas het aan, host het zelf en gebruik het commercieel — geen beperkingen.",
+      "allowed": "U mag",
+      "note": "Goed om te weten",
+      "allowedItems": {
+        "selfHost": "Zelf hosten voor uw eigen activiteiten, gratis",
+        "modify": "Fork en pas aan voor uw behoeften",
+        "commercial": "Commercieel gebruiken, inclusief hosten voor anderen",
+        "consulting": "Gebruik voor ontwikkeling, testen, educatie"
+      },
+      "noteItems": {
+        "attribution": "Behoud de licentie- en copyrightvermelding in kopieën",
+        "patent": "Bevat een expliciete patentlicentie"
+      }
+    }
   },
   "myActivity": {
     "title": "Mijn activiteit",
@@ -2104,5 +2100,16 @@
     "lastWeek": "Laatste 7 dagen",
     "completedCount": "{{count}} klaar",
     "empty": "Geen geregistreerde tijd in de laatste 7 dagen"
+  },
+  "trialBanner": {
+    "title": "U gebruikt de gehoste proefversie",
+    "titleWithDate": "Uw gehoste proefperiode eindigt op {{date}}",
+    "description": "Gegevens worden niet bewaard na de proef. Bekijk uw abonnementsopties om door te gaan.",
+    "daysRemaining": "{{count}} dag resterend",
+    "daysRemaining_plural": "{{count}} dagen resterend",
+    "expired": "Uw proefperiode is verlopen",
+    "expiredDescription": "De proefperiode is beëindigd. Bekijk uw abonnementsopties om uw gegevens te behouden en door te gaan.",
+    "seePlans": "Bekijk opties",
+    "viewPlan": "Bekijk opties"
   }
 }

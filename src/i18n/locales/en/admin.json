@@ -366,34 +366,45 @@
     "reviewed": "Reviewed"
   },
   "pricing": {
-    "title": "Get Started",
-    "subtitle": "The MES for metal fabrication you'll enjoy working with. Self-host for full features.",
-    "contactUs": "Contact Us",
-    "recommended": "Recommended",
-    "needHelp": "Need help with self-hosting or customization?",
-    "hostedDemo": {
-      "name": "Hosted Demo",
-      "description": "Try it online with limited usage",
-      "tryDemo": "Try Live Demo",
-      "note": "For evaluation and educational purposes only",
+    "title": "Plans",
+    "subtitle": "Eryxon Flow is open source under Apache 2.0. Start on the hosted trial, let us run it for you, or self-host on your own infrastructure.",
+    "contactUs": "Get in touch",
+    "needHelp": "Need help with self-hosting or setup?",
+    "hostedTrial": {
+      "name": "Hosted trial",
+      "description": "Run Eryxon Flow on our hosted SaaS for 30 days.",
+      "tryDemo": "Start trial",
+      "note": "For evaluation. Limits apply during the trial.",
       "features": [
-        "Limited jobs and parts",
-        "Limited storage",
-        "Limited API access",
-        "Documentation only"
+        "30-day trial",
+        "100 jobs per month",
+        "500 parts per month",
+        "2 GB storage",
+        "100 API requests per day"
+      ]
+    },
+    "managedHosting": {
+      "name": "Managed hosting",
+      "description": "A dedicated, isolated instance we run for you.",
+      "cta": "Get in touch",
+      "features": [
+        "Your own database, fully isolated",
+        "Backups and version management",
+        "Whitelabeling",
+        "Run and maintained by us"
       ]
     },
     "selfHosted": {
-      "name": "Self-Hosted",
-      "description": "Full features on your own infrastructure",
-      "getStarted": "View Self-Hosting Guide",
+      "name": "Self-hosted",
+      "description": "Fully open source on your own infrastructure.",
+      "getStarted": "Self-hosting guide",
+      "consulting": "Get setup help",
       "features": [
+        "Open source, Apache 2.0",
         "Unlimited jobs and parts",
         "Unlimited storage",
         "Full API access",
-        "Full webhook support",
-        "MCP Server included",
-        "Complete data control"
+        "Your own infrastructure"
       ]
     },
     "license": {
@@ -414,26 +425,26 @@
     }
   },
   "myPlan": {
-    "title": "My Plan",
-    "subtitle": "View your usage and deployment options",
-    "contactUs": "Contact Us",
-    "activeJobs": "Active Jobs",
+    "title": "My plan",
+    "subtitle": "View your usage and the options beyond the trial",
+    "contactUs": "Get in touch",
+    "activeJobs": "Active jobs",
     "admins": "Admins",
-    "completedJobs": "Completed Jobs",
+    "completedJobs": "Completed jobs",
     "operators": "Operators",
     "parts": "Parts",
-    "partsLimitReached": "Demo limit reached. Self-host for unlimited usage.",
+    "partsLimitReached": "Trial limit reached. See your plan options to keep running.",
     "storage": "Storage",
-    "totalJobs": "Total Jobs",
-    "usageThisMonth": "Usage This Month",
-    "apiRequests": "API Requests",
+    "totalJobs": "Total jobs",
+    "usageThisMonth": "Usage this month",
+    "apiRequests": "API requests",
     "today": "today",
     "requestsThisMonth": "requests this month",
     "hostedDemo": "Hosted Demo",
     "hostedDemoDescription": "Limited usage for evaluation and educational purposes",
-    "selfHosted": "Self-Hosted",
+    "selfHosted": "Self-hosted",
     "selfHostedDescription": "Full features, unlimited usage on your infrastructure",
-    "goSelfHosted": "Go Self-Hosted",
+    "goSelfHosted": "Self-hosting guide",
     "unlimitedWithSelfHost": "Unlimited with Self-Host",
     "selfHostBenefits": "Self-host Eryxon Flow for unlimited usage and full control over your data.",
     "benefit": {
@@ -442,20 +453,38 @@
       "fullApi": "Full API access",
       "yourData": "Complete control over your data"
     },
-    "viewGuide": "View Self-Hosting Guide",
-    "needHelp": "Need Help?",
-    "helpDescription": "Sheet Metal Connect e.U. can help you set up and customize Eryxon Flow for your operations."
+    "viewGuide": "Self-hosting guide",
+    "needHelp": "Need help?",
+    "helpDescription": "Sheet Metal Connect e.U. can help you set up and run Eryxon Flow for your operations.",
+    "hostedTrial": "Hosted trial",
+    "hostedTrialDescription": "Hosted SaaS, 30-day trial with monthly limits",
+    "managedHosting": {
+      "title": "Managed hosting",
+      "description": "A dedicated, isolated instance we run for you — your own database, backups, and version management.",
+      "cta": "Get in touch",
+      "benefit": {
+        "isolated": "Your own isolated database",
+        "backups": "Backups handled for you",
+        "versions": "Version management",
+        "whitelabel": "Whitelabeling"
+      }
+    },
+    "selfHostedCard": {
+      "title": "Self-hosted",
+      "description": "Fully open source under Apache 2.0. Run it on your own infrastructure.",
+      "consulting": "Get setup help"
+    }
   },
   "trialBanner": {
-    "title": "You are on the free trial",
-    "titleWithDate": "Your free trial ends on {{date}}",
-    "description": "Files and data will not be retained after the trial period. Self-host Eryxon Flow for unlimited usage and full data ownership.",
+    "title": "You are on the hosted trial",
+    "titleWithDate": "Your hosted trial ends on {{date}}",
+    "description": "Data is not retained after the trial. See your plan options to keep running.",
     "daysRemaining": "{{count}} day remaining",
     "daysRemaining_plural": "{{count}} days remaining",
     "expired": "Your trial has expired",
-    "expiredDescription": "Your trial period has ended. Self-host Eryxon Flow to keep your data and continue using all features.",
-    "upgradeCta": "View Self-Hosting Guide",
-    "viewPlan": "View Plan"
+    "expiredDescription": "The trial period has ended. See your plan options to keep your data and continue.",
+    "seePlans": "See plans",
+    "viewPlan": "See plans"
   },
   "featureFlags": {
     "title": "Feature Flags",
