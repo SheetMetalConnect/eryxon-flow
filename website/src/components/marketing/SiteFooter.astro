@@ -14,7 +14,9 @@
  * Slice 4). Keeping the marketing footer independent ships the corrected IA now without touching
  * live docs chrome.
  */
+import { Image } from "astro:assets";
 import CtaButton from "@/components/marketing/CtaButton.astro";
+import lukePhoto from "@/assets/luke-van-enkhuizen.jpg";
 import type { Locale } from "@/lib/locale";
 
 interface Props {
@@ -67,27 +69,23 @@ const resources = [
     </ul>
   </nav>
 
-  <nav class="ery-fcol" aria-label="Contact">
-    <h2 class="ery-fhead">Contact</h2>
-    <ul class="ery-flist">
-      <li>
-        <CtaButton href="/managed-rollout/?cta=footer_contact_managed_rollout" ctaId="footer_contact_managed_rollout" surface="site_footer" kind="rollout_page" variant="tertiary" locale={locale}>
-          Managed rollout
-        </CtaButton>
-      </li>
-      <li>
-        <CtaButton href="mailto:office@vanenkhuizen.com" ctaId="footer_contact_email" surface="site_footer" kind="email" variant="tertiary" locale={locale}>
-          office@vanenkhuizen.com
-        </CtaButton>
-      </li>
-      <li><a href="https://www.linkedin.com/in/lvanenkhuizen/" target="_blank" rel="noopener">LinkedIn</a></li>
-      <li>
-        <CtaButton href="https://www.vanenkhuizen.com/" ctaId="footer_contact_consulting_site" surface="site_footer" kind="external_site" variant="tertiary" locale={locale} external>
-          vanenkhuizen.com
-        </CtaButton>
-      </li>
-    </ul>
-  </nav>
+  <section class="ery-fcol ery-fcreator" aria-label="Creator">
+    <h2 class="ery-fhead">Created by</h2>
+    <div class="ery-creator-card">
+      <Image
+        src={lukePhoto}
+        alt="Luke van Enkhuizen"
+        width={96}
+        height={96}
+        loading="lazy"
+        class="ery-creator-photo"
+      />
+      <div class="ery-creator-meta">
+        <p class="ery-creator-name">Luke van Enkhuizen</p>
+        <p class="ery-creator-org">Sheet Metal Connect e.U.</p>
+      </div>
+    </div>
+  </section>
 </div>
 
 <p class="ery-flegal">
@@ -148,6 +146,51 @@ const resources = [
   .ery-flist a:hover {
     color: var(--ery-brand);
   }
+  .ery-fcreator {
+    align-self: start;
+  }
+  .ery-creator-card {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-4);
+    padding: var(--ery-space-4);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius);
+    background: var(--ery-surface-subtle);
+    transition: border-color var(--ery-motion-base) var(--ery-ease);
+  }
+  .ery-creator-card:hover {
+    border-color: var(--ery-border-strong);
+  }
+  .ery-creator-photo {
+    inline-size: 56px;
+    block-size: 56px;
+    border-radius: var(--ery-radius-pill);
+    object-fit: cover;
+    border: 1px solid var(--ery-border);
+    flex-shrink: 0;
+  }
+  .ery-creator-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-1);
+    min-inline-size: 0;
+  }
+  .ery-creator-name {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text);
+    line-height: var(--ery-leading-snug);
+  }
+  .ery-creator-org {
+    margin: 0;
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-muted);
+    line-height: var(--ery-leading-snug);
+  }
+
   .ery-flegal {
     margin: var(--ery-space-10) 0 0;
     padding-block-start: var(--ery-space-6);

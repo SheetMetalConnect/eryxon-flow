@@ -13,6 +13,7 @@ and is validating in CI ahead of the public launch.
 - **Pilot activation card** on the onboarding dashboard — new evaluators land on a single activation card that walks through their first work order.
 - **Hosted trial reporting pack** — trial usage is summarised for evaluators so a pilot can be reviewed without exporting raw data.
 - Marketing website redesign surfaces: root landing page (`/`), blog (`/blog/`), and changelog / release-notes (`/release-notes/`), built on the canonical Eryxon design-token contract.
+- Marketing footer creator attribution: a "Created by" card crediting Luke van Enkhuizen — Sheet Metal Connect e.U., with a locally bundled, build-optimised avatar (`website/src/assets/luke-van-enkhuizen.jpg`).
 
 ### Changed
 
@@ -22,6 +23,7 @@ and is validating in CI ahead of the public launch.
 ### Removed
 
 - Dead `AccordionContainer.astro` website component (gradient-border + scale-animation legacy, unreferenced).
+- Marketing footer "Contact" column (managed-rollout, email, LinkedIn, and vanenkhuizen.com links) — replaced by the creator attribution card.
 
 ## [0.5.2] - 2026-05-09
 
