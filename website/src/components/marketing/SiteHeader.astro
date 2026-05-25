@@ -1,16 +1,18 @@
 ---
 /*
- * SiteHeader — decision-oriented marketing navigation (ERY-60).
+ * SiteHeader — decision-oriented marketing navigation (ERY-60 → v0.6 locale buildout).
  *
  * Fills the `header` slot of MarketingLayout (the wordmark is already rendered by the layout).
- * IA per the ERY-54 brief: a buyer-decision nav, not a docs index —
- *   Managed rollout · Documentation · [Open hosted trial] (primary CTA).
+ * IA per the ERY-54 brief: Pricing · Managed rollout · Documentation · Blog · Changelog, with the
+ * hosted trial as the single CTA button.
  *
- * "Home" is reachable via the wordmark, so it is not duplicated as a nav link.
- * Hosted trial is the primary action and is rendered as the one CTA button in the bar.
+ * Locale-aware: nav labels are translated and the locale-bearing routes (Pricing) carry the
+ * current locale prefix. Docs/rollout/blog/changelog are single-language surfaces (docs +
+ * editorial collections) and always link to their canonical English paths. A compact language
+ * switcher (EN/NL/DE) is rendered at the end of the bar, preserving the current base path.
  */
 import CtaButton from "@/components/marketing/CtaButton.astro";
-import type { Locale } from "@/lib/locale";
+import { localizePath, stripLocalePrefix, localeFromPath, SUPPORTED_LOCALES, type Locale } from "@/lib/locale";
 
 interface Props {
   locale?: Locale;
@@ -20,13 +22,33 @@ interface Props {
 
 const { locale = "en", active = null } = Astro.props;
 
+const labels: Record<Locale, Record<string, string>> = {
+  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Changelog", cta: "Get started for free" },
+  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Changelog", cta: "Begin gratis" },
+  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Changelog", cta: "Kostenlos starten" },
+};
+const t = labels[locale];
+
+// Pricing is localized; the rest are single-language canonical paths.
 const links = [
-  { key: "pricing", label: "Pricing", href: "/pricing/" },
-  { key: "rollout", label: "Managed rollout", href: "/managed-rollout/" },
-  { key: "docs", label: "Documentation", href: "/introduction/" },
-  { key: "blog", label: "Blog", href: "/blog/" },
-  { key: "changelog", label: "Changelog", href: "/release-notes/" },
+  { key: "pricing", label: t.pricing, href: localizePath("/pricing/", locale) },
+  { key: "rollout", label: t.rollout, href: "/managed-rollout/" },
+  { key: "docs", label: t.docs, href: "/introduction/" },
+  { key: "blog", label: t.blog, href: "/blog/" },
+  { key: "changelog", label: t.changelog, href: "/release-notes/" },
 ] as const;
+
+// Language switcher: keep the visitor on the equivalent path in each locale, but only for the
+// pure-marketing surfaces that exist per locale (home + pricing). Elsewhere, switch to that
+// locale's home.
+const currentLocale = localeFromPath(Astro.url.pathname);
+const base = stripLocalePrefix(Astro.url.pathname, currentLocale);
+const localizedBase = base === "/" || base === "/pricing/" ? base : "/";
+const langLinks = SUPPORTED_LOCALES.map((l) => ({
+  lang: l,
+  href: localizePath(localizedBase, l),
+  current: l === locale,
+}));
 ---
 
 <nav aria-label="Primary" class="ery-nav">
@@ -34,27 +56,31 @@ const links = [
     {
       links.map((link) => (
         <li>
-          <a
-            href={link.href}
-            class="ery-nav__link"
-            aria-current={active === link.key ? "page" : undefined}
-          >
+          <a href={link.href} class="ery-nav__link" aria-current={active === link.key ? "page" : undefined}>
             {link.label}
           </a>
         </li>
       ))
     }
   </ul>
-  <CtaButton
-    href="https://app.eryxon.eu"
-    ctaId="nav_primary_hosted"
-    surface="site_header"
-    kind="hosted_app"
-    variant="primary"
-    locale={locale}
-    external
-  >
-    Get started for free
+
+  <div class="ery-langswitch" role="group" aria-label="Language">
+    {
+      langLinks.map((l) => (
+        <a
+          href={l.href}
+          class="ery-langswitch__opt"
+          aria-current={l.current ? "true" : undefined}
+          hreflang={l.lang}
+        >
+          {l.lang.toUpperCase()}
+        </a>
+      ))
+    }
+  </div>
+
+  <CtaButton href="https://app.eryxon.eu" ctaId="nav_primary_hosted" surface="site_header" kind="hosted_app" variant="primary" locale={locale} external>
+    {t.cta}
   </CtaButton>
 </nav>
 
@@ -62,12 +88,12 @@ const links = [
   .ery-nav {
     display: flex;
     align-items: center;
-    gap: var(--ery-space-6);
+    gap: var(--ery-space-5);
   }
   .ery-nav__list {
     display: flex;
     align-items: center;
-    gap: var(--ery-space-6);
+    gap: var(--ery-space-5);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -82,8 +108,34 @@ const links = [
     color: var(--ery-text);
   }
 
-  /* On narrow screens the secondary links collapse; the hosted-trial CTA always stays. */
-  @media (max-width: 640px) {
+  .ery-langswitch {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-sm);
+  }
+  .ery-langswitch__opt {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    font-weight: 500;
+    color: var(--ery-text-muted);
+    padding: 3px 7px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+  .ery-langswitch__opt:hover {
+    color: var(--ery-text);
+    background: var(--ery-surface-subtle);
+  }
+  .ery-langswitch__opt[aria-current="true"] {
+    color: var(--ery-brand-contrast);
+    background: var(--ery-brand);
+  }
+
+  /* On narrow screens the secondary links collapse; the language switcher + CTA stay. */
+  @media (max-width: 760px) {
     .ery-nav__list {
       display: none;
     }

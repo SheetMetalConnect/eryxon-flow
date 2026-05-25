@@ -1,0 +1,23 @@
+---
+/*
+ * Localized pricing — `/nl/pricing/` and `/de/pricing/` (v0.6 locale buildout).
+ *
+ * Renders the shared kit-faithful `Pricing.astro` with locale-specific copy. `en` is the root
+ * locale and is served by `pages/pricing/index.astro`.
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Pricing from "@/components/marketing/Pricing.astro";
+import { pricingCopy } from "@/lib/marketing-content";
+import type { Locale } from "@/lib/locale";
+
+export function getStaticPaths() {
+  return [{ params: { locale: "nl" } }, { params: { locale: "de" } }];
+}
+
+const locale = Astro.params.locale as Locale;
+const c = pricingCopy(locale);
+---
+
+<SiteLayout title={c.title} description={c.description} locale={locale} activeNav="pricing">
+  <Pricing locale={locale} />
+</SiteLayout>

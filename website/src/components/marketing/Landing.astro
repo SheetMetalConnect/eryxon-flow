@@ -1,0 +1,603 @@
+---
+/*
+ * Landing.astro — the full-fidelity marketing homepage body (ERY-60 / v0.6 locale buildout).
+ *
+ * Ports the canonical kit landing (`ui_kits/marketing/index.html` + `components.jsx` +
+ * `styles.css`) section-for-section: hero → product-frame mockup → feature grid (00–05) →
+ * how-it-works (3 steps) → dark API code block → integrations grid → dark CTA banner. The kit's
+ * raw `mk-*` classes are translated to the site `--ery-*` token contract (the same approach used
+ * by `pricing/index.astro`), so the look is 1:1 with the kit while the token authority stays
+ * `tokens.css`.
+ *
+ * Content is locale-driven (`marketing-content.ts`). Per Luke's constraints: NO invented
+ * testimonials/stats and NO customer names/logos — the kit's `Testimonial` and trust-row sections
+ * are deliberately omitted rather than filled with fabricated proof.
+ *
+ * All CTAs route through the shared CtaButton primitive so the ERY-33 analytics contract holds.
+ */
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import { landingCopy } from "@/lib/marketing-content";
+import { localizePath, type Locale } from "@/lib/locale";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = "en" } = Astro.props;
+const c = landingCopy(locale);
+
+const docsHref = localizePath("/introduction/", locale);
+const rolloutHref = localizePath("/managed-rollout/", locale);
+const selfHostHref = localizePath("/guides/self-hosting/", locale);
+
+const check =
+  '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
+const arrow =
+  '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>';
+---
+
+<!-- 1 · Hero (kit .mk-hero) ------------------------------------------------- -->
+<section class="mk-hero">
+  <p class="mk-tag">{c.hero.tag}</p>
+  <h1 class="mk-h1">{c.hero.h1}</h1>
+  <p class="mk-lead">{c.hero.lead}</p>
+  <div class="mk-hero-cta">
+    <CtaButton href="https://app.eryxon.eu" ctaId="home_hero_primary_hosted" surface="homepage_hero" kind="hosted_app" variant="primary" locale={locale} external>
+      <span>{c.hero.ctaPrimary}</span><Fragment set:html={arrow} />
+    </CtaButton>
+    <CtaButton href={`${rolloutHref}?cta=home_hero_secondary_rollout`} ctaId="home_hero_secondary_rollout" surface="homepage_hero" kind="rollout_page" variant="secondary" locale={locale}>
+      {c.hero.ctaSecondary}
+    </CtaButton>
+    <CtaButton href={docsHref} ctaId="home_hero_tertiary_docs" surface="homepage_hero" kind="docs" variant="tertiary" locale={locale}>
+      {c.hero.ctaTertiary}
+    </CtaButton>
+  </div>
+</section>
+
+<!-- 2 · Product preview frame (kit .mk-product) ----------------------------- -->
+<div class="mk-product">
+  <div class="mk-product-chrome">
+    <span class="mk-product-dot"></span>
+    <span class="mk-product-dot"></span>
+    <span class="mk-product-dot"></span>
+    <div class="mk-product-url">{c.product.url}</div>
+  </div>
+  <div class="mk-product-shot surface-dark">
+    <div class="mk-shot-row">
+      <div class="mk-shot-brand">
+        <img src="/eryxon-mark-flat.svg" width="20" height="20" alt="" />
+        <span>eryxon flow</span>
+      </div>
+      <div class="mk-shot-cell">{c.product.cell}</div>
+      <div class="mk-shot-time">19:46</div>
+    </div>
+    <div class="mk-shot-title">{c.product.queueTitle}</div>
+    <div class="mk-shot-cards">
+      {c.product.cards.map((card) => (
+        <div class="mk-shot-card">
+          <div class:list={["mk-shot-stripe", `is-${card.stripe}`]}></div>
+          <div class="mk-shot-card-body">
+            <div class="mk-shot-card-row">
+              <span class="mk-shot-wo">{card.wo}</span>
+              <span class:list={["mk-shot-tag", `is-${card.tagCls}`]}>{card.tag}</span>
+            </div>
+            <div class="mk-shot-card-title">{card.op}</div>
+            <div class="mk-shot-card-meta">{card.meta}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<!-- 3 · Feature grid 00–05 (kit .mk-feature-grid) --------------------------- -->
+<section class="mk-section" id="product">
+  <div class="mk-section-head">
+    <span class="mk-section-eyebrow">{c.features.eyebrow}</span>
+    <h2 class="mk-h2">{c.features.h2}</h2>
+    <p class="mk-section-lead">{c.features.lead}</p>
+  </div>
+  <div class="mk-feature-grid">
+    {c.features.items.map((f, i) => (
+      <article class="mk-feature">
+        <div class="mk-feature-num">{String(i).padStart(2, "0")}</div>
+        <h3 class="mk-feature-title">{f.title}</h3>
+        <p class="mk-feature-body">{f.body}</p>
+      </article>
+    ))}
+  </div>
+</section>
+
+<!-- 4 · How it works (kit .mk-steps) ---------------------------------------- -->
+<section class="mk-section" id="how">
+  <div class="mk-section-head">
+    <span class="mk-section-eyebrow">{c.how.eyebrow}</span>
+    <h2 class="mk-h2">{c.how.h2}</h2>
+  </div>
+  <ol class="mk-steps">
+    {c.how.steps.map((s) => (
+      <li class="mk-step">
+        <span class="mk-step-num">{s.n}</span>
+        <div>
+          <h3 class="mk-step-h">{s.h}</h3>
+          <p class="mk-step-b">{s.b}</p>
+          <span class="mk-step-tag">{s.tag}</span>
+        </div>
+      </li>
+    ))}
+  </ol>
+</section>
+
+<!-- 5 · API code block, dark band (kit .mk-section-dark .mk-api-grid) -------- -->
+<section class="mk-section-dark surface-dark" id="api">
+  <div class="mk-api-grid">
+    <div>
+      <span class="mk-section-eyebrow on-dark">{c.api.eyebrow}</span>
+      <h2 class="mk-h2 on-dark">{c.api.h2}</h2>
+      <p class="mk-section-lead on-dark">{c.api.lead}</p>
+      <ul class="mk-api-list">
+        {c.api.bullets.map((b) => (
+          <li><Fragment set:html={check} /><span>{b}</span></li>
+        ))}
+      </ul>
+    </div>
+    <div class="mk-code">
+      <div class="mk-code-head">
+        <span class="mk-code-lang">cURL</span>
+      </div>
+      <pre>{`$ curl https://app.eryxon.eu/api/jobs \\
+    -H "Authorization: Bearer ery_live_..." \\
+    -X POST -H "Content-Type: application/json" \\
+    -d '{
+      "job_number": "WO-4218",
+      "due_date":   "2026-06-12",
+      "parts": [
+        { "part_number": "PN-902-A",
+          "quantity":   200,
+          "operations": ["cut","bend","weld"] }
+      ]
+    }'
+
+> 201 Created
+> { "id": "job_01H...", "job_number": "WO-4218" }`}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- 6 · Integrations grid (kit .mk-int-grid) -------------------------------- -->
+<section class="mk-section" id="integrations">
+  <div class="mk-section-head">
+    <span class="mk-section-eyebrow">{c.integrations.eyebrow}</span>
+    <h2 class="mk-h2">{c.integrations.h2}</h2>
+    <p class="mk-section-lead">{c.integrations.lead}</p>
+  </div>
+  <div class="mk-int-grid">
+    {c.integrations.items.map((it) => (
+      <div class="mk-int-tile">
+        <div class="mk-int-name">{it.name}</div>
+        <div class="mk-int-kind">{it.kind}</div>
+      </div>
+    ))}
+  </div>
+</section>
+
+<!-- 7 · CTA banner, dark band (kit .mk-cta-banner) -------------------------- -->
+<section class="mk-cta-banner surface-dark">
+  <div class="mk-cta-wrap">
+    <div>
+      <h2 class="mk-h2 on-dark">{c.cta.h2}</h2>
+      <p class="mk-section-lead on-dark mk-cta-lead">{c.cta.lead}</p>
+    </div>
+    <div class="mk-cta-actions">
+      <CtaButton href="https://app.eryxon.eu" ctaId="home_cta_primary_hosted" surface="homepage_cta" kind="hosted_app" variant="primary" locale={locale} external>
+        <span>{c.cta.ctaPrimary}</span><Fragment set:html={arrow} />
+      </CtaButton>
+      <a class="mk-btn-on-dark" href={selfHostHref} data-cta-id="home_cta_secondary_selfhost" data-cta-surface="homepage_cta" data-cta-kind="docs">
+        {c.cta.ctaSecondary}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ============================================================
+     Kit marketing landing — ported from ui_kits/marketing/styles.css.
+     Raw kit classes preserved; kit HSL tokens mapped to the --ery-* contract.
+     ============================================================ */
+
+  /* ---------- Hero ---------- */
+  .mk-hero {
+    text-align: center;
+    max-inline-size: 900px;
+    margin-inline: auto;
+    padding: var(--ery-pad-hero) var(--ery-pad-section) var(--ery-space-12);
+  }
+  .mk-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--ery-space-1) var(--ery-space-3);
+    margin: 0 0 var(--ery-space-5);
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    font-weight: 500;
+    color: var(--ery-brand);
+    background: color-mix(in srgb, var(--ery-brand) 10%, transparent);
+    border-radius: var(--ery-radius-pill);
+    white-space: nowrap;
+  }
+  .mk-h1 {
+    font-size: clamp(var(--ery-text-4xl), 5.5vw, var(--ery-text-6xl));
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 0 auto var(--ery-space-5);
+    text-wrap: balance;
+  }
+  .mk-lead {
+    max-inline-size: 640px;
+    margin: 0 auto;
+    font-size: var(--ery-text-lg);
+    line-height: 1.55;
+    color: var(--ery-text-muted);
+  }
+  .mk-hero-cta {
+    margin-block-start: var(--ery-space-8);
+    display: flex;
+    gap: var(--ery-space-3);
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- Product preview frame ---------- */
+  .mk-product {
+    max-inline-size: 1080px;
+    margin: var(--ery-space-6) auto var(--ery-space-24);
+    border-radius: var(--ery-radius-lg);
+    border: 1px solid var(--ery-border);
+    background: var(--ery-surface);
+    box-shadow: var(--ery-shadow);
+    overflow: hidden;
+  }
+  .mk-product-chrome {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-2);
+    padding: var(--ery-space-3) var(--ery-space-4);
+    background: var(--ery-surface-subtle);
+    border-block-end: 1px solid var(--ery-border);
+  }
+  .mk-product-dot {
+    inline-size: 10px;
+    block-size: 10px;
+    border-radius: 50%;
+    background: var(--ery-border-strong);
+  }
+  .mk-product-dot:nth-child(1) { background: #f95757; }
+  .mk-product-dot:nth-child(2) { background: #f9bc41; }
+  .mk-product-dot:nth-child(3) { background: #45c46c; }
+  .mk-product-url {
+    margin-inline-start: var(--ery-space-3);
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-muted);
+  }
+  .mk-product-shot {
+    padding: var(--ery-space-6);
+  }
+  .mk-shot-row {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-4);
+  }
+  .mk-shot-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--ery-space-2);
+    font-weight: 600;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-on-dark);
+  }
+  .mk-shot-cell {
+    padding: var(--ery-space-1) var(--ery-space-3);
+    border-radius: var(--ery-radius-pill);
+    background: color-mix(in srgb, var(--ery-brand-on-dark) 12%, transparent);
+    color: var(--ery-brand-on-dark);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+  }
+  .mk-shot-time {
+    margin-inline-start: auto;
+    font-family: var(--ery-font-mono);
+    color: var(--ery-text-on-dark-muted);
+    font-size: var(--ery-text-sm);
+  }
+  .mk-shot-title {
+    font-size: var(--ery-text-2xl);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin: var(--ery-space-6) 0 var(--ery-space-3);
+    color: var(--ery-text-on-dark);
+  }
+  .mk-shot-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--ery-space-3);
+  }
+  .mk-shot-card {
+    display: flex;
+    border-radius: var(--ery-radius-sm);
+    border: 1px solid var(--ery-border-dark);
+    background: var(--ery-surface-dark);
+    overflow: hidden;
+  }
+  .mk-shot-stripe { inline-size: 4px; }
+  .mk-shot-stripe.is-active { background: #fbbc05; }
+  .mk-shot-stripe.is-pending { background: #5a5a5a; }
+  .mk-shot-stripe.is-on-hold { background: #f97316; }
+  .mk-shot-card-body { padding: var(--ery-space-2) var(--ery-space-3); flex: 1; min-inline-size: 0; }
+  .mk-shot-card-row { display: flex; justify-content: space-between; align-items: center; gap: var(--ery-space-2); }
+  .mk-shot-wo { font-family: var(--ery-font-mono); font-size: 11px; color: var(--ery-text-on-dark-muted); }
+  .mk-shot-tag {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+  .mk-shot-tag.is-today { background: rgba(251, 188, 5, 0.15); color: #fbbc05; }
+  .mk-shot-tag.is-soon { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+  .mk-shot-tag.is-overdue { background: rgba(234, 67, 53, 0.15); color: #ea4335; }
+  .mk-shot-card-title { font-size: var(--ery-text-sm); font-weight: 600; margin-block-start: var(--ery-space-1); color: var(--ery-text-on-dark); }
+  .mk-shot-card-meta { font-size: 11px; color: var(--ery-text-on-dark-muted); margin-block-start: var(--ery-space-1); }
+
+  /* ---------- Sections ---------- */
+  .mk-section {
+    padding: var(--ery-space-24) var(--ery-pad-section);
+    max-inline-size: 1180px;
+    margin-inline: auto;
+  }
+  .mk-section-dark {
+    padding: var(--ery-space-24) 0;
+  }
+  .mk-section-head {
+    text-align: center;
+    max-inline-size: 720px;
+    margin: 0 auto var(--ery-space-16);
+  }
+  .mk-section-eyebrow {
+    display: inline-block;
+    margin-block-end: var(--ery-space-3);
+    font-size: var(--ery-text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ery-brand);
+  }
+  .mk-section-eyebrow.on-dark { color: var(--ery-brand-on-dark); }
+  .mk-h2 {
+    font-size: clamp(var(--ery-text-2xl), 3.5vw, var(--ery-text-4xl));
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
+    margin: 0;
+  }
+  .mk-h2.on-dark { color: var(--ery-text-on-dark); }
+  .mk-section-lead {
+    margin-block-start: var(--ery-space-4);
+    font-size: var(--ery-text-lg);
+    color: var(--ery-text-muted);
+    line-height: 1.55;
+  }
+  .mk-section-lead.on-dark { color: var(--ery-text-on-dark-muted); }
+
+  /* ---------- Feature grid ---------- */
+  .mk-feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-block-start: 1px solid var(--ery-border);
+    border-inline-start: 1px solid var(--ery-border);
+  }
+  .mk-feature {
+    padding: var(--ery-space-8);
+    border-inline-end: 1px solid var(--ery-border);
+    border-block-end: 1px solid var(--ery-border);
+  }
+  .mk-feature-num {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    font-weight: 600;
+    color: var(--ery-brand);
+    margin-block-end: var(--ery-space-4);
+  }
+  .mk-feature-title {
+    font-size: var(--ery-text-lg);
+    font-weight: 600;
+    margin: 0 0 var(--ery-space-3);
+    letter-spacing: -0.01em;
+  }
+  .mk-feature-body {
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  /* ---------- How it works ---------- */
+  .mk-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ery-space-6);
+  }
+  .mk-step {
+    background: var(--ery-surface);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    padding: var(--ery-space-8);
+  }
+  .mk-step-num {
+    display: inline-block;
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    font-weight: 600;
+    color: var(--ery-brand);
+    letter-spacing: 0.08em;
+    margin-block-end: var(--ery-space-4);
+  }
+  .mk-step-h { font-size: var(--ery-text-lg); font-weight: 600; margin: 0 0 var(--ery-space-3); letter-spacing: -0.01em; }
+  .mk-step-b { font-size: var(--ery-text-sm); line-height: 1.55; color: var(--ery-text-muted); margin: 0 0 var(--ery-space-4); }
+  .mk-step-tag {
+    display: inline-flex;
+    align-items: center;
+    font-family: var(--ery-font-mono);
+    font-size: 11px;
+    color: var(--ery-text-muted);
+    padding: 5px var(--ery-space-3);
+    border-radius: var(--ery-radius-pill);
+    background: var(--ery-surface-subtle);
+    border: 1px solid var(--ery-border);
+  }
+
+  /* ---------- API block ---------- */
+  .mk-api-grid {
+    max-inline-size: 1180px;
+    margin-inline: auto;
+    padding: 0 var(--ery-pad-section);
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: var(--ery-space-16);
+    align-items: center;
+  }
+  .mk-api-list {
+    list-style: none;
+    padding: 0;
+    margin: var(--ery-space-8) 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+  }
+  .mk-api-list li {
+    display: flex;
+    gap: var(--ery-space-3);
+    align-items: center;
+    font-size: var(--ery-text-base);
+    color: var(--ery-text-on-dark);
+  }
+  .mk-api-list :global(svg) { color: var(--ery-brand-on-dark); flex-shrink: 0; }
+  .mk-code {
+    background: var(--ery-code-bg);
+    border: 1px solid var(--ery-code-border);
+    border-radius: var(--ery-radius-lg);
+    overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
+  }
+  .mk-code-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--ery-space-2) var(--ery-space-4);
+    background: var(--ery-surface-dark);
+    border-block-end: 1px solid var(--ery-code-border);
+  }
+  .mk-code-lang {
+    font-family: var(--ery-font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ery-brand-on-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .mk-code pre {
+    margin: 0;
+    padding: var(--ery-space-5);
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    line-height: 1.65;
+    color: var(--ery-code-text);
+    white-space: pre;
+    overflow: auto;
+  }
+
+  /* ---------- Integrations ---------- */
+  .mk-int-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-block-start: 1px solid var(--ery-border);
+    border-inline-start: 1px solid var(--ery-border);
+  }
+  .mk-int-tile {
+    padding: var(--ery-space-5) var(--ery-space-6);
+    border-inline-end: 1px solid var(--ery-border);
+    border-block-end: 1px solid var(--ery-border);
+    background: var(--ery-surface);
+    transition: background var(--ery-motion-base) var(--ery-ease);
+  }
+  .mk-int-tile:hover { background: var(--ery-surface-subtle); }
+  .mk-int-name { font-size: var(--ery-text-base); font-weight: 600; letter-spacing: -0.01em; color: var(--ery-text); }
+  .mk-int-kind {
+    font-family: var(--ery-font-mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ery-text-muted);
+    margin-block-start: var(--ery-space-1);
+  }
+
+  /* ---------- CTA banner ---------- */
+  .mk-cta-banner {
+    padding: var(--ery-space-20) var(--ery-pad-section);
+  }
+  .mk-cta-wrap {
+    max-inline-size: 1180px;
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1.4fr auto;
+    gap: var(--ery-space-12);
+    align-items: center;
+  }
+  .mk-cta-lead { margin-block-start: var(--ery-space-3); }
+  .mk-cta-actions { display: flex; gap: var(--ery-space-3); flex-wrap: wrap; align-items: center; }
+  .mk-btn-on-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    background: transparent;
+    color: var(--ery-text-on-dark);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-weight: 500;
+    white-space: nowrap;
+    transition: background var(--ery-motion-base) var(--ery-ease), border-color var(--ery-motion-base) var(--ery-ease);
+  }
+  .mk-btn-on-dark:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: var(--ery-text-on-dark);
+  }
+
+  /* CtaButton primitives carry an icon span — align kit-style. */
+  .mk-hero-cta :global(.ery-cta) span,
+  .mk-cta-actions :global(.ery-cta) span {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* ---------- Responsive (kit @media 980px) ---------- */
+  @media (max-width: 980px) {
+    .mk-feature-grid { grid-template-columns: 1fr 1fr; }
+    .mk-int-grid { grid-template-columns: repeat(2, 1fr); }
+    .mk-api-grid { grid-template-columns: 1fr; }
+    .mk-steps { grid-template-columns: 1fr; }
+    .mk-shot-cards { grid-template-columns: 1fr; }
+    .mk-cta-wrap { grid-template-columns: 1fr; text-align: center; }
+    .mk-cta-actions { justify-content: center; }
+  }
+  @media (max-width: 600px) {
+    .mk-feature-grid { grid-template-columns: 1fr; }
+  }
+</style>
