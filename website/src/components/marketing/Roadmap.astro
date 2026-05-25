@@ -2,16 +2,18 @@
 /*
  * Roadmap.astro — product roadmap surface (`/roadmap/`, EN + `/nl/`, `/de/`).
  *
- * Our own content first: three status columns (Shipped / In progress / Planned) rendered in the
- * marketing design system, with real items. Native iOS/Android sit under "In progress" — work in
- * flight, not yet shipped. The public Canny board (https://eryxon.canny.io/) is paired in as a
- * "vote on it" CTA rather than a bare iframe, so the page stays useful even where framing is
- * blocked. No version numbers here (those live in the release notes).
+ * Source of truth is the REAL public Canny board, fetched at build time via `loadCannyRoadmap()`
+ * (`lib/canny.ts`). Posts are grouped into four status columns that map 1:1 to Canny's own roadmap
+ * statuses: under review → planned → in progress → complete. We render exactly what's on the board
+ * — nothing invented. Empty columns show an honest empty line; if the whole board is unavailable
+ * (no key in CI, network/rate-limit failure) we render an empty-state banner with the link-out
+ * rather than failing the build. The secret key never leaves the build step (no client script).
  *
- * Copy is locale-driven (`marketing-content.ts`). Styling uses the shared `--ery-*` token contract
- * only — status accents map to the semantic state tokens (success / warning / subtle).
+ * Copy/labels are locale-driven (`marketing-content.ts`). Styling uses the shared `--ery-*` token
+ * contract only — status accents map to semantic state tokens (success / warning / brand / subtle).
  */
-import { roadmapCopy, CANNY_ROADMAP_URL, type RoadmapStatus } from "@/lib/marketing-content";
+import { roadmapCopy, CANNY_ROADMAP_URL } from "@/lib/marketing-content";
+import { loadCannyRoadmap, groupByStatus, type CannyRoadmapStatus } from "@/lib/canny";
 import type { Locale } from "@/lib/locale";
 
 interface Props {
@@ -20,8 +22,22 @@ interface Props {
 const { locale = "en" } = Astro.props;
 const c = roadmapCopy(locale);
 
-// Group items by status so each column renders its own list.
-const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.status === status);
+// Build-time pull from Canny. Never throws — falls back to an empty state.
+const roadmap = await loadCannyRoadmap();
+const grouped = groupByStatus(roadmap.posts);
+
+// Only render the empty-board banner when there's genuinely nothing to show (fetch failed OR zero posts).
+const boardEmpty = !roadmap.ok || roadmap.posts.length === 0;
+
+// Maps a Canny status to the CSS modifier that drives its accent colour + dot.
+const statusClass: Record<CannyRoadmapStatus, string> = {
+  "under review": "is-review",
+  planned: "is-planned",
+  "in progress": "is-progress",
+  complete: "is-complete",
+};
+
+const numberFmt = new Intl.NumberFormat(locale === "en" ? "en-US" : `${locale}-${locale.toUpperCase()}`);
 ---
 
 <section class="ery-container rm-hero">
@@ -31,25 +47,58 @@ const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.statu
 </section>
 
 <section class="ery-container rm-board" aria-label={c.hero.h1}>
-  <div class="rm-cols">
-    {c.columns.map((col) => (
-      <div class:list={["rm-col", `is-${col.status}`]}>
-        <div class="rm-col-head">
-          <span class="rm-dot"></span>
-          <h2 class="rm-col-label">{col.label}</h2>
-          <span class="rm-col-count">{itemsByStatus(col.status).length}</span>
-        </div>
-        <ul class="rm-list">
-          {itemsByStatus(col.status).map((it) => (
-            <li class="rm-item">
-              <h3 class="rm-item-title">{it.title}</h3>
-              <p class="rm-item-note">{it.note}</p>
-            </li>
-          ))}
-        </ul>
-      </div>
-    ))}
-  </div>
+  {boardEmpty ? (
+    <div class="rm-empty-board">
+      <p class="rm-empty-board-text">{c.empty.board}</p>
+      <a
+        class="rm-empty-board-link"
+        href={CANNY_ROADMAP_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-cta-id="roadmap_board_empty"
+        data-cta-surface="roadmap"
+        data-cta-kind="external"
+      >
+        {c.vote.cta}
+      </a>
+    </div>
+  ) : (
+    <div class="rm-cols">
+      {c.columns.map((col) => {
+        const items = grouped[col.status];
+        return (
+          <div class:list={["rm-col", statusClass[col.status]]}>
+            <div class="rm-col-head">
+              <span class="rm-dot"></span>
+              <h2 class="rm-col-label">{col.label}</h2>
+              <span class="rm-col-count">{items.length}</span>
+            </div>
+            {items.length === 0 ? (
+              <p class="rm-col-empty">{c.empty.column}</p>
+            ) : (
+              <ul class="rm-list">
+                {items.map((it) => (
+                  <li class="rm-item">
+                    <a class="rm-item-link" href={it.url} target="_blank" rel="noopener noreferrer">
+                      <h3 class="rm-item-title">{it.title}</h3>
+                      {it.details && <p class="rm-item-note">{it.details}</p>}
+                    </a>
+                    <div class="rm-item-meta">
+                      <span class="rm-meta-pill">{numberFmt.format(it.score)} {c.meta.votes}</span>
+                      {it.commentCount > 0 && (
+                        <span class="rm-meta-pill">{numberFmt.format(it.commentCount)} {c.meta.comments}</span>
+                      )}
+                      {it.category && <span class="rm-meta-cat">{it.category}</span>}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  )}
 </section>
 
 <section class="ery-container rm-vote-wrap">
@@ -109,7 +158,7 @@ const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.statu
   }
   .rm-cols {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: var(--ery-space-5);
     align-items: start;
   }
@@ -133,9 +182,10 @@ const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.statu
     border-radius: var(--ery-radius-pill);
     flex-shrink: 0;
   }
-  .is-shipped .rm-dot { background: var(--ery-success); }
-  .is-progress .rm-dot { background: var(--ery-warning); }
+  .is-review .rm-dot { background: var(--ery-brand); }
   .is-planned .rm-dot { background: var(--ery-text-subtle); }
+  .is-progress .rm-dot { background: var(--ery-warning); }
+  .is-complete .rm-dot { background: var(--ery-success); }
   .rm-col-label {
     margin: 0;
     font-size: var(--ery-text-sm);
@@ -147,6 +197,13 @@ const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.statu
     font-family: var(--ery-font-mono);
     font-size: var(--ery-text-xs);
     color: var(--ery-text-subtle);
+  }
+  .rm-col-empty {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-snug);
+    color: var(--ery-text-subtle);
+    font-style: italic;
   }
 
   .rm-list {
@@ -168,21 +225,89 @@ const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.statu
     border-color: var(--ery-border-strong);
   }
   /* A thin left accent ties each card to its column's status. */
-  .is-shipped .rm-item { border-inline-start: 2px solid color-mix(in srgb, var(--ery-success) 55%, var(--ery-border)); }
-  .is-progress .rm-item { border-inline-start: 2px solid color-mix(in srgb, var(--ery-warning) 55%, var(--ery-border)); }
+  .is-review .rm-item { border-inline-start: 2px solid color-mix(in srgb, var(--ery-brand) 55%, var(--ery-border)); }
   .is-planned .rm-item { border-inline-start: 2px solid var(--ery-border-strong); }
+  .is-progress .rm-item { border-inline-start: 2px solid color-mix(in srgb, var(--ery-warning) 55%, var(--ery-border)); }
+  .is-complete .rm-item { border-inline-start: 2px solid color-mix(in srgb, var(--ery-success) 55%, var(--ery-border)); }
+
+  .rm-item-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+  .rm-item-link:hover .rm-item-title {
+    color: var(--ery-brand);
+  }
   .rm-item-title {
     margin: 0 0 var(--ery-space-1);
     font-size: var(--ery-text-base);
     font-weight: 600;
     letter-spacing: -0.01em;
     color: var(--ery-text);
+    transition: color var(--ery-motion-base) var(--ery-ease);
   }
   .rm-item-note {
     margin: 0;
     font-size: var(--ery-text-sm);
     line-height: var(--ery-leading-snug);
     color: var(--ery-text-muted);
+  }
+  .rm-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--ery-space-2);
+    margin-block-start: var(--ery-space-3);
+  }
+  .rm-meta-pill,
+  .rm-meta-cat {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-subtle);
+    white-space: nowrap;
+  }
+  .rm-meta-cat {
+    margin-inline-start: auto;
+    padding-inline: var(--ery-space-2);
+    padding-block: 0.1rem;
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-pill);
+  }
+
+  /* ---------- Empty board fallback ---------- */
+  .rm-empty-board {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--ery-space-4);
+    padding: var(--ery-space-8);
+    background: var(--ery-surface-subtle);
+    border: 1px dashed var(--ery-border-strong);
+    border-radius: var(--ery-radius-lg);
+  }
+  .rm-empty-board-text {
+    margin: 0;
+    font-size: var(--ery-text-base);
+    line-height: var(--ery-leading-relaxed);
+    color: var(--ery-text-muted);
+    max-inline-size: 44rem;
+  }
+  .rm-empty-board-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-5);
+    border-radius: var(--ery-radius-sm);
+    background: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+    font-size: var(--ery-text-base);
+    font-weight: 500;
+    transition: background-color var(--ery-motion-base) var(--ery-ease);
+  }
+  .rm-empty-board-link:hover {
+    background: var(--ery-brand-hover);
+    color: var(--ery-brand-contrast);
   }
 
   /* ---------- Vote CTA ---------- */
@@ -240,10 +365,11 @@ const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.statu
   }
 
   /* ---------- Responsive ---------- */
-  @media (max-width: 880px) {
-    .rm-cols { grid-template-columns: 1fr; gap: var(--ery-space-4); }
+  @media (max-width: 1080px) {
+    .rm-cols { grid-template-columns: repeat(2, 1fr); }
   }
   @media (max-width: 640px) {
+    .rm-cols { grid-template-columns: 1fr; gap: var(--ery-space-4); }
     .rm-vote { flex-direction: column; align-items: flex-start; }
     .rm-vote-cta { inline-size: 100%; }
   }
