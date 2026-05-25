@@ -1,0 +1,17 @@
+---
+/*
+ * Imprint — `/imprint/` (root locale = en).
+ *
+ * Thin shell over the shared `Legal.astro`. Localized variants render the same component at
+ * `/nl/imprint/` and `/de/imprint/` (`pages/[locale]/imprint.astro`).
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Legal from "@/components/marketing/Legal.astro";
+import { imprintCopy } from "@/lib/marketing-content";
+
+const copy = imprintCopy("en");
+---
+
+<SiteLayout title={copy.title} description={copy.description} locale="en">
+  <Legal copy={copy} />
+</SiteLayout>

@@ -17,12 +17,21 @@ import { Image } from "astro:assets";
 import CtaButton from "@/components/marketing/CtaButton.astro";
 import Wordmark from "@/components/marketing/Wordmark.astro";
 import lukePhoto from "@/assets/luke-van-enkhuizen.jpg";
-import type { Locale } from "@/lib/locale";
+import { localizePath, type Locale } from "@/lib/locale";
 
 interface Props {
   locale?: Locale;
 }
 const { locale = "en" } = Astro.props;
+
+const legalLabels: Record<Locale, { imprint: string; privacy: string }> = {
+  en: { imprint: "Imprint", privacy: "Privacy" },
+  nl: { imprint: "Impressum", privacy: "Privacy" },
+  de: { imprint: "Impressum", privacy: "Datenschutz" },
+};
+const legal = legalLabels[locale];
+const imprintHref = localizePath("/imprint/", locale);
+const privacyHref = localizePath("/privacy/", locale);
 
 const repository = [
   { label: "GitHub repository", href: "https://github.com/SheetMetalConnect/eryxon-flow", external: true },
@@ -89,11 +98,17 @@ const resources = [
   </section>
 </div>
 
-<p class="ery-flegal">
-  <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener">Sheet Metal Connect e.U.</a>
-  &copy; 2026 · Open source under
-  <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>
-</p>
+<div class="ery-flegal">
+  <p class="ery-flegal-copy">
+    <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener">Sheet Metal Connect e.U.</a>
+    &copy; 2026 · Open source under
+    <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>
+  </p>
+  <nav class="ery-flegal-links" aria-label="Legal">
+    <a href={imprintHref}>{legal.imprint}</a>
+    <a href={privacyHref}>{legal.privacy}</a>
+  </nav>
+</div>
 
 <style>
   .ery-fcols {
@@ -194,7 +209,25 @@ const resources = [
     margin: var(--ery-space-10) 0 0;
     padding-block-start: var(--ery-space-6);
     border-block-start: 1px solid var(--ery-border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ery-space-3) var(--ery-space-6);
     font-size: var(--ery-text-xs);
     color: var(--ery-text-subtle);
+  }
+  .ery-flegal-copy {
+    margin: 0;
+  }
+  .ery-flegal-links {
+    display: flex;
+    gap: var(--ery-space-5);
+  }
+  .ery-flegal-links a {
+    color: var(--ery-text-subtle);
+  }
+  .ery-flegal-links a:hover {
+    color: var(--ery-brand);
   }
 </style>

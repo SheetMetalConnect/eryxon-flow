@@ -1,0 +1,241 @@
+---
+/*
+ * Legal.astro — shared imprint + privacy surface (v0.6).
+ *
+ * One component renders both the Impressum (`imprintCopy`) and the Privacy Policy (`privacyCopy`)
+ * from `marketing-content.ts`, in EN / NL / DE. Page routes are thin shells that pass the right
+ * copy in. Styling uses the shared `--ery-*` token contract only (light-first; no dark/glass).
+ *
+ * Both pages surface the same prominent Apache 2.0 "AS IS" / use-at-your-own-risk disclaimer block,
+ * matching the licence that ships with Eryxon Flow.
+ */
+import type { LegalCopy } from "@/lib/marketing-content";
+
+interface Props {
+  copy: LegalCopy;
+}
+const { copy } = Astro.props;
+---
+
+<section class="ery-container lg-wrap">
+  <header class="lg-head">
+    <p class="lg-eyebrow">{copy.eyebrow}</p>
+    <h1 class="lg-h1">{copy.h1}</h1>
+    <p class="lg-meta">{copy.meta}</p>
+  </header>
+
+  <div class="lg-card">
+    {copy.lead && <p class="lg-lead">{copy.lead}</p>}
+
+    {copy.sections.map((s) => (
+      <section class="lg-section">
+        <h2 class="lg-section-head">{s.heading}</h2>
+
+        {s.paragraphs?.map((p) => <p class="lg-p">{p}</p>)}
+
+        {s.rows && (
+          <dl class="lg-rows">
+            {s.rows.map((r) => (
+              <div class="lg-row">
+                <dt class="lg-dt">{r.label}</dt>
+                <dd class="lg-dd">
+                  {r.email ? (
+                    <a class="lg-link" href={`mailto:${r.email}`}>{r.email}</a>
+                  ) : r.href ? (
+                    <a class="lg-link" href={r.href} {...(r.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                      {r.value}{r.external ? " ↗" : ""}
+                    </a>
+                  ) : (
+                    <span>{r.value}</span>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {s.bullets && (
+          <ul class="lg-bullets">
+            {s.bullets.map((b) => (
+              <li><span class="lg-dot"></span><span>{b}</span></li>
+            ))}
+          </ul>
+        )}
+      </section>
+    ))}
+
+    {copy.disclaimer && (
+      <aside class="lg-disclaimer" aria-label={copy.disclaimer.heading}>
+        <h2 class="lg-disclaimer-head">{copy.disclaimer.heading}</h2>
+        {copy.disclaimer.paragraphs.map((p) => <p class="lg-disclaimer-p">{p}</p>)}
+        <a class="lg-disclaimer-link" href={copy.disclaimer.licenseHref} target="_blank" rel="noopener noreferrer">
+          {copy.disclaimer.licenseLabel} ↗
+        </a>
+      </aside>
+    )}
+  </div>
+</section>
+
+<style>
+  .lg-wrap {
+    max-inline-size: 52rem;
+    padding-block: var(--ery-pad-hero) var(--ery-space-24);
+  }
+
+  .lg-head {
+    margin-block-end: var(--ery-space-10);
+  }
+  .lg-eyebrow {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ery-text-subtle);
+    margin: 0 0 var(--ery-space-3);
+  }
+  .lg-h1 {
+    font-size: clamp(var(--ery-text-3xl), 4vw, var(--ery-text-4xl));
+    line-height: var(--ery-leading-tight);
+    letter-spacing: var(--ery-tracking-tight);
+    margin: 0 0 var(--ery-space-2);
+  }
+  .lg-meta {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-subtle);
+  }
+
+  .lg-card {
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    background: var(--ery-surface);
+    padding: var(--ery-space-8);
+  }
+
+  .lg-lead {
+    margin: 0 0 var(--ery-space-6);
+    font-size: var(--ery-text-lg);
+    line-height: var(--ery-leading-relaxed);
+    color: var(--ery-text-muted);
+  }
+
+  .lg-section + .lg-section,
+  .lg-lead + .lg-section {
+    margin-block-start: var(--ery-space-8);
+    padding-block-start: var(--ery-space-8);
+    border-block-start: 1px solid var(--ery-border);
+  }
+  .lg-section-head {
+    margin: 0 0 var(--ery-space-4);
+    font-size: var(--ery-text-base);
+    font-weight: 600;
+    color: var(--ery-text);
+  }
+  .lg-p {
+    margin: 0 0 var(--ery-space-3);
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-relaxed);
+    color: var(--ery-text-muted);
+  }
+  .lg-p:last-child {
+    margin-block-end: 0;
+  }
+
+  .lg-rows {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+  }
+  .lg-row {
+    display: grid;
+    grid-template-columns: 13rem 1fr;
+    gap: var(--ery-space-4);
+    align-items: baseline;
+  }
+  .lg-dt {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text);
+    font-weight: 500;
+  }
+  .lg-dd {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-relaxed);
+    color: var(--ery-text-muted);
+  }
+  .lg-link {
+    color: var(--ery-brand);
+  }
+  .lg-link:hover {
+    text-decoration: underline;
+  }
+
+  .lg-bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-2);
+  }
+  .lg-bullets li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--ery-space-3);
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-relaxed);
+    color: var(--ery-text-muted);
+  }
+  .lg-dot {
+    inline-size: 5px;
+    block-size: 5px;
+    border-radius: var(--ery-radius-pill);
+    background: var(--ery-brand);
+    flex-shrink: 0;
+    margin-block-start: 0.6em;
+  }
+
+  .lg-disclaimer {
+    margin-block-start: var(--ery-space-8);
+    padding: var(--ery-space-6);
+    border: 1px solid var(--ery-border-strong);
+    border-radius: var(--ery-radius);
+    background: var(--ery-surface-subtle);
+  }
+  .lg-disclaimer-head {
+    margin: 0 0 var(--ery-space-4);
+    font-size: var(--ery-text-base);
+    font-weight: 600;
+    color: var(--ery-text);
+  }
+  .lg-disclaimer-p {
+    margin: 0 0 var(--ery-space-3);
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-relaxed);
+    color: var(--ery-text-muted);
+  }
+  .lg-disclaimer-link {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--ery-touch-min);
+    margin-block-start: var(--ery-space-2);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+    color: var(--ery-brand);
+  }
+  .lg-disclaimer-link:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 560px) {
+    .lg-card {
+      padding: var(--ery-space-5);
+    }
+    .lg-row {
+      grid-template-columns: 1fr;
+      gap: var(--ery-space-1);
+    }
+  }
+</style>

@@ -1,14 +1,17 @@
 ---
 /*
- * Roadmap.astro — public roadmap surface (`/roadmap/`, v0.6).
+ * Roadmap.astro — product roadmap surface (`/roadmap/`, EN + `/nl/`, `/de/`).
  *
- * Surfaces the public Canny roadmap (https://eryxon.canny.io/) inside the marketing design
- * system. Canny recommends pointing at the full board rather than the JS widget (which needs a
- * board token), so we embed the public board in an iframe and pair it with a visible link-out
- * card. If the board is blocked from framing, the link-out keeps the page useful. EN/NL/DE copy
- * comes from `marketing-content.ts`; styling uses the shared `--ery-*` token contract only.
+ * Our own content first: three status columns (Shipped / In progress / Planned) rendered in the
+ * marketing design system, with real items. Native iOS/Android sit under "In progress" — work in
+ * flight, not yet shipped. The public Canny board (https://eryxon.canny.io/) is paired in as a
+ * "vote on it" CTA rather than a bare iframe, so the page stays useful even where framing is
+ * blocked. No version numbers here (those live in the release notes).
+ *
+ * Copy is locale-driven (`marketing-content.ts`). Styling uses the shared `--ery-*` token contract
+ * only — status accents map to the semantic state tokens (success / warning / subtle).
  */
-import { roadmapCopy, CANNY_ROADMAP_URL } from "@/lib/marketing-content";
+import { roadmapCopy, CANNY_ROADMAP_URL, type RoadmapStatus } from "@/lib/marketing-content";
 import type { Locale } from "@/lib/locale";
 
 interface Props {
@@ -16,109 +19,208 @@ interface Props {
 }
 const { locale = "en" } = Astro.props;
 const c = roadmapCopy(locale);
+
+// Group items by status so each column renders its own list.
+const itemsByStatus = (status: RoadmapStatus) => c.items.filter((it) => it.status === status);
 ---
 
 <section class="ery-container rm-hero">
-  <p class="eyebrow">{c.hero.eyebrow}</p>
-  <h1>{c.hero.h1}</h1>
-  <p class="lede">{c.hero.lead}</p>
-  <a class="rm-open" href={CANNY_ROADMAP_URL} target="_blank" rel="noopener" data-cta-id="roadmap_open_canny" data-cta-surface="roadmap" data-cta-kind="external">
-    {c.openLabel}
-  </a>
+  <p class="rm-eyebrow">{c.hero.eyebrow}</p>
+  <h1 class="rm-h1">{c.hero.h1}</h1>
+  <p class="rm-lede">{c.hero.lead}</p>
 </section>
 
-<section class="ery-container rm-board" aria-label="Roadmap">
-  <p class="rm-intro">{c.intro}</p>
+<section class="ery-container rm-board" aria-label={c.hero.h1}>
+  <div class="rm-cols">
+    {c.columns.map((col) => (
+      <div class:list={["rm-col", `is-${col.status}`]}>
+        <div class="rm-col-head">
+          <span class="rm-dot"></span>
+          <h2 class="rm-col-label">{col.label}</h2>
+          <span class="rm-col-count">{itemsByStatus(col.status).length}</span>
+        </div>
+        <ul class="rm-list">
+          {itemsByStatus(col.status).map((it) => (
+            <li class="rm-item">
+              <h3 class="rm-item-title">{it.title}</h3>
+              <p class="rm-item-note">{it.note}</p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
 
-  <!-- Link-out card: always rendered, sits behind the embed as the guaranteed fallback. -->
-  <div class="rm-fallback">
-    <div>
-      <h2 class="rm-fallback-label">{c.fallback.label}</h2>
-      <p class="rm-fallback-note">{c.fallback.note}</p>
+<section class="ery-container rm-vote-wrap">
+  <div class="rm-vote">
+    <div class="rm-vote-text">
+      <p class="rm-vote-eyebrow">{c.vote.eyebrow}</p>
+      <h2 class="rm-vote-h">{c.vote.h}</h2>
+      <p class="rm-vote-b">{c.vote.b}</p>
     </div>
-    <a class="rm-fallback-cta" href={CANNY_ROADMAP_URL} target="_blank" rel="noopener" data-cta-id="roadmap_fallback_canny" data-cta-surface="roadmap" data-cta-kind="external">
-      {c.fallback.cta}
+    <a
+      class="rm-vote-cta"
+      href={CANNY_ROADMAP_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      data-cta-id="roadmap_vote_canny"
+      data-cta-surface="roadmap"
+      data-cta-kind="external"
+    >
+      {c.vote.cta}
     </a>
   </div>
-
-  <iframe
-    class="rm-frame"
-    src={CANNY_ROADMAP_URL}
-    title={c.fallback.label}
-    loading="lazy"
-    referrerpolicy="no-referrer-when-downgrade"
-  ></iframe>
 </section>
 
 <style>
+  /* ---------- Hero ---------- */
   .rm-hero {
     text-align: center;
     max-inline-size: 52rem;
-    padding-block: var(--ery-pad-hero) var(--ery-space-6);
+    padding-block: var(--ery-pad-hero) var(--ery-space-12);
   }
-  .eyebrow {
+  .rm-eyebrow {
     font-family: var(--ery-font-mono);
-    font-size: var(--ery-text-sm);
-    color: var(--ery-text-muted);
+    font-size: var(--ery-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ery-brand);
     margin: 0 0 var(--ery-space-3);
   }
-  .rm-hero h1 {
+  .rm-h1 {
     font-size: clamp(var(--ery-text-3xl), 4.5vw, var(--ery-text-5xl));
     line-height: var(--ery-leading-tight);
+    letter-spacing: -0.02em;
     text-wrap: balance;
     margin: 0 0 var(--ery-space-4);
   }
-  .lede {
+  .rm-lede {
     font-size: var(--ery-text-lg);
+    line-height: var(--ery-leading-relaxed);
     color: var(--ery-text-muted);
     max-inline-size: 40rem;
     margin-inline: auto;
   }
-  .rm-open {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: var(--ery-touch-min);
-    margin-block-start: var(--ery-space-6);
-    padding-inline: var(--ery-space-5);
-    border-radius: var(--ery-radius-sm);
-    background: var(--ery-brand);
-    color: var(--ery-brand-contrast);
-    font-size: var(--ery-text-base);
-    font-weight: 500;
-  }
 
+  /* ---------- Status columns ---------- */
   .rm-board {
     padding-block-end: var(--ery-space-16);
   }
-  .rm-intro {
+  .rm-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--ery-space-5);
+    align-items: start;
+  }
+  .rm-col {
+    background: var(--ery-surface-subtle);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    padding: var(--ery-space-5);
+  }
+  .rm-col-head {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-3);
+    padding-block-end: var(--ery-space-4);
+    margin-block-end: var(--ery-space-4);
+    border-block-end: 1px solid var(--ery-border);
+  }
+  .rm-dot {
+    inline-size: 9px;
+    block-size: 9px;
+    border-radius: var(--ery-radius-pill);
+    flex-shrink: 0;
+  }
+  .is-shipped .rm-dot { background: var(--ery-success); }
+  .is-progress .rm-dot { background: var(--ery-warning); }
+  .is-planned .rm-dot { background: var(--ery-text-subtle); }
+  .rm-col-label {
+    margin: 0;
     font-size: var(--ery-text-sm);
-    color: var(--ery-text-muted);
-    margin: 0 0 var(--ery-space-4);
+    font-weight: 600;
+    color: var(--ery-text);
+  }
+  .rm-col-count {
+    margin-inline-start: auto;
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-subtle);
   }
 
-  .rm-fallback {
+  .rm-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+  }
+  .rm-item {
+    background: var(--ery-surface);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-sm);
+    padding: var(--ery-space-4);
+    transition: border-color var(--ery-motion-base) var(--ery-ease);
+  }
+  .rm-item:hover {
+    border-color: var(--ery-border-strong);
+  }
+  /* A thin left accent ties each card to its column's status. */
+  .is-shipped .rm-item { border-inline-start: 2px solid color-mix(in srgb, var(--ery-success) 55%, var(--ery-border)); }
+  .is-progress .rm-item { border-inline-start: 2px solid color-mix(in srgb, var(--ery-warning) 55%, var(--ery-border)); }
+  .is-planned .rm-item { border-inline-start: 2px solid var(--ery-border-strong); }
+  .rm-item-title {
+    margin: 0 0 var(--ery-space-1);
+    font-size: var(--ery-text-base);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ery-text);
+  }
+  .rm-item-note {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-snug);
+    color: var(--ery-text-muted);
+  }
+
+  /* ---------- Vote CTA ---------- */
+  .rm-vote-wrap {
+    padding-block-end: var(--ery-space-24);
+  }
+  .rm-vote {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--ery-space-4);
-    padding: var(--ery-space-5);
-    margin-block-end: var(--ery-space-4);
+    gap: var(--ery-space-6);
+    padding: var(--ery-space-8);
     background: var(--ery-surface);
     border: 1px solid var(--ery-border);
     border-radius: var(--ery-radius-lg);
   }
-  .rm-fallback-label {
-    margin: 0 0 var(--ery-space-1);
-    font-size: var(--ery-text-base);
-    font-weight: 600;
+  .rm-vote-eyebrow {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ery-brand);
+    margin: 0 0 var(--ery-space-2);
   }
-  .rm-fallback-note {
+  .rm-vote-h {
+    margin: 0 0 var(--ery-space-2);
+    font-size: var(--ery-text-xl);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .rm-vote-b {
     margin: 0;
     font-size: var(--ery-text-sm);
+    line-height: var(--ery-leading-relaxed);
     color: var(--ery-text-muted);
+    max-inline-size: 38rem;
   }
-  .rm-fallback-cta {
+  .rm-vote-cta {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
@@ -126,31 +228,23 @@ const c = roadmapCopy(locale);
     min-block-size: var(--ery-touch-min);
     padding-inline: var(--ery-space-5);
     border-radius: var(--ery-radius-sm);
-    border: 1px solid var(--ery-border-strong);
-    font-size: var(--ery-text-sm);
+    background: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+    font-size: var(--ery-text-base);
     font-weight: 500;
-    color: var(--ery-text);
+    transition: background-color var(--ery-motion-base) var(--ery-ease);
   }
-  .rm-fallback-cta:hover {
-    background: var(--ery-surface-subtle);
-  }
-
-  .rm-frame {
-    inline-size: 100%;
-    block-size: 80vh;
-    min-block-size: 600px;
-    border: 1px solid var(--ery-border);
-    border-radius: var(--ery-radius-lg);
-    background: var(--ery-surface);
+  .rm-vote-cta:hover {
+    background: var(--ery-brand-hover);
+    color: var(--ery-brand-contrast);
   }
 
+  /* ---------- Responsive ---------- */
+  @media (max-width: 880px) {
+    .rm-cols { grid-template-columns: 1fr; gap: var(--ery-space-4); }
+  }
   @media (max-width: 640px) {
-    .rm-fallback {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    .rm-fallback-cta {
-      inline-size: 100%;
-    }
+    .rm-vote { flex-direction: column; align-items: flex-start; }
+    .rm-vote-cta { inline-size: 100%; }
   }
 </style>

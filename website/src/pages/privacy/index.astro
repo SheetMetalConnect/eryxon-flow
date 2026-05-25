@@ -1,0 +1,17 @@
+---
+/*
+ * Privacy Policy — `/privacy/` (root locale = en).
+ *
+ * Thin shell over the shared `Legal.astro`. Localized variants render the same component at
+ * `/nl/privacy/` and `/de/privacy/` (`pages/[locale]/privacy.astro`).
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Legal from "@/components/marketing/Legal.astro";
+import { privacyCopy } from "@/lib/marketing-content";
+
+const copy = privacyCopy("en");
+---
+
+<SiteLayout title={copy.title} description={copy.description} locale="en">
+  <Legal copy={copy} />
+</SiteLayout>
