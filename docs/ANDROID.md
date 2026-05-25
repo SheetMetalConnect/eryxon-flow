@@ -123,6 +123,47 @@ npm run android:assemble:release
 The capacitor config switches the WebView into hosted mode and toggles
 cleartext only when the URL is plain HTTP.
 
+### Cleartext / LAN policy (network security config)
+
+`android/app/src/main/res/xml/network_security_config.xml` follows a
+least-privilege strategy (ERY-71). Android's network-security-config cannot
+CIDR-match, so we do **not** ship a hand-written list of sample RFC1918 IPs —
+that only ever covered a few shops and widened the cleartext surface for no
+real gain.
+
+| Build | Cleartext allowed? |
+|-------|--------------------|
+| `assembleRelease` / `bundleRelease` | **No.** HTTPS only. System + user CAs trusted. |
+| `assembleDebug` / `android:livereload` | Yes, via `debug-overrides` — covers loopback, emulator bridge (`10.0.2.2`), and the workstation/LAN host used for live-reload, without enumerating them. Never ships in a release build. |
+
+**Self-hosting over plain HTTP on a real LAN** is supported per-host:
+
+1. **Recommended:** front the on-prem backend with TLS (reverse proxy + a cert,
+   or an internal CA installed on the tablet — `<certificates src="user" />` is
+   already trusted). No cleartext exception needed.
+2. **Plain HTTP, custom build:** uncomment the `SELF-HOST CLEARTEXT` template
+   block in `network_security_config.xml`, add your actual backend host
+   (hostname or fixed IP), and build a custom release APK/AAB. Only that one
+   host is exempted. Do not commit a real customer host upstream.
+
+### Offline barcode scanning
+
+`app/build.gradle` sets the `mlkitBarcodeDependencies` manifest placeholder,
+which is consumed by the `com.google.mlkit.vision.DEPENDENCIES` meta-data in
+`AndroidManifest.xml`. This tells Google Play to fetch the ML Kit barcode model
+at **install** time instead of on first scan — so a freshly provisioned tablet
+does not stall on its first scan on a closed shop-floor network.
+
+Caveat: install-time delivery still needs **Google Play services present at
+provisioning**. Fully air-gapped or GMS-less rugged tablets (Zebra, some
+Honeywell/Datalogic units) will not receive the model this way. For those
+fleets, build with the **bundled** ML Kit model — add
+`implementation 'com.google.mlkit:barcode-scanning:17.3.0'` to
+`app/build.gradle` so the ~2.4 MB model ships inside the APK and no Play
+download is ever required. This bundled variant is the supported path for
+air-gapped fleets but increases APK size and must be validated against the
+`@capacitor-mlkit/barcode-scanning` plugin on a device build before shipping.
+
 ## Signing for release
 
 Capacitor ships an unsigned release variant. Wire up signing in
@@ -160,7 +201,7 @@ Push requires a Firebase project — drop `google-services.json` into
 | **Min OS** | Android 7.0 (API 24) — Capacitor 7's floor | iOS / iPadOS 13+ | Chrome 88+, Safari 17+, Edge / Firefox modern |
 | **Auth** | Supabase email + magic link → PIN keypad → optional fingerprint re-unlock | Same, Face ID / Touch ID | Same, no biometric |
 | **Hosted backend** | `app.eryxon.eu` via runtime `env.js` | Same | Same |
-| **Self-hosted backend** | `CAPACITOR_SERVER_URL=http://shop-floor.local:8080` for live-reload, or bake `VITE_SUPABASE_URL` into the AAB. `network_security_config.xml` whitelists `localhost` + `*.local`. | Same `CAPACITOR_SERVER_URL` knob | `VITE_SUPABASE_URL=http://127.0.0.1:54321` works; the meta-CSP localhost strip is auto-skipped when the URL is local. |
+| **Self-hosted backend** | `CAPACITOR_SERVER_URL=http://shop-floor.local:8080` for live-reload (debug builds allow LAN cleartext via `debug-overrides`). Release builds are HTTPS-only; for plain-HTTP LAN hosts either front with TLS or add the host to `network_security_config.xml` for a custom build (see "Cleartext / LAN policy"). | Same `CAPACITOR_SERVER_URL` knob | `VITE_SUPABASE_URL=http://127.0.0.1:54321` works; the meta-CSP localhost strip is auto-skipped when the URL is local. |
 | **Language switching** | `LanguageSwitcher` on `/m/login`, persists via i18next-browser-languagedetector. EN / NL / DE locale parity. | Same | Same |
 | **Viewports** | `viewport-fit=cover`, `100dvh`, safe-area utilities, plus `sw600dp` / `sw720dp` tablet breakpoints in `mobile.css` | Same minus the sw breakpoints; iPad split-view collapses below 768 px | Same |
 | **Devices** | Pixel 6+, Galaxy S20+, Pixel Tablet, Galaxy Tab S7+, Lenovo Tab P12, Z Fold / Flip foldables | iPhone SE (3rd gen) → 16 Pro Max, iPad mini / Air / Pro M-series | Anything modern |
