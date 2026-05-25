@@ -26,46 +26,19 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
-<div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
-  <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
-    <span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-    Web-App + PWA — Stabil (v0.6)
-  </span>
-  <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-    Android (Nativ) — Auf der Roadmap
-  </span>
-  <span class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">
-    iOS — Auf der Roadmap
-  </span>
-</div>
-
-<Section title="Eine Plattform, <span class='text-primary'>jeder Bildschirm</span>" description="Vom Bürotablet bis zum Werkstatt-Terminal — Eryxon Flow läuft dort, wo Ihr Team arbeitet. v0.6 ist stabil und installiert sich als Desktop-PWA; native Mobile-Apps sind in Entwicklung auf der Roadmap.">
+<Section title="Eine Plattform, <span class='text-primary'>jeder Bildschirm</span>" description="Vom Bürotablet bis zum Werkstatt-Terminal — Eryxon Flow läuft dort, wo Ihr Team arbeitet.">
 <Grid columns={4}>
   <Card title="Web-App + PWA" icon="seti:globe" iconColor="#fbbf24" size="sm">
-    **Stabil (v0.6).** Tabletfreundliche, responsive Web-App, die sich aus Chrome oder Edge als Desktop-PWA installiert. Echtzeit-Updates über WebSockets. Gehostete Version kostenlos testbar.
+    Tabletfreundliche, responsive Web-App, die sich aus Chrome oder Edge als Desktop-PWA installiert. Echtzeit-Updates über WebSockets. Gehostete Version kostenlos testbar.
   </Card>
   <Card title="Android (Nativ)" icon="seti:mobile" iconColor="#34d399" size="sm">
-    **In Entwicklung.** Native Android-App mit **Offline-Unterstützung** und **schnellem Start**, für robuste Tablets und Smartphones. Verfolgen Sie sie auf der [öffentlichen Roadmap](/de/roadmap/).
+    Native Android-App mit **Offline-Unterstützung** und **schnellem Start**, für robuste Tablets und Smartphones. Verfolgen Sie sie auf der [öffentlichen Roadmap](/de/roadmap/).
   </Card>
   <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
-    **In Entwicklung.** Native iPhone- und iPad-App für Manager und Werker auf Apple-Geräten. Verfolgen Sie sie auf der [öffentlichen Roadmap](/de/roadmap/).
+    Native iPhone- und iPad-App für Manager und Werker auf Apple-Geräten. Verfolgen Sie sie auf der [öffentlichen Roadmap](/de/roadmap/).
   </Card>
   <Card title="MCP · REST · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
-    **MCP-Server: Live.** REST-API, Webhooks und MQTT sind in **Beta** zusammen mit der Web-App. Heute 24 REST-Endpunkte.
-  </Card>
-</Grid>
-</Section>
-
-<Section title="Aktueller <span class='text-primary'>Status</span>" description="v0.6 ist die stabile Linie und installiert sich als Desktop-PWA. MCP ist live; native Mobile-Apps sind in Entwicklung auf der Roadmap.">
-<Grid columns={3}>
-  <Card title="Stabile Release" icon="seti:tag" iconColor="#38bdf8">
-    **v0.6** ist die aktuelle stabile Release und installiert sich aus Chrome oder Edge als Desktop-PWA. Sie baut auf der v0.5.x-Linie auf — Planungs-Adapter, MCP-HTTP-Transport und MQTT-Härtung.
-  </Card>
-  <Card title="Gehostete Version" icon="seti:globe" iconColor="#fbbf24">
-    Die gehostete Version unter [app.eryxon.eu](https://app.eryxon.eu) ist online und kostenlos testbar. Self-Hosting ist für Produktiv-Deployments vollständig dokumentiert.
-  </Card>
-  <Card title="Native Apps In Entwicklung" icon="seti:mobile" iconColor="#34d399">
-    Native **Android**-App (Offline-Unterstützung, schneller Start) und **iOS**-App sind in Entwicklung — verfolgen Sie sie auf der [öffentlichen Roadmap](/de/roadmap/). Web-App und PWA sind heute die primäre Oberfläche.
+    MCP-Server, REST-API, Webhooks und MQTT für KI, Automatisierung und ERP-Integration. 24 REST-Endpunkte.
   </Card>
 </Grid>
 </Section>

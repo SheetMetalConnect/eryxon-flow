@@ -26,49 +26,19 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
-{/* Status pills migrated off dark-assuming Tailwind palette (amber/emerald/sky -400)
-    onto the canonical `--ery-*` status tokens (ERY-117). Tint background + hairline ring
-    + token-colored text read correctly on the light-first surface and adapt with the theme. */}
-<div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
-  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-warning); background: color-mix(in srgb, var(--ery-warning) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-warning) 28%, transparent);">
-    <span class="inline-block h-2 w-2 rounded-full animate-pulse" style="background: currentColor;"></span>
-    Web App + PWA — Stable (v0.6)
-  </span>
-  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-success); background: color-mix(in srgb, var(--ery-success) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-success) 28%, transparent);">
-    Android (Native) — On the roadmap
-  </span>
-  <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-info); background: color-mix(in srgb, var(--ery-info) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-info) 28%, transparent);">
-    iOS — On the roadmap
-  </span>
-</div>
-
-<Section title="One Platform, <span class='text-primary'>Every Screen</span>" description="From the office tablet to the shop floor terminal — Eryxon Flow runs where your team works. v0.6 is stable and installs as a desktop PWA; native mobile apps are in development on the roadmap.">
+<Section title="One Platform, <span class='text-primary'>Every Screen</span>" description="From the office tablet to the shop floor terminal — Eryxon Flow runs where your team works.">
 <Grid columns={4}>
   <Card title="Web App + PWA" icon="seti:globe" iconColor="#fbbf24" size="sm">
-    **Stable (v0.6).** Tablet-friendly responsive web app that installs as a desktop PWA from Chrome or Edge. Real-time updates via WebSockets. Hosted version is free to try.
+    Tablet-friendly responsive web app that installs as a desktop PWA from Chrome or Edge. Real-time updates via WebSockets. Hosted version is free to try.
   </Card>
   <Card title="Android (Native)" icon="seti:mobile" iconColor="#34d399" size="sm">
-    **In development.** Native Android app with **offline support** and **fast cold start**, designed for rugged tablets and phones. Track it on the [public roadmap](/roadmap/).
+    Native Android app with **offline support** and **fast cold start**, designed for rugged tablets and phones. Track it on the [public roadmap](/roadmap/).
   </Card>
   <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
-    **In development.** Native iPhone and iPad app for managers and operators on Apple devices. Track it on the [public roadmap](/roadmap/).
+    Native iPhone and iPad app for managers and operators on Apple devices. Track it on the [public roadmap](/roadmap/).
   </Card>
   <Card title="MCP · REST · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
-    **MCP server: Live.** REST API, webhooks, and MQTT are in **Beta** alongside the web app. 24 REST endpoints today.
-  </Card>
-</Grid>
-</Section>
-
-<Section title="Current <span class='text-primary'>Status</span>" description="v0.6 is the stable line and installs as a desktop PWA. MCP is live; native mobile apps are in development on the roadmap.">
-<Grid columns={3}>
-  <Card title="Stable Release" icon="seti:tag" iconColor="#38bdf8">
-    **v0.6** is the current stable release and installs as a desktop PWA from Chrome or Edge. It builds on the v0.5.x line — planning adapters, MCP HTTP transport, and MQTT reliability hardening.
-  </Card>
-  <Card title="Hosted Version" icon="seti:globe" iconColor="#fbbf24">
-    The hosted version at [app.eryxon.eu](https://app.eryxon.eu) is online and free to try. Self-hosting is fully documented for production deployments.
-  </Card>
-  <Card title="Native Apps In Development" icon="seti:mobile" iconColor="#34d399">
-    Native **Android** (offline support, fast cold start) and **iOS** apps are in development — follow them on the [public roadmap](/roadmap/). The web app and PWA are the primary surface today.
+    MCP server, REST API, webhooks, and MQTT for AI, automation, and ERP integration. 24 REST endpoints.
   </Card>
 </Grid>
 </Section>

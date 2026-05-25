@@ -32,8 +32,6 @@ Kies het pad dat past bij uw evaluatie van Eryxon Flow.
 - **Admins** krijgen realtime zicht: wie waaraan werkt, issue-goedkeuringen, datum-overschrijvingen en configuratie van stadia/materialen.
 - **Technische evaluatoren** krijgen een API-first systeem: 24 REST-endpoints, webhooks, MQTT, een MCP-server en planningadapters voor FrePPLe en Odoo.
 
-> **Huidige status:** v0.6 is de stabiele lijn en installeer je als desktop-PWA. Web-app, REST API, webhooks, MQTT en de FrePPLe/Odoo-adapters zijn **Beta**; de **MCP-server is Live**. Native **Android**- en **iOS**-apps zijn in ontwikkeling op de roadmap, nog niet uitgebracht — vandaag is de browser-app het primaire oppervlak.
-
 > **Probeer het nu:** Open de <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_try_now_nl" data-cta-surface="docs_intro" data-cta-kind="hosted_app" data-cta-locale="nl">hosted versie op app.eryxon.eu</a> — geen installatie vereist.
 
 ## Wat Het Doet

@@ -26,46 +26,19 @@ import LinkButton from "~/components/LinkButton.astro";
 import ListCard from "~/components/user-components/ListCard.astro";
 import ThemeDemo from "~/components/ThemeDemo.astro";
 
-<div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
-  <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
-    <span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-    Web App + PWA — Stabiel (v0.6)
-  </span>
-  <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-    Android (Native) — Op de roadmap
-  </span>
-  <span class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">
-    iOS — Op de roadmap
-  </span>
-</div>
-
-<Section title="Eén Platform, <span class='text-primary'>Elk Scherm</span>" description="Van het kantoortablet tot het werkvloer-terminal — Eryxon Flow draait daar waar je team werkt. v0.6 is stabiel en installeer je als desktop-PWA; native mobile apps zijn in ontwikkeling op de roadmap.">
+<Section title="Eén Platform, <span class='text-primary'>Elk Scherm</span>" description="Van het kantoortablet tot het werkvloer-terminal — Eryxon Flow draait daar waar je team werkt.">
 <Grid columns={4}>
   <Card title="Web App + PWA" icon="seti:globe" iconColor="#fbbf24" size="sm">
-    **Stabiel (v0.6).** Tablet-vriendelijke responsive web-app die je als desktop-PWA installeert vanuit Chrome of Edge. Real-time updates via WebSockets. Hosted versie gratis te proberen.
+    Tablet-vriendelijke responsive web-app die je als desktop-PWA installeert vanuit Chrome of Edge. Real-time updates via WebSockets. Hosted versie gratis te proberen.
   </Card>
   <Card title="Android (Native)" icon="seti:mobile" iconColor="#34d399" size="sm">
-    **In ontwikkeling.** Native Android-app met **offline-ondersteuning** en **snel opstarten**, voor robuuste tablets en telefoons. Volg het op de [publieke roadmap](/nl/roadmap/).
+    Native Android-app met **offline-ondersteuning** en **snel opstarten**, voor robuuste tablets en telefoons. Volg het op de [publieke roadmap](/nl/roadmap/).
   </Card>
   <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
-    **In ontwikkeling.** Native iPhone- en iPad-app voor managers en operators op Apple-apparaten. Volg het op de [publieke roadmap](/nl/roadmap/).
+    Native iPhone- en iPad-app voor managers en operators op Apple-apparaten. Volg het op de [publieke roadmap](/nl/roadmap/).
   </Card>
   <Card title="MCP · REST · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
-    **MCP-server: Live.** REST-API, webhooks en MQTT zijn in **Beta** samen met de web-app. Vandaag 24 REST-endpoints.
-  </Card>
-</Grid>
-</Section>
-
-<Section title="Huidige <span class='text-primary'>Status</span>" description="v0.6 is de stabiele lijn en installeer je als desktop-PWA. MCP is live; native mobile apps zijn in ontwikkeling op de roadmap.">
-<Grid columns={3}>
-  <Card title="Stabiele Release" icon="seti:tag" iconColor="#38bdf8">
-    **v0.6** is de huidige stabiele release en installeer je als desktop-PWA vanuit Chrome of Edge. Het bouwt voort op de v0.5.x-lijn — planning-adapters, MCP-HTTP-transport en MQTT-versterking.
-  </Card>
-  <Card title="Hosted Versie" icon="seti:globe" iconColor="#fbbf24">
-    De hosted versie op [app.eryxon.eu](https://app.eryxon.eu) is online en gratis te proberen. Self-hosting is volledig gedocumenteerd voor productie-deployments.
-  </Card>
-  <Card title="Native Apps In Ontwikkeling" icon="seti:mobile" iconColor="#34d399">
-    Native **Android**-app (offline-ondersteuning, snel opstarten) en **iOS**-app zijn in ontwikkeling — volg ze op de [publieke roadmap](/nl/roadmap/). De web-app en PWA zijn vandaag het primaire oppervlak.
+    MCP-server, REST-API, webhooks en MQTT voor AI, automatisering en ERP-integratie. 24 REST-endpoints.
   </Card>
 </Grid>
 </Section>
