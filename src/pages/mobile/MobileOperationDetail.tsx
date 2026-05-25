@@ -64,7 +64,10 @@ export default function MobileOperationDetail(
   const profile = useProfile();
   const { activeOperator } = useOperator();
   const haptics = useHaptics();
-  const operatorId = activeOperator?.id || profile?.id;
+  // Verified active operator only — the shared account profile must never be
+  // credited with start/stop/complete. The `/m/*` shell gate guarantees this
+  // is set; handlers remain defensive against a null operator.
+  const operatorId = activeOperator?.id;
 
   const [operation, setOperation] = useState<OperationWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -151,7 +154,7 @@ export default function MobileOperationDetail(
   }, [operation, operatorId, haptics, t, refresh]);
 
   const handleComplete = useCallback(async () => {
-    if (!operation || !profile?.tenant_id) return;
+    if (!operation || !operatorId || !profile?.tenant_id) return;
     setBusy("complete");
     try {
       await completeOperation(operation.id, profile.tenant_id, operatorId);

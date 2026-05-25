@@ -16,6 +16,7 @@ import { useOperator } from "@/contexts/OperatorContext";
 import { useHaptics } from "@/hooks/useHaptics";
 import { supabase } from "@/integrations/supabase/client";
 import { dispatchIssueCreated } from "@/lib/event-dispatch";
+import { buildIssueImagePath } from "@/lib/mobile-upload";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import type { OperationWithDetails } from "@/lib/database";
@@ -56,9 +57,10 @@ export default function MobileIssueSheet({
   const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const operatorId = activeOperator?.id || profile?.id;
-  const operatorName =
-    activeOperator?.full_name || profile?.full_name || "Unknown";
+  // Attribute the issue to the verified active operator only — a shared
+  // account must not be able to file work-floor issues under its own id.
+  const operatorId = activeOperator?.id;
+  const operatorName = activeOperator?.full_name ?? "Unknown";
 
   const reset = () => {
     setSeverity("medium");
@@ -77,7 +79,15 @@ export default function MobileIssueSheet({
       const issueId = crypto.randomUUID();
       const imagePaths: string[] = [];
       for (const file of files) {
-        const path = `${profile.tenant_id}/issues/${issueId}/${file.name}`;
+        // Camera shots routinely share a filename (e.g. `image.jpg`) — a
+        // per-file unique segment keeps repeated names from colliding and
+        // failing the upload on the second photo.
+        const path = buildIssueImagePath(
+          profile.tenant_id,
+          issueId,
+          file.name,
+          crypto.randomUUID(),
+        );
         const { error } = await supabase.storage
           .from("issues")
           .upload(path, file);

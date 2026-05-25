@@ -1,6 +1,6 @@
 import { lazy } from "react";
 import { Navigate, Route } from "react-router-dom";
-import { ProtectedRoute } from "./guards";
+import { ProtectedRoute, RequireActiveOperator } from "./guards";
 import { LazyRoute } from "./LazyRoute";
 import { MobileShell } from "@/components/mobile";
 
@@ -27,7 +27,9 @@ export function MobileRoutes() {
         path="/m"
         element={
           <ProtectedRoute>
-            <MobileShell />
+            <RequireActiveOperator>
+              <MobileShell />
+            </RequireActiveOperator>
           </ProtectedRoute>
         }
       >

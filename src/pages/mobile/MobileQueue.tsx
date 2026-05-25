@@ -79,7 +79,10 @@ export default function MobileQueue() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const operatorId = activeOperator?.id || profile?.id;
+  // Operator identity must be the verified active operator — never the shared
+  // account profile. The `/m/*` shell is gated by `RequireActiveOperator`, so
+  // this is always populated here; the action guards below stay defensive.
+  const operatorId = activeOperator?.id;
 
   const load = useCallback(async () => {
     if (!profile?.tenant_id) return;
