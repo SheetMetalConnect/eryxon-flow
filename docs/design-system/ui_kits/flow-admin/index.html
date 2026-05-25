@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eryxon Flow — Admin (desktop)</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body data-screen-label="Eryxon Flow Admin (desktop)">
+<div id="root"></div>
+
+<script type="text/babel" src="./components.jsx"></script>
+<script type="text/babel">
+const { useState } = React;
+
+const JOBS = [
+  { id: 1, jobNumber: 'WO-4218', customer: 'Acme Fabrications', po: 'PO-AC-2299', parts: 3, progress: 42,
+    routing: [
+      { cell: 'Cutting',   done: true,  completed: 200, total: 200 },
+      { cell: 'Bending',   current: true, completed: 80, total: 200 },
+      { cell: 'Welding',   completed: 0, total: 50 },
+      { cell: 'Finishing', completed: 0, total: 200 },
+    ],
+    status: 'in_progress', due: '24 May 2026', dueState: 'today', owner: 'Jonas Bekker' },
+  { id: 2, jobNumber: 'WO-4221', customer: 'Demar Laser', po: 'PO-DM-101', parts: 1, progress: 18,
+    routing: [
+      { cell: 'Cutting',   done: true,  completed: 50, total: 50 },
+      { cell: 'Bending',   current: true, completed: 9, total: 50 },
+      { cell: 'Welding',   completed: 0, total: 50 },
+    ],
+    status: 'on_hold', due: '22 May 2026', dueState: 'overdue', owner: 'Sara De Vries' },
+  { id: 3, jobNumber: 'WO-4225', customer: 'Singeling B.V.', po: 'PO-SN-887', parts: 5, progress: 0,
+    routing: [
+      { cell: 'Cutting',   current: true, completed: 0, total: 80 },
+      { cell: 'Welding',   completed: 0, total: 12 },
+      { cell: 'Assembly',  completed: 0, total: 12 },
+    ],
+    status: 'not_started', due: '26 May 2026', dueState: 'soon', owner: 'Mehmet Aydin' },
+  { id: 4, jobNumber: 'WO-4214', customer: 'P&G Metaalwerken', po: 'PO-PG-441', parts: 2, progress: 75,
+    routing: [
+      { cell: 'Cutting',   done: true,  completed: 30, total: 30 },
+      { cell: 'Bending',   done: true,  completed: 30, total: 30 },
+      { cell: 'Finishing', current: true, completed: 22, total: 30 },
+    ],
+    status: 'in_progress', due: '28 May 2026', dueState: 'soon', owner: 'Anouk Peeters' },
+  { id: 5, jobNumber: 'WO-4209', customer: 'Van Enkhuizen', po: 'PO-VE-018', parts: 4, progress: 100,
+    routing: [
+      { cell: 'Cutting',   done: true, completed: 18, total: 18 },
+      { cell: 'Welding',   done: true, completed: 18, total: 18 },
+      { cell: 'Assembly',  done: true, completed: 18, total: 18 },
+      { cell: 'Finishing', done: true, completed: 18, total: 18 },
+    ],
+    status: 'completed', due: '20 May 2026', dueState: 'ok', owner: 'Jonas Bekker' },
+  { id: 6, jobNumber: 'WO-4230', customer: 'Goma Poedercoating', po: 'PO-GM-721', parts: 1, progress: 6,
+    routing: [
+      { cell: 'Cutting',   done: true, completed: 120, total: 120 },
+      { cell: 'Finishing', current: true, completed: 8, total: 120 },
+    ],
+    status: 'blocked', due: '02 Jun 2026', dueState: 'soon', owner: 'Sara De Vries' },
+];
+
+const CAPACITY = [
+  { cell: 'Cutting',   current: 28, capacity: 40 },
+  { cell: 'Bending',   current: 48, capacity: 40 },
+  { cell: 'Welding',   current: 33, capacity: 40 },
+  { cell: 'Assembly',  current: 12, capacity: 32 },
+  { cell: 'Finishing', current: 24, capacity: 40 },
+];
+
+function Dashboard() {
+  return (
+    <>
+      <div className="ad-kpi-grid">
+        <KpiTile label="Active jobs" value="47" unit="" delta={8} intent="positive" />
+        <KpiTile label="Operators on shift" value="12" unit="" delta={0} intent="neutral" />
+        <KpiTile label="Open issues" value="3" unit="" delta={-25} intent="positive" />
+        <KpiTile label="OEE (this week)" value="78" unit="%" delta={4} intent="positive" />
+      </div>
+
+      <div className="ad-split-2">
+        <div className="ad-card">
+          <div className="ad-card-head">
+            <div>
+              <div className="ad-card-title">Recent jobs</div>
+              <div className="ad-card-sub">6 of 47 · sorted by due date</div>
+            </div>
+            <div style={{display:'flex', gap:8}}>
+              <button className="btn btn-secondary">Export</button>
+              <a className="btn btn-ghost" href="#">View all {A.chevron}</a>
+            </div>
+          </div>
+          <JobsTable jobs={JOBS} onOpen={(j) => console.log('open', j)} />
+        </div>
+        <div className="ad-card">
+          <div className="ad-card-head">
+            <div>
+              <div className="ad-card-title">Cell capacity</div>
+              <div className="ad-card-sub">Next 5 days · planned vs available</div>
+            </div>
+          </div>
+          <div className="ad-card-body">
+            {CAPACITY.map(c => <CapacityRow key={c.cell} {...c} />)}
+            <div style={{marginTop:14, padding:'10px 12px', borderRadius:'var(--radius-md)', background:'hsl(var(--alert-warning-bg))', border:'1px solid hsl(var(--alert-warning-border))', fontSize:12, color:'hsl(var(--fg))'}}>
+              <b style={{color:'hsl(var(--warning))'}}>Bending over capacity</b> — 48h of 40h planned. Schedule overflow or reassign 8h to Welding (idle 7h).
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function App() {
+  const [page, setPage] = useState('dashboard');
+  return (
+    <div className="ad-app">
+      <AdminSidebar current={page} onNav={setPage} />
+      <div className="ad-main">
+        <AdminHeader
+          breadcrumb={['Eryxon Flow', 'Dashboard']}
+          title={page === 'dashboard' ? 'Dashboard' : page[0].toUpperCase() + page.slice(1)}
+        />
+        <div className="ad-content">
+          {page === 'dashboard' && <Dashboard />}
+          {page !== 'dashboard' && (
+            <div className="ad-card" style={{padding:48, textAlign:'center', color:'hsl(var(--fg-muted))'}}>
+              <div style={{fontSize:14}}>This screen is not part of the kit demo.<br/>The full admin app covers Jobs, Parts, Operations, Schedule, Capacity, Issues, Data, and Settings.</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

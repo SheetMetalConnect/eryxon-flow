@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eryxon Flow — Introduction</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg" />
+<link rel="stylesheet" href="./slides.css" />
+<script src="./deck-stage.js"></script>
+<script type="application/json" id="speaker-notes">[]</script>
+</head>
+<body>
+
+<deck-stage>
+
+  <!-- ============ 01 — TITLE (antigravity splash) ============ -->
+  <section class="antigrav" data-screen-label="01 Title">
+    <div class="slide-body center" style="justify-content: center;">
+      <img class="title-mark" src="../assets/eryxon-mark-flat.svg" alt="" />
+      <h1 class="title-h">eryxon <span class="em">flow</span></h1>
+      <p class="title-lead">A calm MES for job shops that ship.</p>
+    </div>
+    <div class="title-foot">
+      <span>For beginners <span class="sep"></span> ~10 minutes</span>
+      <span>eryxon.eu</span>
+    </div>
+  </section>
+
+  <!-- ============ 02 — THE PROBLEM ============ -->
+  <section data-screen-label="02 The problem">
+    <div class="slide-chrome">
+      <span class="brand"><img src="../assets/eryxon-mark-flat.svg" alt=""/>eryxon flow</span>
+      <span class="num"><strong>02</strong> / 08</span>
+    </div>
+    <div class="slide-body">
+      <span class="eyebrow">The problem</span>
+      <h2 class="h1" style="margin-bottom: 48px">Most shops still run on whiteboards and email.</h2>
+      <div class="problem-grid">
+        <ul class="problem-list">
+          <li><span class="x">✕</span><span>A whiteboard for each cell, redrawn every morning.</span></li>
+          <li><span class="x">✕</span><span>A planner's Excel sheet that's never quite up to date.</span></li>
+          <li><span class="x">✕</span><span>"What's next?" calls from the floor to the office, all day.</span></li>
+          <li><span class="x">✕</span><span>Late jobs nobody sees coming until Friday at 16:55.</span></li>
+        </ul>
+        <div class="problem-pic">
+          <div class="grid-lines"></div>
+          <div class="scrawl">
+            <span>WO-3120</span><span class="arrow">→ BEND</span><span class="strike">Mon</span>
+            <span class="strike">WO-3119</span><span>WELD</span><span>Tue</span>
+            <span class="urgent">WO-3122</span><span class="urgent">LATE!</span><span class="urgent">??</span>
+            <span>WO-3124</span><span>CUT</span><span>Wed</span>
+            <span class="strike">WO-3118</span><span class="strike">DONE</span><span class="strike">Mon</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 — WHAT IS AN MES ============ -->
+  <section data-screen-label="03 What is an MES">
+    <div class="slide-chrome">
+      <span class="brand"><img src="../assets/eryxon-mark-flat.svg" alt=""/>eryxon flow</span>
+      <span class="num"><strong>03</strong> / 08</span>
+    </div>
+    <div class="slide-body center">
+      <span class="eyebrow">In one sentence</span>
+      <h2 class="mes-h">
+        An <span class="em">MES</span> is the system between<br/>
+        your <span class="strike">whiteboard</span> and your ERP —<br/>
+        the layer that tells the shop floor <em style="font-style: normal; color: #fff; font-weight: 600">what to do, when.</em>
+      </h2>
+    </div>
+  </section>
+
+  <!-- ============ 04 — WHAT ERYXON IS ============ -->
+  <section data-screen-label="04 What Eryxon is">
+    <div class="slide-chrome">
+      <span class="brand"><img src="../assets/eryxon-mark-flat.svg" alt=""/>eryxon flow</span>
+      <span class="num"><strong>04</strong> / 08</span>
+    </div>
+    <div class="slide-body">
+      <span class="eyebrow">What it is</span>
+      <h2 class="h1">An MES built for high-mix, low-volume job shops.</h2>
+      <div class="facts-grid">
+        <div class="fact">
+          <div class="num">01 — Built for fabricators</div>
+          <h3 class="fh">Sheet metal, machining, custom fabrication.</h3>
+          <p class="fb">Designed around routings through cutting, bending, welding, assembly, finishing — not generic factory work.</p>
+        </div>
+        <div class="fact">
+          <div class="num">02 — Tablet-first</div>
+          <h3 class="fh">Real touch-friendly screens.</h3>
+          <p class="fb">56-pixel touch targets. Glanceable from a metre. The operator doesn't read — they look.</p>
+        </div>
+        <div class="fact">
+          <div class="num">03 — Source-available</div>
+          <h3 class="fh">BSL 1.1 — yours to self-host.</h3>
+          <p class="fb">Free to use for your manufacturing business. Run on Docker, on your own infra, with your own database.</p>
+        </div>
+        <div class="fact">
+          <div class="num">04 — Plays nice</div>
+          <h3 class="fh">REST, MQTT, planning adapters.</h3>
+          <p class="fb">30+ REST endpoints. Adapters for FrePPLe and Odoo MRP. MQTT to your UMH / UNS. MCP for AI agents.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 — THREE VIEWS ============ -->
+  <section data-screen-label="05 Three views">
+    <div class="slide-chrome">
+      <span class="brand"><img src="../assets/eryxon-mark-flat.svg" alt=""/>eryxon flow</span>
+      <span class="num"><strong>05</strong> / 08</span>
+    </div>
+    <div class="slide-body wide">
+      <span class="eyebrow">Three people, three views</span>
+      <h2 class="h1">One system. Three jobs to do.</h2>
+      <div class="views-grid">
+        <!-- Operator -->
+        <div class="view">
+          <div class="view-kicker"><span class="dot op"></span>Operator</div>
+          <h3 class="view-h">The tablet at the cell.</h3>
+          <p class="view-b">Tap to start. Mark good and scrap. Raise an issue. The card is the source of truth.</p>
+          <div class="mini">
+            <div class="mini-row">
+              <span class="wo">WO-4218</span>
+              <span class="tag">TODAY</span>
+            </div>
+            <h4>Laser cut</h4>
+            <div class="meta">PN-902-A · Stainless 304 · 200 pcs</div>
+          </div>
+        </div>
+        <!-- Planner -->
+        <div class="view">
+          <div class="view-kicker"><span class="dot pl"></span>Planner</div>
+          <h3 class="view-h">The desktop dashboard.</h3>
+          <p class="view-b">Jobs across every cell. Capacity heat per shift. Reassign without walking the floor.</p>
+          <div class="mini-table">
+            <div class="head" style="display: grid; grid-template-columns: 60px 1fr 50px; gap: 8px;">
+              <span>JOB</span><span>CELL</span><span>STAT</span>
+            </div>
+            <div class="row">
+              <span class="num-cell">4218</span><span>Cutting</span><span class="stat-done">✓</span>
+            </div>
+            <div class="row">
+              <span class="num-cell">4218</span><span>Bending</span><span class="stat-active">●</span>
+            </div>
+            <div class="row">
+              <span class="num-cell">4221</span><span>Welding</span><span class="stat-active">●</span>
+            </div>
+            <div class="row">
+              <span class="num-cell">4225</span><span>Cutting</span><span style="color:#9aa3b8">○</span>
+            </div>
+          </div>
+        </div>
+        <!-- Owner -->
+        <div class="view">
+          <div class="view-kicker"><span class="dot ow"></span>Owner</div>
+          <h3 class="view-h">Throughput and trends.</h3>
+          <p class="view-b">OEE, WIP, on-time delivery. Track the shop the way you track your bank balance.</p>
+          <div class="mini-chart">
+            <svg viewBox="0 0 200 60" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#43c463" stop-opacity="0.4"/>
+                  <stop offset="100%" stop-color="#43c463" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M0,45 L25,38 L50,42 L75,30 L100,32 L125,22 L150,28 L175,18 L200,12 L200,60 L0,60 Z" fill="url(#g1)"/>
+              <path d="M0,45 L25,38 L50,42 L75,30 L100,32 L125,22 L150,28 L175,18 L200,12" fill="none" stroke="#43c463" stroke-width="1.5"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 06 — HOW IT WORKS ============ -->
+  <section data-screen-label="06 How it works">
+    <div class="slide-chrome">
+      <span class="brand"><img src="../assets/eryxon-mark-flat.svg" alt=""/>eryxon flow</span>
+      <span class="num"><strong>06</strong> / 08</span>
+    </div>
+    <div class="slide-body wide">
+      <span class="eyebrow">How it works</span>
+      <h2 class="h1">From ERP push to operator tablet, in three steps.</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">01</div>
+          <h3 class="step-h">Import your jobs.</h3>
+          <p class="step-b">Push from your ERP or planning system, drop in a CSV, or use a planning adapter. Routings normalise on the way in.</p>
+          <span class="step-tag">REST · CSV · Odoo · FrePPLe</span>
+        </div>
+        <div class="step">
+          <div class="step-num">02</div>
+          <h3 class="step-h">Operators work the queue.</h3>
+          <p class="step-b">Each cell sees its own tablet. Tap an operation to start the timer, mark progress, raise issues. The planner sees it live.</p>
+          <span class="step-tag">Tablet · WebSocket · NCR</span>
+        </div>
+        <div class="step">
+          <div class="step-num">03</div>
+          <h3 class="step-h">Planners watch capacity.</h3>
+          <p class="step-b">A QRM dashboard with WIP limits per cell, due-date heat, and an issue queue. Capacity over 100% gets flagged.</p>
+          <span class="step-tag">QRM · WIP · Issue queue</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 07 — TODAY ============ -->
+  <section data-screen-label="07 Today">
+    <div class="slide-chrome">
+      <span class="brand"><img src="../assets/eryxon-mark-flat.svg" alt=""/>eryxon flow</span>
+      <span class="num"><strong>07</strong> / 08</span>
+    </div>
+    <div class="slide-body wide">
+      <span class="eyebrow">Where we are</span>
+      <h2 class="h1">v0.5.1 — stable, in production today.</h2>
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Shops live</div>
+          <div class="stat-value">6</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Operators</div>
+          <div class="stat-value">120<span class="u">+</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">REST endpoints</div>
+          <div class="stat-value">30<span class="u">+</span></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Languages</div>
+          <div class="stat-value">3<span class="u">EN · NL · DE</span></div>
+        </div>
+      </div>
+      <p class="lead" style="margin-top: 56px; max-width: 1300px">
+        Source-available under BSL 1.1. Self-hostable via Docker Compose, or use the hosted version at <span style="color: var(--brand-soft); font-weight: 500">app.eryxon.eu</span>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ 08 — CTA (antigravity splash) ============ -->
+  <section class="antigrav" data-screen-label="08 Get started">
+    <div class="slide-chrome">
+      <span class="brand"><img src="../assets/eryxon-mark-flat.svg" alt=""/>eryxon flow</span>
+      <span class="num"><strong>08</strong> / 08</span>
+    </div>
+    <div class="slide-body" style="padding-top: 140px;">
+      <span class="eyebrow">Try it on your floor</span>
+      <h2 class="cta-h">Two ways to <span class="em">start.</span></h2>
+      <p class="cta-lead">Pick the path that fits your shop. Both run the same product.</p>
+      <div class="cta-paths">
+        <div class="cta-path featured">
+          <span class="kicker">Path A — hosted</span>
+          <h3 class="cta-path-h">Free trial on app.eryxon.eu</h3>
+          <p class="cta-path-b">Leave your details, we provision a tenant within 24 hours. Bring your jobs, your operators, your tablets.</p>
+          <span class="cta-path-url">eryxon.eu/start →</span>
+        </div>
+        <div class="cta-path">
+          <span class="kicker">Path B — self-host</span>
+          <h3 class="cta-path-h">docker compose up -d</h3>
+          <p class="cta-path-b">Run on your own infrastructure under BSL 1.1. Bring your own Supabase. Full source in GitHub.</p>
+          <span class="cta-path-url">github.com/SheetMetalConnect/eryxon-flow →</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</deck-stage>
+
+</body>
+</html>

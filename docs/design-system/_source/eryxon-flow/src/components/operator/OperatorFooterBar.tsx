@@ -1,0 +1,274 @@
+import { useEffect, useState, useCallback } from "react";
+import { useProfile } from "@/hooks/useProfile";
+import { useOperator } from "@/contexts/OperatorContext";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Clock, Square, Pause, Play, AlertTriangle } from "lucide-react";
+import { stopTimeTracking, pauseTimeTracking, resumeTimeTracking } from "@/lib/database";
+import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { ROUTES } from "@/routes";
+
+interface ActiveEntry {
+  id: string;
+  operation_id: string;
+  start_time: string;
+  is_paused: boolean;
+  operation: {
+    operation_name: string;
+    part: {
+      part_number: string;
+      job: {
+        job_number: string;
+      };
+    };
+  };
+}
+
+interface PauseData {
+  paused_at: string;
+}
+
+export default function OperatorFooterBar() {
+  const { t } = useTranslation();
+  const profile = useProfile();
+  const { activeOperator } = useOperator();
+  const navigate = useNavigate();
+
+  const operatorId = activeOperator?.id || profile?.id;
+  const [activeEntry, setActiveEntry] = useState<ActiveEntry | null>(null);
+  const [currentPause, setCurrentPause] = useState<PauseData | null>(null);
+  const [, setTick] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const loadCurrentPause = async (timeEntryId: string) => {
+    const { data } = await supabase
+      .from("time_entry_pauses")
+      .select("paused_at")
+      .eq("time_entry_id", timeEntryId)
+      .is("resumed_at", null)
+      .maybeSingle();
+
+    if (data) {
+      setCurrentPause(data);
+    }
+  };
+
+  const loadActiveEntry = useCallback(async () => {
+    if (!operatorId) return;
+
+    const { data, error } = await supabase
+      .from("time_entries")
+      .select(
+        `
+        id,
+        operation_id,
+        start_time,
+        is_paused,
+        operation:operations(
+          operation_name,
+          part:parts(
+            part_number,
+            job:jobs(job_number)
+          )
+        )
+      `
+      )
+      .eq("operator_id", operatorId)
+      .is("end_time", null)
+      .maybeSingle();
+
+    if (!error && data) {
+      setActiveEntry(data as unknown as ActiveEntry);
+
+      if (data.is_paused) {
+        loadCurrentPause(data.id);
+      } else {
+        setCurrentPause(null);
+      }
+    } else {
+      setActiveEntry(null);
+      setCurrentPause(null);
+    }
+  }, [operatorId]);
+
+  useEffect(() => {
+    if (!operatorId) return;
+
+    loadActiveEntry();
+
+    const interval = setInterval(() => {
+      setTick((prev) => prev + 1);
+    }, 1000);
+
+    const channel = supabase
+      .channel("operator-footer-time-entries")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "time_entries",
+          filter: `operator_id=eq.${operatorId}`,
+        },
+        () => {
+          loadActiveEntry();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, [operatorId, loadActiveEntry]);
+
+  const handleStop = async () => {
+    if (!operatorId || !activeEntry) return;
+
+    setLoading(true);
+    try {
+      await stopTimeTracking(activeEntry.operation_id, operatorId);
+      toast.success(t("production.timeTrackingStopped"));
+      loadActiveEntry();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePause = async () => {
+    if (!operatorId || !activeEntry) return;
+
+    setLoading(true);
+    try {
+      await pauseTimeTracking(activeEntry.id);
+      toast.success(t("production.timeTrackingPaused"));
+      loadActiveEntry();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResume = async () => {
+    if (!operatorId || !activeEntry) return;
+
+    setLoading(true);
+    try {
+      await resumeTimeTracking(activeEntry.id);
+      toast.success(t("production.timeTrackingResumed"));
+      loadActiveEntry();
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : t("notifications.failed"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleReportIssue = () => {
+    navigate(ROUTES.OPERATOR.WORK_QUEUE);
+    toast.info(t("production.openOperationForIssue"));
+  };
+
+  if (!activeEntry) return null;
+
+  const isPaused = activeEntry.is_paused;
+  const timeReference = isPaused && currentPause
+    ? new Date(currentPause.paused_at)
+    : new Date(activeEntry.start_time);
+
+  return (
+    <div className="fixed left-0 right-0 z-40 bg-operator-complete text-white shadow-lg border-t-4 border-primary" style={{ bottom: 'max(0px, env(safe-area-inset-bottom))' }}>
+      <div className="container mx-auto px-3 sm:px-4 py-2 sm:py-3">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <div className={`p-1.5 sm:p-2 rounded-lg ${isPaused ? 'bg-yellow-500/20' : 'bg-white/20'} flex-shrink-0`}>
+              <Clock className={`h-5 w-5 sm:h-6 sm:w-6 ${isPaused ? 'text-yellow-300' : 'text-white'}`} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="font-semibold text-sm sm:text-lg truncate">
+                {activeEntry.operation.operation_name}
+              </div>
+              <div className="text-xs sm:text-sm text-white/90 truncate">
+                Job {activeEntry.operation.part.job.job_number} • {activeEntry.operation.part.part_number}
+              </div>
+              <div className="text-xs text-white/80 hidden sm:block">
+                {isPaused ? (
+                  <>Paused {formatDistanceToNow(timeReference, { addSuffix: true })}</>
+                ) : (
+                  <>Started {formatDistanceToNow(timeReference, { addSuffix: true })}</>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <Button
+              onClick={handleReportIssue}
+              disabled={loading}
+              variant="outline"
+              size="sm"
+              className="gap-1 sm:gap-2 bg-operator-pause hover:bg-operator-pause/90 text-white border-operator-pause hidden lg:flex"
+            >
+              <AlertTriangle className="h-4 w-4" />
+              <span>Report Issue</span>
+            </Button>
+
+            <Button
+              onClick={handleReportIssue}
+              disabled={loading}
+              variant="outline"
+              size="sm"
+              className="bg-operator-pause hover:bg-operator-pause/90 text-white border-operator-pause lg:hidden p-2"
+              title="Report Issue"
+            >
+              <AlertTriangle className="h-4 w-4" />
+            </Button>
+
+            {isPaused ? (
+              <Button
+                onClick={handleResume}
+                disabled={loading}
+                size="sm"
+                className="gap-1 sm:gap-2 bg-operator-start hover:bg-operator-start/90 text-white border-operator-start"
+                title="Resume timing"
+              >
+                <Play className="h-4 w-4" />
+                <span className="hidden sm:inline">Resume</span>
+              </Button>
+            ) : (
+              <Button
+                onClick={handlePause}
+                disabled={loading}
+                variant="outline"
+                size="sm"
+                className="gap-1 sm:gap-2 bg-operator-resume hover:bg-operator-resume/90 text-white border-operator-resume"
+                title="Pause timing"
+              >
+                <Pause className="h-4 w-4" />
+                <span className="hidden sm:inline">Pause</span>
+              </Button>
+            )}
+
+            <Button
+              onClick={handleStop}
+              disabled={loading}
+              variant="outline"
+              size="sm"
+              className="gap-1 sm:gap-2 bg-operator-issue hover:bg-operator-issue/90 text-white border-operator-issue"
+              title="Stop timing"
+            >
+              <Square className="h-4 w-4" />
+              <span className="hidden sm:inline">Stop</span>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
