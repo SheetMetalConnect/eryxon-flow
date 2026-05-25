@@ -1,8 +1,5 @@
 ---
 import MobileMenuToggle from "./MobileMenuToggle.astro";
-import Footer from "./Footer.astro";
-import CTA from "../CTA.astro";
-import SidebarNav from "../SidebarNav.astro";
 
 const { hasSidebar } = Astro.locals.starlightRoute;
 ---
@@ -10,12 +7,17 @@ const { hasSidebar } = Astro.locals.starlightRoute;
 {/* Calm, light-first canvas. The retired orb / factory-texture / dark-doc
     background layers (gradient/glass/orb era) are removed per the canonical
     spec — the page sits on the flat `--ery-surface` background, separation is
-    carried by hairline borders, not imagery. */}
+    carried by hairline borders, not imagery.
+
+    Docs IA (docs-chrome refactor): a single navigation layer. The top nav stays
+    minimal (Home / Documentation / Hosted Version) and the full docs tree is
+    carried by the left sidebar only. The former horizontal secondary tab-bar
+    (`SidebarNav`) duplicated the sidebar group headings and is removed; the
+    language switcher it hosted now lives in the header next to search + theme. */}
 <div class="page sl-flex">
   <header class={"header" + (hasSidebar ? " has-sidebar" : " no-sidebar")}>
     <slot name="header" />
   </header>
-  {hasSidebar && <SidebarNav />}
   <div class="main-frame">
     <div class="container flex relative">
         {
@@ -77,11 +79,6 @@ const { hasSidebar } = Astro.locals.starlightRoute;
     :global([data-has-sidebar]) .main-frame {
       padding-top: 2rem;
     }
-    @media (max-width: 1156px) {
-      :global([data-has-sidebar]) .main-frame {
-        padding-top: 4rem;
-      }
-    }
 
     .sidebar-pane {
       visibility: var(--sl-sidebar-visibility, hidden);
@@ -128,8 +125,9 @@ const { hasSidebar } = Astro.locals.starlightRoute;
         --sl-sidebar-visibility: visible;
         width: var(--sl-sidebar-width);
         background-color: transparent;
-        inset-block: calc(var(--sl-nav-height) + 110px) 0;
-       
+        /* Was `+ 110px` to clear the removed horizontal secondary tab-bar.
+         * With a single nav layer the sidebar starts right under the header. */
+        inset-block: var(--sl-nav-height) 0;
       }
     }
   }

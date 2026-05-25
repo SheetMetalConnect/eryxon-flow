@@ -1,20 +1,31 @@
 ---
 /*
- * Legal.astro — shared imprint + privacy surface (v0.6).
+ * Legal.astro — shared imprint + privacy surface (v0.6, redesign).
  *
  * One component renders both the Impressum (`imprintCopy`) and the Privacy Policy (`privacyCopy`)
  * from `marketing-content.ts`, in EN / NL / DE. Page routes are thin shells that pass the right
  * copy in. Styling uses the shared `--ery-*` token contract only (light-first; no dark/glass).
  *
+ * LAYOUT (redesign): a calm two-column legal page. On desktop the first section renders as a
+ * sticky "entity card" rail (the publisher identity — the data a reader scans first), and the
+ * remaining sections flow as a readable single column beside it. Below the lg breakpoint it
+ * collapses to one column. Registration identifiers are set in the mono face so VAT / Firmenbuch
+ * numbers read as precise technical data. All statutory fields are preserved verbatim; only the
+ * presentation changed.
+ *
  * Both pages surface the same prominent Apache 2.0 "AS IS" / use-at-your-own-risk disclaimer block,
  * matching the licence that ships with Eryxon Flow.
  */
-import type { LegalCopy } from "@/lib/marketing-content";
+import type { LegalCopy, LegalSection } from "@/lib/marketing-content";
 
 interface Props {
   copy: LegalCopy;
 }
 const { copy } = Astro.props;
+
+// The first section (publisher / controller identity) becomes the sticky rail card;
+// everything after it flows as the main legal column.
+const [identity, ...sections] = copy.sections as LegalSection[];
 ---
 
 <section class="ery-container lg-wrap">
@@ -24,66 +35,104 @@ const { copy } = Astro.props;
     <p class="lg-meta">{copy.meta}</p>
   </header>
 
-  <div class="lg-card">
-    {copy.lead && <p class="lg-lead">{copy.lead}</p>}
+  {copy.lead && <p class="lg-lead">{copy.lead}</p>}
 
-    {copy.sections.map((s) => (
-      <section class="lg-section">
-        <h2 class="lg-section-head">{s.heading}</h2>
-
-        {s.paragraphs?.map((p) => <p class="lg-p">{p}</p>)}
-
-        {s.rows && (
-          <dl class="lg-rows">
-            {s.rows.map((r) => (
-              <div class="lg-row">
-                <dt class="lg-dt">{r.label}</dt>
-                <dd class="lg-dd">
-                  {r.email ? (
-                    <a class="lg-link" href={`mailto:${r.email}`}>{r.email}</a>
-                  ) : r.href ? (
-                    <a class="lg-link" href={r.href} {...(r.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
-                      {r.value}{r.external ? " ↗" : ""}
-                    </a>
-                  ) : (
-                    <span>{r.value}</span>
-                  )}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        )}
-
-        {s.bullets && (
-          <ul class="lg-bullets">
-            {s.bullets.map((b) => (
-              <li><span class="lg-dot"></span><span>{b}</span></li>
-            ))}
-          </ul>
-        )}
-      </section>
-    ))}
-
-    {copy.disclaimer && (
-      <aside class="lg-disclaimer" aria-label={copy.disclaimer.heading}>
-        <h2 class="lg-disclaimer-head">{copy.disclaimer.heading}</h2>
-        {copy.disclaimer.paragraphs.map((p) => <p class="lg-disclaimer-p">{p}</p>)}
-        <a class="lg-disclaimer-link" href={copy.disclaimer.licenseHref} target="_blank" rel="noopener noreferrer">
-          {copy.disclaimer.licenseLabel} ↗
-        </a>
+  <div class="lg-grid">
+    {/* Identity rail — the publisher / controller card. */}
+    {identity && (
+      <aside class="lg-rail">
+        <div class="lg-card lg-card--identity">
+          <h2 class="lg-rail-head">{identity.heading}</h2>
+          {identity.paragraphs?.map((p) => <p class="lg-p">{p}</p>)}
+          {identity.rows && (
+            <dl class="lg-idrows">
+              {identity.rows.map((r) => (
+                <div class="lg-idrow">
+                  <dt class="lg-dt">{r.label}</dt>
+                  <dd class="lg-dd">
+                    {r.email ? (
+                      <a class="lg-link" href={`mailto:${r.email}`}>{r.email}</a>
+                    ) : r.href ? (
+                      <a class="lg-link" href={r.href} {...(r.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                        {r.value}{r.external ? " ↗" : ""}
+                      </a>
+                    ) : (
+                      <span>{r.value}</span>
+                    )}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+        </div>
       </aside>
     )}
+
+    {/* Main legal column. */}
+    <div class="lg-main">
+      {sections.map((s) => (
+        <section class="lg-section">
+          <h2 class="lg-section-head">{s.heading}</h2>
+
+          {s.paragraphs?.map((p) => <p class="lg-p">{p}</p>)}
+
+          {s.rows && (
+            <dl class="lg-rows">
+              {s.rows.map((r) => {
+                const isCode = /vat|uid|register|firmenbuch|ust/i.test(r.label);
+                return (
+                  <div class="lg-row">
+                    <dt class="lg-dt">{r.label}</dt>
+                    <dd class:list={["lg-dd", { "lg-dd--code": isCode }]}>
+                      {r.email ? (
+                        <a class="lg-link" href={`mailto:${r.email}`}>{r.email}</a>
+                      ) : r.href ? (
+                        <a class="lg-link" href={r.href} {...(r.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}>
+                          {r.value}{r.external ? " ↗" : ""}
+                        </a>
+                      ) : (
+                        <span>{r.value}</span>
+                      )}
+                    </dd>
+                  </div>
+                );
+              })}
+            </dl>
+          )}
+
+          {s.bullets && (
+            <ul class="lg-bullets">
+              {s.bullets.map((b) => (
+                <li><span class="lg-dot"></span><span>{b}</span></li>
+              ))}
+            </ul>
+          )}
+        </section>
+      ))}
+
+      {copy.disclaimer && (
+        <aside class="lg-disclaimer" aria-label={copy.disclaimer.heading}>
+          <h2 class="lg-disclaimer-head">{copy.disclaimer.heading}</h2>
+          {copy.disclaimer.paragraphs.map((p) => <p class="lg-disclaimer-p">{p}</p>)}
+          <a class="lg-disclaimer-link" href={copy.disclaimer.licenseHref} target="_blank" rel="noopener noreferrer">
+            {copy.disclaimer.licenseLabel} ↗
+          </a>
+        </aside>
+      )}
+    </div>
   </div>
 </section>
 
 <style>
   .lg-wrap {
-    max-inline-size: 52rem;
+    max-inline-size: 64rem;
     padding-block: var(--ery-pad-hero) var(--ery-space-24);
   }
 
   .lg-head {
-    margin-block-end: var(--ery-space-10);
+    margin-block-end: var(--ery-space-6);
+    padding-block-end: var(--ery-space-6);
+    border-block-end: 1px solid var(--ery-border);
   }
   .lg-eyebrow {
     font-family: var(--ery-font-mono);
@@ -94,10 +143,11 @@ const { copy } = Astro.props;
     margin: 0 0 var(--ery-space-3);
   }
   .lg-h1 {
-    font-size: clamp(var(--ery-text-3xl), 4vw, var(--ery-text-4xl));
+    font-size: clamp(var(--ery-text-3xl), 4vw, var(--ery-text-5xl));
     line-height: var(--ery-leading-tight);
     letter-spacing: var(--ery-tracking-tight);
     margin: 0 0 var(--ery-space-2);
+    color: var(--ery-text);
   }
   .lg-meta {
     margin: 0;
@@ -105,30 +155,93 @@ const { copy } = Astro.props;
     color: var(--ery-text-subtle);
   }
 
-  .lg-card {
-    border: 1px solid var(--ery-border);
-    border-radius: var(--ery-radius-lg);
-    background: var(--ery-surface);
-    padding: var(--ery-space-8);
-  }
-
   .lg-lead {
-    margin: 0 0 var(--ery-space-6);
+    margin: 0 0 var(--ery-space-8);
+    max-inline-size: 60ch;
     font-size: var(--ery-text-lg);
     line-height: var(--ery-leading-relaxed);
     color: var(--ery-text-muted);
   }
 
-  .lg-section + .lg-section,
-  .lg-lead + .lg-section {
+  /* Two-column shell — identity rail + flowing legal column. */
+  .lg-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    gap: var(--ery-space-10);
+    align-items: start;
+  }
+  @media (max-width: 60rem) {
+    .lg-grid {
+      grid-template-columns: 1fr;
+      gap: var(--ery-space-8);
+    }
+  }
+
+  .lg-rail {
+    position: sticky;
+    top: calc(var(--ery-header-height) + var(--ery-space-6));
+  }
+  @media (max-width: 60rem) {
+    .lg-rail {
+      position: static;
+    }
+  }
+
+  .lg-card {
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    background: var(--ery-surface);
+  }
+  .lg-card--identity {
+    padding: var(--ery-space-6);
+    background: var(--ery-surface-subtle);
+  }
+  .lg-rail-head {
+    margin: 0 0 var(--ery-space-5);
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+    color: var(--ery-text-subtle);
+  }
+  .lg-idrows {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-4);
+  }
+  .lg-idrow {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .lg-idrow .lg-dt {
+    font-size: var(--ery-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ery-text-subtle);
+    font-weight: 500;
+  }
+  .lg-idrow .lg-dd {
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text);
+  }
+
+  /* Main legal column. */
+  .lg-main {
+    min-inline-size: 0;
+  }
+  .lg-section + .lg-section {
     margin-block-start: var(--ery-space-8);
     padding-block-start: var(--ery-space-8);
     border-block-start: 1px solid var(--ery-border);
   }
   .lg-section-head {
     margin: 0 0 var(--ery-space-4);
-    font-size: var(--ery-text-base);
+    font-size: var(--ery-text-xl);
     font-weight: 600;
+    letter-spacing: var(--ery-tracking-tight);
     color: var(--ery-text);
   }
   .lg-p {
@@ -145,13 +258,21 @@ const { copy } = Astro.props;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: var(--ery-space-3);
   }
   .lg-row {
     display: grid;
-    grid-template-columns: 13rem 1fr;
+    grid-template-columns: 14rem 1fr;
     gap: var(--ery-space-4);
     align-items: baseline;
+    padding-block: var(--ery-space-3);
+    border-block-end: 1px solid var(--ery-border);
+  }
+  .lg-row:first-child {
+    padding-block-start: 0;
+  }
+  .lg-row:last-child {
+    border-block-end: 0;
+    padding-block-end: 0;
   }
   .lg-dt {
     margin: 0;
@@ -164,6 +285,12 @@ const { copy } = Astro.props;
     font-size: var(--ery-text-sm);
     line-height: var(--ery-leading-relaxed);
     color: var(--ery-text-muted);
+  }
+  .lg-dd--code {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text);
+    letter-spacing: 0.01em;
   }
   .lg-link {
     color: var(--ery-brand);
@@ -201,6 +328,7 @@ const { copy } = Astro.props;
     margin-block-start: var(--ery-space-8);
     padding: var(--ery-space-6);
     border: 1px solid var(--ery-border-strong);
+    border-inline-start: 3px solid var(--ery-warning);
     border-radius: var(--ery-radius);
     background: var(--ery-surface-subtle);
   }
@@ -230,7 +358,7 @@ const { copy } = Astro.props;
   }
 
   @media (max-width: 560px) {
-    .lg-card {
+    .lg-card--identity {
       padding: var(--ery-space-5);
     }
     .lg-row {

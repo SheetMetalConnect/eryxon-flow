@@ -58,26 +58,14 @@
       "title": "Contact",
       "links": [
         {
-          "name": "Begeleide uitrol",
-          "url": "/managed-rollout/?cta=footer_contact_managed_rollout",
-          "ctaId": "footer_contact_managed_rollout",
-          "ctaKind": "rollout_page"
-        },
-        {
-          "name": "office@vanenkhuizen.com",
-          "url": "mailto:office@vanenkhuizen.com",
-          "ctaId": "footer_contact_email",
-          "ctaKind": "email"
-        },
-        {
           "name": "LinkedIn",
           "url": "https://www.linkedin.com/in/lvanenkhuizen/"
         },
         {
-          "name": "vanenkhuizen.com",
-          "url": "https://www.vanenkhuizen.com/",
-          "ctaId": "footer_contact_consulting_site",
-          "ctaKind": "external_site"
+          "name": "luke@sheetmetalconnect.com",
+          "url": "mailto:luke@sheetmetalconnect.com",
+          "ctaId": "footer_contact_email",
+          "ctaKind": "email"
         }
       ]
     }
