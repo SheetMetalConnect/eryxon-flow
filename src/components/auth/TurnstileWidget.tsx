@@ -21,6 +21,9 @@ interface TurnstileRenderOptions {
 }
 
 interface TurnstileAPI {
+  // Per Cloudflare docs, render() must run inside ready() so the API is fully
+  // initialised before we mount a widget (explicit-rendering pattern).
+  ready: (callback: () => void) => void;
   render: (container: string | HTMLElement, options: TurnstileRenderOptions) => string;
   reset: (widgetId: string) => void;
   remove: (widgetId: string) => void;
@@ -172,7 +175,16 @@ export function TurnstileWidget({
 
     loadTurnstileScript()
       .then(() => {
-        if (!cancelled) renderWidget();
+        if (cancelled) return;
+        // Cloudflare docs: defer render() until turnstile.ready() fires, so the
+        // widget mounts only after the API has fully initialised.
+        if (window.turnstile?.ready) {
+          window.turnstile.ready(() => {
+            if (!cancelled) renderWidget();
+          });
+        } else {
+          renderWidget();
+        }
       })
       .catch((err) => {
         logger.warn("TurnstileWidget", "Script load failed", err);
