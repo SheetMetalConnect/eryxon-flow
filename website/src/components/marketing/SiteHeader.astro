@@ -3,8 +3,8 @@
  * SiteHeader — decision-oriented marketing navigation (ERY-60 → v0.6 locale buildout).
  *
  * Fills the `header` slot of MarketingLayout (the wordmark is already rendered by the layout).
- * IA per the ERY-54 brief: Pricing · Managed rollout · Documentation · Blog · Changelog, with the
- * hosted trial as the single CTA button.
+ * IA per the ERY-54 brief: Pricing · Documentation · Blog · Changelog · Roadmap, with the
+ * free trial as the single CTA button.
  *
  * Locale-aware: nav labels are translated and the locale-bearing routes (Pricing) carry the
  * current locale prefix. Docs/rollout/blog/changelog are single-language surfaces (docs +
@@ -17,15 +17,15 @@ import { localizePath, stripLocalePrefix, localeFromPath, SUPPORTED_LOCALES, typ
 interface Props {
   locale?: Locale;
   /** Marks the current section for aria-current. */
-  active?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | null;
+  active?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | "roadmap" | null;
 }
 
 const { locale = "en", active = null } = Astro.props;
 
 const labels: Record<Locale, Record<string, string>> = {
-  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Changelog", cta: "Get started for free" },
-  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Changelog", cta: "Begin gratis" },
-  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Changelog", cta: "Kostenlos starten" },
+  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Start free trial" },
+  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Start gratis trial" },
+  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Kostenlos testen" },
 };
 const t = labels[locale];
 
@@ -37,6 +37,7 @@ const links = [
   { key: "docs", label: t.docs, href: "/introduction/" },
   { key: "blog", label: t.blog, href: "/blog/" },
   { key: "changelog", label: t.changelog, href: "/release-notes/" },
+  { key: "roadmap", label: t.roadmap, href: localizePath("/roadmap/", locale) },
 ] as const;
 
 // Language switcher: keep the visitor on the equivalent path in each locale, but only for the
@@ -44,7 +45,7 @@ const links = [
 // locale's home.
 const currentLocale = localeFromPath(Astro.url.pathname);
 const base = stripLocalePrefix(Astro.url.pathname, currentLocale);
-const localizedBase = base === "/" || base === "/pricing/" ? base : "/";
+const localizedBase = base === "/" || base === "/pricing/" || base === "/roadmap/" ? base : "/";
 const langLinks = SUPPORTED_LOCALES.map((l) => ({
   lang: l,
   href: localizePath(localizedBase, l),
