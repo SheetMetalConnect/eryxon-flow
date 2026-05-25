@@ -13,7 +13,6 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.6-blue" alt="Version" />
   <img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
@@ -22,9 +21,11 @@
 
 ---
 
-> **Project Status (May 2026):** v0.6 is the current stable release and ships as an installable PWA — add it to your desktop straight from Chrome or Edge on Windows and macOS. Eryxon Flow is fully open source under Apache 2.0 — use, fork, and adapt it however you like. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
+Eryxon Flow is an open-source MES for metalworking job shops. It runs as a self-hosted platform and installs as a desktop app straight from your browser, no Electron or extra runtime. It's free under Apache 2.0: use it, fork it, adapt it however you like.
 
-Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP/planning system — all from one self-hosted platform.
+Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and connect it to your ERP or planning system.
+
+See the [Architecture docs](docs/ARCHITECTURE.md) to learn how it fits together, and the [Changelog](CHANGELOG.md) for what's new.
 
 Built for **high-mix, low-volume** production: sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through cutting, bending, welding, and assembly, this is for you.
 
@@ -173,7 +174,6 @@ This repo is optimized for AI coding assistants:
 | Claude Code | [CLAUDE.md](CLAUDE.md) |
 | GitHub Copilot | [.github/copilot-instructions.md](.github/copilot-instructions.md) |
 | Cursor | [.cursorrules](.cursorrules) |
-| Gemini | [GEMINI.md](GEMINI.md) |
 | Codex / Windsurf / Cline | [AGENTS.md](AGENTS.md) |
 
 Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and repo operations.
