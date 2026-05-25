@@ -3,7 +3,36 @@ title: Welkom bij Eryxon Flow
 description: Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor de metaalbewerking.
 ---
 
-**Het eenvoudige, elegante en krachtige manufacturing execution system waar uw mensen graag mee zullen werken. Gemaakt voor de metaalbewerking.**
+Eryxon Flow is een tabletvriendelijk manufacturing execution system voor metaalbewerkende job shops - volg orders van ERP tot werkvloer zonder operatoradoptie te verliezen.
+
+## Kies uw route
+
+Kies het pad dat past bij uw evaluatie van Eryxon Flow.
+
+<div style="display:grid;gap:var(--ery-space-4);grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:var(--ery-space-6) 0;">
+  <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_path_nl" data-cta-surface="docs_intro_path_chooser" data-cta-kind="hosted_app" data-cta-locale="nl" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Open de hosted trial</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Probeer de live app op app.eryxon.eu zonder installatie. Beste keuze voor een eerste verkenning.</span>
+  </a>
+  <a href="/nl/managed-rollout/" data-cta-id="docs_intro_rollout_path_nl" data-cta-surface="docs_intro_path_chooser" data-cta-kind="rollout_page" data-cta-locale="nl" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Plan een managed rollout</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Krijg hulp bij deployment, ERP-integratie en rolloutvolgorde.</span>
+  </a>
+  <a href="/nl/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_nl" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="nl" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Evalueer self-hosting</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Draai Eryxon op uw eigen infrastructuur. Source-available onder BSL 1.1.</span>
+  </a>
+</div>
+
+![Eryxon Flow admin dashboard](../../../assets/step-1.png)
+
+## Past het bij uw werkplaats?
+
+- **Operators** krijgen een touchvriendelijke werkwachtrij: werk per stadium pullen, tijd loggen, STEP/PDF bekijken en issues op de werkvloer melden.
+- **Admins** krijgen realtime zicht: wie waaraan werkt, issue-goedkeuringen, datum-overschrijvingen en configuratie van stadia/materialen.
+- **Technische evaluatoren** krijgen een API-first systeem: 24 REST-endpoints, webhooks, MQTT, een MCP-server en planningadapters voor FrePPLe en Odoo.
+
+> **Huidige status:** v0.5.1 is de huidige stabiele lijn. Web-app, REST API, webhooks, MQTT en de FrePPLe/Odoo-adapters zijn **Beta**; de **MCP-server is Live**. Native **Android**- en **iOS**-apps staan op de roadmap - vandaag is de browser-app het primaire oppervlak.
 
 > **Status:** Het grootste deel van Eryxon Flow is in **Beta** — web-app, REST-API, webhooks, MQTT en de planning-adapters voor FrePPLe en Odoo. De **MCP-server is Live**. Native **Android**- en **iOS**-apps komen binnenkort.
 
