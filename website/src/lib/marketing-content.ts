@@ -80,14 +80,14 @@ const productCards = [
 
 const LANDING: Record<Locale, LandingCopy> = {
   en: {
-    title: "Eryxon Flow — A calm, open-source MES for job shops that ship",
+    title: "Eryxon Flow — open-source MES for job shops",
     description:
-      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly — from one tablet on the shop floor to the planner's desktop. Free and open source. Self-host it, let us host it, or have it run on-prem for you.",
+      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly, from the tablet on the floor to the planner's desk. Free and open source. Self-host it, let us host it, or have it run on-prem for you.",
     hero: {
       tag: "Open source · Apache 2.0 · self-hostable",
-      h1: "A calm, open-source MES for job shops that ship.",
-      lead: "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly — from one tablet on the floor to the planner's desk. Free and open source, with excellent self-hosting. No spreadsheets, no whiteboards, no decorative noise.",
-      ctaPrimary: "Start free trial",
+      h1: "Keep a grip on every job, floor to planning.",
+      lead: "Eryxon Flow tracks each job through cutting, bending, welding, and assembly. Operators work a tablet at the machine; the planner sees it the moment it changes. Free and open source. No spreadsheets, no whiteboard.",
+      ctaPrimary: "Try it free",
       ctaSecondary: "Self-host it free",
       ctaTertiary: "Read the docs →",
     },
@@ -154,61 +154,61 @@ const LANDING: Record<Locale, LandingCopy> = {
     },
     cta: {
       h2: "Try it on your own shop floor.",
-      lead: "Start a free trial in minutes. Or pull the Docker image and self-host it free — it's open source, no strings.",
-      ctaPrimary: "Start free trial",
+      lead: "It runs in minutes. Or pull the Docker image and self-host it free. Open source, no strings.",
+      ctaPrimary: "Try it free",
       ctaSecondary: "Read the self-host guide",
     },
   },
 
   nl: {
-    title: "Eryxon Flow — Een rustige, open-source MES voor jobshops die leveren",
+    title: "Eryxon Flow — open-source MES voor de metaalbewerking",
     description:
-      "Eryxon Flow volgt orders door snijden, kanten, lassen en assemblage — van één tablet op de werkvloer tot het bureau van de planner. Gratis en open source. Host zelf, laat ons hosten, of laat het on-prem bij je draaien.",
+      "Eryxon Flow houdt je orders bij door snijden, kanten, lassen en assemblage — van de tablet op de vloer tot het bureau van de planner. Gratis en open source. Host het zelf, laat het ons hosten, of laat het bij je op locatie draaien.",
     hero: {
       tag: "Open source · Apache 2.0 · zelf te hosten",
-      h1: "Een rustige, open-source MES voor jobshops die leveren.",
-      lead: "Eryxon Flow volgt orders door snijden, kanten, lassen en assemblage — van één tablet op de vloer tot het bureau van de planner. Gratis en open source, met uitstekende self-hosting. Geen spreadsheets, geen whiteboards, geen ruis.",
-      ctaPrimary: "Start gratis trial",
-      ctaSecondary: "Host zelf, gratis",
-      ctaTertiary: "Lees de docs →",
+      h1: "Grip op je orders, van de vloer tot de planning.",
+      lead: "Eryxon Flow volgt elke order door snijden, kanten, lassen en assemblage. De operator werkt op een tablet aan de machine, de planner ziet het meteen op zijn scherm. Gratis en open source. Geen Excel, geen whiteboard.",
+      ctaPrimary: "Gratis uitproberen",
+      ctaSecondary: "Zelf hosten, gratis",
+      ctaTertiary: "Naar de docs →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Lasersnijden", queueTitle: "Werkwachtrij", cards: productCards },
     features: {
       eyebrow: "Wat je krijgt",
-      h2: "Alles wat een high-mix, low-volume shop nodig heeft.",
-      lead: "Geen add-on store, geen kosten per gebruiker, geen verrassingsmodules. De volledige MES vanaf dag één — tablet tot planner tot API.",
+      h2: "Alles wat een enkelstuks- en kleinserieshop nodig heeft.",
+      lead: "Geen losse modules om bij te kopen, geen prijs per gebruiker, geen verrassingen. Het hele systeem vanaf dag één — van de tablet aan de machine tot de planner en de API.",
       items: [
-        { title: "Bedienbare operatorterminals", body: "Kanban-wachtrijen per productiecel. 56px-aanraakdoelen. Status, deadline-urgentie en verstreken tijd af te lezen vanaf een meter afstand." },
-        { title: "Order- en onderdeel-tracking", body: "Volledig zicht door snijden, kanten, lassen, assemblage, afwerking. Routing per cel, WIP-limieten en een capaciteitsoverzicht." },
-        { title: "3D STEP-viewer", body: "CAD in de browser, geen installatie. Meten, exploded views, ingebouwd in de operator-detailweergave." },
-        { title: "REST API & webhooks", body: "Filtering, paginering, zoeken en webhook-dispatch voor elke gebeurtenis. Gebouwd voor ERP-naar-MES-synchronisatie." },
-        { title: "Gratis en open source", body: "Apache 2.0 — gratis voor elk gebruik, ook commercieel. Zelf hosten via Docker Compose zonder feature-slot, of laat ons hosten. Forken, auditen, houden." },
-        { title: "Multi-tenant, meertalig", body: "Row-level security op PostgreSQL. EN / NL / DE standaard. Voor shops met één locatie en groepen met meerdere." },
+        { title: "Tablets aan de machine", body: "Een wachtrij per cel, zoals een kanbanbord. Knoppen van 56 pixels, dus je raakt ze met werkhandschoenen. Status, deadline en doorlooptijd lees je van een meter afstand af." },
+        { title: "Order- en onderdeelvolging", body: "Je ziet elke order door snijden, kanten, lassen, assemblage en afwerking heen. De route per cel, WIP-limieten en hoeveel werk er nog op de plank ligt." },
+        { title: "3D STEP-viewer", body: "CAD in de browser, niks te installeren. Meten en exploded views, direct in het orderscherm van de operator." },
+        { title: "REST API en webhooks", body: "Filteren, pagineren, zoeken en een webhook bij elke stap. Gebouwd om je ERP en de werkvloer aan elkaar te knopen, niet om alles met de hand in te kloppen." },
+        { title: "Gratis en open source", body: "Apache 2.0, gratis voor elk gebruik, ook commercieel. Zelf hosten met Docker Compose, niks afgeschermd. Of laat ons hosten. Forken en aanpassen mag." },
+        { title: "Meerdere locaties, meerdere talen", body: "Row-level security op PostgreSQL. NL, DE en EN zitten er standaard in. Werkt voor één werkplaats en voor een groep met meerdere vestigingen." },
       ],
     },
     how: {
       eyebrow: "Hoe het werkt",
-      h2: "Van ERP naar planner-dashboard in drie stappen.",
+      h2: "Van order in het ERP naar de planning, in drie stappen.",
       steps: [
-        { n: "01", h: "Importeer je orders", b: "Vanuit je ERP via de REST API, met een CSV, of via een planning-adapter. Eryxon Flow normaliseert onderdelen, bewerkingen en routing zodat de vloer één vorm ziet.", tag: "REST · CSV · webhooks" },
-        { n: "02", h: "Operators werken de wachtrij af", b: "Elke cel heeft een eigen tablet. Tik op een bewerking, start de timer, registreer goed- en afkeuraantallen, meld problemen. Realtime-updates gaan terug naar de planner.", tag: "Tablet · 56px-doelen · realtime" },
-        { n: "03", h: "Planners bewaken capaciteit", b: "Een dashboard met WIP-limieten per cel, deadline-druk en een meldingenwachtrij. Capaciteit boven 100% wordt gemarkeerd — geen verrassingen op vrijdag om 16:55.", tag: "Capaciteit · WIP-limieten · meldingen" },
+        { n: "01", h: "Zet je orders erin", b: "Via de REST API vanuit je ERP, met een CSV, of via een planningskoppeling. Eryxon Flow trekt onderdelen, bewerkingen en routes recht, zodat de vloer altijd dezelfde opbouw ziet, wat er bovenstrooms ook staat.", tag: "REST · CSV · webhooks" },
+        { n: "02", h: "De vloer werkt de wachtrij af", b: "Elke cel heeft zijn eigen tablet. Tik op een bewerking, start de timer, vul goed- en afkeuraantallen in, meld een probleem. De planner ziet het meteen, zonder de pagina te verversen.", tag: "Tablet · knoppen van 56px · live" },
+        { n: "03", h: "De planner houdt de capaciteit in de gaten", b: "Eén scherm met de WIP-limiet per cel, welke orders krap zitten en een lijst met meldingen. Zit een cel boven de 100 procent, dan zie je dat. Geen verrassing meer op vrijdag om vijf voor vijf.", tag: "Capaciteit · WIP-limieten · meldingen" },
       ],
     },
     api: {
       eyebrow: "REST + Webhooks",
-      h2: "Een API waar je ERP echt mee kan praten.",
-      lead: "Endpoints met filtering, paginering, zoeken en webhook-dispatch. Gebouwd voor ERP-naar-MES-synchronisatie.",
-      bullets: ["Bearer-token-auth met scoped API-keys", "Idempotente writes met eigen sleutels", "Webhooks voor elke gebeurtenis", "MCP-server voor AI-assistenten"],
+      h2: "Een API waar je ERP echt mee uit de voeten kan.",
+      lead: "Endpoints met filteren, pagineren, zoeken en een webhook per stap. Bedoeld om je ERP en de werkvloer te koppelen.",
+      bullets: ["Bearer-token met afgebakende API-keys", "Schrijfacties zijn idempotent, met je eigen sleutel", "Een webhook bij elke stap in de order", "MCP-server voor AI-assistenten"],
     },
     integrations: {
-      eyebrow: "Integraties",
-      h2: "Zit tussen de systemen die je al draait.",
-      lead: "Eryxon Flow haalt orderintentie uit je ERP, geeft die als bedienbare bewerkingen aan de vloer en stuurt resultaten terug.",
+      eyebrow: "Koppelingen",
+      h2: "Past tussen de systemen die je al draait.",
+      lead: "Eryxon Flow pakt de order uit je ERP, geeft die als bewerkingen door aan de vloer en stuurt de resultaten weer terug.",
       items: [
-        { name: "REST API", kind: "Integratie" },
+        { name: "REST API", kind: "Koppeling" },
         { name: "Webhooks", kind: "Events" },
-        { name: "CSV-import", kind: "Onboarding" },
+        { name: "CSV-import", kind: "Opstarten" },
         { name: "Supabase", kind: "Backend" },
         { name: "PostgreSQL", kind: "Database" },
         { name: "MQTT", kind: "Protocol" },
@@ -219,61 +219,61 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Prijzen",
       h2: "Drie manieren om het te draaien.",
-      lead: "Host zelf, gratis en open source. Laat ons hosten tegen een vast tarief, onbeperkt gebruikers. Of laat het on-prem draaien met updates, monitoring en back-ups geregeld.",
+      lead: "Host het zelf, gratis en open source. Laat het ons hosten voor een vast bedrag, onbeperkt gebruikers. Of laat het op je eigen locatie draaien, met updates, monitoring en back-ups erbij.",
       allLink: "Bekijk alle prijzen →",
     },
     rollout: {
-      eyebrow: "Gehost & managed",
+      eyebrow: "Gehost en beheerd",
       h2: "Liever niet zelf draaien?",
-      lead: "De software is gratis en open source — host zelf wanneer je wilt. Wil je dat liever niet, dan hosten wij het voor je, of installeren en draaien we het op je eigen infrastructuur.",
+      lead: "De software is gratis en open source, dus zelf hosten kan altijd. Geen zin in? Dan hosten wij het, of we zetten het neer op je eigen servers en houden het draaiend.",
       points: [
-        { h: "Gehost", b: "Wij draaien het voor je tegen een vast tarief. Onbeperkt gebruikers, dagelijkse back-ups, updates geregeld." },
-        { h: "Managed on-prem", b: "Geïnstalleerd op je eigen infrastructuur, met updates, monitoring en back-ups geregeld." },
-        { h: "ERP gekoppeld", b: "Orderintentie binnen via REST en webhooks, resultaten terug, geen dubbele invoer." },
+        { h: "Gehost", b: "Wij draaien het voor je, vast bedrag. Onbeperkt gebruikers, elke dag een back-up, updates doen wij." },
+        { h: "Beheerd op locatie", b: "Op je eigen servers gezet, met updates, monitoring en back-ups erbij." },
+        { h: "Gekoppeld aan je ERP", b: "Orders komen binnen via REST en webhooks, resultaten gaan terug. Niks dubbel invoeren." },
       ],
       cta: "Neem contact op",
     },
     cta: {
       h2: "Probeer het op je eigen werkvloer.",
-      lead: "Start binnen een paar minuten een gratis trial. Of pak de Docker-image en host het zelf, gratis — het is open source, zonder addertjes.",
-      ctaPrimary: "Start gratis trial",
-      ctaSecondary: "Lees de self-host-gids",
+      lead: "Binnen een paar minuten draait er een proefversie. Of pak de Docker-image en host het zelf, gratis. Open source, geen addertjes.",
+      ctaPrimary: "Gratis uitproberen",
+      ctaSecondary: "Lees de zelf-hosten-gids",
     },
   },
 
   de: {
-    title: "Eryxon Flow — Ein ruhiges, quelloffenes MES für Lohnfertiger, die liefern",
+    title: "Eryxon Flow — quelloffenes MES für die Metallbearbeitung",
     description:
-      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage — von einem Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos und quelloffen. Selbst hosten, von uns hosten lassen oder on-prem betreiben lassen.",
+      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage, vom Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos und quelloffen. Selbst hosten, von uns hosten lassen oder vor Ort betreiben lassen.",
     hero: {
       tag: "Open Source · Apache 2.0 · selbst hostbar",
-      h1: "Ein ruhiges, quelloffenes MES für Lohnfertiger, die liefern.",
-      lead: "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage — von einem Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos und quelloffen, mit erstklassigem Self-Hosting. Keine Tabellen, keine Whiteboards, kein Rauschen.",
+      h1: "Jeden Auftrag im Griff, von der Werkstatt bis zur Planung.",
+      lead: "Eryxon Flow verfolgt jeden Auftrag durch Schneiden, Kanten, Schweißen und Montage. Der Werker arbeitet am Tablet an der Maschine, der Planer sieht es sofort auf seinem Bildschirm. Kostenlos und quelloffen. Kein Excel, kein Whiteboard.",
       ctaPrimary: "Kostenlos testen",
       ctaSecondary: "Selbst hosten, kostenlos",
-      ctaTertiary: "Doku lesen →",
+      ctaTertiary: "Zur Doku →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laserschneiden", queueTitle: "Arbeitsliste", cards: productCards },
     features: {
       eyebrow: "Was du bekommst",
-      h2: "Alles, was ein High-Mix-Low-Volume-Betrieb braucht.",
-      lead: "Kein Add-on-Store, keine Kosten pro Platz, keine Überraschungsmodule. Das vollständige MES ab Tag eins — Tablet bis Planer bis API.",
+      h2: "Alles, was ein Einzel- und Kleinserienbetrieb braucht.",
+      lead: "Keine Module zum Nachkaufen, kein Preis pro Nutzer, keine Überraschungen. Das ganze System ab Tag eins — vom Tablet an der Maschine bis zum Planer und zur API.",
       items: [
-        { title: "Bedienfreundliche Operator-Terminals", body: "Kanban-Arbeitslisten je Fertigungszelle. 56px-Touch-Ziele. Status, Termindruck und verstrichene Zeit aus einem Meter Entfernung ablesbar." },
-        { title: "Auftrags- und Teileverfolgung", body: "Volle Transparenz durch Schneiden, Kanten, Schweißen, Montage, Finish. Routing je Zelle, WIP-Limits und eine Kapazitätsübersicht." },
-        { title: "3D-STEP-Viewer", body: "CAD im Browser, keine Installation. Messen, Explosionsansichten, eingebettet in der Operator-Detailansicht." },
-        { title: "REST-API & Webhooks", body: "Filterung, Paginierung, Suche und Webhook-Versand für jedes Ereignis. Gebaut für ERP-zu-MES-Synchronisierung." },
-        { title: "Kostenlos und quelloffen", body: "Apache 2.0 — kostenlos für jeden Einsatz, auch kommerziell. Selbst hosten per Docker Compose ohne Feature-Sperren oder von uns hosten lassen. Forken, prüfen, behalten." },
-        { title: "Mandantenfähig, mehrsprachig", body: "Row-Level-Security auf PostgreSQL. EN / NL / DE ab Werk. Für Betriebe mit einem Standort und Gruppen mit vielen." },
+        { title: "Tablets an der Maschine", body: "Eine Arbeitsliste je Zelle, wie ein Kanban-Board. Schaltflächen mit 56 Pixeln, also auch mit Arbeitshandschuhen bedienbar. Status, Termin und Laufzeit liest du aus einem Meter Entfernung ab." },
+        { title: "Auftrags- und Teileverfolgung", body: "Du siehst jeden Auftrag durch Schneiden, Kanten, Schweißen, Montage und Finish. Die Route je Zelle, WIP-Limits und wie viel Arbeit noch ansteht." },
+        { title: "3D-STEP-Viewer", body: "CAD im Browser, nichts zu installieren. Messen und Explosionsansichten, direkt im Auftragsfenster des Werkers." },
+        { title: "REST-API und Webhooks", body: "Filtern, Paginieren, Suchen und ein Webhook bei jedem Schritt. Gebaut, um dein ERP und die Werkstatt zu verbinden, nicht um alles von Hand einzutippen." },
+        { title: "Kostenlos und quelloffen", body: "Apache 2.0, kostenlos für jeden Einsatz, auch kommerziell. Selbst hosten per Docker Compose, nichts gesperrt. Oder von uns hosten lassen. Forken und anpassen erlaubt." },
+        { title: "Mehrere Standorte, mehrere Sprachen", body: "Row-Level-Security auf PostgreSQL. NL, DE und EN ab Werk. Für Betriebe mit einem Standort und für Gruppen mit mehreren." },
       ],
     },
     how: {
       eyebrow: "So funktioniert es",
-      h2: "Vom ERP-Push zum Planer-Dashboard in drei Schritten.",
+      h2: "Vom Auftrag im ERP bis zur Planung, in drei Schritten.",
       steps: [
-        { n: "01", h: "Aufträge importieren", b: "Aus dem ERP über die REST-API, per CSV oder über einen Planungsadapter. Eryxon Flow normalisiert Teile, Arbeitsgänge und Routing, sodass die Werkstatt eine Form sieht.", tag: "REST · CSV · Webhooks" },
-        { n: "02", h: "Operatoren arbeiten die Liste ab", b: "Jede Zelle hat ihr eigenes Tablet. Arbeitsgang antippen, Timer starten, Gut- und Ausschussmengen erfassen, Probleme melden. Echtzeit-Updates gehen an den Planer zurück.", tag: "Tablet · 56px-Ziele · Echtzeit" },
-        { n: "03", h: "Planer überwachen Kapazität", b: "Ein Dashboard mit WIP-Limits je Zelle, Termindruck und einer Meldungsliste. Kapazität über 100% wird markiert — keine Überraschungen am Freitag um 16:55.", tag: "Kapazität · WIP-Limits · Meldungen" },
+        { n: "01", h: "Aufträge einspielen", b: "Über die REST-API aus deinem ERP, per CSV oder über eine Planungsanbindung. Eryxon Flow zieht Teile, Arbeitsgänge und Routen gerade, sodass die Werkstatt immer denselben Aufbau sieht, egal was vorgelagert steht.", tag: "REST · CSV · Webhooks" },
+        { n: "02", h: "Die Werkstatt arbeitet die Liste ab", b: "Jede Zelle hat ihr eigenes Tablet. Arbeitsgang antippen, Timer starten, Gut- und Ausschussmengen erfassen, Probleme melden. Der Planer sieht es sofort, ohne die Seite neu zu laden.", tag: "Tablet · 56px-Schaltflächen · live" },
+        { n: "03", h: "Der Planer behält die Kapazität im Blick", b: "Ein Bildschirm mit dem WIP-Limit je Zelle, welche Aufträge knapp sind und einer Meldungsliste. Liegt eine Zelle über 100 Prozent, siehst du das. Keine Überraschung mehr am Freitag um kurz vor Feierabend.", tag: "Kapazität · WIP-Limits · Meldungen" },
       ],
     },
     api: {
@@ -365,70 +365,559 @@ const PRICING: Record<Locale, PricingCopy> = {
   },
 };
 
-/* ---------- Roadmap (public Canny board) ---------- */
+/* ---------- Roadmap ----------
+ *
+ * The roadmap is our own content first: three status columns (Shipped / In progress / Planned)
+ * with real items, rendered in the marketing design system. The public Canny board is paired in
+ * as a "vote on it" call to action, not as a bare iframe. Items are deliberately conservative and
+ * truthful — native iOS/Android sit under "In progress" (work in flight, not yet shipped); nothing
+ * here states a version number (versions live in the release notes, not on marketing pages).
+ */
+export type RoadmapStatus = "shipped" | "progress" | "planned";
+
+export interface RoadmapItem {
+  /** Which status column this item belongs to. */
+  status: RoadmapStatus;
+  title: string;
+  /** One short line. */
+  note: string;
+}
+
+export interface RoadmapColumn {
+  status: RoadmapStatus;
+  label: string;
+}
+
 export interface RoadmapCopy {
   title: string;
   description: string;
   hero: { eyebrow: string; h1: string; lead: string };
-  /** Intro shown above the embedded board. */
-  intro: string;
-  /** Fallback link-out card for when the embed is blocked. */
-  fallback: { label: string; note: string; cta: string };
-  /** Button that opens the board in a new tab. */
-  openLabel: string;
+  /** Column headers, in render order. */
+  columns: RoadmapColumn[];
+  /** All items; the component groups them by status. */
+  items: RoadmapItem[];
+  /** The "vote on the public board" call-to-action card. */
+  vote: { eyebrow: string; h: string; b: string; cta: string };
 }
 
-/** Public Canny roadmap board. Single source of truth for the embed + link-out. */
+/** Public Canny roadmap board. Single source of truth for the vote-CTA link-out. */
 export const CANNY_ROADMAP_URL = "https://eryxon.canny.io/";
 
 const ROADMAP: Record<Locale, RoadmapCopy> = {
   en: {
     title: "Roadmap — Eryxon Flow",
-    description: "What's planned, in progress, and shipped for Eryxon Flow. Public roadmap, open to feedback and votes.",
+    description: "What's shipped, what we're building, and what's planned for Eryxon Flow. Public roadmap, open to your votes.",
     hero: {
       eyebrow: "Roadmap",
       h1: "What's next for Eryxon Flow.",
-      lead: "Our roadmap is public. See what's planned, in progress, and shipped — and tell us what matters to your shop.",
+      lead: "Here's what's already in, what we're building now, and what's coming. The roadmap is public, so tell us what matters to your shop.",
     },
-    intro: "The board below is live from our public roadmap. Vote on what you need, or post an idea.",
-    fallback: {
-      label: "Public roadmap",
-      note: "If the board doesn't load here, it opens directly on Canny.",
-      cta: "Open the roadmap",
+    columns: [
+      { status: "shipped", label: "Shipped" },
+      { status: "progress", label: "In progress" },
+      { status: "planned", label: "Planned" },
+    ],
+    items: [
+      { status: "shipped", title: "Operator terminals", note: "Touch work queues per cell, built for tablets at the machine." },
+      { status: "shipped", title: "Job & part tracking", note: "Cutting, bending, welding, assembly, finishing — across cells." },
+      { status: "shipped", title: "3D STEP viewer", note: "CAD in the browser, inside the operator detail view." },
+      { status: "shipped", title: "REST API & webhooks", note: "Filtering, pagination, search, and an event for every step." },
+      { status: "shipped", title: "MCP server", note: "Let an AI assistant read and act on shop-floor data." },
+      { status: "shipped", title: "Multi-tenant, multi-language", note: "Row-level security on PostgreSQL. EN / NL / DE." },
+      { status: "progress", title: "Native iOS app", note: "A real app for the App Store, on top of the operator UI. In build." },
+      { status: "progress", title: "Native Android app", note: "Same operator experience, packaged for Android. In build." },
+      { status: "progress", title: "Capacity & WIP dashboard", note: "Sharper planner view: WIP limits per cell and due-date heat." },
+      { status: "planned", title: "Planning adapters", note: "Ready-made connectors for common ERP and planning systems." },
+      { status: "planned", title: "Shift & label printing", note: "Print work tickets and labels straight from the queue." },
+      { status: "planned", title: "Reporting export", note: "Throughput and scrap numbers out to CSV and BI tools." },
+    ],
+    vote: {
+      eyebrow: "Have your say",
+      h: "Vote on what we build next.",
+      b: "The order isn't fixed. If something here would help your shop, vote for it on the public board, or post what's missing.",
+      cta: "Vote on the public board ↗",
     },
-    openLabel: "Open in Canny ↗",
   },
   nl: {
     title: "Roadmap — Eryxon Flow",
-    description: "Wat gepland, in uitvoering en uitgebracht is voor Eryxon Flow. Publieke roadmap, open voor feedback en stemmen.",
+    description: "Wat er al in zit, waar we aan bouwen en wat er nog komt voor Eryxon Flow. Publieke roadmap, open om op te stemmen.",
     hero: {
       eyebrow: "Roadmap",
-      h1: "Wat komt er aan voor Eryxon Flow.",
-      lead: "Onze roadmap is openbaar. Zie wat gepland, in uitvoering en uitgebracht is — en laat ons weten wat voor jouw shop telt.",
+      h1: "Wat er aankomt voor Eryxon Flow.",
+      lead: "Dit zit er al in, hier bouwen we nu aan en dit staat op de planning. De roadmap is openbaar, dus laat weten wat voor jouw shop telt.",
     },
-    intro: "Het board hieronder komt live van onze publieke roadmap. Stem op wat je nodig hebt, of plaats een idee.",
-    fallback: {
-      label: "Publieke roadmap",
-      note: "Als het board hier niet laadt, opent het rechtstreeks op Canny.",
-      cta: "Open de roadmap",
+    columns: [
+      { status: "shipped", label: "Klaar" },
+      { status: "progress", label: "In ontwikkeling" },
+      { status: "planned", label: "Op de planning" },
+    ],
+    items: [
+      { status: "shipped", title: "Tablets aan de machine", note: "Werkwachtrij per cel, gemaakt voor tablets bij de machine." },
+      { status: "shipped", title: "Order- en onderdeelvolging", note: "Snijden, kanten, lassen, assemblage, afwerking, over de cellen heen." },
+      { status: "shipped", title: "3D STEP-viewer", note: "CAD in de browser, in het orderscherm van de operator." },
+      { status: "shipped", title: "REST API en webhooks", note: "Filteren, pagineren, zoeken en een event bij elke stap." },
+      { status: "shipped", title: "MCP-server", note: "Laat een AI-assistent meelezen en meewerken op je werkvloerdata." },
+      { status: "shipped", title: "Meerdere locaties en talen", note: "Row-level security op PostgreSQL. NL, DE en EN." },
+      { status: "progress", title: "Native iOS-app", note: "Een echte app voor de App Store, bovenop het operatorscherm. In de maak." },
+      { status: "progress", title: "Native Android-app", note: "Hetzelfde operatorscherm, verpakt voor Android. In de maak." },
+      { status: "progress", title: "Capaciteits- en WIP-scherm", note: "Scherper plannerszicht: WIP-limieten per cel en deadlinedruk." },
+      { status: "planned", title: "Planningskoppelingen", note: "Kant-en-klare koppelingen voor gangbare ERP- en planningssystemen." },
+      { status: "planned", title: "Werkbon en etiket printen", note: "Werkbonnen en etiketten direct uit de wachtrij printen." },
+      { status: "planned", title: "Rapportage-export", note: "Doorlooptijd- en afkeurcijfers naar CSV en BI-tools." },
+    ],
+    vote: {
+      eyebrow: "Praat mee",
+      h: "Stem op wat we hierna bouwen.",
+      b: "De volgorde ligt niet vast. Helpt iets hier jouw shop, stem erop op het publieke board, of zet erbij wat er mist.",
+      cta: "Stem op het publieke board ↗",
     },
-    openLabel: "Open in Canny ↗",
   },
   de: {
     title: "Roadmap — Eryxon Flow",
-    description: "Was geplant, in Arbeit und veröffentlicht ist für Eryxon Flow. Öffentliche Roadmap, offen für Feedback und Stimmen.",
+    description: "Was schon drin ist, woran wir bauen und was noch kommt für Eryxon Flow. Öffentliche Roadmap, offen für deine Stimmen.",
     hero: {
       eyebrow: "Roadmap",
       h1: "Was als Nächstes für Eryxon Flow kommt.",
-      lead: "Unsere Roadmap ist öffentlich. Sieh, was geplant, in Arbeit und veröffentlicht ist — und sag uns, was für deinen Betrieb zählt.",
+      lead: "Das ist schon drin, daran bauen wir gerade und das ist geplant. Die Roadmap ist öffentlich, also sag uns, was für deinen Betrieb zählt.",
     },
-    intro: "Das Board unten kommt live von unserer öffentlichen Roadmap. Stimme über das ab, was du brauchst, oder poste eine Idee.",
-    fallback: {
-      label: "Öffentliche Roadmap",
-      note: "Wenn das Board hier nicht lädt, öffnet es direkt auf Canny.",
-      cta: "Roadmap öffnen",
+    columns: [
+      { status: "shipped", label: "Fertig" },
+      { status: "progress", label: "In Arbeit" },
+      { status: "planned", label: "Geplant" },
+    ],
+    items: [
+      { status: "shipped", title: "Tablets an der Maschine", note: "Arbeitsliste je Zelle, gemacht für Tablets an der Maschine." },
+      { status: "shipped", title: "Auftrags- und Teileverfolgung", note: "Schneiden, Kanten, Schweißen, Montage, Finish, über die Zellen hinweg." },
+      { status: "shipped", title: "3D-STEP-Viewer", note: "CAD im Browser, im Auftragsfenster des Werkers." },
+      { status: "shipped", title: "REST-API und Webhooks", note: "Filtern, Paginieren, Suchen und ein Event bei jedem Schritt." },
+      { status: "shipped", title: "MCP-Server", note: "Lass einen KI-Assistenten auf den Werkstattdaten mitlesen und handeln." },
+      { status: "shipped", title: "Mehrere Standorte und Sprachen", note: "Row-Level-Security auf PostgreSQL. NL, DE und EN." },
+      { status: "progress", title: "Native iOS-App", note: "Eine echte App für den App Store, auf dem Werker-UI. Im Bau." },
+      { status: "progress", title: "Native Android-App", note: "Dasselbe Werker-Erlebnis, verpackt für Android. Im Bau." },
+      { status: "progress", title: "Kapazitäts- und WIP-Ansicht", note: "Schärfere Planeransicht: WIP-Limits je Zelle und Termindruck." },
+      { status: "planned", title: "Planungsanbindungen", note: "Fertige Konnektoren für gängige ERP- und Planungssysteme." },
+      { status: "planned", title: "Laufzettel- und Etikettendruck", note: "Laufzettel und Etiketten direkt aus der Liste drucken." },
+      { status: "planned", title: "Reporting-Export", note: "Durchsatz- und Ausschusszahlen nach CSV und in BI-Tools." },
+    ],
+    vote: {
+      eyebrow: "Misch dich ein",
+      h: "Stimm darüber ab, was wir als Nächstes bauen.",
+      b: "Die Reihenfolge steht nicht fest. Hilft dir etwas davon, stimm auf dem öffentlichen Board dafür, oder schreib, was fehlt.",
+      cta: "Auf dem öffentlichen Board abstimmen ↗",
     },
-    openLabel: "In Canny öffnen ↗",
+  },
+};
+
+/* ---------- Legal pages (imprint + privacy) ----------
+ *
+ * EN / NL / DE copy for the imprint (Impressum) and privacy policy. The publisher of Eryxon Flow
+ * is Sheet Metal Connect e.U. (Vienna, AT) — entity data is sourced 1:1 from the live imprint on
+ * vanenkhuizen.com (the same legal entity). Nothing is invented; fields absent from the source are
+ * not fabricated.
+ *
+ * IMPORTANT scope note. These pages cover the MARKETING WEBSITE only. The marketing site sets no
+ * tracking cookies and runs no third-party analytics (the CTA adapter is a no-op with no provider;
+ * see `components/Analytics.astro`). The hosted application (app.eryxon.eu) is a separate surface
+ * with its own data processing; we say so rather than describing flows that don't exist here.
+ *
+ * Voice: kit voice — calm, factual, short. The Apache 2.0 "AS IS" / no-warranty / use-at-your-own-
+ * risk disclaimer is surfaced prominently on BOTH pages via a dedicated block, matching the licence
+ * that actually ships (LICENSE, Apache 2.0).
+ */
+
+/** A labelled key/value row (used for entity + registration blocks). */
+export interface LegalRow {
+  label: string;
+  /** Plain value, or */
+  value?: string;
+  /** a link value. */
+  href?: string;
+  /** mailto: link value. */
+  email?: string;
+  /** open in new tab. */
+  external?: boolean;
+}
+
+export interface LegalSection {
+  heading: string;
+  /** Free-text paragraphs (each rendered as its own <p>). */
+  paragraphs?: string[];
+  /** Definition-style rows. */
+  rows?: LegalRow[];
+  /** Bulleted list items. */
+  bullets?: string[];
+}
+
+/** The shared "as is / open source / use at your own risk" disclaimer block. */
+export interface LegalDisclaimer {
+  heading: string;
+  paragraphs: string[];
+  licenseLabel: string;
+  licenseHref: string;
+}
+
+export interface LegalCopy {
+  title: string;
+  description: string;
+  eyebrow: string;
+  h1: string;
+  /** Small line under the H1 (e.g. statutory basis, or last-updated date). */
+  meta: string;
+  /** Lead paragraph (privacy only; empty string to skip). */
+  lead: string;
+  sections: LegalSection[];
+  /** Surfaced on both pages; null to skip. */
+  disclaimer: LegalDisclaimer | null;
+}
+
+/* Entity data — single source of truth, identical across locales. Sourced from vanenkhuizen.com. */
+const ENTITY = {
+  name: "Sheet Metal Connect e.U.",
+  owner: "Luke van Enkhuizen",
+  street: "Dr.-Karl-Lueger-Platz 4B / 16",
+  city: "1010 Wien, Österreich",
+  email: "office@vanenkhuizen.com",
+  uid: "ATU74556919",
+  fnNumber: "FN 547850m",
+  fnCourt: "Handelsgericht Wien, 1030 Wien, Marxergasse 1a",
+  linkedin: "https://www.linkedin.com/in/lvanenkhuizen/",
+} as const;
+
+const APACHE_LICENSE_HREF = "https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE";
+
+const IMPRINT: Record<Locale, LegalCopy> = {
+  en: {
+    title: "Imprint — Eryxon Flow",
+    description: "Legal information and company details for Eryxon Flow, published by Sheet Metal Connect e.U. (Vienna, Austria).",
+    eyebrow: "Legal",
+    h1: "Imprint",
+    meta: "Information pursuant to §5 ECG and §14 UGB",
+    lead: "",
+    sections: [
+      {
+        heading: "Publisher",
+        rows: [
+          { label: "Company", value: ENTITY.name },
+          { label: "Owner", value: ENTITY.owner },
+          { label: "Address", value: `${ENTITY.street}, ${ENTITY.city}` },
+          { label: "Email", email: ENTITY.email },
+          { label: "LinkedIn", value: "linkedin.com/in/lvanenkhuizen", href: ENTITY.linkedin, external: true },
+        ],
+      },
+      {
+        heading: "Business activity",
+        paragraphs: ["IT consulting and services for the metalworking industry. Eryxon Flow is an open-source manufacturing execution system published by Sheet Metal Connect e.U."],
+      },
+      {
+        heading: "Registration",
+        rows: [
+          { label: "VAT ID (UID)", value: ENTITY.uid },
+          { label: "Company register no.", value: ENTITY.fnNumber },
+          { label: "Register court", value: ENTITY.fnCourt },
+        ],
+      },
+      {
+        heading: "Chamber & professional law",
+        rows: [
+          { label: "Chamber membership", value: "Member of the WKÖ, Fachgruppe Unternehmensberatung, Buchhaltung und Informationstechnologie (UBIT), WK Wien" },
+          { label: "Professional regulations", value: "www.ris.bka.gv.at", href: "https://www.ris.bka.gv.at", external: true },
+          { label: "Supervisory authority", value: "Magistratisches Bezirksamt für den 1. Bezirk" },
+        ],
+      },
+      {
+        heading: "Online dispute resolution",
+        paragraphs: [
+          "EU ODR platform: ec.europa.eu/consumers/odr",
+          "Sheet Metal Connect e.U. is neither obliged nor willing to take part in dispute-resolution proceedings before a consumer arbitration board.",
+        ],
+      },
+      {
+        heading: "Liability for links",
+        paragraphs: ["Despite careful review, we accept no liability for the content of external links. The operators of the linked pages are solely responsible for their content (§17 para. 2 ECG)."],
+      },
+    ],
+    disclaimer: null,
+  },
+  nl: {
+    title: "Impressum — Eryxon Flow",
+    description: "Juridische informatie en bedrijfsgegevens van Eryxon Flow, uitgegeven door Sheet Metal Connect e.U. (Wenen, Oostenrijk).",
+    eyebrow: "Juridisch",
+    h1: "Impressum",
+    meta: "Informatie conform §5 ECG en §14 UGB",
+    lead: "",
+    sections: [
+      {
+        heading: "Uitgever",
+        rows: [
+          { label: "Bedrijf", value: ENTITY.name },
+          { label: "Eigenaar", value: ENTITY.owner },
+          { label: "Adres", value: `${ENTITY.street}, ${ENTITY.city}` },
+          { label: "E-mail", email: ENTITY.email },
+          { label: "LinkedIn", value: "linkedin.com/in/lvanenkhuizen", href: ENTITY.linkedin, external: true },
+        ],
+      },
+      {
+        heading: "Bedrijfsactiviteit",
+        paragraphs: ["IT-advies en dienstverlening voor de metaalverwerkende industrie. Eryxon Flow is een open-source manufacturing execution system, uitgegeven door Sheet Metal Connect e.U."],
+      },
+      {
+        heading: "Registratie",
+        rows: [
+          { label: "UID (btw-nummer)", value: ENTITY.uid },
+          { label: "Firmenbuchnummer", value: ENTITY.fnNumber },
+          { label: "Firmenbuchgericht", value: ENTITY.fnCourt },
+        ],
+      },
+      {
+        heading: "Kamer & beroepsrecht",
+        rows: [
+          { label: "Kamerlidmaatschap", value: "Lid van de WKÖ, Fachgruppe Unternehmensberatung, Buchhaltung und Informationstechnologie (UBIT), WK Wien" },
+          { label: "Beroepsvoorschriften", value: "www.ris.bka.gv.at", href: "https://www.ris.bka.gv.at", external: true },
+          { label: "Toezichthoudende autoriteit", value: "Magistratisches Bezirksamt für den 1. Bezirk" },
+        ],
+      },
+      {
+        heading: "Online geschillenbeslechting",
+        paragraphs: [
+          "EU ODR-platform: ec.europa.eu/consumers/odr",
+          "Sheet Metal Connect e.U. is niet verplicht en niet bereid om deel te nemen aan een geschillenbeslechtingsprocedure voor een consumentenarbitragecommissie.",
+        ],
+      },
+      {
+        heading: "Aansprakelijkheid voor links",
+        paragraphs: ["Ondanks zorgvuldige controle aanvaarden wij geen aansprakelijkheid voor de inhoud van externe links. Voor de inhoud van gelinkte pagina's zijn uitsluitend de betreffende beheerders verantwoordelijk (§17 lid 2 ECG)."],
+      },
+    ],
+    disclaimer: null,
+  },
+  de: {
+    title: "Impressum — Eryxon Flow",
+    description: "Rechtliche Informationen und Unternehmensangaben zu Eryxon Flow, herausgegeben von Sheet Metal Connect e.U. (Wien, Österreich).",
+    eyebrow: "Rechtliches",
+    h1: "Impressum",
+    meta: "Angaben gemäß §5 ECG und §14 UGB",
+    lead: "",
+    sections: [
+      {
+        heading: "Herausgeber",
+        rows: [
+          { label: "Unternehmen", value: ENTITY.name },
+          { label: "Inhaber", value: ENTITY.owner },
+          { label: "Anschrift", value: `${ENTITY.street}, ${ENTITY.city}` },
+          { label: "E-Mail", email: ENTITY.email },
+          { label: "LinkedIn", value: "linkedin.com/in/lvanenkhuizen", href: ENTITY.linkedin, external: true },
+        ],
+      },
+      {
+        heading: "Unternehmensgegenstand",
+        paragraphs: ["IT-Beratung und Dienstleistungen für die metallverarbeitende Industrie. Eryxon Flow ist ein quelloffenes Manufacturing-Execution-System, herausgegeben von Sheet Metal Connect e.U."],
+      },
+      {
+        heading: "Registrierung",
+        rows: [
+          { label: "UID (USt-IdNr.)", value: ENTITY.uid },
+          { label: "Firmenbuchnummer", value: ENTITY.fnNumber },
+          { label: "Firmenbuchgericht", value: ENTITY.fnCourt },
+        ],
+      },
+      {
+        heading: "Kammer & Berufsrecht",
+        rows: [
+          { label: "Kammermitgliedschaft", value: "Mitglied der WKÖ, Fachgruppe Unternehmensberatung, Buchhaltung und Informationstechnologie (UBIT), WK Wien" },
+          { label: "Berufsrechtliche Vorschriften", value: "www.ris.bka.gv.at", href: "https://www.ris.bka.gv.at", external: true },
+          { label: "Aufsichtsbehörde", value: "Magistratisches Bezirksamt für den 1. Bezirk" },
+        ],
+      },
+      {
+        heading: "Online-Streitbeilegung",
+        paragraphs: [
+          "EU-OS-Plattform: ec.europa.eu/consumers/odr",
+          "Sheet Metal Connect e.U. ist nicht verpflichtet und nicht bereit, an einem Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.",
+        ],
+      },
+      {
+        heading: "Haftung für Links",
+        paragraphs: ["Trotz sorgfältiger Prüfung übernehmen wir keine Haftung für die Inhalte externer Links. Für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich (§17 Abs. 2 ECG)."],
+      },
+    ],
+    disclaimer: null,
+  },
+};
+
+const DISCLAIMER: Record<Locale, LegalDisclaimer> = {
+  en: {
+    heading: "Software disclaimer — provided “as is”",
+    paragraphs: [
+      "Eryxon Flow is free and open-source software, licensed under the Apache License 2.0. It is provided on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. You use it at your own risk.",
+      "You are responsible for evaluating whether the software is fit for your shop floor, for backing up your data, and for running it safely in production. To the extent permitted by law, Sheet Metal Connect e.U. accepts no liability for any damages arising from the use of, or inability to use, the software. The full terms are set out in the Apache 2.0 licence.",
+    ],
+    licenseLabel: "Read the Apache 2.0 licence",
+    licenseHref: APACHE_LICENSE_HREF,
+  },
+  nl: {
+    heading: "Software-disclaimer — geleverd “as is”",
+    paragraphs: [
+      "Eryxon Flow is gratis open-source software onder de Apache License 2.0. Het wordt geleverd “AS IS” — zonder enige garantie of voorwaarde, expliciet noch impliciet. Je gebruikt het op eigen risico.",
+      "Je bent zelf verantwoordelijk voor het beoordelen of de software geschikt is voor je werkvloer, voor het maken van back-ups en voor veilig gebruik in productie. Voor zover wettelijk toegestaan aanvaardt Sheet Metal Connect e.U. geen aansprakelijkheid voor schade die voortvloeit uit het gebruik of het niet kunnen gebruiken van de software. De volledige voorwaarden staan in de Apache 2.0-licentie.",
+    ],
+    licenseLabel: "Lees de Apache 2.0-licentie",
+    licenseHref: APACHE_LICENSE_HREF,
+  },
+  de: {
+    heading: "Software-Haftungsausschluss — bereitgestellt “wie besehen”",
+    paragraphs: [
+      "Eryxon Flow ist kostenlose, quelloffene Software unter der Apache License 2.0. Sie wird “WIE BESEHEN” (“AS IS”) bereitgestellt — ohne jegliche Garantie oder Gewährleistung, weder ausdrücklich noch stillschweigend. Die Nutzung erfolgt auf eigenes Risiko.",
+      "Du bist selbst dafür verantwortlich zu prüfen, ob die Software für deinen Betrieb geeignet ist, deine Daten zu sichern und sie sicher im Produktivbetrieb einzusetzen. Soweit gesetzlich zulässig übernimmt Sheet Metal Connect e.U. keine Haftung für Schäden, die aus der Nutzung oder Nichtnutzbarkeit der Software entstehen. Die vollständigen Bedingungen ergeben sich aus der Apache-2.0-Lizenz.",
+    ],
+    licenseLabel: "Apache-2.0-Lizenz lesen",
+    licenseHref: APACHE_LICENSE_HREF,
+  },
+};
+
+const PRIVACY: Record<Locale, LegalCopy> = {
+  en: {
+    title: "Privacy Policy — Eryxon Flow",
+    description: "How the Eryxon Flow website handles your data. No tracking cookies, no third-party analytics. Published by Sheet Metal Connect e.U.",
+    eyebrow: "Legal",
+    h1: "Privacy Policy",
+    meta: "Last updated: May 2026",
+    lead: "Sheet Metal Connect e.U. publishes the Eryxon Flow website. This policy covers the marketing website you are reading now. We collect as little as possible and never sell your data.",
+    sections: [
+      {
+        heading: "Controller",
+        rows: [
+          { label: "Company", value: ENTITY.name },
+          { label: "Owner", value: ENTITY.owner },
+          { label: "Address", value: `${ENTITY.street}, ${ENTITY.city}` },
+          { label: "Email", email: ENTITY.email },
+        ],
+      },
+      {
+        heading: "Website: no tracking",
+        paragraphs: ["This website sets no tracking cookies and runs no third-party analytics, advertising, or fingerprinting scripts. We do not build a profile of you. A language preference may be stored in your browser's local storage; it never leaves your device."],
+      },
+      {
+        heading: "Server logs",
+        paragraphs: ["The website is served as static files through our hosting and CDN provider, Cloudflare Inc. (EU-US Data Privacy Framework). Like any web server, Cloudflare processes technical request data (e.g. IP address, user agent) to deliver pages and protect against abuse. This is necessary for operating the site (Art. 6(1)(f) GDPR — legitimate interest in a secure, functioning website)."],
+      },
+      {
+        heading: "Links to GitHub and the hosted app",
+        paragraphs: ["Buttons and links lead to external services: our source code and discussions on GitHub, and the hosted application at app.eryxon.eu. When you follow those links you leave this website and the privacy policy of the destination applies. The hosted application is a separate product with its own data processing; this policy does not cover it."],
+      },
+      {
+        heading: "Contact",
+        paragraphs: ["If you email us, we process your message and contact details only to respond, and keep them no longer than needed to handle your request (Art. 6(1)(b)/(f) GDPR)."],
+      },
+      {
+        heading: "Your rights (GDPR)",
+        paragraphs: [
+          "You have the right to access, rectification, erasure, restriction, data portability, and to object to processing. You can withdraw consent at any time.",
+          "Contact: office@vanenkhuizen.com",
+          "Supervisory authority: Österreichische Datenschutzbehörde, dsb.gv.at",
+        ],
+      },
+      {
+        heading: "Changes",
+        paragraphs: ["This policy may be updated. Changes are published here."],
+      },
+    ],
+    disclaimer: null,
+  },
+  nl: {
+    title: "Privacybeleid — Eryxon Flow",
+    description: "Hoe de Eryxon Flow-website met je gegevens omgaat. Geen tracking-cookies, geen analytics van derden. Uitgegeven door Sheet Metal Connect e.U.",
+    eyebrow: "Juridisch",
+    h1: "Privacybeleid",
+    meta: "Laatst bijgewerkt: mei 2026",
+    lead: "Sheet Metal Connect e.U. geeft de Eryxon Flow-website uit. Dit beleid gaat over de marketingwebsite die je nu leest. We verzamelen zo min mogelijk en verkopen je gegevens nooit.",
+    sections: [
+      {
+        heading: "Verwerkingsverantwoordelijke",
+        rows: [
+          { label: "Bedrijf", value: ENTITY.name },
+          { label: "Eigenaar", value: ENTITY.owner },
+          { label: "Adres", value: `${ENTITY.street}, ${ENTITY.city}` },
+          { label: "E-mail", email: ENTITY.email },
+        ],
+      },
+      {
+        heading: "Website: geen tracking",
+        paragraphs: ["Deze website plaatst geen tracking-cookies en draait geen analytics, advertenties of fingerprinting van derden. We bouwen geen profiel van je op. Een taalvoorkeur kan worden opgeslagen in de local storage van je browser; die verlaat je apparaat nooit."],
+      },
+      {
+        heading: "Serverlogs",
+        paragraphs: ["De website wordt als statische bestanden geserveerd via onze hosting- en CDN-provider Cloudflare Inc. (EU-VS Data Privacy Framework). Zoals elke webserver verwerkt Cloudflare technische verzoekgegevens (bijv. IP-adres, user agent) om pagina's te leveren en misbruik tegen te gaan. Dit is noodzakelijk om de site te laten werken (art. 6(1)(f) AVG — gerechtvaardigd belang bij een veilige, werkende website)."],
+      },
+      {
+        heading: "Links naar GitHub en de gehoste app",
+        paragraphs: ["Knoppen en links leiden naar externe diensten: onze broncode en discussies op GitHub, en de gehoste applicatie op app.eryxon.eu. Volg je die links, dan verlaat je deze website en geldt het privacybeleid van de bestemming. De gehoste applicatie is een apart product met eigen gegevensverwerking; dit beleid dekt die niet."],
+      },
+      {
+        heading: "Contact",
+        paragraphs: ["Mail je ons, dan verwerken we je bericht en contactgegevens alleen om te reageren, en bewaren we ze niet langer dan nodig om je aanvraag af te handelen (art. 6(1)(b)/(f) AVG)."],
+      },
+      {
+        heading: "Je rechten (AVG)",
+        paragraphs: [
+          "Je hebt recht op inzage, rectificatie, verwijdering, beperking, gegevensoverdraagbaarheid en bezwaar tegen verwerking. Je kunt je toestemming op elk moment intrekken.",
+          "Contact: office@vanenkhuizen.com",
+          "Toezichthoudende autoriteit: Österreichische Datenschutzbehörde, dsb.gv.at",
+        ],
+      },
+      {
+        heading: "Wijzigingen",
+        paragraphs: ["Dit beleid kan worden bijgewerkt. Wijzigingen worden hier gepubliceerd."],
+      },
+    ],
+    disclaimer: null,
+  },
+  de: {
+    title: "Datenschutz — Eryxon Flow",
+    description: "Wie die Eryxon-Flow-Website mit deinen Daten umgeht. Keine Tracking-Cookies, keine Analytics von Drittanbietern. Herausgegeben von Sheet Metal Connect e.U.",
+    eyebrow: "Rechtliches",
+    h1: "Datenschutzerklärung",
+    meta: "Zuletzt aktualisiert: Mai 2026",
+    lead: "Sheet Metal Connect e.U. gibt die Eryxon-Flow-Website heraus. Diese Erklärung betrifft die Marketing-Website, die du gerade liest. Wir erheben so wenig wie möglich und verkaufen deine Daten nie.",
+    sections: [
+      {
+        heading: "Verantwortlicher",
+        rows: [
+          { label: "Unternehmen", value: ENTITY.name },
+          { label: "Inhaber", value: ENTITY.owner },
+          { label: "Anschrift", value: `${ENTITY.street}, ${ENTITY.city}` },
+          { label: "E-Mail", email: ENTITY.email },
+        ],
+      },
+      {
+        heading: "Website: kein Tracking",
+        paragraphs: ["Diese Website setzt keine Tracking-Cookies und betreibt keine Analytics, Werbung oder Fingerprinting von Drittanbietern. Wir erstellen kein Profil von dir. Eine Sprachpräferenz kann im Local Storage deines Browsers gespeichert werden; sie verlässt dein Gerät nie."],
+      },
+      {
+        heading: "Server-Logs",
+        paragraphs: ["Die Website wird als statische Dateien über unseren Hosting- und CDN-Anbieter Cloudflare Inc. (EU-US Data Privacy Framework) ausgeliefert. Wie jeder Webserver verarbeitet Cloudflare technische Anfragedaten (z. B. IP-Adresse, User-Agent), um Seiten auszuliefern und Missbrauch abzuwehren. Das ist für den Betrieb der Website erforderlich (Art. 6 Abs. 1 lit. f DSGVO — berechtigtes Interesse an einer sicheren, funktionierenden Website)."],
+      },
+      {
+        heading: "Links zu GitHub und zur gehosteten App",
+        paragraphs: ["Buttons und Links führen zu externen Diensten: unserem Quellcode und den Diskussionen auf GitHub sowie zur gehosteten Anwendung unter app.eryxon.eu. Folgst du diesen Links, verlässt du diese Website und es gilt die Datenschutzerklärung des Ziels. Die gehostete Anwendung ist ein eigenes Produkt mit eigener Datenverarbeitung; diese Erklärung deckt sie nicht ab."],
+      },
+      {
+        heading: "Kontakt",
+        paragraphs: ["Schreibst du uns eine E-Mail, verarbeiten wir deine Nachricht und Kontaktdaten nur zur Beantwortung und bewahren sie nicht länger auf als nötig, um deine Anfrage zu bearbeiten (Art. 6 Abs. 1 lit. b/f DSGVO)."],
+      },
+      {
+        heading: "Deine Rechte (DSGVO)",
+        paragraphs: [
+          "Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit und Widerspruch gegen die Verarbeitung. Du kannst eine Einwilligung jederzeit widerrufen.",
+          "Kontakt: office@vanenkhuizen.com",
+          "Aufsichtsbehörde: Österreichische Datenschutzbehörde, dsb.gv.at",
+        ],
+      },
+      {
+        heading: "Änderungen",
+        paragraphs: ["Diese Erklärung kann aktualisiert werden. Änderungen werden hier veröffentlicht."],
+      },
+    ],
+    disclaimer: null,
   },
 };
 
@@ -440,4 +929,13 @@ export function pricingCopy(locale: Locale): PricingCopy {
 }
 export function roadmapCopy(locale: Locale): RoadmapCopy {
   return ROADMAP[locale];
+}
+
+/** Imprint copy with the shared "as is" disclaimer attached. */
+export function imprintCopy(locale: Locale): LegalCopy {
+  return { ...IMPRINT[locale], disclaimer: DISCLAIMER[locale] };
+}
+/** Privacy-policy copy with the shared "as is" disclaimer attached. */
+export function privacyCopy(locale: Locale): LegalCopy {
+  return { ...PRIVACY[locale], disclaimer: DISCLAIMER[locale] };
 }
