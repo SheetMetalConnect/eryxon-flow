@@ -1,22 +1,26 @@
 name: Seed Provisioning Drill
 
-# Fresh-provisioning seed drill for ERY-101 / ERY-107.
+# Fresh-provisioning seed drills for ERY-101 / ERY-107.
 #
-# Proves the ERY-83 seed fix (commit b2ba76a, "tolerate insufficient_privilege
-# on storage policies") makes supabase/seed.sql deterministic on a fresh tenant.
+# Two complementary jobs, both proving the ERY-83 seed fix (commit b2ba76a,
+# "tolerate insufficient_privilege on storage policies") makes supabase/seed.sql
+# deterministic on a fresh tenant. Both are local/ephemeral to the runner and
+# NEVER touch production or any shared Supabase environment.
 #
-# Fidelity note: a local `supabase` stack runs seed.sql as a superuser-equivalent
-# role, which does NOT reproduce the hosted non-owner privilege boundary that
-# raised `42501 insufficient_privilege` in the ERY-47 drill. So this drill runs
-# seed.sql as a deliberately non-owner login role (`seed_runner`) against a fresh
-# stack — the same condition the hosted `supabase db execute < seed.sql` runbook
-# step hits, where the connecting role does not own storage.objects.
+#   1. seed-drill — non-owner-role drill with a self-validating negative control.
+#      Runs seed.sql as a deliberately non-owner login role against a fresh stack,
+#      reproducing the hosted non-owner privilege boundary that raised
+#      `42501 insufficient_privilege` in the ERY-47 drill. The job is
+#      self-validating:
+#        * NEGATIVE — the PRE-FIX seed.sql (parent of b2ba76a) MUST abort with 42501.
+#        * POSITIVE — the current (fixed) seed.sql MUST complete clean.
+#      If the negative control does not reproduce 42501, the harness is not
+#      exercising the bug and the run fails loudly rather than giving a false pass.
 #
-# The job is self-validating via a negative control:
-#   * NEGATIVE — the PRE-FIX seed.sql (parent of b2ba76a) MUST abort with 42501.
-#   * POSITIVE — the current (fixed) seed.sql MUST complete clean (no 42501 abort).
-# If the negative control does not reproduce 42501, the harness is not exercising
-# the bug and the run fails loudly rather than giving a false pass.
+#   2. seed-provisioning-drill — ERY-107 fresh-provisioning re-drill. Runs the
+#      canonical `supabase db reset` seed path on a Docker-capable runner and
+#      asserts the seed phase no longer fails with 42501 / "must be owner of
+#      table objects".
 
 on:
   workflow_dispatch:
@@ -174,7 +178,7 @@ jobs:
         shell: bash
         run: |
           {
-            echo "## Seed Provisioning Drill — ERY-101 / ERY-107"
+            echo "## Seed Provisioning Drill — ERY-101 / ERY-107 (non-owner role)"
             echo
             echo "- Stack: fresh \`supabase start\` on ubuntu-latest (Docker)"
             echo "- Seed run as non-owner role \`seed_runner\` (reproduces hosted 42501 condition)"
@@ -192,6 +196,75 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: seed-provisioning-drill-${{ github.run_id }}
+          name: seed-drill-non-owner-${{ github.run_id }}
           if-no-files-found: warn
           path: artifacts/*
+
+  seed-provisioning-drill:
+    name: supabase db reset (fresh provisioning)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Capture toolchain versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          {
+            echo "supabase $(supabase --version)"
+            echo "docker $(docker --version)"
+          } 2>&1 | tee artifacts/toolchain.log
+
+      - name: Start local Supabase stack
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          # Boot only the DB + storage services needed for the seed path.
+          supabase start -x studio,inbucket,realtime,imgproxy,edge-runtime,logflare,vector,pgbouncer 2>&1 \
+            | tee artifacts/supabase-start.log
+
+      - name: Fresh provisioning reset (migrations + seed)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          # Canonical fresh-provisioning command referenced by ERY-101/ERY-47.
+          # --debug surfaces the per-statement seed output we need as evidence.
+          supabase db reset --debug 2>&1 | tee artifacts/db-reset.log
+
+      - name: Assert seed phase has no storage-policy ownership failure
+        shell: bash
+        run: |
+          set -euo pipefail
+          log=artifacts/db-reset.log
+          echo "Scanning $log for 42501 / insufficient_privilege / ownership failures..."
+          # These are the exact ERY-47 failure signatures the b2ba76a fix targets.
+          if grep -nE "42501|insufficient_privilege|must be owner of (table|relation) objects" "$log"; then
+            echo "::error::Seed phase still hit a storage-policy privilege/ownership failure"
+            exit 1
+          fi
+          # Reset must have actually run the seed; guard against a silently skipped seed.
+          if ! grep -qiE "seed|Seeding|Applying migration|Finished supabase db reset" "$log"; then
+            echo "::error::db reset log does not show a migration/seed phase — drill inconclusive"
+            exit 1
+          fi
+          echo "PASS: seed phase completed with no 42501 / insufficient_privilege / ownership failure."
+
+      - name: Upload drill artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seed-provisioning-drill-${{ github.run_id }}
+          if-no-files-found: warn
+          path: artifacts/*.log
