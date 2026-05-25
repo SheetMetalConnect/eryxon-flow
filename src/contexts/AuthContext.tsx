@@ -78,7 +78,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // When a token refresh fails, session is null — purge the stale
         // refresh token from localStorage so the user can log in fresh.
         if (event === 'TOKEN_REFRESHED' && !session) {
-          logger.warn('AuthContext', 'Token refresh failed, signing out');
+          // Pilot-critical auth lifecycle event (ERY-51): a failed token refresh
+          // forces a re-login and is a common pilot incident trigger.
+          logger.warn('Token refresh failed, signing out', {
+            component: 'AuthContext',
+            service: 'client',
+            eventType: 'auth.session_recovery',
+            failureReason: 'token_refresh_failed',
+          });
           supabase.auth.signOut();
           setSession(null);
           setUser(null);
@@ -128,7 +135,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        logger.error('AuthContext', 'Failed to recover session, signing out', error);
+        // Pilot-critical auth lifecycle event (ERY-51).
+        logger.error('Failed to recover session, signing out', error, {
+          component: 'AuthContext',
+          service: 'client',
+          eventType: 'auth.session_recovery',
+          failureReason: 'session_recovery_failed',
+        });
         supabase.auth.signOut();
         setSession(null);
         setUser(null);
@@ -142,6 +155,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        logger.info('Session recovered', {
+          component: 'AuthContext',
+          service: 'client',
+          eventType: 'auth.session_recovery',
+          userId: session.user.id,
+        });
         fetchProfile(session.user.id);
       } else {
         setProfile(null);
@@ -229,10 +248,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
+      // Pilot-critical auth lifecycle event (ERY-51): root-admin tenant switch.
+      logger.info('Tenant switched', {
+        component: 'AuthContext',
+        service: 'client',
+        eventType: 'auth.tenant_switch',
+        userId: profile?.id,
+        entityType: 'tenant',
+        entityId: tenantId,
+      });
+
       await fetchTenant();
       window.location.reload();
     } catch (error) {
-      logger.error('AuthContext', 'Error switching tenant', error);
+      logger.error('Error switching tenant', error, {
+        component: 'AuthContext',
+        service: 'client',
+        eventType: 'auth.tenant_switch',
+        failureReason: 'tenant_switch_failed',
+        entityType: 'tenant',
+        entityId: tenantId,
+      });
       throw error;
     }
   };

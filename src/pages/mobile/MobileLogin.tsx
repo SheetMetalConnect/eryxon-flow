@@ -63,6 +63,14 @@ export default function MobileLogin() {
     try {
       const result = await verifyAndSwitchOperator(badge, pinValue);
       if (result.success) {
+        // Pilot-critical operator lifecycle event (ERY-51).
+        logger.info("Operator login", {
+          component: "MobileLogin",
+          service: "client",
+          eventType: "operator.login",
+          entityType: "operator",
+          entityId: badge,
+        });
         await haptics.success();
         try {
           window.localStorage.setItem(STORED_LAST_BADGE_KEY, badge);
@@ -71,13 +79,26 @@ export default function MobileLogin() {
         }
         navigate(resolvePostMobileLoginTarget(location.state), { replace: true });
       } else {
+        logger.warn("Operator login rejected", {
+          component: "MobileLogin",
+          service: "client",
+          eventType: "operator.login",
+          failureReason: result.error_code || "operator_login_rejected",
+          entityType: "operator",
+          entityId: badge,
+        });
         await haptics.error();
         setError(result.error_message || t("terminalLogin.invalidCredentials"));
         setPin("");
       }
     } catch (err) {
       await haptics.error();
-      logger.error("MobileLogin", "Login failed", err);
+      logger.error("Login failed", err, {
+        component: "MobileLogin",
+        service: "client",
+        eventType: "operator.login",
+        failureReason: "operator_login_error",
+      });
       setError(t("terminalLogin.unexpectedError"));
       setPin("");
     } finally {

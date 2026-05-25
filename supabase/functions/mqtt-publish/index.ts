@@ -1,6 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import { sanitizeError, constantTimeCompare } from "../_shared/security.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+  REQUEST_ID_HEADER,
+  RequestLogContext,
+  edgeLog,
+  persistPilotEvent,
+  resolveRequestId,
+} from "../_shared/observability.ts";
 
 interface MqttPublisher {
   id: string;
@@ -218,8 +225,18 @@ async function publishViaHttp(
 }
 
 Deno.serve(async (req) => {
+  // Resolve the request id at the boundary: trust a valid inbound id (forwarded
+  // by the lifecycle function that triggered this publish) else mint one.
+  const requestId = resolveRequestId(req.headers);
+  const log: RequestLogContext = {
+    requestId,
+    service: "mqtt-publish",
+    route: new URL(req.url).pathname,
+    method: req.method,
+  };
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: { ...corsHeaders, [REQUEST_ID_HEADER]: requestId } });
   }
 
   const supabase = createClient(
@@ -236,7 +253,7 @@ Deno.serve(async (req) => {
       if (!constantTimeCompare(token, internalSecret)) {
         return new Response(
           JSON.stringify({ success: false, error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
         );
       }
     }
@@ -250,9 +267,13 @@ Deno.serve(async (req) => {
           success: false,
           error: 'Missing required fields: tenant_id, event_type, data',
         }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
       );
     }
+
+    // Attribute downstream dispatch-failure events to this tenant.
+    log.tenantId = tenant_id;
+    log.eventType = event_type;
 
     // Fetch all active MQTT publishers for this tenant subscribed to this event
     const { data: publishers, error } = await supabase
@@ -272,7 +293,7 @@ Deno.serve(async (req) => {
           message: 'No active MQTT publishers for this tenant',
           published: 0,
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
       );
     }
 
@@ -288,7 +309,7 @@ Deno.serve(async (req) => {
           message: 'No MQTT publishers subscribed to this event',
           published: 0,
         }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
       );
     }
 
@@ -328,6 +349,25 @@ Deno.serve(async (req) => {
             .from('mqtt_publishers')
             .update({ last_error: result.error })
             .eq('id', publisher.id);
+
+          // Persist a pilot-critical MQTT dispatch failure (ERY-51) with the
+          // shared request id so the publish failure is traceable.
+          const failureLog: RequestLogContext = {
+            ...log,
+            eventType: "mqtt.dispatch_failed",
+            errorCode: "MQTT_PUBLISH_FAILED",
+            durationMs: result.latencyMs,
+          };
+          edgeLog("warn", "mqtt.dispatch_failed", failureLog);
+          await persistPilotEvent(supabase, {
+            ctx: failureLog,
+            level: "warn",
+            action: "mqtt.dispatch_failed",
+            description: `MQTT publish to ${topic} failed for event ${event_type}: ${result.error ?? "unknown"}`,
+            entityType: "mqtt_publisher",
+            entityId: publisher.id,
+            extra: { event: event_type, topic, error_message: result.error, latency_ms: result.latencyMs },
+          });
         }
 
         return { publisherId: publisher.id, topic, ...result };
@@ -345,18 +385,32 @@ Deno.serve(async (req) => {
         failed: failureCount,
         results: results,
       }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
     );
 
   } catch (error) {
     console.error('Error in mqtt-publish:', error);
     const sanitized = sanitizeError(error);
+    const errorLog: RequestLogContext = {
+      ...log,
+      statusCode: 500,
+      errorCode: "MQTT_PUBLISH_ERROR",
+    };
+    edgeLog("error", "request.failed", errorLog);
+    // Persist the top-level failure (e.g. publisher fetch query failed) when we
+    // already know the tenant.
+    await persistPilotEvent(supabase, {
+      ctx: { ...errorLog, eventType: "mqtt.dispatch_failed" },
+      level: "error",
+      action: "mqtt.dispatch_failed",
+      description: sanitized.message,
+    });
     return new Response(
       JSON.stringify({
         success: false,
         error: sanitized.message,
       }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
     );
   }
 });

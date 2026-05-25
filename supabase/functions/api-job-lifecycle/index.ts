@@ -18,22 +18,35 @@
  * - Validate state transitions
  * - Return updated job data
  *
+ * Observability (ERY-51 / ERY-39):
+ * - Routed through `createApiHandler`, so every request carries a boundary
+ *   `x-request-id`, structured edge logs, and automatic `edge.error`
+ *   persistence into `activity_log` on thrown failures.
+ * - Successful state transitions record a `job.lifecycle` pilot event with the
+ *   shared request id so the trace links edge log -> durable activity row.
+ *
  * Authentication:
  * - Requires API key in Authorization header: "Bearer ery_live_xxx" or "Bearer ery_test_xxx"
  */
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "@supabase/supabase-js";
-import { authenticateAndSetContext } from "@shared/auth.ts";
-import { corsHeaders } from "@shared/cors.ts";
-import { handleOptions, handleError } from "@shared/validation/errorHandler.ts";
+import { serveApi, errorResponse, successResponse } from "@shared/handler.ts";
+import { REQUEST_ID_HEADER } from "@shared/observability.ts";
 
-async function triggerWebhook(supabase: any, tenantId: string, eventType: string, data: any) {
+async function triggerWebhook(
+  supabase: any,
+  tenantId: string,
+  eventType: string,
+  data: any,
+  requestId: string,
+) {
   try {
     await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/webhook-dispatch`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // Propagate the request id so the dispatch hop logs/persists under the
+        // same correlation id as this lifecycle request.
+        [REQUEST_ID_HEADER]: requestId,
         'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY")}`,
       },
       body: JSON.stringify({
@@ -47,31 +60,14 @@ async function triggerWebhook(supabase: any, tenantId: string, eventType: string
   }
 }
 
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return handleOptions();
-  }
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ''
-  );
-
-  try {
-    const { tenantId } = await authenticateAndSetContext(req, supabase);
-
-    const url = new URL(req.url);
+serveApi(
+  async (req, ctx) => {
+    const { supabase, tenantId, url, requestId } = ctx;
     const jobId = url.searchParams.get('id');
     const operation = url.pathname.split('/').pop(); // start, stop, complete, resume
 
     if (!jobId) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: { code: 'VALIDATION_ERROR', message: 'Job ID is required in query string (?id=xxx)' }
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse('VALIDATION_ERROR', 'Job ID is required in query string (?id=xxx)', 400);
     }
 
     // Fetch current job
@@ -93,13 +89,7 @@ serve(async (req) => {
       .single();
 
     if (fetchError || !job) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: { code: 'NOT_FOUND', message: 'Job not found' }
-        }),
-        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return errorResponse('NOT_FOUND', 'Job not found', 404);
     }
 
     const now = new Date().toISOString();
@@ -112,15 +102,10 @@ serve(async (req) => {
       case 'start':
         // Validate: can only start if not_started or on_hold
         if (job.status !== 'not_started' && job.status !== 'on_hold') {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: {
-                code: 'INVALID_STATE_TRANSITION',
-                message: `Cannot start job with status '${job.status}'. Job must be 'not_started' or 'on_hold'.`
-              }
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          return errorResponse(
+            'INVALID_STATE_TRANSITION',
+            `Cannot start job with status '${job.status}'. Job must be 'not_started' or 'on_hold'.`,
+            400,
           );
         }
 
@@ -135,15 +120,10 @@ serve(async (req) => {
       case 'pause':
         // Validate: can only stop if in_progress
         if (job.status !== 'in_progress') {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: {
-                code: 'INVALID_STATE_TRANSITION',
-                message: `Cannot stop job with status '${job.status}'. Job must be 'in_progress'.`
-              }
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          return errorResponse(
+            'INVALID_STATE_TRANSITION',
+            `Cannot stop job with status '${job.status}'. Job must be 'in_progress'.`,
+            400,
           );
         }
 
@@ -156,15 +136,10 @@ serve(async (req) => {
       case 'complete':
         // Validate: can only complete if in_progress
         if (job.status !== 'in_progress') {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: {
-                code: 'INVALID_STATE_TRANSITION',
-                message: `Cannot complete job with status '${job.status}'. Job must be 'in_progress'.`
-              }
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          return errorResponse(
+            'INVALID_STATE_TRANSITION',
+            `Cannot complete job with status '${job.status}'. Job must be 'in_progress'.`,
+            400,
           );
         }
 
@@ -184,15 +159,10 @@ serve(async (req) => {
       case 'resume':
         // Validate: can only resume if on_hold
         if (job.status !== 'on_hold') {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: {
-                code: 'INVALID_STATE_TRANSITION',
-                message: `Cannot resume job with status '${job.status}'. Job must be 'on_hold'.`
-              }
-            }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          return errorResponse(
+            'INVALID_STATE_TRANSITION',
+            `Cannot resume job with status '${job.status}'. Job must be 'on_hold'.`,
+            400,
           );
         }
 
@@ -204,15 +174,10 @@ serve(async (req) => {
         break;
 
       default:
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: {
-              code: 'INVALID_OPERATION',
-              message: `Invalid operation '${operation}'. Supported operations: start, stop, complete, resume`
-            }
-          }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        return errorResponse(
+          'INVALID_OPERATION',
+          `Invalid operation '${operation}'. Supported operations: start, stop, complete, resume`,
+          400,
         );
     }
 
@@ -229,6 +194,24 @@ serve(async (req) => {
       throw new Error(`Failed to update job: ${updateError?.message}`);
     }
 
+    // Record the pilot-critical lifecycle event (ERY-51) with the shared
+    // request id before dispatching the webhook.
+    await ctx.recordPilotEvent({
+      level: 'info',
+      eventType: 'job.lifecycle',
+      action: `job.${operation}`,
+      description: `Job ${updatedJob.job_number ?? updatedJob.id} ${operation}: ${job.status} -> ${newStatus}`,
+      entityType: 'job',
+      entityId: updatedJob.id,
+      entityName: updatedJob.job_number,
+      extra: {
+        operation,
+        previous_status: job.status,
+        new_status: newStatus,
+        actual_duration: updatedJob.actual_duration,
+      },
+    });
+
     // Trigger webhook
     if (webhookEvent) {
       await triggerWebhook(supabase, tenantId, webhookEvent, {
@@ -241,31 +224,15 @@ serve(async (req) => {
         started_at: updatedJob.started_at,
         completed_at: updatedJob.completed_at,
         actual_duration: updatedJob.actual_duration,
-      });
+      }, requestId);
     }
 
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          job: updatedJob,
-          operation: operation,
-          previous_status: job.status,
-          new_status: newStatus
-        }
-      }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error) {
-    console.error('Error in api-job-lifecycle:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message }
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-});
+    return successResponse({
+      job: updatedJob,
+      operation: operation,
+      previous_status: job.status,
+      new_status: newStatus,
+    });
+  },
+  { methods: ['POST', 'OPTIONS'] },
+);
