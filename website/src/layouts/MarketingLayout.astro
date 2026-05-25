@@ -50,7 +50,10 @@ const { title, description } = Astro.props;
 </BaseLayout>
 
 <style>
-  .ery-container {
+  /* Shared page-width container — global so every marketing page/component
+     (landing, roadmap, legal, …) inherits the same template width, not just
+     this layout's own header/footer. */
+  :global(.ery-container) {
     max-inline-size: var(--ery-container-max);
     margin-inline: auto;
     padding-inline: var(--ery-pad-section);
