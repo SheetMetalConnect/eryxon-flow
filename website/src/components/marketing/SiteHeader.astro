@@ -15,7 +15,7 @@ import type { Locale } from "@/lib/locale";
 interface Props {
   locale?: Locale;
   /** Marks the current section for aria-current. */
-  active?: "rollout" | "docs" | null;
+  active?: "rollout" | "docs" | "blog" | "changelog" | null;
 }
 
 const { locale = "en", active = null } = Astro.props;
@@ -23,6 +23,8 @@ const { locale = "en", active = null } = Astro.props;
 const links = [
   { key: "rollout", label: "Managed rollout", href: "/managed-rollout/" },
   { key: "docs", label: "Documentation", href: "/introduction/" },
+  { key: "blog", label: "Blog", href: "/blog/" },
+  { key: "changelog", label: "Changelog", href: "/release-notes/" },
 ] as const;
 ---
 
@@ -51,7 +53,7 @@ const links = [
     locale={locale}
     external
   >
-    Open hosted trial
+    Get started for free
   </CtaButton>
 </nav>
 

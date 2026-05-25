@@ -9,8 +9,12 @@
  * It deliberately imposes no container or prose wrapper: each surface owns its own kit shell
  * (`article-shell` / `changelog-shell` / `index-shell`). This layout only mounts the shared
  * editorial styles and forwards head + body slots.
+ *
+ * It routes through SiteLayout (not MarketingLayout directly) so blog and release-note pages
+ * inherit the shared marketing chrome — header nav + footer — and are reachable from it. Without
+ * this, the editorial surfaces rendered with an empty header and were orphaned (ERY-60 fidelity).
  */
-import MarketingLayout from "@/layouts/MarketingLayout.astro";
+import SiteLayout from "@/layouts/SiteLayout.astro";
 import type { Locale } from "@/lib/locale";
 import "@/styles/editorial.css";
 
@@ -18,12 +22,13 @@ interface Props {
   title: string;
   description?: string;
   locale?: Locale;
+  activeNav?: "rollout" | "docs" | "blog" | "changelog" | null;
 }
 
-const { title, description } = Astro.props;
+const { title, description, locale = "en", activeNav = null } = Astro.props;
 ---
 
-<MarketingLayout title={title} description={description}>
+<SiteLayout title={title} description={description} locale={locale} activeNav={activeNav}>
   <slot name="head" slot="head" />
   <slot />
-</MarketingLayout>
+</SiteLayout>
