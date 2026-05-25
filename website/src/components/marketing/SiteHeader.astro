@@ -30,9 +30,10 @@ const labels: Record<Locale, Record<string, string>> = {
 const t = labels[locale];
 
 // Pricing is localized; the rest are single-language canonical paths.
+// Managed rollout now lives inline on the landing (#managed-rollout), so it is no
+// longer a top-level nav item — it's reachable from the homepage and pricing CTAs.
 const links = [
   { key: "pricing", label: t.pricing, href: localizePath("/pricing/", locale) },
-  { key: "rollout", label: t.rollout, href: "/managed-rollout/" },
   { key: "docs", label: t.docs, href: "/introduction/" },
   { key: "blog", label: t.blog, href: "/blog/" },
   { key: "changelog", label: t.changelog, href: "/release-notes/" },
