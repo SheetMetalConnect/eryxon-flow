@@ -85,7 +85,9 @@ pnpm-debug.log*
 secrets/
 supabase/.temp/
 supabase/.branches/
+.worktrees/
 .claude/worktrees/
+.paperclip-tmp/
 test.env
 yarn-debug.log*
 yarn-error.log*

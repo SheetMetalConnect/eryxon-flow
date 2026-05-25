@@ -14,6 +14,33 @@ if ! command -v node >/dev/null 2>&1; then
   exit 1
 fi
 
+ensure_native_build_bindings() {
+  require_binding() {
+    local package_name="$1"
+    node -e "require(require.resolve(process.argv[1]));" "$package_name"
+  }
+
+  # npm ci intermittently skips native optional packages on Apple Silicon.
+  # Vite then fails before Capacitor even runs because Rollup and SWC cannot
+  # load their darwin-arm64 bindings. Repair them once here so native
+  # bootstrap stays deterministic on fresh machines and CI runners.
+  if [[ "$(uname -s)" == "Darwin" && "$(uname -m)" == "arm64" ]]; then
+    if ! require_binding "@rollup/rollup-darwin-arm64" >/dev/null 2>&1 \
+      || ! require_binding "@swc/core-darwin-arm64" >/dev/null 2>&1; then
+      local rollup_version
+      local swc_version
+      rollup_version="$(node -p "require('./node_modules/rollup/package.json').version")"
+      swc_version="$(node -p "require('./node_modules/@swc/core/package.json').version")"
+      echo "▶ Repairing darwin-arm64 native bindings for Rollup and SWC..."
+      npm install --no-save \
+        "@rollup/rollup-darwin-arm64@${rollup_version}" \
+        "@swc/core-darwin-arm64@${swc_version}"
+      require_binding "@rollup/rollup-darwin-arm64" >/dev/null
+      require_binding "@swc/core-darwin-arm64" >/dev/null
+    fi
+  fi
+}
+
 if [[ "${OSTYPE:-}" != darwin* ]]; then
   echo "⚠ Capacitor's iOS toolchain only runs on macOS — this script will" >&2
   echo "  configure the project but you must finish 'cap add ios' on a Mac." >&2
@@ -25,6 +52,7 @@ if [[ -f package-lock.json ]]; then
 else
   npm install
 fi
+ensure_native_build_bindings
 
 echo "▶ Building production web bundle..."
 npm run build

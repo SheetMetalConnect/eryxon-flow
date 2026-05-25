@@ -1,8 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
 import { createHmac } from "https://deno.land/std@0.168.0/node/crypto.ts";
 import { sanitizeError, constantTimeCompare } from "../_shared/security.ts";
 import { corsHeaders } from "../_shared/cors.ts";
+import {
+  formatWebhookDeliveryLogMessage,
+  isRetryableWebhookStatusCode,
+  retryWebhookDelivery,
+} from "./retry.ts";
 
 interface WebhookPayload {
   event: string;
@@ -24,56 +28,65 @@ async function dispatchWebhook(
     .update(payloadString)
     .digest('hex');
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Eryxon-Signature': `sha256=${signature}`,
-        'X-Eryxon-Event': payload.event,
-        'User-Agent': 'Eryxon-Webhooks/1.0',
-      },
-      body: payloadString,
-      signal: AbortSignal.timeout(10000), // 10 second timeout
-    });
+  const deliveryResult = await retryWebhookDelivery(async () => {
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Eryxon-Signature': `sha256=${signature}`,
+          'X-Eryxon-Event': payload.event,
+          'User-Agent': 'Eryxon-Webhooks/1.0',
+        },
+        body: payloadString,
+        signal: AbortSignal.timeout(10000), // 10 second timeout
+      });
 
-    const statusCode = response.status;
-    const responseText = await response.text();
+      const statusCode = response.status;
+      const responseText = await response.text();
 
-    // Log the webhook delivery
-    await supabase.from('webhook_logs').insert({
-      webhook_id: webhookId,
-      event_type: payload.event,
-      payload: payload,
-      status_code: statusCode,
-      error_message: statusCode >= 400 ? responseText : null,
-    });
+      return {
+        success: statusCode >= 200 && statusCode < 300,
+        retryable: isRetryableWebhookStatusCode(statusCode),
+        statusCode,
+        responseText,
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 
+      return {
+        success: false,
+        retryable: true,
+        statusCode: null,
+        error: errorMessage,
+      };
+    }
+  });
+
+  await supabase.from('webhook_logs').insert({
+    webhook_id: webhookId,
+    event_type: payload.event,
+    payload: payload,
+    status_code: deliveryResult.statusCode,
+    error_message: formatWebhookDeliveryLogMessage(deliveryResult),
+  });
+
+  if (deliveryResult.success) {
     return {
-      success: statusCode >= 200 && statusCode < 300,
-      statusCode,
-      response: responseText,
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-
-    // Log the failed delivery
-    await supabase.from('webhook_logs').insert({
-      webhook_id: webhookId,
-      event_type: payload.event,
-      payload: payload,
-      status_code: null,
-      error_message: errorMessage,
-    });
-
-    return {
-      success: false,
-      error: errorMessage,
+      success: true,
+      statusCode: deliveryResult.statusCode,
+      response: deliveryResult.responseText,
     };
   }
+
+  return {
+    success: false,
+    statusCode: deliveryResult.statusCode,
+    error: deliveryResult.error ?? deliveryResult.responseText ?? 'Unknown error',
+  };
 }
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

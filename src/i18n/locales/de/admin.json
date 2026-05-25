@@ -400,5 +400,22 @@
   },
   "stuckTimeEntries": {
     "stopped": "Zeiterfassung erfolgreich gestoppt"
+  },
+  "pilotActivation": {
+    "title": "Pilot aktivieren",
+    "description": "Vom Demo-Datensatz zu einem Bediener, der zugewiesene Arbeit übernimmt — in drei Schritten.",
+    "progress": "{{completed}}/{{total}} erledigt",
+    "step1Title": "Teammitglied oder Bediener hinzufügen",
+    "step1Desc": "Lade ein Teammitglied per E-Mail ein oder erstelle einen Bediener ohne E-Mail mit PIN.",
+    "step1Cta": "Hinzufügen",
+    "step2Title": "Arbeitsgang zuweisen",
+    "step2Desc": "Wähle ein Teil und weise dessen Arbeitsgänge einem Bediener zu.",
+    "step2Cta": "Zuweisen",
+    "step3Title": "Bediener übernimmt die Arbeit",
+    "step3Desc": "Teile den Bediener-Login, damit die zugewiesene Arbeit in seiner Warteschlange erscheint.",
+    "step3Cta": "Login öffnen",
+    "refresh": "Status aktualisieren",
+    "readyTitle": "Pilot bereit 🎉",
+    "readyDescription": "Ein Bediener hat jetzt zugewiesene Arbeit — dieser Mandant erreichte den Pilot-Meilenstein."
   }
 }

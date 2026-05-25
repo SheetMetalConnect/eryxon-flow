@@ -50,21 +50,21 @@
       "name": "Work Queue",
       "short_name": "Queue",
       "description": "Open the operator work queue",
-      "url": "/operator/work-queue",
+      "url": "/m/queue",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "Scan Job",
       "short_name": "Scan",
       "description": "Scan a job or part barcode",
-      "url": "/operator/work-queue?scan=1",
+      "url": "/m/scan",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     },
     {
       "name": "My Activity",
       "short_name": "Activity",
       "description": "View time entries and active operations",
-      "url": "/operator/my-activity",
+      "url": "/m/activity",
       "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
     }
   ],

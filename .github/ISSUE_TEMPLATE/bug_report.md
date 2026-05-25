@@ -4,6 +4,8 @@ about: Something isn't working correctly
 labels: bug
 ---
 
+> Public repo note: do not include customer names, contact details, credentials, pricing, or other commercial information here. Keep only sanitized technical detail on GitHub and synced tickets.
+
 ## Description
 <!-- What happened? What did you expect? -->
 

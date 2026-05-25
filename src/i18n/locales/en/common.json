@@ -57,7 +57,8 @@
     "refresh": "Refresh",
     "noTenantId": "No tenant ID",
     "pageNotFound": "Oops! Page not found",
-    "returnToHome": "Return to Home"
+    "returnToHome": "Return to Home",
+    "dismiss": "Dismiss"
   },
   "forms": {
     "required": "This field is required",

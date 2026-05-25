@@ -37,9 +37,15 @@ codex/<description>           # Changes made by Codex agent
 dependabot/npm_and_yarn/...   # Dependabot auto-branches
 ```
 
+## Branch Routing And Use
+
+- Branch-creation and branch-use questions route to your manager, not the CEO.
+- Engineers may create a new working branch or use an existing shared branch when that keeps delivery moving.
+- Never push directly to `main`; all engineering changes must stay on non-`main` branches and land through PRs.
+
 ## PR Workflow
 
-1. Create a feature branch from `main`
+1. Create or select a non-`main` working branch from `main`
 2. Make changes and commit with conventional commit messages
 3. Push and create PR via `gh pr create`
 4. CodeRabbit and Vercel preview run automatically
@@ -134,8 +140,9 @@ Dependabot creates automated PRs for dependency updates. These should be:
 
 ## Safety Rules
 
-- Always create PRs for significant changes (don't push directly to main for features)
-- Don't force-push to main
+- Always create PRs for significant changes from a non-`main` branch
+- Never push directly to `main`
+- Don't force-push to `main`
 - Don't delete branches that have open PRs
 - Check CI status before merging
 - Keep commit history clean with conventional commit messages

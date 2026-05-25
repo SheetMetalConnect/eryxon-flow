@@ -56,7 +56,8 @@
     "refresh": "Vernieuwen",
     "noTenantId": "Geen tenant-ID",
     "pageNotFound": "Oeps! Pagina niet gevonden",
-    "returnToHome": "Terug naar startpagina"
+    "returnToHome": "Terug naar startpagina",
+    "dismiss": "Sluiten"
   },
   "forms": {
     "required": "Dit veld is verplicht",

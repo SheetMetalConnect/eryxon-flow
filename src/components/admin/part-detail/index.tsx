@@ -17,7 +17,8 @@ import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
 import { useProfile } from "@/hooks/useProfile";
 import { useFileUpload } from "@/hooks/useFileUpload";
-import { usePMI, isPMIServiceEnabled } from "@/hooks/usePMI";
+import { useCADProcessing } from "@/hooks/useCADProcessing";
+import { usePMI } from "@/hooks/usePMI";
 import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/database";
 import { useTranslation } from "react-i18next";
 import { usePartRouting } from "@/hooks/useQRMMetrics";
@@ -77,6 +78,10 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
     pmiSummary,
     isPMIServiceEnabled: pmiEnabled,
   } = usePMI(partId);
+  const {
+    processAndStore,
+    isCADServiceEnabled: cadProcessingEnabled,
+  } = useCADProcessing();
 
   const { data: part, isLoading } = useQuery({
     queryKey: QueryKeys.parts.detail(partId),
@@ -342,7 +347,7 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           description: t("parts.filesUploadedSuccess", { count: result.uploadedPaths.length }),
         });
 
-        if (pmiEnabled) {
+        if (cadProcessingEnabled || pmiEnabled) {
           const stepFiles = result.uploadedPaths.filter(path => {
             const ext = path.toLowerCase().split('.').pop();
             return ext === 'step' || ext === 'stp';
@@ -356,9 +361,33 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
               if (signedUrlData?.signedUrl) {
                 const fileName = stepPath.split('/').pop() || 'model.step';
-                const pmiResult = await extractPMI(signedUrlData.signedUrl, fileName);
+                if (cadProcessingEnabled) {
+                  const cadResult = await processAndStore(
+                    partId,
+                    signedUrlData.signedUrl,
+                    fileName,
+                    {
+                      includeGeometry: true,
+                      includePMI: pmiEnabled,
+                      generateThumbnail: false,
+                    },
+                    { sourcePath: stepPath },
+                  );
 
-                if (pmiResult.success && pmiResult.pmi) {
+                  if (cadResult.success && cadResult.pmi) {
+                    toast.success(t("parts.pmiExtracted"), {
+                      description: t("parts.pmiExtractedDesc", {
+                        count: cadResult.pmi.dimensions.length
+                      }),
+                    });
+                  }
+                } else {
+                  const pmiResult = await extractPMI(signedUrlData.signedUrl, fileName);
+
+                  if (!pmiResult.success || !pmiResult.pmi) {
+                    continue;
+                  }
+
                   toast.success(t("parts.pmiExtracted"), {
                     description: t("parts.pmiExtractedDesc", {
                       count: pmiResult.pmi.dimensions.length

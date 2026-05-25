@@ -503,5 +503,22 @@
   },
   "stuckTimeEntries": {
     "stopped": "Time entry stopped successfully"
+  },
+  "pilotActivation": {
+    "title": "Activate your pilot",
+    "description": "Get from demo data to a real operator picking up assigned work — in three steps.",
+    "progress": "{{completed}}/{{total}} done",
+    "step1Title": "Add a teammate or operator",
+    "step1Desc": "Invite a teammate by email, or create a no-email shop-floor operator with a PIN.",
+    "step1Cta": "Add",
+    "step2Title": "Assign an operation",
+    "step2Desc": "Pick a part and assign its operations to an operator.",
+    "step2Cta": "Assign",
+    "step3Title": "Operator picks up the work",
+    "step3Desc": "Share the operator login so the assigned work shows up in their queue.",
+    "step3Cta": "Open login",
+    "refresh": "Refresh status",
+    "readyTitle": "Pilot ready 🎉",
+    "readyDescription": "An operator now has assigned work — this tenant reached the pilot-ready milestone."
   }
 }
