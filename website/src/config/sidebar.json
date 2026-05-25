@@ -26,10 +26,6 @@
         {
           "label": "[seti:changelog] Changelog",
           "slug": "guides/changelog"
-        },
-        {
-          "label": "[seti:checklist] v0.5.1 Release Proof",
-          "slug": "guides/release-proof-v0-5-1"
         }
       ]
     },

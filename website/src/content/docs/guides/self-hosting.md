@@ -5,7 +5,7 @@ description: "Production-ready self-hosting guide for Eryxon Flow MES"
 
 Deploy Eryxon Flow on your own infrastructure with full control.
 
-For the current `v0.6` self-hosted proof trail, treat this guide as the authoritative public production checklist, the [Deployment Guide](/guides/deployment/) as the shortest setup path, and the [Changelog](/guides/changelog/) as the current release-status source. The `v0.5.1` proof snapshot is historical context, not the current rollout path.
+This guide is the authoritative production checklist. For the shortest setup path, see the [Deployment Guide](/guides/deployment/).
 
 ## Quick Start (Recommended)
 

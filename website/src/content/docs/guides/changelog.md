@@ -27,8 +27,7 @@ Maintenance hotfix for release metadata and handoff docs. It clarified the `v0.5
 ### Why it matters
 
 - Keeps the release story aligned with the current [Deployment Guide](/guides/deployment/), [Batch & Nesting Management](/features/batch-management/), and [MCP Server Reference](/api/mcp-server-reference/)
-- Separates shipped proof from Beta status and roadmap context
-- Adds a buyer-facing historical summary in the [v0.5.1 hotfix proof snapshot](/guides/release-proof-v0-5-1/)
+- Separates shipped work from Beta status and roadmap context
 
 ### Fixed
 
