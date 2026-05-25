@@ -9,11 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, ArrowLeft, Factory, CheckCircle2, Mail } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
-import { TurnstileWidget, useTurnstile } from "@/components/auth/TurnstileWidget";
 import { ROUTES } from "@/routes";
 import { logger } from "@/lib/logger";
-
-const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
 export default function ForgotPassword() {
   const { t } = useTranslation();
@@ -21,7 +18,6 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const { captchaToken, setCaptchaToken, resetKey, reset: resetTurnstile } = useTurnstile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +27,6 @@ export default function ForgotPassword() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}${ROUTES.RESET_PASSWORD}`,
-        captchaToken: captchaToken || undefined,
       });
 
       if (error) {
@@ -44,7 +39,6 @@ export default function ForgotPassword() {
       logger.error('ForgotPassword', 'Password reset error', err);
       setError(t("auth.unexpectedError"));
     } finally {
-      resetTurnstile();
       setLoading(false);
     }
   };
@@ -102,20 +96,6 @@ export default function ForgotPassword() {
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          )}
-
-          {TURNSTILE_SITE_KEY && (
-            <div className="flex justify-center">
-              <TurnstileWidget
-                siteKey={TURNSTILE_SITE_KEY}
-                onToken={setCaptchaToken}
-                onError={() => setCaptchaToken(null)}
-                onExpire={() => setCaptchaToken(null)}
-                theme="dark"
-                size="normal"
-                resetKey={resetKey}
-              />
-            </div>
           )}
 
           <div className="pt-2">

@@ -12,12 +12,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, ArrowRight, CheckCircle2, Info, Monitor } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
-import { TurnstileWidget, useTurnstile } from "@/components/auth/TurnstileWidget";
 import { Link } from "react-router-dom";
 import { ROUTES } from "@/routes";
 import { resolvePostAuthTarget } from "@/routes/launchTargets";
-
-const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
 
 export default function Auth() {
   const { t } = useTranslation();
@@ -31,7 +28,6 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { captchaToken, setCaptchaToken, resetKey, reset: resetTurnstile } = useTurnstile();
   const profile = useProfile();
   const { signIn, signUp } = useAuthActions();
   const navigate = useNavigate();
@@ -61,7 +57,7 @@ export default function Auth() {
 
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password, captchaToken);
+        const { error } = await signIn(email, password);
         if (error) {
           setError(error.message);
         }
@@ -88,7 +84,7 @@ export default function Auth() {
           full_name: fullName,
           company_name: companyName,
           role: "admin"
-        }, captchaToken);
+        });
 
         if (error) {
           setError(error.message);
@@ -105,7 +101,6 @@ export default function Auth() {
     } catch (err) {
       setError(t("auth.unexpectedError"));
     } finally {
-      resetTurnstile();
       setLoading(false);
     }
   };
@@ -120,11 +115,9 @@ export default function Auth() {
       />
 
       {success && (
-        <Alert className="mb-4 border-green-500/50 bg-green-500/10">
-          <CheckCircle2 className="h-4 w-4 text-green-500" />
-          <AlertDescription className="text-green-200">
-            {success}
-          </AlertDescription>
+        <Alert variant="success" className="mb-4">
+          <CheckCircle2 className="h-4 w-4" />
+          <AlertDescription>{success}</AlertDescription>
         </Alert>
       )}
 
@@ -251,20 +244,6 @@ export default function Auth() {
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
-        )}
-
-        {TURNSTILE_SITE_KEY && (
-          <div className="flex justify-center">
-            <TurnstileWidget
-              siteKey={TURNSTILE_SITE_KEY}
-              onToken={setCaptchaToken}
-              onError={() => setCaptchaToken(null)}
-              onExpire={() => setCaptchaToken(null)}
-              theme="dark"
-              size="normal"
-              resetKey={resetKey}
-            />
-          </div>
         )}
 
         <div className="pt-2">
