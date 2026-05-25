@@ -1,12 +1,18 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { logger } from "@/lib/logger";
 
 /**
- * Cloudflare Turnstile widget — uses the explicit rendering API directly.
+ * Cloudflare Turnstile — explicit rendering via the official `onload` callback.
  *
- * Key design choice: this widget is **non-blocking**.  If the script fails to
- * load, or the challenge never completes, the parent form can still submit.
- * The parent owns the `captchaToken` state and decides whether to require it.
+ * Built to the documented pattern:
+ * https://developers.cloudflare.com/turnstile/get-started/client-side-rendering/
+ *
+ * The api.js script is loaded once with `?render=explicit&onload=<cb>`. Cloudflare
+ * invokes the global callback when the API is ready; only then do we call
+ * `turnstile.render()`. We deliberately do NOT call `turnstile.ready()` — that
+ * throws when the script tag uses async/defer (which it must, to load off the
+ * critical path). The widget is non-blocking: if the script never loads, the
+ * parent form can still submit and decide whether a token is required.
  */
 
 // ── Cloudflare Turnstile type declarations ──────────────────────────────────
@@ -14,68 +20,72 @@ import { logger } from "@/lib/logger";
 interface TurnstileRenderOptions {
   sitekey: string;
   callback?: (token: string) => void;
-  "error-callback"?: () => void;
+  "error-callback"?: (code?: string) => void;
   "expired-callback"?: () => void;
+  "timeout-callback"?: () => void;
   theme?: "light" | "dark" | "auto";
-  size?: "normal" | "compact";
+  size?: "normal" | "flexible" | "compact";
 }
 
 interface TurnstileAPI {
-  // Per Cloudflare docs, render() must run inside ready() so the API is fully
-  // initialised before we mount a widget (explicit-rendering pattern).
-  ready: (callback: () => void) => void;
   render: (container: string | HTMLElement, options: TurnstileRenderOptions) => string;
-  reset: (widgetId: string) => void;
+  reset: (widgetId?: string) => void;
   remove: (widgetId: string) => void;
 }
 
 declare global {
   interface Window {
     turnstile?: TurnstileAPI;
+    onloadTurnstileCallback?: () => void;
   }
 }
 
-// ── Script loader (singleton — idempotent across multiple mounts) ───────────
+// ── Script loader (singleton, official onload-callback pattern) ─────────────
 
-const SCRIPT_URL =
-  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-const SCRIPT_SELECTOR = `script[src^="https://challenges.cloudflare.com/turnstile"]`;
+const SCRIPT_ID = "cf-turnstile-api";
+const SCRIPT_SRC =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit&onload=onloadTurnstileCallback";
 
-let scriptPromise: Promise<void> | null = null;
+let readyPromise: Promise<void> | null = null;
 
-function loadTurnstileScript(): Promise<void> {
+function loadTurnstile(): Promise<void> {
   if (window.turnstile) return Promise.resolve();
-  if (scriptPromise) return scriptPromise;
+  if (readyPromise) return readyPromise;
 
-  scriptPromise = new Promise<void>((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(SCRIPT_SELECTOR);
-    const script = existing ?? document.createElement("script");
+  readyPromise = new Promise<void>((resolve, reject) => {
+    // Cloudflare calls this global once api.js has finished initialising.
+    window.onloadTurnstileCallback = () => resolve();
 
-    const handleError = () => {
-      scriptPromise = null;
-      script.remove();
-      reject(new Error("Turnstile script failed to load"));
-    };
-
-    script.addEventListener("load", () => resolve(), { once: true });
-    script.addEventListener("error", handleError, { once: true });
-
-    if (!existing) {
-      script.src = SCRIPT_URL;
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
+    const existing = document.getElementById(SCRIPT_ID);
+    if (existing) {
+      if (window.turnstile) resolve();
+      return; // script already injected; onload callback will fire
     }
+
+    const script = document.createElement("script");
+    script.id = SCRIPT_ID;
+    script.src = SCRIPT_SRC;
+    script.async = true;
+    script.defer = true;
+    script.addEventListener(
+      "error",
+      () => {
+        readyPromise = null;
+        reject(new Error("Turnstile api.js failed to load"));
+      },
+      { once: true },
+    );
+    document.head.appendChild(script);
   });
 
-  return scriptPromise;
+  return readyPromise;
 }
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
 /**
  * Owns captcha token state + a reset counter that forces the widget to
- * re-render with a fresh challenge.  Tokens are single-use — callers must
+ * re-render with a fresh challenge. Tokens are single-use — callers must
  * invoke `reset()` after every submission attempt.
  */
 export function useTurnstile() {
@@ -98,7 +108,7 @@ interface TurnstileWidgetProps {
   onError?: () => void;
   onExpire?: () => void;
   theme?: "light" | "dark" | "auto";
-  size?: "normal" | "compact";
+  size?: "normal" | "flexible" | "compact";
   /** Bump this value to force a widget reset (e.g. after form submission). */
   resetKey?: number;
 }
@@ -108,83 +118,53 @@ export function TurnstileWidget({
   onToken,
   onError,
   onExpire,
-  theme = "dark",
+  theme = "auto",
   size = "normal",
   resetKey = 0,
 }: TurnstileWidgetProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
 
-  // Callback refs are read inside Turnstile's own callbacks, which are
-  // registered once with the widget.  Keeping refs fresh lets the parent pass
-  // inline closures without re-rendering the widget on every parent render.
-  const onTokenRef = useRef(onToken);
-  const onErrorRef = useRef(onError);
-  const onExpireRef = useRef(onExpire);
+  // Keep callback refs fresh so the parent can pass inline closures without
+  // forcing the widget to re-render (Turnstile registers callbacks once).
+  const cbRef = useRef({ onToken, onError, onExpire });
   useEffect(() => {
-    onTokenRef.current = onToken;
-    onErrorRef.current = onError;
-    onExpireRef.current = onExpire;
+    cbRef.current = { onToken, onError, onExpire };
   }, [onToken, onError, onExpire]);
 
   useEffect(() => {
     let cancelled = false;
 
-    const renderWidget = () => {
-      if (!containerRef.current || !window.turnstile) return;
+    loadTurnstile()
+      .then(() => {
+        if (cancelled || !containerRef.current || !window.turnstile) return;
 
-      if (widgetIdRef.current) {
-        try {
-          window.turnstile.remove(widgetIdRef.current);
-        } catch {
-          // Widget may already be removed
+        if (widgetIdRef.current) {
+          try {
+            window.turnstile.remove(widgetIdRef.current);
+          } catch {
+            // already gone
+          }
+          widgetIdRef.current = null;
         }
-        widgetIdRef.current = null;
-      }
 
-      try {
         widgetIdRef.current = window.turnstile.render(containerRef.current, {
           sitekey: siteKey,
           theme,
           size,
           callback: (token: string) => {
             logger.debug("TurnstileWidget", "Token received");
-            onTokenRef.current(token);
+            cbRef.current.onToken(token);
           },
-          "error-callback": () => {
-            logger.warn("TurnstileWidget", "Challenge error");
-            onErrorRef.current?.();
+          "error-callback": (code?: string) => {
+            logger.warn("TurnstileWidget", "Challenge error", { code });
+            cbRef.current.onError?.();
           },
           "expired-callback": () => {
-            logger.debug("TurnstileWidget", "Token expired, re-rendering");
-            onExpireRef.current?.();
-            if (widgetIdRef.current && window.turnstile) {
-              try {
-                window.turnstile.reset(widgetIdRef.current);
-              } catch {
-                // Ignore reset errors
-              }
-            }
+            logger.debug("TurnstileWidget", "Token expired");
+            cbRef.current.onExpire?.();
           },
         });
-        logger.debug("TurnstileWidget", "Widget rendered", { widgetId: widgetIdRef.current });
-      } catch (err) {
-        logger.warn("TurnstileWidget", "Failed to render widget", err);
-      }
-    };
-
-    loadTurnstileScript()
-      .then(() => {
-        if (cancelled) return;
-        // Cloudflare docs: defer render() until turnstile.ready() fires, so the
-        // widget mounts only after the API has fully initialised.
-        if (window.turnstile?.ready) {
-          window.turnstile.ready(() => {
-            if (!cancelled) renderWidget();
-          });
-        } else {
-          renderWidget();
-        }
       })
       .catch((err) => {
         logger.warn("TurnstileWidget", "Script load failed", err);
@@ -196,7 +176,7 @@ export function TurnstileWidget({
         try {
           window.turnstile.remove(widgetIdRef.current);
         } catch {
-          // Ignore removal errors during unmount
+          // ignore unmount removal errors
         }
         widgetIdRef.current = null;
       }
