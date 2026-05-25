@@ -24,6 +24,7 @@ import { toast } from "sonner";
 import { seedDemoData } from "@/lib/seed";
 const loadMockData = () => import("@/lib/mockDataGenerator");
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
+import { PilotActivationCard } from "@/components/onboarding/PilotActivationCard";
 import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import { logger } from "@/lib/logger";
 import {
@@ -521,6 +522,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       )}
+
+      <PilotActivationCard />
 
       <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
         <StatCard

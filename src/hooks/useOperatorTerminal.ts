@@ -15,6 +15,7 @@ import {
   completeOperation,
   type OperationWithDetails,
 } from "@/lib/database";
+import { getStoredPMIForPath } from "@/lib/cadProcessingMetadata";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
@@ -224,6 +225,9 @@ export function useOperatorTerminal() {
         let step: string | null = null;
         let signedStep: string | null = null;
         let stepFileName: string | null = null;
+        let stepStoragePath: string | null = null;
+        const partMetadata =
+          operations.find((op) => op.part.id === selectedJob.partId)?.part.metadata ?? null;
 
         for (const path of selectedJob.filePaths) {
           const lp = path.toLowerCase();
@@ -243,6 +247,7 @@ export function useOperatorTerminal() {
             if (data?.signedUrl) {
               signedStep = data.signedUrl;
               stepFileName = path.split("/").pop() || "model.step";
+              stepStoragePath = path;
               const response = await fetch(data.signedUrl);
               const blob = await response.blob();
               step = URL.createObjectURL(blob);
@@ -253,7 +258,12 @@ export function useOperatorTerminal() {
         setPdfUrl(pdf);
         setStepUrl(step);
 
-        if (signedStep && stepFileName && isCADServiceEnabled()) {
+        const storedPmi = getStoredPMIForPath(partMetadata, stepStoragePath);
+
+        if (storedPmi) {
+          setPmiData(storedPmi);
+          setGeometryData(null);
+        } else if (signedStep && stepFileName && isCADServiceEnabled()) {
           try {
             const result = await processCAD(signedStep, stepFileName, {
               includeGeometry: true,

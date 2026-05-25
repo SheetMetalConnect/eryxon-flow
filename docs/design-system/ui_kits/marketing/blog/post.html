@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Killing the whiteboard: a 14-day rollout at Demar Laser — Eryxon</title>
+<link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+<link rel="stylesheet" href="../../../colors_and_type.css" />
+<link rel="stylesheet" href="./blog.css" />
+</head>
+<body class="blog-body" data-screen-label="Blog \u2014 article post">
+
+<header class="blog-header">
+  <a class="blog-brand" href="#">
+    <img src="../../../assets/eryxon-mark-light.svg" width="32" height="32" alt="" />
+    <span>eryxon</span>
+  </a>
+  <nav class="blog-nav">
+    <a href="#">Product</a>
+    <a href="#">Docs</a>
+    <a href="#">Pricing</a>
+    <a href="./index.html" class="is-active">Blog</a>
+    <a href="./changelog.html">Changelog</a>
+  </nav>
+  <div class="blog-header-cta">
+    <a class="blog-link" href="#">Sign in</a>
+    <a class="blog-btn" href="#">Start free trial</a>
+  </div>
+</header>
+
+<div class="article-shell">
+  <article>
+    <header class="article-head">
+      <div class="article-eyebrow">
+        Case study <span class="dot"></span> Customer story
+      </div>
+      <h1 class="article-h1">Killing the whiteboard: a 14-day rollout at Demar Laser.</h1>
+      <p class="article-lead">Demar runs four cells, three shifts, and 1,800 unique parts a year off a TRUMPF laser. Until this spring, the schedule lived on three whiteboards in the planner's office. Here's what changed in two weeks.</p>
+      <div class="article-meta">
+        <div class="article-author">
+          <span class="article-avatar">LV</span>
+          <div>
+            <div class="article-author-name">Luke van Enkhuizen</div>
+            <div class="article-author-role">Co-founder · Eryxon</div>
+          </div>
+        </div>
+        <span class="article-meta-divider">·</span>
+        <span class="article-date">22 May 2026</span>
+        <span class="article-meta-divider">·</span>
+        <span class="article-reading">7 min read</span>
+        <span class="article-tags">
+          <span class="article-tag">rollout</span>
+          <span class="article-tag">sheet metal</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="article-body">
+      <p><strong>Demar's planner kept a whiteboard for each cell.</strong> Laser, brake, weld, paint. Each morning she'd walk the floor, rub off completed jobs, write new ones, and call back to her desk with a list of operators to reassign. By Wednesday the whiteboards were a smear of half-erased part numbers. By Friday she was redoing Monday's planning from scratch.</p>
+
+      <p>This is the most common MES failure mode we see at small fabricators. Not "operators won't use the tablet" — that one's solved. The real failure is that the planner ends up doing double work: once on the whiteboard, once in whatever system management bought. So they stop using the system. The whiteboard stays.</p>
+
+      <p>We approached the Demar rollout with that failure mode in mind. Three rules:</p>
+
+      <ol>
+        <li><strong>The planner's screen is the source of truth.</strong> No parallel whiteboard, no backup spreadsheet.</li>
+        <li><strong>The operators see the same state, live.</strong> If the planner reassigns a job at 09:14, the tablet at the brake reflects it by 09:14:01.</li>
+        <li><strong>Day one is one cell.</strong> Not "the floor". One cell, one shift.</li>
+      </ol>
+
+      <h2 id="day-one">Day one: the laser cell only</h2>
+
+      <p>We picked the laser cell first because it's where every job starts — if the laser sees the new system, the whole shop eventually does. Demar had been pushing jobs in from Oseon already, so the data was clean. We imported one week of WIP and one week of upcoming work via the REST API.</p>
+
+      <figure class="article-figure">
+        <div class="article-figure-placeholder">[ image · operator at laser tablet · 1600×900 ]</div>
+        <figcaption>The laser operator's tablet on day three. The cell-color stripe and overdue / today / soon tags do most of the talking.</figcaption>
+      </figure>
+
+      <p>The laser operator — Jonas, 14 years with Demar, sceptical of every digital tool brought in before — used the tablet for the morning. By lunchtime he'd asked us to <em>remove</em> two filters from the queue toolbar because they were "stuff the planner cares about". We did.</p>
+
+      <div class="callout info">
+        <span class="callout-ic">i</span>
+        <div class="callout-body">
+          <strong>Lesson: cut the operator UI ruthlessly.</strong>
+          The planner and the operator do not want the same screen. Don't try to give them one. The operator wants three buttons and a status stripe; the planner wants a table.
+        </div>
+      </div>
+
+      <h2 id="api-push">The API push from Oseon</h2>
+
+      <p>Demar's existing Oseon installation already had work orders, parts, and operations. We didn't want them re-keyed. The bridge we set up was small — eight endpoints on our side, one cron on theirs. Here's the core of it:</p>
+
+      <pre><code><span class="c">// /functions/oseon-sync/handle-job-push.ts</span>
+<span class="k">export async function</span> POST(req: Request) {
+  <span class="k">const</span> auth = await verifySignature(req);
+  <span class="k">if</span> (!auth.ok) <span class="k">return</span> new Response(<span class="s">"bad signature"</span>, { status: <span class="n">401</span> });
+
+  <span class="k">const</span> jobs = await req.json();
+  <span class="k">const</span> normalised = jobs.map(toEryxonJob);
+
+  <span class="k">return</span> upsertJobs(normalised, { tenant: auth.tenant });
+}</code></pre>
+
+      <p>Two things to note. First, signatures: every push from Oseon is HMAC-signed, so we can verify it came from Demar's installation without a long-lived API key on their side. Second, idempotency: <code>upsertJobs</code> uses Oseon's <code>job_number</code> as the unique key, so re-pushing yesterday's batch doesn't create duplicates. The cron runs every 90 seconds.</p>
+
+      <blockquote>
+        <p>"We tried this with our last MES. They told us to 'expose the data' and gave us a CSV importer. Eryxon showed up with a working bridge to Oseon on day four."</p>
+        <cite>— Luc Vermeer, operations manager, Demar Laser</cite>
+      </blockquote>
+
+      <h2 id="week-two">Week two: the brake, the weld, the rest</h2>
+
+      <p>Once the laser was running clean — about three days in — we added the brake. Then welding the day after that. Each cell took less time than the last because the operators in the new cell could see the old cells already living on Eryxon and asked the natural questions ("how do I clock in?", "what's the orange tag mean?") to the operators next door instead of to us.</p>
+
+      <p>By day twelve the four cells were on. The planner started skipping the morning whiteboard walk. By day fourteen the whiteboards came down.</p>
+
+      <div class="callout success">
+        <span class="callout-ic">✓</span>
+        <div class="callout-body">
+          <strong>Rollout outcome — measured at day 30.</strong>
+          38 % fewer "what's next" calls between planner and floor. Planner's daily replanning time down from ~75 min to ~25 min. No measurable change in operator throughput (yet) — operators tell us things <em>feel</em> calmer.
+        </div>
+      </div>
+
+      <h2 id="what-we-would-do-differently">What we'd do differently</h2>
+
+      <p>Two things, both small. <strong>One:</strong> we should have set up the issue queue on day one, not day eight. Demar's QA found three bend-tolerance issues in the first week that lived on a paper form and never made it to the system. That's data we'd want.</p>
+
+      <p>And <strong>two:</strong> we under-sold the customisation. Every shop has a "this is how <em>we</em> do it" detail — Demar wanted operator initials on every card, the next shop will want the cell name in the URL, the one after that will want a sound on overdue jobs. Build for these and stop treating them as edge cases.</p>
+
+      <p>If you're rolling out an MES this quarter, start with one cell. Then call us.</p>
+    </div>
+
+    <footer class="article-foot">
+      <div class="article-share">
+        <span>Share:</span>
+        <button class="article-share-btn">LinkedIn</button>
+        <button class="article-share-btn">X</button>
+        <button class="article-share-btn">Copy link</button>
+      </div>
+      <a class="article-next" href="#">
+        <span class="article-next-label">Up next</span>
+        <span class="article-next-h">Why we picked BSL 1.1 — and what that means for your shop</span>
+        <span class="article-next-meta">Luke van Enkhuizen · 6 min read</span>
+      </a>
+    </footer>
+  </article>
+
+  <aside class="article-toc">
+    <div class="article-toc-label">On this page</div>
+    <ol>
+      <li><a href="#day-one">Day one: the laser cell only</a></li>
+      <li><a href="#api-push">The API push from Oseon</a></li>
+      <li><a href="#week-two">Week two: the brake, weld, rest</a></li>
+      <li><a href="#what-we-would-do-differently">What we'd do differently</a></li>
+    </ol>
+  </aside>
+</div>
+
+</body>
+</html>

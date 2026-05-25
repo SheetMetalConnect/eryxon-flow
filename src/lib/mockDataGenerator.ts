@@ -243,60 +243,45 @@ export async function generateMockData(
     }
 
     reportProgress(3, 'operators');
-    // Note: pin_hash is left NULL - operators can set PINs later via UI if needed
+    // operatorIds holds PROFILE ids used to attribute historical mock records
+    // (time entries, quantity records, quality issues). Those columns FK to profiles,
+    // so they are attributed to existing tenant profiles. Shop-floor operators
+    // (PIN login) live in the separate `operators` table and are seeded below.
     let operatorIds: string[] = [];
     const operatorIdMap: Record<string, string> = {};
 
     if (options.includeOperators) {
       try {
-        const { data: existingOps } = await supabase
+        // Seed shop-floor operators into the supported no-email PIN path (`operators`).
+        // Idempotent RPC: employee IDs DEMO1-DEMO4, PIN 1234. Used by terminal login,
+        // verify_operator_pin, and assignments.shop_floor_operator_id.
+        const { data: seedResult, error: rpcError } = await supabase.rpc(
+          "seed_demo_operators",
+          {
+            p_tenant_id: tenantId,
+          },
+        );
+
+        if (rpcError) {
+          logger.warn('MockData', 'Operator seeding failed:', rpcError.message);
+        } else {
+          logger.debug(
+            'MockData',
+            `Shop-floor operators: ${seedResult?.[0]?.message ?? "seeded"}`,
+          );
+        }
+
+        // Attribute historical records to existing tenant profiles (FK to profiles).
+        const { data: tenantProfiles } = await supabase
           .from("profiles")
           .select("id, full_name")
-          .eq("tenant_id", tenantId)
-          .eq("role", "operator")
-          .like("email", "%@example.com");
+          .eq("tenant_id", tenantId);
 
-        if (existingOps && existingOps.length > 0) {
-          logger.debug('MockData', `${existingOps.length} demo operators already exist`);
-          operatorIds = existingOps.map((o) => o.id);
-          existingOps.forEach((o) => {
-            operatorIdMap[o.full_name] = o.id;
+        if (tenantProfiles && tenantProfiles.length > 0) {
+          operatorIds = tenantProfiles.map((p) => p.id);
+          tenantProfiles.forEach((p) => {
+            operatorIdMap[p.full_name] = p.id;
           });
-        } else {
-          // RPC handles auth.users constraint
-          const { error: rpcError } = await supabase.rpc(
-            "seed_demo_operators",
-            {
-              p_tenant_id: tenantId,
-            },
-          );
-
-          if (rpcError) {
-            logger.warn(
-              'MockData',
-              'Operator seeding skipped (requires auth setup):',
-              rpcError.message,
-            );
-            logger.debug(
-              'MockData',
-              'Demo will continue without operators (operations will be unassigned)',
-            );
-          } else {
-            const { data: createdOps } = await supabase
-              .from("profiles")
-              .select("id, full_name")
-              .eq("tenant_id", tenantId)
-              .eq("role", "operator")
-              .like("email", "%@example.com");
-
-            if (createdOps && createdOps.length > 0) {
-              operatorIds = createdOps.map((o) => o.id);
-              createdOps.forEach((o) => {
-                operatorIdMap[o.full_name] = o.id;
-              });
-              logger.debug('MockData', `Created ${createdOps.length} shop floor operators`);
-            }
-          }
         }
       } catch (err) {
         logger.warn('MockData', 'Operator setup failed, continuing without:', err);
@@ -1976,6 +1961,30 @@ export async function generateMockData(
       }
     }
 
+    // Ensure the seeded tenant holds at least one assigned shop-floor operation so
+    // operator/terminal flows can be exercised. Idempotent; requires parts + a demo operator.
+    if (options.includeOperators) {
+      const { data: assignResult, error: assignSeedError } = await supabase.rpc(
+        "seed_demo_operator_assignment",
+        {
+          p_tenant_id: tenantId,
+        },
+      );
+
+      if (assignSeedError) {
+        logger.warn(
+          'MockData',
+          'Operator assignment seeding warning:',
+          assignSeedError.message,
+        );
+      } else {
+        logger.debug(
+          'MockData',
+          `Operator assignment: ${assignResult?.[0]?.message ?? "seeded"}`,
+        );
+      }
+    }
+
     const { error: demoModeError } = await supabase.rpc("enable_demo_mode", {
       p_tenant_id: tenantId,
       p_user_id: null, // Could be passed from context if available
@@ -2067,6 +2076,15 @@ export async function clearMockData(
       .delete()
       .eq("tenant_id", tenantId);
     if (assignErr) logger.warn('MockData', 'Assignments deletion warning:', assignErr);
+
+    // Demo shop-floor operators (operators table, PIN login). Deleted after assignments
+    // because assignments.shop_floor_operator_id references operators(id).
+    const { error: demoOpsErr } = await supabase
+      .from("operators")
+      .delete()
+      .eq("tenant_id", tenantId)
+      .like("employee_id", "DEMO%");
+    if (demoOpsErr) logger.warn('MockData', 'Demo operators deletion warning:', demoOpsErr);
 
     const { error: substepsErr } = await supabase
       .from("substeps")

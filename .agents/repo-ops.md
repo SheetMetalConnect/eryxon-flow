@@ -37,9 +37,15 @@ codex/<description>           # Changes made by Codex agent
 dependabot/npm_and_yarn/...   # Dependabot auto-branches
 ```
 
+## Branch Routing And Use
+
+- Branch-creation and branch-use questions route to your manager, not the CEO.
+- Engineers may create a new working branch or use an existing shared branch when that keeps delivery moving.
+- Never push directly to `main`; all engineering changes must stay on non-`main` branches and land through PRs.
+
 ## PR Workflow
 
-1. Create a feature branch from `main`
+1. Create or select a non-`main` working branch from `main`
 2. Make changes and commit with conventional commit messages
 3. Push and create PR via `gh pr create`
 4. CodeRabbit and Vercel preview run automatically
@@ -57,12 +63,26 @@ chore: maintenance tasks
 
 ## Release Process
 
-Releases follow semantic versioning. Current version: **0.4.0**
+Releases follow semantic versioning. Current production version: **0.5.2**
+
+Production main-app releases follow the current biweekly release-train rule documented in
+`docs/2026-05-24-ery-88-release-cadence-repo-hygiene-and-trial-telemetry.md`. Use the
+scheduled train by default; treat off-cycle production work as a critical-hotfix exception only.
+
+The `Release` workflow (`.github/workflows/release.yml`) enforces this at execution time. The
+manual dispatch requires a `release_type` of `scheduled-train` or `critical-hotfix`, and the
+`declare` gate fails the run unless intent is consistent:
+
+- `scheduled-train` requires `train_date` (`YYYY-MM-DD`) and no hotfix reference.
+- `critical-hotfix` requires a sanitized `hotfix_reference` (e.g. `ERY-###`) and no train date.
+
+The declaration is echoed to the run summary and the published GitHub release notes for audit.
 
 1. Collect merged PRs since last release
 2. Update version in `package.json`
-3. Create a release PR summarizing changes
+3. Create a release PR summarizing changes (declare train-vs-hotfix in the PR template)
 4. Merge and tag with `vX.Y.Z`
+5. Dispatch the `Release` workflow with the matching `release_type` and declaration
 
 ## Issue Management
 
@@ -120,8 +140,9 @@ Dependabot creates automated PRs for dependency updates. These should be:
 
 ## Safety Rules
 
-- Always create PRs for significant changes (don't push directly to main for features)
-- Don't force-push to main
+- Always create PRs for significant changes from a non-`main` branch
+- Never push directly to `main`
+- Don't force-push to `main`
 - Don't delete branches that have open PRs
 - Check CI status before merging
 - Keep commit history clean with conventional commit messages

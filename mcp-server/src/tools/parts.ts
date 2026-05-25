@@ -12,10 +12,10 @@ import { createFetchTool, createUpdateTool } from "../utils/tool-factories.js";
 const { tool: fetchPartsTool, handler: fetchPartsHandler } = createFetchTool({
   tableName: 'parts',
   description: 'Fetch parts from the database with optional filters and pagination',
-  selectFields: '*, jobs(job_number, customer_name)',
+  selectFields: '*, jobs(job_number, customer)',
   filterFields: {
     job_id: schemas.id.optional(),
-    status: z.enum(['pending', 'in_progress', 'completed', 'on_hold']).optional(),
+    status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']).optional(),
   },
   orderBy: { column: 'created_at', ascending: false },
 });
@@ -27,8 +27,8 @@ const { tool: updatePartTool, handler: updatePartHandler } = createUpdateTool({
   resourceName: 'part',
   updateSchema: z.object({
     id: schemas.id,
-    status: z.enum(['pending', 'in_progress', 'completed', 'on_hold']).optional(),
-    current_stage_id: schemas.id.optional(),
+    status: z.enum(['not_started', 'in_progress', 'completed', 'on_hold']).optional(),
+    current_cell_id: schemas.id.optional(),
     drawing_no: z.string().optional(),
     cnc_program_name: z.string().optional(),
     is_bullet_card: z.boolean().optional(),

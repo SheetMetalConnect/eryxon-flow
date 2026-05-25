@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0; overflow: hidden;
+  background: #0a0e17;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #e6e9f0;
+}
+body {
+  width: 1600px; height: 900px;
+  display: grid;
+  grid-template-columns: 560px 1fr;
+}
+
+/* ---------- left panel ---------- */
+.left {
+  background:
+    radial-gradient(ellipse 80% 60% at 30% 30%, rgba(30, 144, 255, 0.20) 0%, transparent 60%),
+    linear-gradient(180deg, #0c1220 0%, #060912 100%);
+  padding: 72px 64px;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border-right: 1px solid #1a2030;
+}
+
+.brand-row {
+  display: inline-flex; align-items: center; gap: 16px;
+}
+.brand-row img { width: 52px; height: 52px; filter: drop-shadow(0 4px 18px rgba(30,144,255,0.4)); }
+.brand-row .name {
+  font: 600 32px/1 'Inter', sans-serif; letter-spacing: -0.02em; color: #fff;
+}
+.brand-row .name span { color: #9aa3b8; font-weight: 400; margin-left: 4px; }
+
+.left-body { display: flex; flex-direction: column; gap: 24px; }
+
+.kicker {
+  font: 600 17px/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: #7cc4ff;
+}
+
+.version {
+  font: 600 132px/1 'JetBrains Mono', monospace;
+  letter-spacing: -0.04em;
+  color: #fff;
+  text-shadow: 0 4px 60px rgba(30, 144, 255, 0.25);
+}
+
+.meta-row {
+  display: flex; align-items: center; gap: 12px;
+  font: 500 20px/1 'JetBrains Mono', monospace;
+  color: #9aa3b8;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-wrap: wrap;
+}
+.meta-row .sep { width: 5px; height: 5px; border-radius: 50%; background: #4a5468; }
+.meta-row .stable {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 12px; border-radius: 5px;
+  background: rgba(67, 196, 99, 0.12);
+  color: #43c463;
+  border: 1px solid rgba(67, 196, 99, 0.25);
+  font-size: 16px; letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.meta-row .stable-dot { width: 7px; height: 7px; border-radius: 50%; background: #43c463; box-shadow: 0 0 10px #43c463; }
+
+.summary {
+  font: 500 22px/1.5 'Inter', sans-serif;
+  color: #c2c8d6;
+  letter-spacing: -0.005em;
+  max-width: 400px;
+  margin-top: 8px;
+}
+
+.left-foot {
+  display: flex; flex-direction: column; gap: 8px;
+  font: 500 16px/1.5 'JetBrains Mono', monospace;
+  color: #6a7388;
+}
+.left-foot .url { color: #9aa3b8; }
+
+/* ---------- right panel ---------- */
+.right {
+  padding: 72px 72px 64px 64px;
+  display: flex; flex-direction: column; gap: 14px;
+  position: relative;
+}
+
+.list-h {
+  font: 600 16px/1 'JetBrains Mono', monospace;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: #6a7388;
+  margin-bottom: 12px;
+  display: flex; justify-content: space-between; align-items: baseline;
+}
+.list-h .count { color: #43c463; }
+
+.item {
+  display: grid; grid-template-columns: 108px 1fr;
+  gap: 28px;
+  padding: 22px 0;
+  border-bottom: 1px solid #1a2030;
+  align-items: baseline;
+}
+.item:last-child { border-bottom: none; }
+
+.tag {
+  font: 700 15px/1 'Inter', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 6px 0;
+  text-align: left;
+  width: 96px;
+}
+.tag.added   { color: #43c463; }
+.tag.fixed   { color: #7cc4ff; }
+.tag.changed { color: #fbbc05; }
+
+.item-body { min-width: 0; }
+.item-h {
+  font: 600 26px/1.3 'Inter', sans-serif;
+  letter-spacing: -0.012em;
+  color: #fff;
+}
+.item-b {
+  font: 400 18px/1.55 'Inter', sans-serif;
+  color: #9aa3b8;
+  margin-top: 8px;
+  letter-spacing: -0.005em;
+}
+.item-b code {
+  font: 500 16px/1 'JetBrains Mono', monospace;
+  padding: 3px 8px; border-radius: 5px;
+  background: #1a2030;
+  color: #c2c8d6;
+}
+</style>
+</head>
+<body data-screen-label="Social — X changelog">
+
+<aside class="left">
+  <div class="brand-row">
+    <img src="../../../assets/eryxon-mark-flat.svg" alt="" />
+    <span class="name">eryxon <span>flow</span></span>
+  </div>
+
+  <div class="left-body">
+    <span class="kicker">Changelog</span>
+    <div class="version">v0.5.1</div>
+    <div class="meta-row">
+      <span>24 May 2026</span>
+      <span class="sep"></span>
+      <span class="stable"><span class="stable-dot"></span>Stable</span>
+    </div>
+    <p class="summary">
+      Maintenance hotfix from rollouts at Demar Laser and Singeling. Five changes, no schema migration.
+    </p>
+  </div>
+
+  <div class="left-foot">
+    <span class="url">eryxon.eu/changelog</span>
+    <span>Read the full release notes →</span>
+  </div>
+</aside>
+
+<section class="right">
+  <div class="list-h">
+    <span>What's in this release</span>
+    <span><span class="count">4</span> &nbsp;changes</span>
+  </div>
+
+  <div class="item">
+    <span class="tag added">Added</span>
+    <div class="item-body">
+      <div class="item-h">Bulk reassign operations across cells</div>
+      <p class="item-b">Move up to 50 operations between cells in one action. Preserves sequence order and recalculates capacity in the same tick.</p>
+    </div>
+  </div>
+
+  <div class="item">
+    <span class="tag fixed">Fixed</span>
+    <div class="item-body">
+      <div class="item-h">Stuck time-entry recovery</div>
+      <p class="item-b">Tablets left on overnight no longer log 14 h actuals. Time entries auto-close at end-of-shift, configured per cell in <code>settings/cells</code>.</p>
+    </div>
+  </div>
+
+  <div class="item">
+    <span class="tag changed">Changed</span>
+    <div class="item-body">
+      <div class="item-h">Capacity bar over-100 % visualisation</div>
+      <p class="item-b">Cells over planned hours now show a separate red overflow segment instead of swapping the bar colour. Reads at a glance.</p>
+    </div>
+  </div>
+
+  <div class="item">
+    <span class="tag added">Added</span>
+    <div class="item-body">
+      <div class="item-h">Webhook signature verification</div>
+      <p class="item-b">HMAC-SHA256 signatures on every outbound webhook. Rotate signing keys without redeploys.</p>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

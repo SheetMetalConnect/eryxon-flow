@@ -291,17 +291,19 @@
       ]
     },
     "license": {
-      "title": "Lizenz (BSL 1.1)",
-      "tldr": "Nutzen, anpassen, selbst hosten. Nur nicht hosten und anderen Zugang verkaufen.",
-      "allowed": "Erlaubt",
-      "notAllowed": "Nicht erlaubt",
+      "title": "Lizenz (Apache 2.0)",
+      "tldr": "Vollständig Open Source. Nutzen, anpassen, selbst hosten und kommerziell einsetzen — ohne Einschränkungen.",
+      "allowed": "Sie dürfen",
+      "note": "Gut zu wissen",
       "allowedItems": {
-        "selfHost": "Self-Hosting für eigene Betriebe",
+        "selfHost": "Self-Hosting für eigene Betriebe, kostenlos",
         "modify": "Forken und anpassen für Ihre Bedürfnisse",
+        "commercial": "Kommerziell nutzen, auch für andere hosten",
         "consulting": "Nutzung für Entwicklung, Tests, Bildung"
       },
-      "notAllowedItems": {
-        "resell": "Hosten und als SaaS an andere verkaufen"
+      "noteItems": {
+        "attribution": "Lizenz- und Copyright-Hinweis in Kopien beibehalten",
+        "patent": "Enthält eine ausdrückliche Patentlizenz"
       }
     }
   },
@@ -400,5 +402,22 @@
   },
   "stuckTimeEntries": {
     "stopped": "Zeiterfassung erfolgreich gestoppt"
+  },
+  "pilotActivation": {
+    "title": "Pilot aktivieren",
+    "description": "Vom Demo-Datensatz zu einem Bediener, der zugewiesene Arbeit übernimmt — in drei Schritten.",
+    "progress": "{{completed}}/{{total}} erledigt",
+    "step1Title": "Teammitglied oder Bediener hinzufügen",
+    "step1Desc": "Lade ein Teammitglied per E-Mail ein oder erstelle einen Bediener ohne E-Mail mit PIN.",
+    "step1Cta": "Hinzufügen",
+    "step2Title": "Arbeitsgang zuweisen",
+    "step2Desc": "Wähle ein Teil und weise dessen Arbeitsgänge einem Bediener zu.",
+    "step2Cta": "Zuweisen",
+    "step3Title": "Bediener übernimmt die Arbeit",
+    "step3Desc": "Teile den Bediener-Login, damit die zugewiesene Arbeit in seiner Warteschlange erscheint.",
+    "step3Cta": "Login öffnen",
+    "refresh": "Status aktualisieren",
+    "readyTitle": "Pilot bereit 🎉",
+    "readyDescription": "Ein Bediener hat jetzt zugewiesene Arbeit — dieser Mandant erreichte den Pilot-Meilenstein."
   }
 }

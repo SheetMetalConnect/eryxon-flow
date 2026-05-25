@@ -73,6 +73,7 @@ export interface OperationWithDetails {
     id: string;
     part_number: string;
     material: string;
+    metadata?: Record<string, unknown> | null;
     quantity: number;
     parent_part_id: string | null;
     file_paths: string[] | null;
@@ -113,6 +114,7 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
         id,
         part_number,
         material,
+        metadata,
         quantity,
         parent_part_id,
         file_paths,

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+      Eryxon Flow network security policy.
+
+      Strategy (replaces the old enumerated-sample-IP list, ERY-71):
+
+        1. Release builds are HTTPS-only. There is NO blanket RFC1918 cleartext
+           exception, because Android's network-security-config cannot CIDR-match
+           and a hand-written list of sample IPs only ever covers a handful of the
+           shops that actually exist — it gives a false sense of coverage while
+           still widening the cleartext surface. A shop on 192.168.5.x was never
+           covered by the old list anyway.
+
+        2. Dev / live-reload uses `debug-overrides`, which Android applies ONLY to
+           debuggable builds. That lets `npm run android:livereload` and the
+           emulator (10.0.2.2) talk to a workstation or local Supabase over plain
+           HTTP during development without weakening any release artifact.
+
+        3. Self-hosting over plain HTTP on a real LAN is supported per-host: the
+           operator adds THEIR actual backend host to the template block below and
+           builds a custom release APK/AAB. This keeps least privilege (only the
+           one host the shop runs is exempt) and is honest about what ships.
+
+      Recommended for production self-hosting: front the on-prem host with TLS
+      (a reverse proxy + internal CA trusted via `<certificates src="user" />`,
+      or a real cert). Then no cleartext exception is needed at all.
+
+      See docs/ANDROID.md → "Self-hosted server URL" for the full procedure.
+    -->
+
+    <!-- Default policy: HTTPS only, system + user (e.g. internal CA) anchors. -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+      Debug builds only. Applies to `assembleDebug` / `android:livereload` and is
+      stripped from every release build by the Android toolchain. Covers loopback,
+      the emulator host bridges, and any workstation/LAN host used for live-reload
+      without enumerating them.
+    -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+
+    <!--
+      ============================================================================
+      SELF-HOST CLEARTEXT — per-host opt-in for a custom release build.
+
+      If your shop runs the Eryxon Flow backend over plain HTTP on the LAN and you
+      cannot put TLS in front of it, uncomment this block, replace the example
+      with YOUR backend host (hostname or fixed IP), and rebuild the release APK.
+      Add one <domain> per host. Do NOT commit a real customer host upstream.
+
+      <domain-config cleartextTrafficPermitted="true">
+          <domain includeSubdomains="false">flow.your-shop.lan</domain>
+          <domain includeSubdomains="false">192.168.1.50</domain>
+      </domain-config>
+      ============================================================================
+    -->
+</network-security-config>

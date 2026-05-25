@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================== */
+/*         Color Variables        */
+/* ============================== */
+@layer base {
+  :root {
+    --background: #f5f5f5;
+    --foreground: #1a1a1a;
+    --card: #ffffff;
+    --card-foreground: #1a1a1a;
+    --popover: #ffffff;
+    --popover-foreground: #1a1a1a;
+    --primary: #1f2937;
+    --primary-foreground: #ffffff;
+    --secondary: #374151;
+    --secondary-foreground: #ffffff;
+    --muted: #9ca3af;
+    --muted-foreground: #374151;
+    --accent: #2563eb;
+    --accent-foreground: #ffffff;
+    --destructive: #b91c1c;
+    --destructive-foreground: #ffffff;
+    --border: #d1d5db;
+    --input: #d1d5db;
+    --ring: #2563eb;
+    --radius: 0.5rem;
+  }
+
+  /* Use variables directly rather than @apply bg-background text-foreground */
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply transition-colors duration-300;
+  }
+}
+
+/* ============================== */
+/*       Industrial Styles        */
+/* ============================== */
+@layer components {
+  .border-steel { border-color: rgb(94, 94, 94); }
+  .text-steel { color: rgb(94, 94, 94); }
+  .bg-steel { background-color: rgb(94, 94, 94); }
+
+  .border-iron { border-color: rgb(54, 54, 54); }
+  .text-iron { color: rgb(54, 54, 54); }
+  .bg-iron { background-color: rgb(54, 54, 54); }
+
+  .border-metal { border-color: rgb(128, 128, 128); }
+  .text-metal { color: rgb(128, 128, 128); }
+  .bg-metal { background-color: rgb(128, 128, 128); }
+
+  /* ERYX Tier Colors */
+  .border-bronze { border-color: rgb(173, 138, 86); }
+  .text-bronze { color: rgb(173, 138, 86); }
+  .bg-bronze { background-color: rgb(173, 138, 86); }
+
+  .border-silver { border-color: rgb(160, 160, 160); }
+  .text-silver { color: rgb(160, 160, 160); }
+  .bg-silver { background-color: rgb(160, 160, 160); }
+
+  .border-gold { border-color: rgb(234, 179, 8); }
+  .text-gold { color: rgb(234, 179, 8); }
+  .bg-gold { background-color: rgb(234, 179, 8); }
+}
+
+/* ============================== */
+/*       Interactive Effects      */
+/* ============================== */
+@layer utilities {
+  .hover-lift { @apply transition-transform duration-300 hover:-translate-y-1; }
+  .hover-scale { @apply transition-transform duration-300 hover:scale-105; }
+  .hover-shadow { @apply transition-shadow duration-300 hover:shadow-md; }
+}
+
+
+
+/* ============================== */
+/*        Button Styles           */
+/* ============================== */
+@layer components {
+  .animated-button {
+    @apply transform transition-all duration-300 hover:scale-105 hover:shadow-md active:scale-95;
+  }
+}

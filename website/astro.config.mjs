@@ -20,9 +20,9 @@ export const locales = locals
 // https://astro.build/config
 export default defineConfig({
   site: site.url,
-  image: {
-    service: { entrypoint: "astro/assets/services/noop" },
-  },
+  // Use Astro's default Sharp image service. The previous `noop` service had no
+  // dev endpoint, so every <img> (docs screenshots + logos) returned HTTP 500
+  // under `astro dev` — images looked "lost" locally while building fine in prod.
   integrations: [
     starlight({
       title,

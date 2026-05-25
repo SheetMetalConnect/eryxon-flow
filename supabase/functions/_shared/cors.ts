@@ -16,8 +16,10 @@ function getAllowedOrigin(): string {
 
 export const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': getAllowedOrigin(),
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
   'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+  // Allow browser clients to read the request id for client/edge correlation.
+  'Access-Control-Expose-Headers': 'x-request-id',
 };
 
 export function handleCors(req: Request): Response | null {

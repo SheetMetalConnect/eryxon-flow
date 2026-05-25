@@ -42,14 +42,15 @@ FROM nginx:alpine
 
 # OCI image labels
 LABEL org.opencontainers.image.title="Eryxon Flow"
-LABEL org.opencontainers.image.description="Self-hosted planning and shop floor execution for job shops"
-LABEL org.opencontainers.image.version="0.5.0"
+LABEL org.opencontainers.image.description="Open-source planning and shop floor execution for job shops"
+LABEL org.opencontainers.image.version="0.6.0-dev"
 LABEL org.opencontainers.image.source="https://github.com/SheetMetalConnect/eryxon-flow"
 LABEL org.opencontainers.image.vendor="Eryxon"
-LABEL org.opencontainers.image.licenses="BSL-1.1"
+LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx-security-headers.conf /etc/nginx/conf.d/security-headers.conf
 
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html

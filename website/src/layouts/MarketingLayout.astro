@@ -1,0 +1,91 @@
+---
+/*
+ * MarketingLayout — page layout for marketing routes (ERY-56, Slice 1).
+ *
+ * Provides the canonical marketing page frame on top of BaseLayout:
+ *   - a sticky header (64px rhythm, hairline separation) with named `header` slot
+ *   - a centered content container (max 1200px, 16/24/32 padding steps)
+ *   - a product-centered footer region with named `footer` slot
+ *
+ * This slice ships the FRAME and slots only. Slice 2 (Website Engineer) drops in the real
+ * header nav, hero, feature grid, and footer content against this frame. The header/footer here
+ * are intentionally minimal placeholders so the foundation builds and proves the shell.
+ */
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Wordmark from "@/components/marketing/Wordmark.astro";
+import config from "@/config/config.json";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <slot name="head" slot="head" />
+
+  <header class="ery-header">
+    <div class="ery-container ery-header__inner">
+      <Wordmark href="/" />
+      <slot name="header">
+        <!-- Slice 2 replaces this with the real marketing nav + primary CTA. -->
+        <nav aria-label="Primary" class="ery-header__nav"></nav>
+      </slot>
+    </div>
+  </header>
+
+  <main id="main" class="ery-main">
+    <slot />
+  </main>
+
+  <footer class="ery-footer">
+    <div class="ery-container">
+      <slot name="footer">
+        <p class="ery-footer__legal" set:html={config.params.copyright} />
+      </slot>
+    </div>
+  </footer>
+</BaseLayout>
+
+<style>
+  /* Shared page-width container — global so every marketing page/component
+     (landing, roadmap, legal, …) inherits the same template width, not just
+     this layout's own header/footer. */
+  :global(.ery-container) {
+    max-inline-size: var(--ery-container-max);
+    margin-inline: auto;
+    padding-inline: var(--ery-pad-section);
+  }
+
+  .ery-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 50;
+    block-size: var(--ery-header-height);
+    background-color: var(--ery-surface);
+    border-block-end: 1px solid var(--ery-border);
+  }
+  .ery-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    block-size: 100%;
+  }
+
+  .ery-main {
+    min-block-size: 60vh;
+  }
+
+  .ery-footer {
+    border-block-start: 1px solid var(--ery-border);
+    padding-block: var(--ery-space-8);
+    background-color: var(--ery-surface-subtle);
+  }
+  .ery-footer__legal {
+    margin: 0;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+</style>

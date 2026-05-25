@@ -1,0 +1,23 @@
+---
+/*
+ * Localized privacy policy — `/nl/privacy/` and `/de/privacy/` (v0.6).
+ *
+ * Renders the shared `Legal.astro` with locale-specific privacy copy. `en` is the root locale,
+ * served by `pages/privacy/index.astro`.
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Legal from "@/components/marketing/Legal.astro";
+import { privacyCopy } from "@/lib/marketing-content";
+import type { Locale } from "@/lib/locale";
+
+export function getStaticPaths() {
+  return [{ params: { locale: "nl" } }, { params: { locale: "de" } }];
+}
+
+const locale = Astro.params.locale as Locale;
+const copy = privacyCopy(locale);
+---
+
+<SiteLayout title={copy.title} description={copy.description} locale={locale}>
+  <Legal copy={copy} />
+</SiteLayout>

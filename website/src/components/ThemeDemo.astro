@@ -45,9 +45,11 @@ const { darkImage, lightImage } = Astro.props;
       display: flex;
       justify-content: center;
       align-items: center;
-      background: rgba(255, 255, 255, 0.07);
-      box-shadow: 0px 48px 56px rgba(0, 0, 0, 0.32);
-      backdrop-filter: blur(16px);
+      /* Solid surface + hairline border, no glass/backdrop-blur or heavy
+         shadow, per the Eryxon design system. */
+      background: var(--sl-color-black);
+      border: 1px solid var(--sl-color-gray-5);
+      box-shadow: var(--sl-shadow-sm);
       border-radius: 600px;
     }
     .theme-switch {

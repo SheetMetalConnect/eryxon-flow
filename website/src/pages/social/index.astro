@@ -1,0 +1,485 @@
+---
+/*
+ * Social templates — `/social/` (v0.6, ported from the kit `ui_kits/marketing/social/`).
+ *
+ * Fixed-canvas image templates for social posts, ported faithfully from the design kit's
+ * antigravity-field social set: square (1080×1080), LinkedIn (1200×627), and an X changelog
+ * (1600×900). The shared "antigravity ambient field" backdrop, glass primitive, brand row,
+ * eyebrow pill, and per-template layouts are reproduced 1:1 from the kit.
+ *
+ * Content is honest per Luke's rules — the kit's fabricated proof is NOT reproduced:
+ *   - the kit's `square-stat` "38% fewer calls" metric is replaced with a true product fact
+ *     (56px touch targets), framed as a capability stat, not a customer-outcome claim;
+ *   - the kit's `linkedin-quote` "Luc Vermeer · Demar Laser" testimonial is replaced with a
+ *     neutral product-claim card (no person, no customer name);
+ *   - the kit's `x-changelog` "Demar Laser and Singeling" line is replaced with neutral
+ *     release framing. Real v0.6 changelog items are used.
+ *
+ * Each canvas keeps its true export pixel size; for on-screen preview it is scaled down with a
+ * CSS transform so the page is browsable. This route is a design/export surface, not indexed
+ * marketing — it is excluded from the sitemap is out of scope here, but it carries noindex.
+ */
+import { Image } from "astro:assets";
+import markFlat from "@/assets/eryxon-mark-flat.svg";
+
+const templates = [
+  { id: "square-claim", label: "Square — claim", w: 1080, h: 1080 },
+  { id: "square-stat", label: "Square — capability stat", w: 1080, h: 1080 },
+  { id: "li-announcement", label: "LinkedIn — announcement", w: 1200, h: 627 },
+  { id: "li-feature", label: "LinkedIn — operator feature", w: 1200, h: 627 },
+  { id: "li-claim", label: "LinkedIn — product claim", w: 1200, h: 627 },
+  { id: "x-changelog", label: "X — changelog", w: 1600, h: 900 },
+];
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Social templates — Eryxon Flow</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+  </head>
+  <body>
+    <header class="page-head">
+      <h1>Eryxon Flow — social templates</h1>
+      <p>
+        Fixed-canvas templates ported from the design kit. Each canvas is rendered at its true
+        export size and scaled to fit the page. Honest content only — no fabricated proof, no
+        customer names.
+      </p>
+    </header>
+
+    <main class="gallery">
+      {
+        templates.map((t) => (
+          <figure class="frame">
+            <figcaption>
+              {t.label} · {t.w}×{t.h}
+            </figcaption>
+            <div class="scaler" style={`--cw:${t.w}px; --ch:${t.h}px;`}>
+              <div class:list={["canvas", `c-${t.id}`]} style={`width:${t.w}px;height:${t.h}px;`}>
+                {/* ----- square-claim ----- */}
+                {t.id === "square-claim" && (
+                  <>
+                    <div class="top-row">
+                      <div class="brand-row">
+                        <Image src={markFlat} class="mark" alt="" width={40} height={40} />
+                        <span class="name">eryxon <span>flow</span></span>
+                      </div>
+                      <span class="eyebrow"><span class="eyebrow-dot" />A short read</span>
+                    </div>
+                    <h2 class="claim">Why job shops keep running <em>off whiteboards.</em></h2>
+                    <span class="swipe">Swipe → 6 slides</span>
+                  </>
+                )}
+
+                {/* ----- square-stat (capability, not customer outcome) ----- */}
+                {t.id === "square-stat" && (
+                  <>
+                    <div class="top-row">
+                      <div class="brand-row">
+                        <Image src={markFlat} class="mark" alt="" width={40} height={40} />
+                        <span class="name">eryxon <span>flow</span></span>
+                      </div>
+                      <span class="eyebrow"><span class="eyebrow-dot" />Built for the floor</span>
+                    </div>
+                    <div class="center">
+                      <div class="stat-num">56<span class="pct">px</span></div>
+                      <div class="stat-label">
+                        Touch targets sized for gloved hands on a shop-floor tablet. Glanceable from a metre away.
+                      </div>
+                    </div>
+                    <div class="footer-row">
+                      <span class="tag-line">See the operator terminal <span class="sep" /> eryxon.eu</span>
+                      <span class="url-tag">eryxon.eu</span>
+                    </div>
+                  </>
+                )}
+
+                {/* ----- LinkedIn announcement ----- */}
+                {t.id === "li-announcement" && (
+                  <>
+                    <div class="top-row">
+                      <div class="brand-row">
+                        <Image src={markFlat} class="mark" alt="" width={40} height={40} />
+                        <span class="name">eryxon <span>flow</span></span>
+                      </div>
+                      <span class="eyebrow"><span class="eyebrow-dot" />Now in Beta</span>
+                    </div>
+                    <div class="center">
+                      <div class="release-badge">
+                        <span class="ver">v0.6</span>
+                        <span class="dot" />
+                        <span class="stable">Beta</span>
+                      </div>
+                      <h2 class="lead">A calm MES for job shops <span class="accent">that ship.</span></h2>
+                    </div>
+                    <div class="bottom-row">
+                      <span class="url-tag">eryxon.eu</span>
+                      <span class="tag-line">Self-hostable <span class="sep" /> Made in Europe</span>
+                    </div>
+                  </>
+                )}
+
+                {/* ----- LinkedIn operator feature ----- */}
+                {t.id === "li-feature" && (
+                  <>
+                    <div class="left">
+                      <div class="brand-row">
+                        <Image src={markFlat} class="mark" alt="" width={40} height={40} />
+                        <span class="name">eryxon <span>flow</span></span>
+                      </div>
+                      <span class="eyebrow" style="align-self:flex-start"><span class="eyebrow-dot" />Operator view</span>
+                      <h2 class="feature-h">Glance from a metre. <span class="accent">Tap to start.</span></h2>
+                      <div class="feature-foot"><span class="url-tag">eryxon.eu</span></div>
+                    </div>
+                    <div class="device">
+                      <div class="device-head">
+                        <span class="device-cell">● Laser cutting</span>
+                        <span>19:46</span>
+                      </div>
+                      <h3>Work queue</h3>
+                      <div class="pcard">
+                        <div class="stripe" style="background:#fbbc05" />
+                        <div class="body">
+                          <div class="row"><span class="wo">WO-4218</span><span class="ptag" style="background:rgba(251,188,5,.18);color:#fbbc05">TODAY</span></div>
+                          <div class="t">Laser cut</div>
+                          <div class="m">PN-902-A · Stainless 304</div>
+                        </div>
+                      </div>
+                      <div class="pcard">
+                        <div class="stripe" style="background:#f97316" />
+                        <div class="body">
+                          <div class="row"><span class="wo">WO-4221</span><span class="ptag" style="background:rgba(234,67,53,.18);color:#ea4335">OVERDUE</span></div>
+                          <div class="t">Press brake bend</div>
+                          <div class="m">PN-887 · Aluminium</div>
+                        </div>
+                      </div>
+                      <div class="pcard">
+                        <div class="stripe" style="background:#5a5a5a" />
+                        <div class="body">
+                          <div class="row"><span class="wo">WO-4225</span><span class="ptag" style="background:rgba(249,115,22,.18);color:#f97316">SOON</span></div>
+                          <div class="t">TIG weld assembly</div>
+                          <div class="m">PN-1021 · Mild steel</div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ----- LinkedIn product claim (was the fabricated testimonial) ----- */}
+                {t.id === "li-claim" && (
+                  <>
+                    <div class="top-row">
+                      <div class="brand-row">
+                        <Image src={markFlat} class="mark" alt="" width={40} height={40} />
+                        <span class="name">eryxon <span>flow</span></span>
+                      </div>
+                      <span class="eyebrow"><span class="eyebrow-dot" />What it does</span>
+                    </div>
+                    <div class="quote-card glass">
+                      <div class="qmark">"</div>
+                      <blockquote class="quote-text">
+                        One tablet per cell. The operator sees the next job, taps to start, and the
+                        planner watches capacity <em>without chasing whiteboards.</em>
+                      </blockquote>
+                      <div class="quote-foot">
+                        <span class="url-tag">eryxon.eu · open source under Apache 2.0</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* ----- X changelog ----- */}
+                {t.id === "x-changelog" && (
+                  <>
+                    <aside class="left">
+                      <div class="brand-row">
+                        <Image src={markFlat} class="mark" alt="" width={52} height={52} />
+                        <span class="name">eryxon <span>flow</span></span>
+                      </div>
+                      <div class="left-body">
+                        <span class="kicker">Changelog</span>
+                        <div class="version">v0.6</div>
+                        <div class="meta-row">
+                          <span>24 May 2026</span>
+                          <span class="sep" />
+                          <span class="beta"><span class="beta-dot" />Beta</span>
+                        </div>
+                        <p class="summary">
+                          Native mobile scanning and operator previews land in the app, alongside the
+                          hosted trial reporting pack.
+                        </p>
+                      </div>
+                      <div class="left-foot">
+                        <span class="url">eryxon.eu/release-notes</span>
+                        <span>Read the full release notes →</span>
+                      </div>
+                    </aside>
+                    <section class="right">
+                      <div class="list-h">
+                        <span>What's in this release</span>
+                        <span><span class="count">3</span> &nbsp;changes</span>
+                      </div>
+                      <div class="item">
+                        <span class="ctag added">Added</span>
+                        <div class="item-body">
+                          <div class="item-h">Pilot activation card on onboarding</div>
+                          <p class="item-b">New evaluators land on a single activation card that walks through the first work order.</p>
+                        </div>
+                      </div>
+                      <div class="item">
+                        <span class="ctag added">Added</span>
+                        <div class="item-body">
+                          <div class="item-h">Hosted trial reporting pack</div>
+                          <p class="item-b">Trial usage is summarised for evaluators, so a pilot can be reviewed without exporting raw data.</p>
+                        </div>
+                      </div>
+                      <div class="item">
+                        <span class="ctag changed">Changed</span>
+                        <div class="item-body">
+                          <div class="item-h">Operator preview touch targets</div>
+                          <p class="item-b">Operator preview frames now use the 56px touch target across phone and tablet runtimes.</p>
+                        </div>
+                      </div>
+                    </section>
+                  </>
+                )}
+              </div>
+            </div>
+          </figure>
+        ))
+      }
+    </main>
+
+    <style>
+      /* ===== Kit fonts + tokens (social uses the kit's literal HSL token set) ===== */
+      :root {
+        --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        --font-mono: "JetBrains Mono", "SF Mono", Monaco, "Cascadia Code", Consolas, monospace;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: #060912;
+        color: #f5f7fb;
+        font-family: var(--font-sans);
+        padding: 48px 24px 96px;
+      }
+      .page-head { max-width: 880px; margin: 0 auto 48px; }
+      .page-head h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; margin: 0 0 12px; }
+      .page-head p { color: rgba(255, 255, 255, 0.6); line-height: 1.55; margin: 0; font-size: 15px; }
+
+      .gallery {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 56px;
+      }
+      .frame figcaption {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.45);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 14px;
+      }
+      /* Scale each true-size canvas down to fit the column. */
+      .scaler {
+        width: 100%;
+        aspect-ratio: var(--cw) / var(--ch);
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .scaler .canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform-origin: top left;
+        /* Scale = container width / true canvas width. The container is the column width;
+           we use container-query-free math via a CSS variable set per item below. */
+      }
+
+      /* ===== Antigravity ambient field (kit social shared) ===== */
+      .canvas {
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        background:
+          radial-gradient(ellipse 60% 50% at 22% 28%, rgba(30, 144, 255, 0.32) 0%, transparent 60%),
+          radial-gradient(ellipse 50% 40% at 88% 78%, rgba(99, 102, 241, 0.22) 0%, transparent 55%),
+          radial-gradient(ellipse 80% 60% at 50% 110%, rgba(14, 116, 144, 0.2) 0%, transparent 60%),
+          linear-gradient(180deg, #0a1020 0%, #060912 100%);
+        color: #f5f7fb;
+        font-family: var(--font-sans);
+      }
+      .canvas::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+          radial-gradient(circle at 12% 18%, rgba(255, 255, 255, 0.5) 0, transparent 1px),
+          radial-gradient(circle at 78% 32%, rgba(255, 255, 255, 0.4) 0, transparent 1px),
+          radial-gradient(circle at 36% 64%, rgba(255, 255, 255, 0.35) 0, transparent 1px),
+          radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.6) 0, transparent 1px),
+          radial-gradient(circle at 22% 88%, rgba(255, 255, 255, 0.3) 0, transparent 1px),
+          radial-gradient(circle at 92% 56%, rgba(255, 255, 255, 0.45) 0, transparent 1px);
+        opacity: 0.6;
+        pointer-events: none;
+      }
+      .canvas > * { position: relative; z-index: 1; }
+
+      .brand-row { display: inline-flex; align-items: center; gap: 12px; }
+      .brand-row .mark { width: 40px; height: 40px; filter: drop-shadow(0 4px 18px rgba(30, 144, 255, 0.4)); }
+      .brand-row .name { font: 600 24px/1 var(--font-sans); letter-spacing: -0.02em; color: #fff; }
+      .brand-row .name span { color: rgba(255, 255, 255, 0.55); font-weight: 400; margin-left: 4px; }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        font: 600 13px/1 var(--font-mono);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #7cc4ff;
+        background: rgba(30, 144, 255, 0.12);
+        border: 1px solid rgba(30, 144, 255, 0.3);
+        border-radius: 999px;
+        white-space: nowrap;
+      }
+      .eyebrow-dot { width: 6px; height: 6px; border-radius: 50%; background: #7cc4ff; box-shadow: 0 0 8px #7cc4ff; }
+      .url-tag { white-space: nowrap; font: 500 14px/1 var(--font-mono); color: rgba(255, 255, 255, 0.5); }
+      .tag-line { display: inline-flex; align-items: center; gap: 10px; font: 500 14px/1 var(--font-mono); color: rgba(255, 255, 255, 0.55); white-space: nowrap; }
+      .tag-line .sep, .meta-row .sep { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, 0.3); }
+      .glass {
+        background: rgba(20, 28, 48, 0.55);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      /* ===== Square (1080) ===== */
+      .c-square-claim, .c-square-stat { padding: 88px; justify-content: space-between; }
+      .c-square-claim .top-row, .c-square-stat .top-row { display: flex; justify-content: space-between; align-items: center; }
+      .claim {
+        font-size: 104px; font-weight: 600; letter-spacing: -0.04em; line-height: 0.98;
+        color: #fff; max-width: 920px; text-wrap: balance; margin: 0;
+        text-shadow: 0 8px 80px rgba(30, 144, 255, 0.25);
+      }
+      .claim em {
+        font-style: normal;
+        background: linear-gradient(135deg, #4a9eff, #7cc4ff);
+        -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      }
+      .swipe {
+        display: inline-flex; align-items: center; gap: 12px; align-self: flex-start;
+        font: 600 16px/1 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: #fff;
+        padding: 16px 28px; border-radius: 999px;
+        background: rgba(30, 144, 255, 0.15); border: 1px solid rgba(30, 144, 255, 0.4);
+      }
+      .c-square-stat .center { display: flex; flex-direction: column; gap: 32px; }
+      .stat-num { font: 600 280px/0.92 var(--font-sans); letter-spacing: -0.05em; color: #fff; font-feature-settings: "tnum"; text-shadow: 0 8px 80px rgba(30, 144, 255, 0.4); }
+      .stat-num .pct {
+        font-size: 96px; letter-spacing: -0.03em; margin-left: 12px;
+        background: linear-gradient(135deg, #4a9eff, #7cc4ff);
+        -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      }
+      .stat-label { font-size: 32px; font-weight: 500; letter-spacing: -0.015em; line-height: 1.3; max-width: 800px; text-wrap: balance; color: rgba(255, 255, 255, 0.85); }
+      .c-square-stat .footer-row { display: flex; justify-content: space-between; align-items: center; font-size: 16px; }
+
+      /* ===== LinkedIn (1200×627) ===== */
+      .c-li-announcement, .c-li-claim { padding: 56px 64px; justify-content: space-between; }
+      .c-li-announcement .top-row, .c-li-claim .top-row { display: flex; justify-content: space-between; align-items: center; }
+      .c-li-announcement .center { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 880px; }
+      .release-badge { display: inline-flex; align-items: center; gap: 10px; align-self: flex-start; font: 600 14px/1 var(--font-mono); color: #7cc4ff; letter-spacing: 0.08em; margin-bottom: 28px; }
+      .release-badge .ver { padding: 6px 12px; border-radius: 6px; background: rgba(30, 144, 255, 0.15); border: 1px solid rgba(30, 144, 255, 0.35); }
+      .release-badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #f9bc41; box-shadow: 0 0 12px #f9bc41; }
+      .release-badge .stable, .release-badge .beta { color: #f9bc41; text-transform: uppercase; font-size: 12px; letter-spacing: 0.1em; }
+      .lead { font-size: 64px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.02; text-wrap: balance; color: #fff; margin: 0; text-shadow: 0 4px 60px rgba(30, 144, 255, 0.25); }
+      .lead .accent, .feature-h .accent {
+        background: linear-gradient(135deg, #4a9eff 0%, #7cc4ff 100%);
+        -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+      }
+      .c-li-announcement .bottom-row { display: flex; justify-content: space-between; align-items: center; }
+
+      .c-li-feature { padding: 56px 64px; flex-direction: row; gap: 48px; align-items: center; }
+      .c-li-feature .left { flex: 0 0 460px; display: flex; flex-direction: column; gap: 24px; }
+      .feature-h { font-size: 48px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; color: #fff; margin: 0; text-wrap: balance; }
+      .feature-foot { display: flex; gap: 12px; align-items: center; padding-top: 4px; }
+      .device {
+        flex: 1; position: relative; max-width: 600px; aspect-ratio: 16/11;
+        background: rgba(8, 12, 24, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px;
+        padding: 22px; display: flex; flex-direction: column; gap: 14px;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        transform: perspective(1400px) rotateY(-6deg) rotateX(2deg);
+      }
+      .device-head { display: flex; justify-content: space-between; align-items: center; font: 500 12px/1 var(--font-mono); color: rgba(255, 255, 255, 0.55); }
+      .device-cell { padding: 4px 10px; border-radius: 99px; background: rgba(30, 144, 255, 0.18); color: #7cc4ff; font-size: 12px; white-space: nowrap; }
+      .device h3 { margin: 4px 0; font-size: 18px; font-weight: 600; color: #fff; letter-spacing: -0.01em; }
+      .pcard { display: flex; border-radius: 8px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); overflow: hidden; }
+      .pcard .stripe { width: 4px; }
+      .pcard .body { padding: 10px 14px; flex: 1; }
+      .pcard .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+      .pcard .wo { font: 500 11px/1 var(--font-mono); color: rgba(255, 255, 255, 0.5); white-space: nowrap; flex-shrink: 0; }
+      .pcard .ptag { font: 700 9px/1 var(--font-sans); letter-spacing: 0.06em; padding: 2px 5px; border-radius: 3px; }
+      .pcard .t { font: 600 13px/1.3 var(--font-sans); color: #fff; margin-top: 4px; }
+      .pcard .m { font-size: 11px; color: rgba(255, 255, 255, 0.45); margin-top: 3px; }
+
+      .quote-card { padding: 42px 48px; display: flex; flex-direction: column; gap: 24px; justify-content: center; }
+      .qmark { font: 600 88px/0.6 var(--font-sans); color: #4a9eff; }
+      .quote-text { font-size: 34px; font-weight: 500; letter-spacing: -0.015em; line-height: 1.3; color: #fff; margin: 0; text-wrap: balance; }
+      .quote-text em { color: #7cc4ff; font-style: normal; }
+      .quote-foot { display: flex; align-items: center; gap: 16px; }
+
+      /* ===== X changelog (1600×900) ===== */
+      .c-x-changelog { flex-direction: row; padding: 0; }
+      .c-x-changelog .left { flex: 0 0 560px; padding: 64px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid rgba(255, 255, 255, 0.08); }
+      .c-x-changelog .left .brand-row .mark { width: 52px; height: 52px; }
+      .kicker { font: 600 16px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.1em; color: #7cc4ff; }
+      .version { font: 600 96px/1 var(--font-sans); letter-spacing: -0.04em; color: #fff; margin-top: 16px; }
+      .meta-row { display: flex; align-items: center; gap: 14px; margin-top: 16px; font: 500 18px/1 var(--font-mono); color: rgba(255, 255, 255, 0.55); }
+      .meta-row .beta { display: inline-flex; align-items: center; gap: 8px; color: #f9bc41; }
+      .meta-row .beta-dot { width: 8px; height: 8px; border-radius: 50%; background: #f9bc41; box-shadow: 0 0 12px #f9bc41; }
+      .summary { font-size: 22px; line-height: 1.45; color: rgba(255, 255, 255, 0.8); margin-top: 28px; max-width: 420px; }
+      .left-foot { display: flex; flex-direction: column; gap: 8px; font: 500 16px/1.4 var(--font-mono); color: rgba(255, 255, 255, 0.5); }
+      .left-foot .url { color: #7cc4ff; }
+      .c-x-changelog .right { flex: 1; padding: 64px; display: flex; flex-direction: column; gap: 20px; }
+      .list-h { display: flex; justify-content: space-between; align-items: baseline; font: 600 15px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; color: rgba(255, 255, 255, 0.5); padding-bottom: 8px; }
+      .list-h .count { color: #fff; font-size: 22px; }
+      .item { display: flex; gap: 20px; align-items: flex-start; }
+      .ctag { flex-shrink: 0; font: 700 12px/1 var(--font-sans); letter-spacing: 0.06em; text-transform: uppercase; padding: 7px 11px; border-radius: 6px; }
+      .ctag.added { background: rgba(67, 196, 99, 0.15); color: #43c463; }
+      .ctag.fixed { background: rgba(74, 158, 255, 0.15); color: #4a9eff; }
+      .ctag.changed { background: rgba(249, 188, 65, 0.15); color: #f9bc41; }
+      .item-h { font-size: 22px; font-weight: 600; color: #fff; letter-spacing: -0.01em; }
+      .item-b { font-size: 16px; line-height: 1.5; color: rgba(255, 255, 255, 0.6); margin: 6px 0 0; }
+    </style>
+
+    <script>
+      // Scale each true-size canvas to its container width (export stays true-size; preview fits).
+      function fit() {
+        document.querySelectorAll(".scaler").forEach((s) => {
+          const canvas = s.querySelector(".canvas");
+          if (!(canvas instanceof HTMLElement) || !(s instanceof HTMLElement)) return;
+          const trueW = parseFloat(canvas.style.width);
+          const scale = s.clientWidth / trueW;
+          canvas.style.transform = `scale(${scale})`;
+        });
+      }
+      window.addEventListener("resize", fit);
+      window.addEventListener("load", fit);
+      fit();
+    </script>
+  </body>
+</html>

@@ -1,3 +1,7 @@
 /* Eryxon MES - Main Stylesheet */
 /* Import the comprehensive design system */
 @import './styles/design-system.css';
+/* Tablet / Android shell overrides — safe-area, touch targets, sw600dp+ */
+@import './styles/mobile.css';
+/* iOS / iPadOS native-shell tuning — momentum scroll, dynamic-vh, dynamic type */
+@import './styles/mobile-ios.css';

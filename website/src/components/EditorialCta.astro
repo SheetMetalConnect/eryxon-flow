@@ -1,0 +1,120 @@
+---
+/*
+ * EditorialCta — the single intent-matched conversion block for editorial surfaces
+ * (ERY-72, Slice 3: blog posts + release notes).
+ *
+ * Per the ERY-54 messaging brief, an editorial CTA must MATCH article intent instead of
+ * defaulting to a generic sales push:
+ *   - docs    → send readers to the documentation entry surface
+ *   - trial   → send readers to the hosted trial / hosted app
+ *   - rollout → invite a managed-rollout conversation (only when the surface points to
+ *               implementation support)
+ *
+ * It reuses the preserved vendor-neutral CTA analytics contract (ERY-33): every link carries
+ * `data-cta-*` attributes, so clicks emit `website_cta_clicked` through the same adapter the
+ * rest of the site uses. No new tracking is introduced here.
+ */
+type Intent = "docs" | "trial" | "rollout";
+
+interface Props {
+  /** Conversion intent, sourced from the content model `ctaIntent`. */
+  intent: Intent;
+  /** Analytics surface, e.g. "blog_article" or "release_note". */
+  surface: string;
+  /** Optional heading override; defaults are intent-appropriate. */
+  heading?: string;
+  /** Optional supporting line override. */
+  body?: string;
+}
+
+const { intent, surface, heading, body } = Astro.props;
+
+/* Intent → primary action. Links point at existing, real destinations only (no invented routes). */
+const INTENTS: Record<
+  Intent,
+  { heading: string; body: string; label: string; href: string; ctaKind: string }
+> = {
+  docs: {
+    heading: "Keep reading the docs",
+    body: "The documentation walks through setup, configuration, and the supported workflows step by step.",
+    label: "Read the docs",
+    href: "/introduction/",
+    ctaKind: "docs",
+  },
+  trial: {
+    heading: "Try it on the hosted version",
+    body: "Open the hosted version and work through the same flow described here, with no local setup.",
+    label: "Open the hosted version",
+    href: "/getting-started/introduction/overview/",
+    ctaKind: "hosted_app",
+  },
+  rollout: {
+    heading: "Talk through a managed rollout",
+    body: "If you want help getting this live in your shop, start a managed-rollout conversation.",
+    label: "Start a managed rollout conversation",
+    href: "/managed-rollout/",
+    ctaKind: "rollout_page",
+  },
+};
+
+const cfg = INTENTS[intent];
+const ctaId = `${surface}_${intent}`;
+---
+
+<aside class="ery-editorial-cta" aria-label="Next step">
+  <div>
+    <h2 class="ery-editorial-cta__heading">{heading ?? cfg.heading}</h2>
+    <p class="ery-editorial-cta__body">{body ?? cfg.body}</p>
+  </div>
+  <a
+    class="ery-editorial-cta__btn"
+    href={cfg.href}
+    data-cta-id={ctaId}
+    data-cta-surface={surface}
+    data-cta-kind={cfg.ctaKind}
+  >
+    {cfg.label}
+  </a>
+</aside>
+
+<style>
+  .ery-editorial-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ery-space-5);
+    margin-block-start: var(--ery-space-12);
+    padding: var(--ery-space-8);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-lg);
+    background-color: var(--ery-surface-subtle);
+  }
+  .ery-editorial-cta__heading {
+    margin: 0 0 var(--ery-space-2);
+    font-size: var(--ery-text-xl);
+  }
+  .ery-editorial-cta__body {
+    margin: 0;
+    max-inline-size: 52ch;
+    color: var(--ery-text-muted);
+  }
+  .ery-editorial-cta__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--ery-touch-min);
+    padding-inline: var(--ery-space-6);
+    border-radius: var(--ery-radius-sm);
+    font-weight: 500;
+    white-space: nowrap;
+    background-color: var(--ery-brand);
+    color: var(--ery-brand-contrast);
+    border: 1px solid transparent;
+    transition: background-color var(--ery-motion-base) var(--ery-ease);
+  }
+  .ery-editorial-cta__btn:hover {
+    background-color: var(--ery-brand-hover);
+    color: var(--ery-brand-contrast);
+  }
+</style>

@@ -19,6 +19,10 @@ import { useProfile } from '@/hooks/useProfile';
 import { QueryKeys } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
 import {
+  buildProcessedMetadata,
+  type CADMetadataContext,
+} from '@/lib/cadProcessingMetadata';
+import {
   getCADConfig,
   getActiveBackendUrl,
   getActiveApiKey,
@@ -407,7 +411,8 @@ export function useCADProcessing() {
   const storeProcessedData = useCallback(async (
     partId: string,
     geometry: GeometryData | null,
-    pmi: PMIData | null
+    pmi: PMIData | null,
+    context: CADMetadataContext,
   ): Promise<void> => {
     // Scope metadata reads to the active tenant when available.
     let partQuery = supabase
@@ -420,20 +425,12 @@ export function useCADProcessing() {
     if (fetchError) throw fetchError;
 
     const currentMetadata = (part?.metadata as Record<string, unknown>) || {};
-    const updatedMetadata = {
-      ...currentMetadata,
-      ...(geometry && {
-        geometry_processed: true,
-        geometry_vertices: geometry.total_vertices,
-        geometry_faces: geometry.total_faces,
-        bounding_box: geometry.bounding_box,
-      }),
-      ...(pmi && {
-        pmi,
-        pmi_extracted_at: new Date().toISOString(),
-      }),
-      processed_at: new Date().toISOString(),
-    };
+    const updatedMetadata = buildProcessedMetadata(
+      currentMetadata,
+      geometry,
+      pmi,
+      context,
+    );
 
     // Note: We don't store the full geometry meshes in metadata
     // as they can be large. Instead, we could store in a separate
@@ -456,13 +453,21 @@ export function useCADProcessing() {
     partId: string,
     fileUrl: string,
     fileName: string,
-    options?: UseCADProcessingOptions
+    options?: UseCADProcessingOptions,
+    context?: { sourcePath?: string | null },
   ): Promise<CADProcessingResult> => {
     const result = await processCAD(fileUrl, fileName, options);
 
     if (result.success) {
       try {
-        await storeProcessedData(partId, result.geometry, result.pmi);
+        await storeProcessedData(partId, result.geometry, result.pmi, {
+          backendMode: getCADConfig().mode,
+          fileHash: result.file_hash,
+          fileName,
+          processedAt: new Date().toISOString(),
+          processingTimeMs: result.processing_time_ms,
+          sourcePath: context?.sourcePath ?? null,
+        });
         queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId) });
         queryClient.invalidateQueries({ queryKey: QueryKeys.parts.detail(partId) });
       } catch (error) {

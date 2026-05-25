@@ -99,13 +99,15 @@ export default function Pricing() {
               <ul className="space-y-1 text-muted-foreground">
                 <li>• {t("pricing.license.allowedItems.selfHost")}</li>
                 <li>• {t("pricing.license.allowedItems.modify")}</li>
+                <li>• {t("pricing.license.allowedItems.commercial")}</li>
                 <li>• {t("pricing.license.allowedItems.consulting")}</li>
               </ul>
             </div>
             <div>
-              <p className="font-medium text-red-500 mb-2">{t("pricing.license.notAllowed")}</p>
+              <p className="font-medium text-muted-foreground mb-2">{t("pricing.license.note")}</p>
               <ul className="space-y-1 text-muted-foreground">
-                <li>• {t("pricing.license.notAllowedItems.resell")}</li>
+                <li>• {t("pricing.license.noteItems.attribution")}</li>
+                <li>• {t("pricing.license.noteItems.patent")}</li>
               </ul>
             </div>
           </div>

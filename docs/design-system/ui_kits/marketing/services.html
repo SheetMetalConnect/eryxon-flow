@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Services / CTA template — Eryxon</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<link rel="stylesheet" href="./styles.css" />
+<style>
+/* ============================================================
+   Template-only styles — only the bits this page introduces over
+   the marketing kit. The rest re-uses tokens from styles.css.
+   ============================================================ */
+
+.svc-hero {
+  text-align: center;
+  padding: 80px 24px 32px;
+  max-width: 820px;
+  margin: 0 auto;
+}
+.svc-hero .mk-tag { margin-bottom: 18px; }
+.svc-hero h1 {
+  font-size: clamp(32px, 4.5vw, 48px);
+  font-weight: 600; letter-spacing: -0.025em; line-height: 1.1;
+  margin: 0 0 18px; text-wrap: balance;
+}
+.svc-hero p {
+  font-size: 18px; line-height: 1.55;
+  color: hsl(var(--fg-muted));
+  max-width: 620px; margin: 0 auto;
+}
+
+/* ---------- plan grid ---------- */
+.svc-plans {
+  max-width: 1180px; margin: 24px auto 64px;
+  padding: 0 24px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+}
+.svc-plan {
+  display: flex; flex-direction: column; gap: 18px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  position: relative;
+}
+.svc-plan.is-featured {
+  border-color: hsl(var(--brand) / 0.4);
+  box-shadow: 0 0 0 1px hsl(var(--brand) / 0.2), var(--shadow-md);
+}
+.svc-plan-flag {
+  position: absolute; top: -12px; left: 24px;
+  background: hsl(var(--brand)); color: #fff;
+  padding: 4px 10px; border-radius: var(--radius-full);
+  font: 600 11px/1 var(--font-sans); letter-spacing: 0.02em;
+}
+.svc-plan-head {
+  display: flex; align-items: center; gap: 10px;
+  font: 600 13px/1 var(--font-mono);
+  color: hsl(var(--fg-muted));
+  text-transform: uppercase; letter-spacing: 0.08em;
+}
+.svc-plan-dot { width: 8px; height: 8px; border-radius: 50%; background: hsl(var(--brand)); }
+.svc-plan-name { font-size: 22px; font-weight: 600; letter-spacing: -0.015em; margin: 0; }
+.svc-plan-price {
+  font: 600 38px/1 var(--font-sans);
+  letter-spacing: -0.03em;
+  font-feature-settings: 'tnum';
+}
+.svc-plan-price span { font-size: 14px; color: hsl(var(--fg-muted)); font-weight: 500; margin-left: 4px; }
+.svc-plan-sub { font-size: 13px; color: hsl(var(--fg-muted)); margin-top: -10px; }
+.svc-plan-divider { border: 0; height: 1px; background: hsl(var(--border)); margin: 4px 0; }
+.svc-plan-features {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 10px;
+  flex: 1;
+}
+.svc-plan-features li {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 14px; line-height: 1.5;
+}
+.svc-plan-features svg { color: hsl(var(--success)); flex-shrink: 0; margin-top: 2px; }
+.svc-plan-features li.muted { color: hsl(var(--fg-subtle)); }
+.svc-plan-features li.muted svg { color: hsl(var(--fg-subtle)); }
+
+/* ---------- comparison table ---------- */
+.svc-compare-wrap { max-width: 1180px; margin: 0 auto 80px; padding: 0 24px; }
+.svc-compare-head { text-align: center; max-width: 600px; margin: 0 auto 32px; }
+.svc-compare-eyebrow {
+  font: 600 12px/1 var(--font-mono);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: hsl(var(--brand-strong));
+  display: inline-block; margin-bottom: 12px;
+}
+.svc-compare-head h2 {
+  font-size: 28px; font-weight: 600; letter-spacing: -0.02em;
+}
+.svc-compare {
+  width: 100%; border-collapse: collapse;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  font-size: 14px;
+}
+.svc-compare th, .svc-compare td {
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 1px solid hsl(var(--border-subtle));
+  vertical-align: top;
+}
+.svc-compare thead th {
+  background: hsl(var(--surface-2));
+  font: 600 12px/1.3 var(--font-sans);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: hsl(var(--fg-muted));
+  border-bottom: 1px solid hsl(var(--border));
+}
+.svc-compare thead th.is-featured { color: hsl(var(--brand-strong)); }
+.svc-compare tbody tr:last-child td { border-bottom: none; }
+.svc-compare td.row-h {
+  font-weight: 500; color: hsl(var(--fg));
+  background: hsl(var(--surface-2) / 0.4);
+}
+.svc-compare td.row-h small { display: block; font-weight: 400; color: hsl(var(--fg-muted)); font-size: 12px; margin-top: 3px; }
+.svc-compare td.col-feat { background: hsl(var(--brand) / 0.04); }
+.svc-compare td .v-yes  { color: hsl(var(--success)); font-weight: 600; }
+.svc-compare td .v-no   { color: hsl(var(--fg-subtle)); }
+.svc-compare td .v-note { font-size: 12px; color: hsl(var(--fg-muted)); display: block; margin-top: 3px; }
+
+/* ---------- lead-capture form block ---------- */
+.svc-form-band {
+  background: hsl(var(--surface-2));
+  border-top: 1px solid hsl(var(--border));
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 80px 24px;
+}
+.svc-form-wrap {
+  max-width: 1080px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start;
+}
+.svc-form-head h2 {
+  font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.15;
+  text-wrap: balance; margin: 0 0 16px;
+}
+.svc-form-head p {
+  font-size: 16px; color: hsl(var(--fg-muted)); line-height: 1.55;
+  margin: 0 0 28px;
+}
+.svc-form-list {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.svc-form-list li {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 14px; color: hsl(var(--fg)); line-height: 1.5;
+}
+.svc-form-list svg { color: hsl(var(--brand)); flex-shrink: 0; margin-top: 2px; }
+
+.svc-form {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.svc-form-row { display: grid; gap: 6px; }
+.svc-form-row.split { grid-template-columns: 1fr 1fr; gap: 12px; }
+.svc-form label {
+  font: 500 13px/1 var(--font-sans);
+  color: hsl(var(--fg));
+}
+.svc-form .req { color: hsl(var(--danger)); }
+.svc-form input,
+.svc-form select,
+.svc-form textarea {
+  height: 42px; padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid hsl(var(--input-border));
+  background: hsl(var(--input-bg));
+  color: hsl(var(--fg));
+  font: 14px/1 var(--font-sans);
+  width: 100%; box-sizing: border-box;
+}
+.svc-form textarea { height: auto; padding: 10px 12px; min-height: 80px; resize: vertical; line-height: 1.5; }
+.svc-form input:focus-visible,
+.svc-form select:focus-visible,
+.svc-form textarea:focus-visible {
+  outline: 2px solid hsl(var(--ring)); outline-offset: 1px; border-color: hsl(var(--ring));
+}
+.svc-form .helper { font-size: 12px; color: hsl(var(--fg-muted)); margin-top: 4px; }
+
+.svc-form-radio {
+  display: grid; gap: 8px;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-md);
+  padding: 4px;
+  background: hsl(var(--surface));
+}
+.svc-form-radio label {
+  display: grid; grid-template-columns: 18px 1fr auto; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background var(--duration-base) var(--ease);
+}
+.svc-form-radio label:hover { background: hsl(var(--surface-2)); }
+.svc-form-radio input[type="radio"] {
+  width: 18px; height: 18px; appearance: none;
+  border: 2px solid hsl(var(--border-strong));
+  border-radius: 50%; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: pointer; background: hsl(var(--input-bg));
+}
+.svc-form-radio input[type="radio"]:checked {
+  border-color: hsl(var(--brand));
+  background: radial-gradient(circle, hsl(var(--brand)) 0 5px, hsl(var(--input-bg)) 6px);
+}
+.svc-form-radio .opt-label { font: 500 14px/1.3 var(--font-sans); color: hsl(var(--fg)); }
+.svc-form-radio .opt-sub { font-size: 12px; color: hsl(var(--fg-muted)); margin-top: 3px; line-height: 1.4; }
+.svc-form-radio .opt-tag {
+  font: 600 11px/1 var(--font-mono);
+  padding: 3px 8px; border-radius: var(--radius-full);
+  background: hsl(var(--surface-2));
+  color: hsl(var(--fg-muted));
+  white-space: nowrap;
+}
+.svc-form-radio .opt-tag.is-free { background: hsl(var(--success) / 0.12); color: hsl(var(--success)); }
+
+.svc-form-foot {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 12px;
+  border-top: 1px solid hsl(var(--border));
+  padding-top: 16px;
+  margin-top: 4px;
+}
+.svc-form-foot .legal { font-size: 12px; color: hsl(var(--fg-muted)); max-width: 280px; line-height: 1.4; }
+
+/* ---------- small trust row ---------- */
+.svc-trust {
+  max-width: 1080px; margin: 0 auto;
+  padding: 32px 24px 64px;
+  text-align: center;
+}
+.svc-trust-label {
+  font: 600 11px/1 var(--font-sans);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: hsl(var(--fg-subtle));
+  margin-bottom: 18px;
+}
+.svc-trust-row {
+  display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; align-items: center;
+}
+.svc-trust-row span {
+  font: 500 14px/1 var(--font-sans);
+  color: hsl(var(--fg-subtle));
+  letter-spacing: -0.005em;
+  opacity: 0.8;
+}
+
+@media (max-width: 980px) {
+  .svc-plans, .svc-form-wrap { grid-template-columns: 1fr; }
+  .svc-compare-wrap { overflow-x: auto; }
+  .svc-compare { min-width: 720px; }
+}
+</style>
+</head>
+<body class="mk-app" data-screen-label="Services \u2014 plans & lead capture (template)">
+
+<!-- ===== Header (shared marketing chrome) ===== -->
+<header class="mk-header">
+  <a class="mk-brand" href="#">
+    <img src="../../assets/eryxon-mark-light.svg" width="32" height="32" alt="" />
+    <span>eryxon</span>
+  </a>
+  <nav class="mk-nav">
+    <a href="#">Product</a>
+    <a href="./blog/index.html">Blog</a>
+    <a href="./blog/changelog.html">Changelog</a>
+    <a href="#" style="color: hsl(var(--fg))">Services</a>
+    <a href="#">Docs</a>
+  </nav>
+  <div class="mk-header-cta">
+    <a href="#" class="mk-link">Sign in</a>
+    <a href="#" class="mk-btn mk-btn-primary">Start free trial</a>
+  </div>
+</header>
+
+<!-- ===== Hero (placeholder copy) ===== -->
+<section class="svc-hero">
+  <span class="mk-tag">[ Eyebrow · category ]</span>
+  <h1>[ Page headline — two lines, sentence case ]</h1>
+  <p>[ One-paragraph lead. Sets the context for what's on the page — two short sentences max. ]</p>
+</section>
+
+<!-- ===== Plan grid — 3 tiers (self-host / hosted trial / managed) ===== -->
+<section class="svc-plans">
+  <article class="svc-plan">
+    <div class="svc-plan-head">
+      <span class="svc-plan-dot" style="background: hsl(var(--fg-subtle))"></span>
+      <span>Plan A</span>
+    </div>
+    <h3 class="svc-plan-name">[ Plan name ]</h3>
+    <div class="svc-plan-price">[ €0 ]<span>/ unit</span></div>
+    <div class="svc-plan-sub">[ One-line positioning ]</div>
+    <hr class="svc-plan-divider" />
+    <ul class="svc-plan-features">
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+    </ul>
+    <a class="mk-btn mk-btn-secondary mk-btn-block" href="#">[ Secondary CTA ]</a>
+  </article>
+
+  <article class="svc-plan is-featured">
+    <span class="svc-plan-flag">[ Featured tag ]</span>
+    <div class="svc-plan-head">
+      <span class="svc-plan-dot"></span>
+      <span>Plan B</span>
+    </div>
+    <h3 class="svc-plan-name">[ Plan name ]</h3>
+    <div class="svc-plan-price">[ €XX ]<span>/ month</span></div>
+    <div class="svc-plan-sub">[ One-line positioning ]</div>
+    <hr class="svc-plan-divider" />
+    <ul class="svc-plan-features">
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+    </ul>
+    <a class="mk-btn mk-btn-primary mk-btn-block" href="#form">[ Primary CTA ]</a>
+  </article>
+
+  <article class="svc-plan">
+    <div class="svc-plan-head">
+      <span class="svc-plan-dot" style="background: hsl(var(--warning))"></span>
+      <span>Plan C</span>
+    </div>
+    <h3 class="svc-plan-name">[ Plan name ]</h3>
+    <div class="svc-plan-price">[ Custom ]<span></span></div>
+    <div class="svc-plan-sub">[ One-line positioning ]</div>
+    <hr class="svc-plan-divider" />
+    <ul class="svc-plan-features">
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+      <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg><span>[ Feature line ]</span></li>
+    </ul>
+    <a class="mk-btn mk-btn-secondary mk-btn-block" href="#">[ Secondary CTA ]</a>
+  </article>
+</section>
+
+<!-- ===== Comparison table ===== -->
+<section class="svc-compare-wrap">
+  <div class="svc-compare-head">
+    <span class="svc-compare-eyebrow">[ Section eyebrow ]</span>
+    <h2>[ Comparison heading ]</h2>
+  </div>
+  <table class="svc-compare">
+    <thead>
+      <tr>
+        <th style="width: 30%">[ Feature ]</th>
+        <th>Plan A</th>
+        <th class="is-featured">Plan B</th>
+        <th>Plan C</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="row-h">[ Row heading ]<small>[ Optional secondary line ]</small></td>
+        <td><span class="v-yes">✓</span><span class="v-note">[ note ]</span></td>
+        <td class="col-feat"><span class="v-yes">✓</span><span class="v-note">[ note ]</span></td>
+        <td><span class="v-yes">✓</span><span class="v-note">[ note ]</span></td>
+      </tr>
+      <tr>
+        <td class="row-h">[ Row heading ]</td>
+        <td><span class="v-no">—</span></td>
+        <td class="col-feat"><span class="v-yes">✓</span></td>
+        <td><span class="v-yes">✓</span></td>
+      </tr>
+      <tr>
+        <td class="row-h">[ Row heading ]<small>[ qualifier ]</small></td>
+        <td><span class="v-yes">[ value ]</span></td>
+        <td class="col-feat"><span class="v-yes">[ value ]</span></td>
+        <td><span class="v-yes">[ value ]</span></td>
+      </tr>
+      <tr>
+        <td class="row-h">[ Row heading ]</td>
+        <td><span class="v-no">—</span></td>
+        <td class="col-feat"><span class="v-no">—</span></td>
+        <td><span class="v-yes">✓</span></td>
+      </tr>
+      <tr>
+        <td class="row-h">[ Row heading ]</td>
+        <td><span class="v-yes">✓</span></td>
+        <td class="col-feat"><span class="v-yes">✓</span></td>
+        <td><span class="v-yes">✓</span></td>
+      </tr>
+      <tr>
+        <td class="row-h">[ Row heading ]<small>[ qualifier ]</small></td>
+        <td><span class="v-yes">[ value ]</span></td>
+        <td class="col-feat"><span class="v-yes">[ value ]</span></td>
+        <td><span class="v-yes">[ value ]</span></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ===== Lead-capture form (the funnel entry) ===== -->
+<section class="svc-form-band" id="form">
+  <div class="svc-form-wrap">
+    <div class="svc-form-head">
+      <span class="mk-tag">[ Funnel eyebrow ]</span>
+      <h2 style="margin-top: 18px">[ Form headline — two lines ]</h2>
+      <p>[ Supporting paragraph explaining what happens after they submit. ]</p>
+      <ul class="svc-form-list">
+        <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>[ Step / promise ]</li>
+        <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>[ Step / promise ]</li>
+        <li><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>[ Step / promise ]</li>
+      </ul>
+    </div>
+
+    <form class="svc-form" onsubmit="event.preventDefault()">
+      <div class="svc-form-row split">
+        <div>
+          <label for="firstName">First name <span class="req">*</span></label>
+          <input id="firstName" type="text" placeholder="[ placeholder ]" />
+        </div>
+        <div>
+          <label for="lastName">Last name <span class="req">*</span></label>
+          <input id="lastName" type="text" placeholder="[ placeholder ]" />
+        </div>
+      </div>
+
+      <div class="svc-form-row">
+        <label for="email">Work email <span class="req">*</span></label>
+        <input id="email" type="email" placeholder="name@company.eu" />
+      </div>
+
+      <div class="svc-form-row split">
+        <div>
+          <label for="company">Company</label>
+          <input id="company" type="text" placeholder="[ placeholder ]" />
+        </div>
+        <div>
+          <label for="size">Shop size</label>
+          <select id="size">
+            <option>[ Select ]</option>
+            <option>1–10 operators</option>
+            <option>11–50 operators</option>
+            <option>50+ operators</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="svc-form-row">
+        <label>How would you like to start?</label>
+        <div class="svc-form-radio">
+          <label>
+            <input type="radio" name="path" checked />
+            <span>
+              <span class="opt-label">[ Option A — primary path ]</span>
+              <span class="opt-sub">[ One-line explanation ]</span>
+            </span>
+            <span class="opt-tag is-free">[ Tag ]</span>
+          </label>
+          <label>
+            <input type="radio" name="path" />
+            <span>
+              <span class="opt-label">[ Option B — secondary path ]</span>
+              <span class="opt-sub">[ One-line explanation ]</span>
+            </span>
+            <span class="opt-tag">[ Tag ]</span>
+          </label>
+          <label>
+            <input type="radio" name="path" />
+            <span>
+              <span class="opt-label">[ Option C — sales-led ]</span>
+              <span class="opt-sub">[ One-line explanation ]</span>
+            </span>
+            <span class="opt-tag">[ Tag ]</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="svc-form-row">
+        <label for="notes">Anything we should know? <span style="color:hsl(var(--fg-muted)); font-weight: 400">(optional)</span></label>
+        <textarea id="notes" placeholder="[ placeholder ]"></textarea>
+      </div>
+
+      <div class="svc-form-foot">
+        <span class="legal">[ Privacy / consent line. ]</span>
+        <button type="submit" class="mk-btn mk-btn-primary mk-btn-lg">[ Submit CTA ] →</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- ===== Trust row ===== -->
+<section class="svc-trust">
+  <div class="svc-trust-label">[ Trust line — logo-row label ]</div>
+  <div class="svc-trust-row">
+    <span>[ Customer 1 ]</span>
+    <span>[ Customer 2 ]</span>
+    <span>[ Customer 3 ]</span>
+    <span>[ Customer 4 ]</span>
+    <span>[ Customer 5 ]</span>
+    <span>[ Customer 6 ]</span>
+  </div>
+</section>
+
+<!-- ===== Footer (shared) ===== -->
+<footer class="mk-footer">
+  <div class="mk-footer-grid">
+    <div>
+      <div class="mk-brand mk-brand-foot">
+        <img src="../../assets/eryxon-mark-light.svg" width="28" height="28" alt="" />
+        <span>eryxon</span>
+      </div>
+      <p class="mk-footer-tag">[ Short footer descriptor — one sentence. ]</p>
+    </div>
+    <div>
+      <div class="mk-footer-h">Product</div>
+      <ul class="mk-footer-list"><li><a href="#">[ Link ]</a></li><li><a href="#">[ Link ]</a></li><li><a href="#">[ Link ]</a></li></ul>
+    </div>
+    <div>
+      <div class="mk-footer-h">Resources</div>
+      <ul class="mk-footer-list"><li><a href="#">[ Link ]</a></li><li><a href="#">[ Link ]</a></li><li><a href="#">[ Link ]</a></li></ul>
+    </div>
+    <div>
+      <div class="mk-footer-h">Company</div>
+      <ul class="mk-footer-list"><li><a href="#">[ Link ]</a></li><li><a href="#">[ Link ]</a></li><li><a href="#">[ Link ]</a></li></ul>
+    </div>
+  </div>
+  <div class="mk-footer-bot">
+    <span>© [ Year ] [ Company ]. [ Locale tag ].</span>
+    <span class="mk-footer-legal">
+      <a href="#">[ Legal link ]</a>
+      <a href="#">[ Legal link ]</a>
+      <a href="#">[ Legal link ]</a>
+    </span>
+  </div>
+</footer>
+
+</body>
+</html>

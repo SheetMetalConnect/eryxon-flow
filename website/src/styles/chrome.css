@@ -1,0 +1,234 @@
+/* ============================================================================
+   chrome.css — Starlight docs-chrome content surfaces (docs-chrome redesign).
+
+   Aligns the Markdown content surfaces rendered inside the docs shell — code
+   blocks, asides/callouts, tables, inline code, links — with the canonical
+   `--ery-*` token contract (tokens.css) and the marketing/editorial look.
+
+   SCOPE: docs content chrome only. Layout shell lives in PageFrame /
+   TwoColumnContent; tokens stay in tokens.css. No glass, no gradients, no orb
+   backgrounds — those motifs are retired by the canonical spec. Calm, precise,
+   light-first; brand blue is the only accent and never communicates status.
+   ============================================================================ */
+
+/* ---------------------------------------------------------------------------
+   CODE BLOCKS (Expressive Code)
+   ---------------------------------------------------------------------------
+   The kit defines a single dark code surface (#0a0a0a) on every theme — code
+   reads as a deliberately dark, calm panel against the light page, identical to
+   the marketing editorial code blocks. Pin the Expressive Code frame, terminal,
+   and editor backgrounds to the canonical code surface and give them a hairline
+   border + the 16px card radius. */
+.expressive-code {
+  --ec-codeBg: var(--ery-code-bg);
+  --ec-frm-edBg: var(--ery-code-bg);
+  --ec-frm-trmBg: var(--ery-code-bg);
+  --ec-frm-edActTabBg: var(--ery-code-bg);
+  --ec-frm-edActTabIndBtm: var(--ery-brand-on-dark);
+  --ec-frm-edTabBarBg: var(--ery-bg-dark);
+  --ec-frm-edTabBarBrdBtm: var(--ery-code-border);
+  --ec-frm-trmTtbBg: var(--ery-bg-dark);
+  --ec-frm-trmTtbBrdBtm: var(--ery-code-border);
+  --ec-frm-edTabBrdRad: var(--ery-radius-lg);
+  --ec-frm-frameBoxShdCssVal: none;
+  --ec-brdCol: var(--ery-code-border);
+  --ec-brdRad: var(--ery-radius-lg);
+}
+.expressive-code .frame {
+  border: 1px solid var(--ery-code-border);
+  border-radius: var(--ery-radius-lg);
+  box-shadow: none;
+}
+.expressive-code .frame pre {
+  border-radius: var(--ery-radius-lg);
+  background: var(--ery-code-bg);
+}
+/* Terminal / editor title bars sit flush on the dark surface. */
+.expressive-code .frame.is-terminal .header,
+.expressive-code .frame:not(.is-terminal) .header {
+  color: var(--ery-text-on-dark-muted);
+}
+/* Copy button reads on the dark surface. */
+.expressive-code .copy button {
+  background: var(--ery-surface-dark-2);
+  border-color: var(--ery-code-border);
+}
+
+/* ---------------------------------------------------------------------------
+   INLINE CODE
+   --------------------------------------------------------------------------- */
+.sl-markdown-content code:not(:where(.expressive-code *)) {
+  font-family: var(--ery-font-mono);
+  font-size: 0.9em;
+  padding: 0.15em 0.4em;
+  background: var(--ery-surface-subtle);
+  border: 1px solid var(--ery-border);
+  border-radius: var(--ery-radius-sm);
+  color: var(--ery-brand-hover);
+}
+:root[data-theme="dark"] .sl-markdown-content code:not(:where(.expressive-code *)) {
+  background: var(--ery-surface-dark-2);
+  border-color: var(--ery-border-dark);
+  color: var(--ery-brand-on-dark);
+}
+
+/* ---------------------------------------------------------------------------
+   LINKS in prose
+   --------------------------------------------------------------------------- */
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--ery-brand);
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  text-decoration-thickness: 2px;
+}
+:root[data-theme="dark"] .sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--ery-brand-on-dark);
+}
+
+/* ---------------------------------------------------------------------------
+   ASIDES / CALLOUTS
+   ---------------------------------------------------------------------------
+   Starlight ships purple `note` asides — purple is NOT in the Eryxon palette.
+   Remap the four aside kinds onto the canonical semantic hues:
+     note    -> info  (cyan-blue)
+     tip     -> success (green)
+     caution -> warning (amber)
+     danger  -> error (red)
+   Flat tinted fill + hairline border + square-ish accent icon chip, matching
+   the editorial `.callout` look. Calm, never celebratory. */
+.starlight-aside {
+  border: 1px solid var(--ery-border);
+  border-inline-start-width: 3px;
+  border-radius: var(--ery-radius-sm);
+  padding: var(--ery-space-4) var(--ery-space-5);
+  background: var(--ery-surface-subtle);
+  color: var(--ery-text);
+}
+.starlight-aside__title {
+  font-weight: 600;
+  font-size: var(--ery-text-sm);
+  letter-spacing: 0.01em;
+  display: flex;
+  align-items: center;
+  gap: var(--ery-space-2);
+}
+.starlight-aside__icon {
+  font-size: 1.1em;
+}
+.starlight-aside__content {
+  color: var(--ery-text-muted);
+  font-size: var(--ery-text-sm);
+  line-height: var(--ery-leading-snug);
+}
+.starlight-aside__content a {
+  color: inherit;
+  text-decoration: underline;
+}
+
+.starlight-aside--note {
+  background: color-mix(in srgb, var(--ery-info) 8%, var(--ery-surface));
+  border-color: color-mix(in srgb, var(--ery-info) 28%, var(--ery-border));
+  border-inline-start-color: var(--ery-info);
+}
+.starlight-aside--note .starlight-aside__title { color: var(--ery-info); }
+
+.starlight-aside--tip {
+  background: color-mix(in srgb, var(--ery-success) 8%, var(--ery-surface));
+  border-color: color-mix(in srgb, var(--ery-success) 28%, var(--ery-border));
+  border-inline-start-color: var(--ery-success);
+}
+.starlight-aside--tip .starlight-aside__title { color: var(--ery-success); }
+
+.starlight-aside--caution {
+  background: color-mix(in srgb, var(--ery-warning) 10%, var(--ery-surface));
+  border-color: color-mix(in srgb, var(--ery-warning) 30%, var(--ery-border));
+  border-inline-start-color: var(--ery-warning);
+}
+.starlight-aside--caution .starlight-aside__title { color: var(--ery-warning); }
+
+.starlight-aside--danger {
+  background: color-mix(in srgb, var(--ery-error) 8%, var(--ery-surface));
+  border-color: color-mix(in srgb, var(--ery-error) 28%, var(--ery-border));
+  border-inline-start-color: var(--ery-error);
+}
+.starlight-aside--danger .starlight-aside__title { color: var(--ery-error); }
+
+/* Dark theme: tint sits on the dark surface instead of white. */
+:root[data-theme="dark"] .starlight-aside {
+  background: var(--ery-surface-dark);
+  color: var(--ery-text-on-dark);
+}
+:root[data-theme="dark"] .starlight-aside__content { color: var(--ery-text-on-dark-muted); }
+:root[data-theme="dark"] .starlight-aside--note {
+  background: color-mix(in srgb, var(--ery-info) 14%, var(--ery-surface-dark));
+}
+:root[data-theme="dark"] .starlight-aside--tip {
+  background: color-mix(in srgb, var(--ery-success) 14%, var(--ery-surface-dark));
+}
+:root[data-theme="dark"] .starlight-aside--caution {
+  background: color-mix(in srgb, var(--ery-warning) 14%, var(--ery-surface-dark));
+}
+:root[data-theme="dark"] .starlight-aside--danger {
+  background: color-mix(in srgb, var(--ery-error) 14%, var(--ery-surface-dark));
+}
+
+/* ---------------------------------------------------------------------------
+   TABLES
+   ---------------------------------------------------------------------------
+   Hairline borders carry separation (borders first, shadows second). Subtle
+   header fill, zebra-free, tabular numerals for technical data. */
+.sl-markdown-content table:not(:where(.not-content *)) {
+  border: 1px solid var(--ery-border);
+  border-radius: var(--ery-radius-sm);
+  border-collapse: separate;
+  border-spacing: 0;
+  overflow: hidden;
+  font-size: var(--ery-text-sm);
+  font-variant-numeric: tabular-nums;
+  display: table;
+  width: 100%;
+}
+.sl-markdown-content th:not(:where(.not-content *)),
+.sl-markdown-content td:not(:where(.not-content *)) {
+  border: 0;
+  border-block-end: 1px solid var(--ery-border);
+  padding: var(--ery-space-3) var(--ery-space-4);
+  text-align: start;
+}
+.sl-markdown-content thead th:not(:where(.not-content *)) {
+  background: var(--ery-surface-subtle);
+  color: var(--ery-text);
+  font-weight: 600;
+  border-block-end: 1px solid var(--ery-border-strong);
+}
+.sl-markdown-content tbody tr:last-child td:not(:where(.not-content *)) {
+  border-block-end: 0;
+}
+.sl-markdown-content tbody td:not(:where(.not-content *)) {
+  color: var(--ery-text-muted);
+}
+:root[data-theme="dark"] .sl-markdown-content thead th:not(:where(.not-content *)) {
+  background: var(--ery-surface-dark-2);
+}
+
+/* ---------------------------------------------------------------------------
+   PROSE RHYTHM — list markers and blockquotes pick up the brand accent.
+   --------------------------------------------------------------------------- */
+.sl-markdown-content :is(ul, ol):not(:where(.not-content *)) li::marker {
+  color: var(--ery-brand);
+}
+:root[data-theme="dark"] .sl-markdown-content :is(ul, ol):not(:where(.not-content *)) li::marker {
+  color: var(--ery-brand-on-dark);
+}
+.sl-markdown-content blockquote:not(:where(.not-content *)) {
+  border-inline-start: 3px solid var(--ery-brand);
+  background: color-mix(in srgb, var(--ery-brand) 5%, transparent);
+  padding: var(--ery-space-4) var(--ery-space-5);
+  border-radius: 0 var(--ery-radius-sm) var(--ery-radius-sm) 0;
+  color: var(--ery-text-muted);
+}
+:root[data-theme="dark"] .sl-markdown-content blockquote:not(:where(.not-content *)) {
+  border-inline-start-color: var(--ery-brand-on-dark);
+}

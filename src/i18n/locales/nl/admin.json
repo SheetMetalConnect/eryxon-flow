@@ -546,17 +546,19 @@
       ]
     },
     "license": {
-      "title": "Licentie (BSL 1.1)",
-      "tldr": "Gebruik het, pas het aan, host het zelf. Host het alleen niet en vraag anderen geld voor toegang.",
-      "allowed": "Toegestaan",
-      "notAllowed": "Niet toegestaan",
+      "title": "Licentie (Apache 2.0)",
+      "tldr": "Volledig open source. Gebruik het, pas het aan, host het zelf en gebruik het commercieel — geen beperkingen.",
+      "allowed": "U mag",
+      "note": "Goed om te weten",
       "allowedItems": {
-        "selfHost": "Zelf hosten voor uw eigen activiteiten",
+        "selfHost": "Zelf hosten voor uw eigen activiteiten, gratis",
         "modify": "Fork en pas aan voor uw behoeften",
+        "commercial": "Commercieel gebruiken, inclusief hosten voor anderen",
         "consulting": "Gebruik voor ontwikkeling, testen, educatie"
       },
-      "notAllowedItems": {
-        "resell": "Hosten en verkopen als SaaS aan anderen"
+      "noteItems": {
+        "attribution": "Behoud de licentie- en copyrightvermelding in kopieën",
+        "patent": "Bevat een expliciete patentlicentie"
       }
     }
   },
@@ -592,11 +594,7 @@
     "viewGuide": "Bekijk Self-Hosting Handleiding",
     "needHelp": "Hulp Nodig?",
     "helpDescription": "Sheet Metal Connect e.U. kan u helpen bij het opzetten en aanpassen van Eryxon Flow voor uw activiteiten.",
-    "usageThisMonth": "Gebruik deze maand",
     "users": "Gebruikers",
-    "apiRequests": "API Verzoeken",
-    "today": "vandaag",
-    "requestsThisMonth": "verzoeken deze maand",
     "upgradeRequest": {
       "subject": "Upgrade Aanvraag: {{planName}}",
       "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"
@@ -661,5 +659,22 @@
   },
   "stuckTimeEntries": {
     "stopped": "Tijdregistratie succesvol gestopt"
+  },
+  "pilotActivation": {
+    "title": "Activeer je pilot",
+    "description": "Ga van demodata naar een operator die toegewezen werk oppakt — in drie stappen.",
+    "progress": "{{completed}}/{{total}} klaar",
+    "step1Title": "Voeg een teamlid of operator toe",
+    "step1Desc": "Nodig een teamlid uit via e-mail, of maak een operator zonder e-mail aan met een pincode.",
+    "step1Cta": "Toevoegen",
+    "step2Title": "Wijs een bewerking toe",
+    "step2Desc": "Kies een onderdeel en wijs de bewerkingen toe aan een operator.",
+    "step2Cta": "Toewijzen",
+    "step3Title": "Operator pakt het werk op",
+    "step3Desc": "Deel de operator-login zodat het toegewezen werk in hun werklijst verschijnt.",
+    "step3Cta": "Login openen",
+    "refresh": "Status vernieuwen",
+    "readyTitle": "Pilot gereed 🎉",
+    "readyDescription": "Een operator heeft nu toegewezen werk — deze omgeving bereikte de pilot-mijlpaal."
   }
 }

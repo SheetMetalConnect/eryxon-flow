@@ -1,0 +1,158 @@
+---
+/*
+ * Blog-post template (ERY-72, Slice 3) — `/blog/<slug>/`.
+ *
+ * Explicit, owned Astro article surface on the redesign foundation — NOT a docs variant.
+ * Structure and styling follow the canonical design-system kit
+ * (`ui_kits/marketing/blog/post.html` + `blog.css`): eyebrow, balanced headline, lead, rich
+ * author/date/reading meta, long-form `.article-body`, a sticky "On this page" TOC, and an
+ * end share + "up next" footer. Per the ERY-54 brief it teaches first, connects to metalworking
+ * job-shop work, and ends with ONE intent-matched CTA (EditorialCta, reusing the preserved
+ * `data-cta-*` analytics contract).
+ */
+import { getCollection, render } from "astro:content";
+import EditorialLayout from "@/layouts/EditorialLayout.astro";
+import EditorialCta from "@/components/EditorialCta.astro";
+import config from "@/config/config.json";
+import { readingMinutes, initials } from "@/lib/editorial";
+
+export async function getStaticPaths() {
+  const posts = (await getCollection("blog", ({ data }) => !data.draft)).sort(
+    (a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime()
+  );
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    // "Up next" = the next-older post, wrapping to newest.
+    props: { post, next: posts[(i + 1) % posts.length] },
+  }));
+}
+
+const { post, next } = Astro.props;
+const { Content, headings } = await render(post);
+const { title, description, author, authorRole, pubDate, category, tags, ctaIntent } = post.data;
+
+const toc = headings.filter((h) => h.depth === 2);
+const minutes = readingMinutes(post.body);
+const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "long" });
+
+const siteUrl = config.site.url.replace(/\/$/, "");
+const articleUrl = `${siteUrl}/blog/${post.id}/`;
+const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(articleUrl)}`;
+const shareX = `https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(title)}`;
+---
+
+<EditorialLayout title={`${title} — Eryxon Flow`} description={description}>
+  <div class:list={["article-shell", { "no-toc": toc.length === 0 }]}>
+    <article>
+      <header class="article-head">
+        <div class="article-eyebrow">
+          {category}
+          {tags.length > 0 && <span class="dot" />}
+          {tags[0]}
+        </div>
+        <h1 class="article-h1">{title}</h1>
+        <p class="article-lead">{description}</p>
+        <div class="article-meta">
+          <span class="article-author">
+            <span class="article-avatar">{initials(author)}</span>
+            <span>
+              <span class="article-author-name">{author}</span>
+              {authorRole && <span class="article-author-role">{authorRole}</span>}
+            </span>
+          </span>
+          <span class="article-meta-divider">·</span>
+          <time class="article-date" datetime={pubDate.toISOString()}>{dateFmt.format(pubDate)}</time>
+          <span class="article-meta-divider">·</span>
+          <span class="article-reading">{minutes} min read</span>
+          {
+            tags.length > 0 && (
+              <span class="article-tags">
+                {tags.map((t) => (
+                  <span class="article-tag">{t}</span>
+                ))}
+              </span>
+            )
+          }
+        </div>
+      </header>
+
+      <div class="article-body">
+        <Content />
+      </div>
+
+      <EditorialCta intent={ctaIntent} surface="blog_article" />
+
+      <footer class="article-foot">
+        <div class="article-share">
+          <span>Share:</span>
+          <a class="article-share-btn" href={shareLinkedIn} target="_blank" rel="noopener"
+            data-cta-id="blog_article_share_linkedin" data-cta-surface="blog_article" data-cta-kind="external">LinkedIn</a>
+          <a class="article-share-btn" href={shareX} target="_blank" rel="noopener"
+            data-cta-id="blog_article_share_x" data-cta-surface="blog_article" data-cta-kind="external">X</a>
+          <button class="article-share-btn" type="button" data-copy-link={articleUrl}>Copy link</button>
+        </div>
+        {
+          next && next.id !== post.id && (
+            <a class="article-next" href={`/blog/${next.id}/`}>
+              <span class="article-next-label">Up next</span>
+              <span class="article-next-h">{next.data.title}</span>
+              <span class="article-next-meta">
+                {next.data.author} · {readingMinutes(next.body)} min read
+              </span>
+            </a>
+          )
+        }
+      </footer>
+    </article>
+
+    {
+      toc.length > 0 && (
+        <aside class="article-toc">
+          <div class="article-toc-label">On this page</div>
+          <ol>
+            {toc.map((h) => (
+              <li>
+                <a href={`#${h.slug}`}>{h.text}</a>
+              </li>
+            ))}
+          </ol>
+        </aside>
+      )
+    }
+  </div>
+</EditorialLayout>
+
+<script>
+  // Copy-link share button + TOC scroll-spy. Progressive enhancement only.
+  document.querySelectorAll<HTMLButtonElement>("[data-copy-link]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const url = btn.dataset.copyLink;
+      if (!url) return;
+      try {
+        await navigator.clipboard.writeText(url);
+        const prev = btn.textContent;
+        btn.textContent = "Copied";
+        setTimeout(() => (btn.textContent = prev), 1500);
+      } catch {
+        /* clipboard unavailable — no-op */
+      }
+    });
+  });
+
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>(".article-toc a"));
+  if (links.length > 0) {
+    const byId = new Map(links.map((a) => [a.getAttribute("href")!.slice(1), a]));
+    const obs = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            links.forEach((a) => a.classList.remove("is-active"));
+            byId.get(e.target.id)?.classList.add("is-active");
+          }
+        }
+      },
+      { rootMargin: "-80px 0px -70% 0px" }
+    );
+    document.querySelectorAll(".article-body h2[id]").forEach((h) => obs.observe(h));
+  }
+</script>

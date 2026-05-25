@@ -28,7 +28,7 @@ import {
 import type { Request, Response } from "express";
 
 import { loadConfig, getModeDescription } from "./config.js";
-import { createClient } from "./clients/index.js";
+import { createClient, DirectSupabaseClient } from "./clients/index.js";
 import { createConfiguredRegistry } from "./tools/index.js";
 
 // Load configuration and detect mode
@@ -36,8 +36,13 @@ const config = loadConfig();
 console.error(`Eryxon Flow MCP Server v2.4.0`);
 console.error(`Mode: ${getModeDescription(config.mode)}`);
 
-// Create direct Supabase client
-const client = createClient(config);
+// Create direct Supabase client and extract a SupabaseClient for tool handlers.
+// Handlers call supabase.from() directly, so they need a raw-style client — but
+// the service-role key bypasses RLS, so getScopedClient() returns a tenant-scoped
+// wrapper when TENANT_ID is set (and the raw client otherwise). This keeps tool
+// queries constrained to the configured tenant instead of unscoped admin access.
+const unifiedClient = createClient(config);
+const supabaseClient = (unifiedClient as DirectSupabaseClient).getScopedClient();
 
 // Create and configure the tool registry with all modules
 const toolRegistry = createConfiguredRegistry();
@@ -82,11 +87,11 @@ function createMCPServer(): Server {
 
     try {
       // Execute the tool through the registry
-      // The client will handle the request appropriately based on mode
+      // Pass the raw SupabaseClient — tools call .from() directly
       const result = await toolRegistry.executeTool(
         name,
         (args as Record<string, unknown>) || {},
-        client as any // Tools still expect SupabaseClient type, but UnifiedClient is compatible
+        supabaseClient
       );
 
       return result as CallToolResult;

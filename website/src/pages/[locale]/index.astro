@@ -1,0 +1,24 @@
+---
+/*
+ * Localized homepage — `/nl/` and `/de/` (v0.6 locale buildout).
+ *
+ * Renders the same kit-faithful `Landing.astro` as the root `/` homepage, with locale-specific
+ * copy from `marketing-content.ts`. `en` is the root locale (no prefix) and is served by
+ * `pages/index.astro`, so only the prefixed locales are generated here.
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Landing from "@/components/marketing/Landing.astro";
+import { landingCopy } from "@/lib/marketing-content";
+import type { Locale } from "@/lib/locale";
+
+export function getStaticPaths() {
+  return [{ params: { locale: "nl" } }, { params: { locale: "de" } }];
+}
+
+const locale = Astro.params.locale as Locale;
+const c = landingCopy(locale);
+---
+
+<SiteLayout title={c.title} description={c.description} locale={locale}>
+  <Landing locale={locale} />
+</SiteLayout>

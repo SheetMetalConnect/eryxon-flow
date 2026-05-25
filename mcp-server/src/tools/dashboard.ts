@@ -9,6 +9,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { schemas, validateArgs } from "../utils/validation.js";
 import { structuredResponse, errorResponse } from "../utils/response.js";
+import { databaseError } from "../utils/errors.js";
 
 // Tool definitions
 const getDashboardStatsTool: Tool = {
@@ -72,17 +73,17 @@ function countByStatus<T extends { status?: string }>(
 const getDashboardStats: ToolHandler = async (_args: Record<string, unknown>, supabase: SupabaseClient) => {
   try {
     // Fetch multiple stats in parallel
-    const [jobsResult, partsResult, tasksResult, issuesResult] = await Promise.all([
-      supabase.from("jobs").select("status", { count: "exact", head: false }),
-      supabase.from("parts").select("status", { count: "exact", head: false }),
-      supabase.from("tasks").select("status", { count: "exact", head: false }),
+    const [jobsResult, partsResult, operationsResult, issuesResult] = await Promise.all([
+      supabase.from("jobs").select("status", { count: "exact", head: false }).is("deleted_at", null),
+      supabase.from("parts").select("status", { count: "exact", head: false }).is("deleted_at", null),
+      supabase.from("operations").select("status", { count: "exact", head: false }).is("deleted_at", null),
       supabase.from("issues").select("status", { count: "exact", head: false }),
     ]);
 
     // Check for errors in parallel queries
     if (jobsResult.error) throw new Error(`Failed to fetch jobs: ${jobsResult.error.message}`);
     if (partsResult.error) throw new Error(`Failed to fetch parts: ${partsResult.error.message}`);
-    if (tasksResult.error) throw new Error(`Failed to fetch tasks: ${tasksResult.error.message}`);
+    if (operationsResult.error) throw new Error(`Failed to fetch operations: ${operationsResult.error.message}`);
     if (issuesResult.error) throw new Error(`Failed to fetch issues: ${issuesResult.error.message}`);
 
     const stats = {
@@ -94,9 +95,9 @@ const getDashboardStats: ToolHandler = async (_args: Record<string, unknown>, su
         total: partsResult.data?.length || 0,
         by_status: countByStatus(partsResult.data),
       },
-      tasks: {
-        total: tasksResult.data?.length || 0,
-        by_status: countByStatus(tasksResult.data),
+      operations: {
+        total: operationsResult.data?.length || 0,
+        by_status: countByStatus(operationsResult.data),
       },
       issues: {
         total: issuesResult.data?.length || 0,
@@ -119,10 +120,10 @@ const getQrmData: ToolHandler = async (args: Record<string, unknown>, supabase: 
       name,
       wip_limit,
       wip_warning_threshold,
-      enforce_limit,
-      show_warning,
+      enforce_wip_limit,
+      show_capacity_warning,
       operations(id, status)
-    `);
+    `).is("deleted_at", null);
 
     if (cell_id) {
       query = query.eq("id", cell_id);
@@ -130,7 +131,7 @@ const getQrmData: ToolHandler = async (args: Record<string, unknown>, supabase: 
 
     const { data: cells, error } = await query;
 
-    if (error) throw error;
+    if (error) throw databaseError("Failed to fetch QRM data", error as Error);
 
     // Calculate current WIP for each cell
     const qrmData = cells?.map((cell: {
@@ -138,8 +139,8 @@ const getQrmData: ToolHandler = async (args: Record<string, unknown>, supabase: 
       name: string;
       wip_limit: number | null;
       wip_warning_threshold: number | null;
-      enforce_limit: boolean | null;
-      show_warning: boolean | null;
+      enforce_wip_limit: boolean | null;
+      show_capacity_warning: boolean | null;
       operations: Array<{ id: string; status: string }> | null;
     }) => {
       const operations = cell.operations || [];
@@ -164,8 +165,8 @@ const getQrmData: ToolHandler = async (args: Record<string, unknown>, supabase: 
         wip_limit: wipLimit,
         utilization_percent: Math.round(utilizationPercent * 100) / 100,
         status,
-        enforce_limit: cell.enforce_limit,
-        show_warning: cell.show_warning,
+        enforce_wip_limit: cell.enforce_wip_limit,
+        show_capacity_warning: cell.show_capacity_warning,
       };
     });
 
@@ -185,34 +186,47 @@ const getProductionMetrics: ToolHandler = async (args: Record<string, unknown>, 
       validated.start_date ||
       new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
-    // Fetch completed jobs in the period
+    // Fetch completed jobs in the period. The jobs table has no dedicated
+    // completion timestamp, so updated_at (set when status flips to completed)
+    // is the period proxy — without it this would return all-time totals and
+    // break period-over-period comparisons.
     const { data: completedJobs, error: jobsError } = await supabase
       .from("jobs")
-      .select("id, completed_at, started_at")
+      .select("id, status, updated_at")
       .eq("status", "completed")
-      .gte("completed_at", startDate)
-      .lte("completed_at", endDate);
+      .gte("updated_at", startDate)
+      .lte("updated_at", endDate)
+      .is("deleted_at", null);
 
-    if (jobsError) throw jobsError;
+    if (jobsError) throw databaseError("Failed to fetch completed jobs", jobsError as Error);
 
     // Fetch completed operations in the period
     const { data: completedOps, error: opsError } = await supabase
       .from("operations")
-      .select("id, completed_at, started_at, good_quantity, scrap_quantity")
+      .select("id, completed_at")
       .eq("status", "completed")
       .gte("completed_at", startDate)
       .lte("completed_at", endDate);
 
-    if (opsError) throw opsError;
+    if (opsError) throw databaseError("Failed to fetch completed operations", opsError as Error);
+
+    // Fetch quantity data from operation_quantities
+    const { data: quantities, error: qError } = await supabase
+      .from("operation_quantities")
+      .select("quantity_good, quantity_scrap, quantity_produced")
+      .gte("recorded_at", startDate)
+      .lte("recorded_at", endDate);
+
+    if (qError) throw databaseError("Failed to fetch quantity data", qError as Error);
 
     // Calculate metrics
     const totalJobs = completedJobs?.length || 0;
     const totalOperations = completedOps?.length || 0;
 
     const totalGoodQuantity =
-      completedOps?.reduce((sum, op) => sum + (op.good_quantity || 0), 0) || 0;
+      quantities?.reduce((sum: number, q: any) => sum + (q.quantity_good || 0), 0) || 0;
     const totalScrapQuantity =
-      completedOps?.reduce((sum, op) => sum + (op.scrap_quantity || 0), 0) || 0;
+      quantities?.reduce((sum: number, q: any) => sum + (q.quantity_scrap || 0), 0) || 0;
     const totalQuantity = totalGoodQuantity + totalScrapQuantity;
     const yieldRate =
       totalQuantity > 0

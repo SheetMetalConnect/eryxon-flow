@@ -15,7 +15,7 @@
   ],
   "footer": {
     "community": {
-      "title": "Open Source",
+      "title": "Code & Community",
       "links": [
         {
           "name": "GitHub Repository",
@@ -36,7 +36,9 @@
       "links": [
         {
           "name": "Hosted Version",
-          "url": "https://app.eryxon.eu"
+          "url": "https://app.eryxon.eu",
+          "ctaId": "footer_resources_hosted",
+          "ctaKind": "hosted_app"
         },
         {
           "name": "Documentation",
@@ -56,16 +58,14 @@
       "title": "Contact",
       "links": [
         {
-          "name": "office@vanenkhuizen.com",
-          "url": "mailto:office@vanenkhuizen.com"
-        },
-        {
           "name": "LinkedIn",
           "url": "https://www.linkedin.com/in/lvanenkhuizen/"
         },
         {
-          "name": "vanenkhuizen.com",
-          "url": "https://www.vanenkhuizen.com/"
+          "name": "luke@sheetmetalconnect.com",
+          "url": "mailto:luke@sheetmetalconnect.com",
+          "ctaId": "footer_contact_email",
+          "ctaKind": "email"
         }
       ]
     }

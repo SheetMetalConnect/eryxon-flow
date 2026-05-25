@@ -3,15 +3,26 @@ title: Roadmap
 description: Feature considerations and future direction for Eryxon Flow
 ---
 
-> **May 2026 status:** Active development is currently on hold after the v0.5.0 final active-development release. v0.5.1 is the current maintenance hotfix. This page lists possible future work for forks, maintainers, or a later restart.
-
-Features we're **considering** - nothing planned, promised, or guaranteed.
+This page lists what is in active development and possible future work for forks and maintainers.
 
 Track progress and vote on features via [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues).
 
 ---
 
+## In Development
+
+| Initiative | Why | Notes |
+|------------|-----|-------|
+| **Android (Native) app** | Shop floor reliability needs offline support and fast cold start that a browser can't deliver. | Built natively (not a wrapped web view). Offline queue for time entries and status changes, sync on reconnect, native camera for issue photos and barcodes. |
+| **iOS app** | Managers, supervisors, and operators on Apple devices need first-class native UX. | Native iPad and iPhone layouts, push notifications, real-time job status. |
+
+Both apps share the same backend and REST/MCP/MQTT API as the web app, so existing integrations carry over.
+
+---
+
 ## Under Consideration
+
+Features we're **considering** - nothing planned, promised, or guaranteed.
 
 | Feature | Why | Issue |
 |---------|-----|-------|

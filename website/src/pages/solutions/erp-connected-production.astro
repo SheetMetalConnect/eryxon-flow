@@ -1,0 +1,66 @@
+---
+/*
+ * Example campaign landing page (ERY-60, Slice 2) — `/solutions/erp-connected-production/`.
+ *
+ * Reference instance of the LandingPage template: one buyer problem (ERP/floor disconnect), one
+ * primary CTA (hosted trial), one proof block, one secondary proof link into the API docs. Future
+ * campaign/intent pages are created the same way — supply the props, fill the proof slot. This
+ * proves the template is reusable without re-inventing the narrative hierarchy.
+ */
+import LandingPage from "@/layouts/LandingPage.astro";
+import erpShot from "@/assets/overview.png";
+---
+
+<LandingPage
+  title="ERP-connected production for job shops — Eryxon Flow"
+  description="Keep the office ERP and the shop floor in sync. Eryxon Flow connects to your ERP over the REST API and webhooks so production data flows both ways."
+  slug="erp-connected-production"
+  eyebrow="ERP-connected production"
+  headline="Keep your ERP and your shop floor in sync"
+  intro="Jobs live in the ERP, but the floor runs on paper travelers and whiteboards. Eryxon connects to your ERP over the REST API and webhooks, so job state, progress, and completions flow both ways without double entry."
+  primary={{ label: "Get started for free", href: "https://app.eryxon.eu", ctaId: "landing_erp_primary_hosted", kind: "hosted_app", external: true }}
+  secondary={{ label: "See the REST API reference", href: "/api/rest-api-reference/", ctaId: "landing_erp_secondary_api", kind: "docs" }}
+>
+  <figure class="proof">
+    <img src={erpShot.src} width={erpShot.width} height={erpShot.height} alt="Job and capacity overview board synced from the ERP" loading="lazy" />
+    <figcaption>One board for job state across cells — fed by the ERP, updated from the floor.</figcaption>
+  </figure>
+  <ul class="points">
+    <li><strong>Two-way sync.</strong> Push jobs in from the ERP; send progress and completions back over webhooks.</li>
+    <li><strong>No double entry.</strong> Operators clock work once, on the floor, and the office sees it.</li>
+    <li><strong>Open source.</strong> Apache 2.0, free for any use — run it on your own infrastructure if you prefer.</li>
+  </ul>
+</LandingPage>
+
+<style>
+  .proof {
+    margin: 0 0 var(--ery-space-8);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius);
+    overflow: hidden;
+    max-inline-size: 880px;
+  }
+  .proof img {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    border-block-end: 1px solid var(--ery-border);
+  }
+  .proof figcaption {
+    padding: var(--ery-space-4) var(--ery-space-5);
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .points {
+    margin: 0;
+    padding-inline-start: var(--ery-space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+    max-inline-size: 62ch;
+    color: var(--ery-text-muted);
+  }
+  .points strong {
+    color: var(--ery-text);
+  }
+</style>

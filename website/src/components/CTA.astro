@@ -22,6 +22,9 @@ const { title, description, enable, fill_button, outline_button } =
             label={fill_button.label || "Get Started"}
             link={fill_button.link || "/getting-started/introduction/overview/"}
             variant="primary"
+            ctaId="home_cta_band_primary_hosted"
+            ctaSurface="cta_band"
+            ctaKind="hosted_app"
           />
         )}
         {outline_button?.enable && (
@@ -31,6 +34,9 @@ const { title, description, enable, fill_button, outline_button } =
               outline_button.link || "/getting-started/introduction/overview/"
             }
             variant="outline-primary"
+            ctaId="home_cta_band_secondary_quickstart"
+            ctaSurface="cta_band"
+            ctaKind="docs"
           />
         )}
       </Section>

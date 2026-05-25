@@ -1,0 +1,168 @@
+/*
+ * Eryxon website redesign — canonical design-token contract (ERY-56, Slice 1).
+ *
+ * SOURCE OF TRUTH PRECEDENCE
+ *   1. External design package `Eryxon Design System (1).zip` (canonical archive on ERY-49).
+ *   2. `docs/website/canonical-astro-website-ux-spec.md` (ERY-52) — translates the package into
+ *      website rules. This file encodes that spec as CSS custom properties.
+ *   3. The legacy repo-local mirror (`src/content/docs/architecture/design-{tokens,principles,
+ *      components}.md`) describes the RETIRED gradient/glass/orb dark-first era and DOES NOT win
+ *      conflicts. ERY-52 owns realigning that mirror; do not source tokens from it.
+ *
+ * SCOPE
+ *   These tokens are intentionally NOT imported into the Starlight docs shell (`global.css`).
+ *   They are imported only by the redesign shell (`layouts/BaseLayout.astro`) so the new
+ *   marketing surfaces can be built without restyling live docs in place. Slice 4 migrates the
+ *   docs chrome onto this same contract.
+ *
+ * VALUE CONFIDENCE
+ *   - Values the canonical UX spec states explicitly are marked `[spec]`.
+ *   - Neutral ramp + status hues are reasonable light-first defaults marked `[confirm]`; they
+ *     must be reconciled against `colors_and_type.css` in the package before public launch.
+ *     The package binary is not readable from this runtime (see ERY-53 brief), so the contract
+ *     shape is canonical now and exact neutral/status values are the one open input.
+ */
+
+:root {
+  /* --- Brand color [spec] ---------------------------------------------------
+   * Light-surface primary is #0066cc. The dark-surface blue #1e90ff is used ONLY
+   * inside intentionally dark sections (see `.surface-dark` below).
+   * Brand blue must NEVER communicate status. */
+  --ery-brand: #0066cc;
+  --ery-brand-hover: #0052a3;
+  --ery-brand-contrast: #ffffff;
+  --ery-brand-on-dark: #1e90ff;
+
+  /* --- Neutral surfaces & text [spec] ---------------------------------------
+   * Reconciled against the canonical package `colors_and_type.css` light theme
+   * (ERY-49, now repo-accessible). The canonical ramp is PURE NEUTRAL GRAY
+   * (HSL hue 0, saturation 0%) — not the bluish slate the provisional defaults
+   * used. Separation uses borders first, shadows second.
+   *   --surface == --bg (cards sit on bg, separated by border, per the package). */
+  --ery-surface: #ffffff;         /* --bg / --surface  0 0% 100% */
+  --ery-surface-subtle: #fafafa;  /* --surface-2       0 0% 98%  */
+  --ery-surface-inset: #f5f5f5;   /* --surface-hover   0 0% 96%  */
+  --ery-border: #e5e5e5;          /* --border          0 0% 90%  */
+  --ery-border-strong: #cccccc;   /* --border-strong   0 0% 80%  */
+  --ery-text: #1a1a1a;            /* --fg              0 0% 10%  */
+  --ery-text-muted: #595959;      /* --fg-muted        0 0% 35%  */
+  --ery-text-subtle: #8c8c8c;     /* --fg-subtle       0 0% 55%  */
+
+  /* Dark section surfaces (API block, code, product preview frames) [spec]
+   * Canonical package dark theme — pure neutral gray ramp. */
+  --ery-bg-dark: #0a0a0a;         /* --bg        dark 0 0% 4%  (deepest, code blocks) */
+  --ery-surface-dark: #141414;    /* --surface   dark 0 0% 8%  */
+  --ery-surface-dark-2: #1f1f1f;  /* --surface-2 dark 0 0% 12% */
+  --ery-border-dark: #383838;     /* --border    dark 0 0% 22% */
+  --ery-text-on-dark: #ebebeb;    /* --fg        dark 0 0% 92% */
+  --ery-text-on-dark-muted: #a6a6a6; /* --fg-muted dark 0 0% 65% */
+
+  /* Code-block syntax tokens [confirm] — mirror the marketing kit's literal
+   * highlight colors (blog/blog.css). Keep these aligned with the kit; do not
+   * recolor without updating the kit. Keyword + comment are kit-literal; string
+   * and number reuse the semantic success/warning hues per the kit. */
+  --ery-code-bg: var(--ery-bg-dark);  /* #0a0a0a — deepest dark, code surface */
+  --ery-code-text: #d4d4d4;           /* default code foreground */
+  --ery-code-border: #2a2a2a;         /* hairline on the code surface */
+  --ery-code-keyword: #4a9eff;        /* .k — keywords (kit-literal) */
+  --ery-code-comment: #777777;        /* .c — comments (kit-literal) */
+
+  /* --- Status colors [spec] — never brand blue ------------------------------
+   * Canonical package light-theme semantic feedback values. */
+  --ery-success: #248f47; /* --success 140 60% 35% */
+  --ery-warning: #d18a0a; /* --warning  38 95% 43% */
+  --ery-error: #d2362b;   /* --danger    4 75% 47% */
+  --ery-info: #147ab8;    /* --info    199 80% 40% */
+
+  /* --- Typography [spec] ----------------------------------------------------
+   * Sans: Inter. Mono: JetBrains Mono (code, pills, technical metadata, versions).
+   * Sentence case only for headings/labels (enforced in copy, not CSS).
+   * No gradient text headings. */
+  --ery-font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ery-font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Type scale (rem) — canonical Major Second (1.125), reconciled with the
+   * package `colors_and_type.css`. Marketing hero uses 5xl/6xl. */
+  --ery-text-xs: 0.75rem;   /* 12 */
+  --ery-text-sm: 0.875rem;  /* 14 */
+  --ery-text-base: 1rem;    /* 16 */
+  --ery-text-lg: 1.125rem;  /* 18 */
+  --ery-text-xl: 1.25rem;   /* 20 — card titles */
+  --ery-text-2xl: 1.5rem;   /* 24 — section headings (h3) */
+  --ery-text-3xl: 1.875rem; /* 30 — page titles (h2) */
+  --ery-text-4xl: 2.25rem;  /* 36 — marketing h1 (small) */
+  --ery-text-5xl: 3rem;     /* 48 — marketing hero */
+  --ery-text-6xl: 3.75rem;  /* 60 — marketing hero (max, desktop) */
+  --ery-leading-tight: 1.2;
+  --ery-leading-snug: 1.35;
+  --ery-leading-normal: 1.5;
+  --ery-leading-relaxed: 1.6;
+  --ery-tracking-tight: -0.02em; /* headings, per the package */
+
+  /* --- Spacing — 4px scale only [spec] -------------------------------------- */
+  --ery-space-1: 4px;
+  --ery-space-2: 8px;
+  --ery-space-3: 12px;
+  --ery-space-4: 16px;
+  --ery-space-5: 20px;
+  --ery-space-6: 24px;
+  --ery-space-8: 32px;
+  --ery-space-10: 40px;
+  --ery-space-12: 48px;
+  --ery-space-16: 64px;
+  --ery-space-20: 80px;
+  --ery-space-24: 96px;
+
+  /* Marketing page padding steps 16 / 24 / 32, opening toward large heroes [spec] */
+  --ery-pad-section: clamp(var(--ery-space-4), 4vw, var(--ery-space-8));
+  --ery-pad-hero: clamp(var(--ery-space-8), 8vw, var(--ery-space-24));
+  --ery-container-max: 1200px;
+
+  /* --- Radius [spec] — default card radius 12px ----------------------------- */
+  --ery-radius-sm: 6px;
+  --ery-radius: 12px;
+  --ery-radius-lg: 16px;
+  --ery-radius-pill: 999px;
+
+  /* --- Touch targets [spec] — 44px site minimum; operator previews imply 56px - */
+  --ery-touch-min: 44px;
+  --ery-touch-operator: 56px;
+
+  /* --- Motion [spec] — only these durations; tint/border shifts, never scale -- */
+  --ery-motion-fast: 120ms;
+  --ery-motion-base: 180ms;
+  --ery-motion-slow: 260ms;
+  --ery-ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* --- Elevation — borders first, shadows second [spec] --------------------- */
+  /* Canonical package light shadows are cast from slate-900 (15,23,42). */
+  --ery-shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --ery-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
+
+  /* Sticky header rhythm [spec] — 64px with hairline separation */
+  --ery-header-height: 64px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ery-motion-fast: 0ms;
+    --ery-motion-base: 0ms;
+    --ery-motion-slow: 0ms;
+  }
+}
+
+/*
+ * Dark-section scope. Apply `.surface-dark` to API blocks, code regions, and product
+ * preview frames only — NOT as a default page treatment. No glass, no backdrop-filter,
+ * no ambient orb backgrounds (those motifs are retired by the canonical spec).
+ */
+.surface-dark {
+  --ery-surface: var(--ery-surface-dark);
+  --ery-surface-subtle: var(--ery-surface-dark-2);
+  --ery-border: var(--ery-border-dark);
+  --ery-text: var(--ery-text-on-dark);
+  --ery-text-muted: var(--ery-text-on-dark-muted);
+  --ery-brand: var(--ery-brand-on-dark);
+  background-color: var(--ery-surface-dark);
+  color: var(--ery-text-on-dark);
+}

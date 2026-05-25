@@ -397,17 +397,19 @@
       ]
     },
     "license": {
-      "title": "License (BSL 1.1)",
-      "tldr": "Use it, modify it, self-host it. Just don't host it and charge others for access.",
-      "allowed": "Allowed",
-      "notAllowed": "Not Allowed",
+      "title": "License (Apache 2.0)",
+      "tldr": "Fully open source. Use it, modify it, self-host it, and use it commercially — no restrictions.",
+      "allowed": "You can",
+      "note": "Good to know",
       "allowedItems": {
-        "selfHost": "Self-host for your own operations",
+        "selfHost": "Self-host for your own operations, free",
         "modify": "Fork and modify for your needs",
+        "commercial": "Use it commercially, including hosting it for others",
         "consulting": "Use for development, testing, education"
       },
-      "notAllowedItems": {
-        "resell": "Host it and sell access as a SaaS"
+      "noteItems": {
+        "attribution": "Keep the license and copyright notice in copies",
+        "patent": "Includes an express patent grant"
       }
     }
   },
@@ -503,5 +505,22 @@
   },
   "stuckTimeEntries": {
     "stopped": "Time entry stopped successfully"
+  },
+  "pilotActivation": {
+    "title": "Activate your pilot",
+    "description": "Get from demo data to a real operator picking up assigned work — in three steps.",
+    "progress": "{{completed}}/{{total}} done",
+    "step1Title": "Add a teammate or operator",
+    "step1Desc": "Invite a teammate by email, or create a no-email shop-floor operator with a PIN.",
+    "step1Cta": "Add",
+    "step2Title": "Assign an operation",
+    "step2Desc": "Pick a part and assign its operations to an operator.",
+    "step2Cta": "Assign",
+    "step3Title": "Operator picks up the work",
+    "step3Desc": "Share the operator login so the assigned work shows up in their queue.",
+    "step3Cta": "Open login",
+    "refresh": "Refresh status",
+    "readyTitle": "Pilot ready 🎉",
+    "readyDescription": "An operator now has assigned work — this tenant reached the pilot-ready milestone."
   }
 }

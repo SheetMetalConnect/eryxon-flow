@@ -1,61 +1,23 @@
 ---
 import MobileMenuToggle from "./MobileMenuToggle.astro";
-import Footer from "./Footer.astro";
-import CTA from "../CTA.astro";
-import SidebarNav from "../SidebarNav.astro";
-import ImageMod from "../ImageMod.astro";
 
 const { hasSidebar } = Astro.locals.starlightRoute;
 ---
 
-<div class="page sl-flex">
-  {
-    !hasSidebar ? (
-      <div class="ambient-field absolute inset-0 z-0 h-full w-full overflow-hidden">
-           {/* Layer 1: Factory Floor Texture - Low opacity, sets the "context" */}
-           <div class="absolute inset-0 z-0 opacity-10 mix-blend-overlay">
-             <ImageMod
-                src="/src/assets/hero-bg.jpg"
-                alt="Factory Floor Texture"
-                class="w-full h-full object-cover"
-                width={2000}
-                height={1000}
-                loading="eager"
-             />
-           </div>
+{/* Calm, light-first canvas. The retired orb / factory-texture / dark-doc
+    background layers (gradient/glass/orb era) are removed per the canonical
+    spec — the page sits on the flat `--ery-surface` background, separation is
+    carried by hairline borders, not imagery.
 
-           {/* Layer 2: Abstract Tech - Subtle overlay for "premium" feel */}
-           <div class="absolute inset-0 z-0 opacity-40 mix-blend-soft-light">
-             <ImageMod
-                src="/src/assets/hero-bg-dark.png"
-                alt="Technical Abstract Pattern"
-                class="w-full h-full object-cover grayscale"
-                width={2000}
-                height={1000}
-                loading="eager"
-             />
-           </div>
-           
-           {/* Layer 3: Ambient overlay handled by .ambient-field CSS gradients */}
-      </div>
-    ) : (
-      <div class="doc-bg">
-        <ImageMod
-          src="/src/assets/doc-bg.png"
-          alt="Documentation Background"
-          class="hidden dark:block w-full h-full fixed top-0 left-0"
-          width={2000}
-          height={1000}
-          loading="eager"
-          fetchpriority="high"
-        />
-      </div>
-    )
-  }
+    Docs IA (docs-chrome refactor): a single navigation layer. The top nav stays
+    minimal (Home / Documentation / Hosted Version) and the full docs tree is
+    carried by the left sidebar only. The former horizontal secondary tab-bar
+    (`SidebarNav`) duplicated the sidebar group headings and is removed; the
+    language switcher it hosted now lives in the header next to search + theme. */}
+<div class="page sl-flex">
   <header class={"header" + (hasSidebar ? " has-sidebar" : " no-sidebar")}>
     <slot name="header" />
   </header>
-  {hasSidebar && <SidebarNav />}
   <div class="main-frame">
     <div class="container flex relative">
         {
@@ -92,9 +54,10 @@ const { hasSidebar } = Astro.locals.starlightRoute;
       inset-inline-start: 0;
       inset-block-start: 0;
       width: 100%;
-      /* height: 4.5rem; */
-      border-bottom: 1px solid
-        color-mix(in srgb, var(--sl-color-white) 10%, transparent);
+      background-color: var(--sl-color-black);
+      /* Sticky header with a hairline bottom border (no shadow), matching the
+       * marketing shell's 64px sticky header rhythm. */
+      border-bottom: 1px solid var(--sl-color-hairline);
       padding: var(--sl-nav-pad-y) 0px;
       /* padding-inline-end: var(--sl-nav-pad-x); */
     }
@@ -115,11 +78,6 @@ const { hasSidebar } = Astro.locals.starlightRoute;
 
     :global([data-has-sidebar]) .main-frame {
       padding-top: 2rem;
-    }
-    @media (max-width: 1156px) {
-      :global([data-has-sidebar]) .main-frame {
-        padding-top: 4rem;
-      }
     }
 
     .sidebar-pane {
@@ -167,8 +125,9 @@ const { hasSidebar } = Astro.locals.starlightRoute;
         --sl-sidebar-visibility: visible;
         width: var(--sl-sidebar-width);
         background-color: transparent;
-        inset-block: calc(var(--sl-nav-height) + 110px) 0;
-       
+        /* Was `+ 110px` to clear the removed horizontal secondary tab-bar.
+         * With a single nav layer the sidebar starts right under the header. */
+        inset-block: var(--sl-nav-height) 0;
       }
     }
   }

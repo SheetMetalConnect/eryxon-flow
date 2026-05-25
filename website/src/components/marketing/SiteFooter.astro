@@ -1,0 +1,249 @@
+---
+/*
+ * SiteFooter — marketing footer for the redesign surfaces (ERY-60).
+ *
+ * Fills the `footer` slot of MarketingLayout. IA per the ERY-54 brief:
+ *   - the "Open Source" group lists the repository links (Apache 2.0, fully open source)
+ *   - managed rollout stays in the contact column
+ *   - docs + self-hosting stay under resources
+ *   - licensing language is factual and compact (Apache 2.0, free and open source)
+ *
+ * This footer is authored directly (not from `config/menu.*.json`) because that menu model still
+ * drives the Starlight docs footer override and is owned by the docs-chrome migration (ERY-61,
+ * Slice 4). Keeping the marketing footer independent ships the corrected IA now without touching
+ * live docs chrome.
+ */
+import { Image } from "astro:assets";
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import Wordmark from "@/components/marketing/Wordmark.astro";
+import lukePhoto from "@/assets/luke-van-enkhuizen.jpg";
+import { localizePath, type Locale } from "@/lib/locale";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = "en" } = Astro.props;
+
+const legalLabels: Record<Locale, { imprint: string; privacy: string }> = {
+  en: { imprint: "Imprint", privacy: "Privacy" },
+  nl: { imprint: "Impressum", privacy: "Privacy" },
+  de: { imprint: "Impressum", privacy: "Datenschutz" },
+};
+const legal = legalLabels[locale];
+const imprintHref = localizePath("/imprint/", locale);
+const privacyHref = localizePath("/privacy/", locale);
+
+const repository = [
+  { label: "GitHub repository", href: "https://github.com/SheetMetalConnect/eryxon-flow", external: true },
+  { label: "Discussions", href: "https://github.com/SheetMetalConnect/eryxon-flow/discussions", external: true },
+  { label: "Report an issue", href: "https://github.com/SheetMetalConnect/eryxon-flow/issues", external: true },
+];
+const resources = [
+  { label: "Documentation", href: "/introduction/" },
+  { label: "Blog", href: "/blog/" },
+  { label: "Changelog", href: "/release-notes/" },
+  { label: "Self-hosting guide", href: "/guides/self-hosting/" },
+  { label: "REST API reference", href: "/api/rest-api-reference/" },
+];
+---
+
+<div class="ery-fcols">
+  <div class="ery-fcol ery-fcol--brand">
+    <Wordmark href={null} />
+    <p class="ery-fnote">
+      Manufacturing execution for metalworking job shops. Free and open source under
+      <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>.
+    </p>
+  </div>
+
+  <nav class="ery-fcol" aria-label="Repository">
+    <h2 class="ery-fhead">Repository</h2>
+    <ul class="ery-flist">
+      {repository.map((l) => (
+        <li><a href={l.href} target="_blank" rel="noopener">{l.label}</a></li>
+      ))}
+    </ul>
+  </nav>
+
+  <nav class="ery-fcol" aria-label="Resources">
+    <h2 class="ery-fhead">Resources</h2>
+    <ul class="ery-flist">
+      {resources.map((l) => (
+        <li><a href={l.href}>{l.label}</a></li>
+      ))}
+      <li>
+        <CtaButton href="https://app.eryxon.eu" ctaId="footer_resources_hosted" surface="site_footer" kind="hosted_app" variant="tertiary" locale={locale} external>
+          Start free trial
+        </CtaButton>
+      </li>
+    </ul>
+  </nav>
+
+  <section class="ery-fcol ery-fcreator" aria-label="Creator">
+    <h2 class="ery-fhead">Created by</h2>
+    <div class="ery-creator-card">
+      <Image
+        src={lukePhoto}
+        alt="Luke van Enkhuizen"
+        width={96}
+        height={96}
+        loading="lazy"
+        class="ery-creator-photo"
+      />
+      <div class="ery-creator-meta">
+        <p class="ery-creator-name">Luke van Enkhuizen</p>
+        <p class="ery-creator-org">Sheet Metal Connect e.U.</p>
+        <nav class="ery-creator-links" aria-label="Contact Luke van Enkhuizen">
+          <a href="https://www.linkedin.com/in/lvanenkhuizen/" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="mailto:luke@sheetmetalconnect.com">Email</a>
+        </nav>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="ery-flegal">
+  <p class="ery-flegal-copy">
+    <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener">Sheet Metal Connect e.U.</a>
+    &copy; 2026 · Open source under
+    <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>
+  </p>
+  <nav class="ery-flegal-links" aria-label="Legal">
+    <a href={imprintHref}>{legal.imprint}</a>
+    <a href={privacyHref}>{legal.privacy}</a>
+  </nav>
+</div>
+
+<style>
+  .ery-fcols {
+    display: grid;
+    gap: var(--ery-space-8);
+    grid-template-columns: 1.5fr repeat(3, 1fr);
+  }
+  @media (max-width: 860px) {
+    .ery-fcols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .ery-fcols {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .ery-fcol--brand :global(.ery-wordmark) {
+    margin-block-end: var(--ery-space-3);
+  }
+  .ery-fnote {
+    margin: 0;
+    max-inline-size: 36ch;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .ery-fhead {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ery-text-subtle);
+    margin: 0 0 var(--ery-space-4);
+    font-weight: 500;
+  }
+  .ery-flist {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-2);
+  }
+  .ery-flist a {
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text-muted);
+  }
+  .ery-flist a:hover {
+    color: var(--ery-brand);
+  }
+  .ery-fcreator {
+    align-self: start;
+  }
+  .ery-creator-card {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-4);
+    padding: var(--ery-space-4);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius);
+    background: var(--ery-surface-subtle);
+    transition: border-color var(--ery-motion-base) var(--ery-ease);
+  }
+  .ery-creator-card:hover {
+    border-color: var(--ery-border-strong);
+  }
+  .ery-creator-photo {
+    inline-size: 56px;
+    block-size: 56px;
+    border-radius: var(--ery-radius-pill);
+    object-fit: cover;
+    border: 1px solid var(--ery-border);
+    flex-shrink: 0;
+  }
+  .ery-creator-meta {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-1);
+    min-inline-size: 0;
+  }
+  .ery-creator-name {
+    margin: 0;
+    font-weight: 600;
+    font-size: var(--ery-text-sm);
+    color: var(--ery-text);
+    line-height: var(--ery-leading-snug);
+  }
+  .ery-creator-org {
+    margin: 0;
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-muted);
+    line-height: var(--ery-leading-snug);
+  }
+  .ery-creator-links {
+    display: flex;
+    gap: var(--ery-space-3);
+    margin-block-start: var(--ery-space-2);
+  }
+  .ery-creator-links a {
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-muted);
+  }
+  .ery-creator-links a:hover {
+    color: var(--ery-brand);
+  }
+
+  .ery-flegal {
+    margin: var(--ery-space-10) 0 0;
+    padding-block-start: var(--ery-space-6);
+    border-block-start: 1px solid var(--ery-border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ery-space-3) var(--ery-space-6);
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-subtle);
+  }
+  .ery-flegal-copy {
+    margin: 0;
+  }
+  .ery-flegal-links {
+    display: flex;
+    gap: var(--ery-space-5);
+  }
+  .ery-flegal-links a {
+    color: var(--ery-text-subtle);
+  }
+  .ery-flegal-links a:hover {
+    color: var(--ery-brand);
+  }
+</style>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Changelog — Eryxon Flow</title>
+<link rel="icon" type="image/svg+xml" href="../../../assets/favicon.svg" />
+<link rel="stylesheet" href="../../../colors_and_type.css" />
+<link rel="stylesheet" href="./blog.css" />
+</head>
+<body class="blog-body" data-screen-label="Blog \u2014 changelog">
+
+<header class="blog-header">
+  <a class="blog-brand" href="#">
+    <img src="../../../assets/eryxon-mark-light.svg" width="32" height="32" alt="" />
+    <span>eryxon</span>
+  </a>
+  <nav class="blog-nav">
+    <a href="#">Product</a>
+    <a href="#">Docs</a>
+    <a href="#">Pricing</a>
+    <a href="./index.html">Blog</a>
+    <a href="./changelog.html" class="is-active">Changelog</a>
+  </nav>
+  <div class="blog-header-cta">
+    <a class="blog-link" href="#">Sign in</a>
+    <a class="blog-btn" href="#">Start free trial</a>
+  </div>
+</header>
+
+<div class="changelog-shell">
+  <div class="index-head">
+    <div class="index-eyebrow">Changelog</div>
+    <h1 class="index-h1">What shipped, when.</h1>
+    <p class="index-lead">Every release of Eryxon Flow, in plain language. Subscribe via RSS, or read the full notes for each version on GitHub.</p>
+  </div>
+
+  <article class="release">
+    <header class="release-meta">
+      <div class="release-version">v0.5.1</div>
+      <div class="release-date">24 May 2026</div>
+      <span class="release-badge stable">Stable</span>
+    </header>
+    <div>
+      <h2 class="release-h">Five fixes the floor will feel.</h2>
+      <p class="release-sub">A maintenance hotfix focused on edge cases reported by Demar and Singeling during the rollouts in April. No schema changes.</p>
+      <div class="release-items">
+        <div class="release-item">
+          <span class="release-tag added">Added</span>
+          <div><h3 class="release-item-h">Bulk reassign across cells</h3><p class="release-item-b">Move up to 50 operations between cells in one move. Preserves operation order and recalculates capacity in the same tick.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag fixed">Fixed</span>
+          <div><h3 class="release-item-h">Stuck time-entry recovery</h3><p class="release-item-b">Operators leaving a tablet on overnight no longer log 14h actuals. Time entries auto-close at end-of-shift, configured per cell.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag changed">Changed</span>
+          <div><h3 class="release-item-h">Capacity bar visualisation</h3><p class="release-item-b">Cells over 100 % planned hours now show a separate red overflow segment instead of just swapping the fill colour. Easier to read at a glance.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag added">Added</span>
+          <div><h3 class="release-item-h">Webhook signature verification</h3><p class="release-item-b">HMAC-SHA256 signatures on every outbound webhook. Rotate signing keys without redeploys. See <code>docs/webhooks/signing.md</code>.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag fixed">Fixed</span>
+          <div><h3 class="release-item-h">STEP viewer memory leak</h3><p class="release-item-b">Three.js scenes are now disposed when the operator closes the detail modal. Long sessions stay snappy.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="release">
+    <header class="release-meta">
+      <div class="release-version">v0.5.0</div>
+      <div class="release-date">18 April 2026</div>
+      <span class="release-badge stable">Stable</span>
+    </header>
+    <div>
+      <h2 class="release-h">QRM dashboard, planning adapters, MCP.</h2>
+      <p class="release-sub">The biggest release since v0.3. Brings WIP limits per cell to the planner, adapters for FrePPLe and Odoo MRP, and an MCP server so AI assistants can read shop state. Includes a schema migration — read the upgrade notes before you self-host.</p>
+      <div class="release-items">
+        <div class="release-item">
+          <span class="release-tag added">Added</span>
+          <div><h3 class="release-item-h">QRM dashboard with WIP limits</h3><p class="release-item-b">Per-cell WIP limit configuration. Capacity matrix view aggregates planned vs available hours across the next 14 days.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag added">Added</span>
+          <div><h3 class="release-item-h">Planning adapters: FrePPLe + Odoo MRP</h3><p class="release-item-b">Two-way sync with both upstream planners. Schedule once in your planner; the floor sees it within 90 s.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag added">Added</span>
+          <div><h3 class="release-item-h">MCP server</h3><p class="release-item-b">Model Context Protocol server exposing read-only access to jobs, parts, and operations. Plug Claude into your shop floor.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag changed">Changed</span>
+          <div><h3 class="release-item-h">Operator card layout</h3><p class="release-item-b">Status stripe widened to 4 px. Due-date pill moved top-right. Time-remaining now shows in minutes when &lt; 1 h.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag removed">Removed</span>
+          <div><h3 class="release-item-h">Legacy CSV importer</h3><p class="release-item-b">The pre-0.4 CSV format is no longer supported. Migration guide: <code>docs/migrations/0.5-csv.md</code>.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <article class="release">
+    <header class="release-meta">
+      <div class="release-version">v0.4.7</div>
+      <div class="release-date">02 March 2026</div>
+      <span class="release-badge preview">Preview</span>
+    </header>
+    <div>
+      <h2 class="release-h">3D STEP viewer (preview).</h2>
+      <p class="release-sub">First public preview of the browser-side STEP viewer. Behind a feature flag — enable per-tenant in Settings → Features.</p>
+      <div class="release-items">
+        <div class="release-item">
+          <span class="release-tag added">Added</span>
+          <div><h3 class="release-item-h">In-browser STEP parsing</h3><p class="release-item-b">No software install for operators. STEP files are parsed client-side via WASM; mesh rendered with Three.js.</p></div>
+        </div>
+        <div class="release-item">
+          <span class="release-tag added">Added</span>
+          <div><h3 class="release-item-h">Measurement tools</h3><p class="release-item-b">Point-to-point, face distance, angle, radius. Snaps to vertex / edge / face. Orange accent matches the Eryxon palette.</p></div>
+        </div>
+      </div>
+    </div>
+  </article>
+</div>
+
+</body>
+</html>

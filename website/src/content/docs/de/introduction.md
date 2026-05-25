@@ -3,9 +3,34 @@ title: Willkommen bei Eryxon Flow
 description: Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.
 ---
 
-**Das einfache, elegante und leistungsstarke Manufacturing Execution System, mit dem Ihre Mitarbeiter gerne arbeiten. Entwickelt für die Metallverarbeitung.**
+Eryxon Flow ist ein tabletfreundliches Manufacturing Execution System für metallverarbeitende Lohnfertiger - verfolgen Sie Aufträge vom ERP bis auf den Shopfloor, ohne die Werkerakzeptanz zu verlieren.
 
-> **Jetzt ausprobieren:** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) - keine Installation erforderlich. Sie bleibt online wie sie ist.
+## Wählen Sie Ihren Pfad
+
+Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
+
+<div style="display:grid;gap:var(--ery-space-4);grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:var(--ery-space-6) 0;">
+  <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="hosted_app" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Hosted-Test starten</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Testen Sie die Live-App auf app.eryxon.eu ohne Installation. Ideal für den ersten Eindruck.</span>
+  </a>
+  <a href="/de/managed-rollout/" data-cta-id="docs_intro_rollout_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="rollout_page" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Begleiteten Rollout planen</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Erhalten Sie Unterstützung für Deployment, ERP-Integration und Einführungsplanung.</span>
+  </a>
+  <a href="/de/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
+    <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Self-Hosting evaluieren</strong>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Betreiben Sie Eryxon auf Ihrer eigenen Infrastruktur. Kostenlos und quelloffen unter Apache 2.0.</span>
+  </a>
+</div>
+
+![Eryxon Flow admin dashboard](../../../assets/step-1.png)
+
+## Passt es zu Ihrer Werkstatt?
+
+- **Werker** erhalten eine touchfreundliche Arbeitswarteschlange: Arbeit nach Stufe ziehen, Zeit erfassen, STEP/PDF ansehen und Probleme direkt auf dem Shopfloor melden.
+- **Admins** erhalten Echtzeit-Transparenz: wer woran arbeitet, Issue-Freigaben, Termin-Overrides sowie Stufen- und Materialkonfiguration.
+- **Technische Evaluatoren** erhalten ein API-first System: 24 REST-Endpunkte, Webhooks, MQTT, MCP-Server und planungsseitige Adapter für FrePPLe und Odoo.
 
 ## Was Es Macht
 
@@ -65,7 +90,7 @@ Verfolgen Sie in Echtzeit, wer anwesend ist und woran gearbeitet wird. Kein Rate
 
 ## Integration-First-Architektur
 
-**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über die REST-API. Eryxon sendet Abschlussereignisse zurück über Webhooks. Der MCP-Server ermöglicht KI/Automatisierungs-Integration.
+**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über 24 REST-API-Endpunkte (Beta). Eryxon sendet Abschlussereignisse zurück über Webhooks (Beta) oder MQTT (Beta) — der MQTT-Client bringt in v0.5 Retry, Circuit Breaker und Dead-Letter-Logging mit. Der MCP-Server (Live) ermöglicht KI/Automatisierungs-Integration mit stdio für lokale Clients und Streamable HTTP für vertrauenswürdige selbstgehostete Deployments.
 
 ### Dateihandhabung
 Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-Dateien direkt in den Supabase Storage hoch und referenzieren Sie dann den Dateipfad beim Erstellen von Aufträgen oder Teilen. Große Dateien (typisch 5-50 MB) werden direkt in den Speicher hochgeladen — keine Timeouts, keine API-Engpässe.
@@ -73,8 +98,8 @@ Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-
 ### Benutzerdefinierte Metadaten
 Fügen Sie JSON-Payloads zu Aufträgen, Teilen und Aufgaben hinzu für Ihre spezifischen Anforderungen — Werkzeuganforderungen, Formnummern, Maschineneinstellungen, Materialspezifikationen, alles was Ihre Werkstatt nachverfolgen muss.
 
-### ERP-Integrationen
-Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation.
+### ERP- & Planungs-Integrationen
+Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation. v0.5 liefert außerdem steckbare Planungs-Adapter im **Beta**-Status für **FrePPLe** und **Odoo MRP**.
 
 ### Montage-Verfolgung
 Teile können Eltern-Kind-Beziehungen haben. Visuelle Gruppierung zeigt Baugruppen mit verschachtelten Komponenten. Nicht-blockierende Abhängigkeitswarnungen erinnern Werker daran, wann Unterteile fertig sein sollten, bevor Montageaufgaben beginnen — sie können dies aber bei Bedarf überschreiben.

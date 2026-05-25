@@ -291,7 +291,10 @@
     "noOperations": "Keine Arbeitsgänge",
     "operations": "Arbeitsgänge",
     "operation": "Arbeitsgang",
-    "failedToLoad": "Arbeitswarteschlange konnte nicht geladen werden"
+    "failedToLoad": "Arbeitswarteschlange konnte nicht geladen werden",
+    "empty": "Aktuell nichts in Ihrer Queue",
+    "noMatches": "Keine Operationen gefunden",
+    "selectPrompt": "Tippen Sie auf eine Operation, um Details zu sehen, einen Timer zu starten oder eine Meldung zu machen."
   },
   "common": {
     "admin": "Administrator",
@@ -1549,7 +1552,8 @@
       "unknown": "Unbekannt",
       "finalStep": "Letzter Schritt",
       "cannotProceed": "Kann nicht fortfahren - nächste Zelle auf Kapazität"
-    }
+    },
+    "empty": "Noch keine Zellen konfiguriert"
   },
   "activityMonitor": {
     "title": "Aktivitätsmonitor",
@@ -1787,5 +1791,51 @@
   "calendar": {
     "title": "Werkskalender",
     "description": "Feiertage, Schließungen und besondere Arbeitstage verwalten"
+  },
+  "mobile": {
+    "scan": "Scannen",
+    "scanTitle": "Barcode oder QR scannen",
+    "scanFab": "Code scannen",
+    "scanHint": "Halten Sie das Gerät ruhig und den Code im Bild zentriert.",
+    "scanNoResult": "Kein Code erkannt. Erneut versuchen oder manuell eingeben.",
+    "scanFailed": "Scanner fehlgeschlagen. Code manuell eingeben.",
+    "scanOpening": "Kamera wird geöffnet…",
+    "scannerUnavailable": "Live-Scan läuft in den Eryxon iOS- und Android-Apps. Geben Sie den Code unten ein.",
+    "codePlaceholder": "Auftrags-, Teile- oder Chargencode",
+    "enterManually": "Code manuell eingeben",
+    "signIn": "Bei Ihrem Terminal anmelden",
+    "signInBody": "Tippen Sie auf Ihre Mitarbeiterkarte oder geben Sie die Nummer ein, um Ihre Arbeitsqueue zu laden.",
+    "signedInAs": "Anmeldung als",
+    "enterPin": "PIN eingeben",
+    "badgePlaceholder": "Mitarbeiterkarte",
+    "continue": "Weiter",
+    "verifying": "Prüfen",
+    "unlockFace": "Mit Face ID entsperren",
+    "unlockTouch": "Mit Touch ID entsperren",
+    "biometricReason": "Operator bestätigen, um die Arbeitsqueue zu entsperren.",
+    "offline": "Sie sind offline. Änderungen werden synchronisiert, sobald Sie wieder verbunden sind."
+  },
+  "filters": {
+    "all": "Alle",
+    "mine": "Meine",
+    "active": "Aktiv",
+    "rush": "Eilauftrag"
+  },
+  "scanner": {
+    "title": "Auftrag, Teil oder Operation scannen",
+    "openCamera": "Kamera öffnen",
+    "available": "Richten Sie die Kamera auf einen gedruckten QR oder Barcode. Eryxon springt direkt zur passenden Operation.",
+    "fallback": "Kamera-Scan läuft in den nativen iOS- und Android-Apps. Geben Sie unten einen Code ein, um fortzufahren.",
+    "manualPlaceholder": "Auftrags-, Teile- oder Operations-ID",
+    "findManual": "Operation suchen",
+    "notFound": "Keine Operation gefunden für: {{value}}",
+    "unavailable": "Kamera-Scan ist nur in den nativen iOS- und Android-Apps verfügbar",
+    "permissionDenied": "Aktivieren Sie den Kamera-Zugriff in den Geräteeinstellungen, um zu scannen"
+  },
+  "activity": {
+    "today": "Heute",
+    "lastWeek": "Letzte 7 Tage",
+    "completedCount": "{{count}} fertig",
+    "empty": "Keine erfasste Zeit in den letzten 7 Tagen"
   }
 }

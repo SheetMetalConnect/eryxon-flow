@@ -109,6 +109,9 @@ verify_jwt = false
 [functions.mqtt-publish]
 verify_jwt = false
 
+[functions.pilot-alert-evaluator]
+verify_jwt = false
+
 [functions.plan-mode]
 verify_jwt = false
 

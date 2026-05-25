@@ -1,10 +1,10 @@
 ---
 import config from "@/config/config.json";
 import social from "@/config/social.json";
-import locales from "@/config/locals.json";
 import { Icon } from "@astrojs/starlight/components";
 import { markdownify } from "@/lib/utils/textConverter";
 import { getTranslations } from "@/lib/utils/languagePerser";
+import { localizePath, type Locale } from "@/lib/locale";
 
 const locale = Astro.currentLocale;
 
@@ -12,242 +12,229 @@ const menu = await getTranslations(locale || "en");
 
 const footer = menu.footer;
 const currentLocal = Astro.currentLocale || "en";
-const { hasSidebar } = Astro.locals.starlightRoute;
 
-// Build locale switcher data
-const pathname = Astro.url.pathname;
-function stripLocalePrefix(path: string, loc: string): string {
-  if (loc === "en") return path;
-  const prefix = `/${loc}`;
-  if (path === prefix || path === `${prefix}/`) return "/";
-  if (path.startsWith(`${prefix}/`)) return path.slice(prefix.length);
-  return path;
-}
-const basePath = stripLocalePrefix(pathname, currentLocal);
-const localeEntries = Object.entries(locales) as [string, { lang: string; label: string }][];
-const languageLinks = localeEntries.map(([key, val]) => ({
-  lang: val.lang,
-  label: val.label,
-  href: key === "root" ? basePath : `/${val.lang}${basePath === "/" ? "/" : basePath}`,
-  active: val.lang === currentLocal || (key === "root" && currentLocal === "en"),
-}));
-const languageLabel = Astro.locals.t("footer.language", "Language");
+// Localized legal labels, matching the marketing SiteFooter.
+const legalLabels: Record<Locale, { imprint: string; privacy: string }> = {
+  en: { imprint: "Imprint", privacy: "Privacy" },
+  nl: { imprint: "Impressum", privacy: "Privacy" },
+  de: { imprint: "Impressum", privacy: "Datenschutz" },
+};
+
+// Opt-in CTA tracking attributes for Phase 1 footer links (ERY-33).
+// Only links that declare `ctaId` in the menu config emit tracking attributes.
+const ctaAttrs = (link: any) =>
+  link?.ctaId
+    ? {
+        "data-cta-id": link.ctaId,
+        "data-cta-surface": link.ctaSurface ?? "footer",
+        "data-cta-kind": link.ctaKind,
+        "data-cta-target": link.url,
+      }
+    : {};
+
+const ctaHref = (link: any) =>
+  link && typeof link.url === "string" ? link.url : "#";
 ---
 
-{
-  !hasSidebar && (
-    <footer>
-      <div class="container">
-        <div class="top-footer">
-          {
-            footer.community && (
-              <div>
-                <h4>{footer.community.title}</h4>
-                <ul>
-                  {footer.community?.links.map((link: any) => (
-                    <li>
-                      <a href={link.url}>{link.name}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          }
-          {
-            footer.help_links && (
-              <div>
-                <h4>{footer.help_links.title}</h4>
-                <ul>
-                  {footer.help_links?.links.map((link: any) => (
-                    <li>
-                      <a href={link.url}>{link.name}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          }
-          {
-            footer.company && (
-              <div>
-                <h4>{footer.company.title}</h4>
-                <ul>
-                  {footer.company?.links.map((link: any) => (
-                    <li>
-                      <a href={link.url}>{link.name}</a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          }
+{/* Single docs footer, rendered on every Starlight surface (docs pages
+    included). IA mirrors the marketing SiteFooter: a brand column, then
+    Repository / Resources / Contact. Language switching lives in the header,
+    so the old footer language column is gone. Calm, light-first, --ery-* only. */}
+<footer>
+  <div class="container">
+    <div class="top-footer">
+      <div class="footer-brand">
+        <h4 class="brand-title">Eryxon Flow</h4>
+        <p class="brand-note">
+          Manufacturing execution for metalworking job shops. Free and open source under
+          <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>.
+        </p>
+        <ul class="social-icons">
+          {social.main.map((item) => (
+            <li>
+              <a href={item.href} aria-label={item.label} target="_blank" rel="noopener">
+                <Icon name={item?.icon as any} color="currentColor" size="20px" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-          <div>
-            <h4>{languageLabel}</h4>
-            <ul class="language-switcher">
-              {languageLinks.map((link) => (
+      {
+        footer.community && (
+          <nav aria-label={footer.community.title}>
+            <h4>{footer.community.title}</h4>
+            <ul>
+              {footer.community?.links.map((link: any) => (
                 <li>
-                  <a
-                    href={link.href}
-                    hreflang={link.lang}
-                    lang={link.lang}
-                    class:list={[{ active: link.active }]}
-                    aria-current={link.active ? "true" : undefined}
-                  >
-                    {link.label}
-                  </a>
+                  <a href={ctaHref(link)} {...ctaAttrs(link)}>{link.name}</a>
                 </li>
               ))}
             </ul>
-          </div>
-
-          {
-            config?.params?.footer_contact?.enable && (
-              <div>
-                <h4>Eryxon Flow</h4>
-                <p class="text-sm text-gray-400 mt-2">MES for job shops. Source-available,<br/>free for internal use.</p>
-
-                <ul class="social-icons">
-                  {social.main.map((item) => (
-                    <li>
-                      <a href={item.href} aria-label={item.label}>
-                        <Icon
-                          name={item?.icon as any}
-                          color="var(--sl-color-white)"
-                          size="20px"
-                        />
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )
-          }
-        </div>
-        <div class="bottom-footer">
-          <p set:html={markdownify(config?.params?.copyright)} />
-          <a href={`/${currentLocal}/privacy-policy`}
-            >{Astro.locals.t("footer.privacy", "Privacy Policy")}</a
-          >
-        </div>
-      </div>
-    </footer>
-  )
-}
+          </nav>
+        )
+      }
+      {
+        footer.help_links && (
+          <nav aria-label={footer.help_links.title}>
+            <h4>{footer.help_links.title}</h4>
+            <ul>
+              {footer.help_links?.links.map((link: any) => (
+                <li>
+                  <a href={ctaHref(link)} {...ctaAttrs(link)}>{link.name}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+      {
+        footer.company && (
+          <nav aria-label={footer.company.title}>
+            <h4>{footer.company.title}</h4>
+            <ul>
+              {footer.company?.links.map((link: any) => (
+                <li>
+                  <a href={ctaHref(link)} {...ctaAttrs(link)}>{link.name}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )
+      }
+    </div>
+    <div class="bottom-footer">
+      <p set:html={markdownify(config?.params?.copyright)} />
+      <nav class="legal-links" aria-label="Legal">
+        <a href={localizePath("/imprint/", currentLocal as Locale)}>{legalLabels[currentLocal as Locale]?.imprint ?? "Imprint"}</a>
+        <a href={localizePath("/privacy/", currentLocal as Locale)}>{legalLabels[currentLocal as Locale]?.privacy ?? "Privacy"}</a>
+      </nav>
+    </div>
+  </div>
+</footer>
 
 <style>
   @layer starlight.core {
+    /* Docs footer — mirrors the marketing SiteFooter contract. Brand column is
+       wider; nav columns are equal. Borders carry separation, --ery-* only. */
     .top-footer {
-      border-bottom: 1px solid var(--sl-color-gray-6);
-      padding: 60px 0;
+      border-block-start: 1px solid var(--ery-border);
+      padding: var(--ery-space-16) 0 var(--ery-space-12);
       display: grid;
-      gap: 2rem;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--ery-space-8);
+      grid-template-columns: 1.5fr repeat(3, 1fr);
     }
+    @media (max-width: 860px) {
+      .top-footer {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 480px) {
+      .top-footer {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .top-footer h4 {
-      font-size: 0.75rem !important;
+      font-family: var(--ery-font-mono);
+      font-size: var(--ery-text-xs) !important;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      margin-bottom: 2rem;
-      opacity: 0.5;
+      color: var(--ery-text-subtle);
+      margin: 0 0 var(--ery-space-4);
+      font-weight: 500;
     }
     .top-footer ul {
       list-style: none;
       padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--ery-space-2);
     }
     .top-footer ul li {
-      margin-bottom: 1.2rem;
+      margin: 0;
     }
-    .top-footer ul li a {
-      color: var(--sl-color-text);
+    .top-footer a {
+      color: var(--ery-text-muted);
       text-decoration: none;
-      font-size: 1rem;
-      transition: color 0.3s ease;
+      font-size: var(--ery-text-sm);
+      transition: color var(--ery-motion-base) var(--ery-ease);
     }
-    .top-footer ul li a:hover {
-      color: var(--color-primary);
+    .top-footer a:hover {
+      color: var(--ery-brand);
     }
-    .mail-form {
-      border: 1px solid var(--sl-color-gray-6);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-radius: 12px;
-      padding: 0.5rem 0.8rem;
-      background-color: var(--sl-color-black);
+
+    .footer-brand .brand-title {
+      font-family: var(--ery-font-sans);
+      font-size: var(--ery-text-base) !important;
+      text-transform: none;
+      letter-spacing: var(--ery-tracking-tight);
+      color: var(--ery-text);
+      font-weight: 600;
+      margin: 0 0 var(--ery-space-3);
     }
-    .mail-form input {
-      background-color: transparent;
-      width: 90%;
+    .footer-brand .brand-note {
+      margin: 0;
+      max-inline-size: 36ch;
+      font-size: var(--ery-text-sm);
+      line-height: var(--ery-leading-relaxed);
+      color: var(--ery-text-muted);
     }
-    .mail-form input:focus {
-      outline: none;
+    .footer-brand .brand-note a {
+      color: var(--ery-brand);
     }
-    .mail-form button {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background-color: transparent;
-      cursor: pointer;
-    }
+
     .social-icons {
       display: flex;
-      gap: 1rem;
-      margin-top: 2rem;
+      gap: var(--ery-space-3);
+      margin-block-start: var(--ery-space-5);
       flex-wrap: wrap;
-    }
-    .social-icons li a {
-      background: color-mix(in srgb, var(--sl-color-gray-4) 20%, transparent);
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.6s ease;
-    }
-    .social-icons li a:hover {
-      background: var(--color-primary-gradient);
-      color: white !important;
-    }
-
-    .bottom-footer {
-      padding: 32px 0;
-      border-top: 1px solid var(--sl-color-hairline);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-    .bottom-footer a {
-      color: var(--sl-color-text);
-      text-decoration: none;
-      transition: color 0.3s ease;
-    }
-
-    .bottom-footer a:hover {
-      color: var(--color-primary);
-    }
-    .language-switcher {
       list-style: none;
       padding: 0;
     }
-    .language-switcher li {
-      margin-bottom: 1.2rem;
+    .social-icons li a {
+      color: var(--ery-text-muted);
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--ery-border);
+      border-radius: var(--ery-radius-pill);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color var(--ery-motion-base) var(--ery-ease),
+        border-color var(--ery-motion-base) var(--ery-ease);
     }
-    .language-switcher a {
-      color: var(--sl-color-text);
+    .social-icons li a:hover {
+      color: var(--ery-brand);
+      border-color: var(--ery-border-strong);
+    }
+
+    .bottom-footer {
+      padding: var(--ery-space-6) 0;
+      border-block-start: 1px solid var(--ery-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: var(--ery-space-3) var(--ery-space-6);
+      font-size: var(--ery-text-xs);
+      color: var(--ery-text-subtle);
+    }
+    .bottom-footer :global(p) {
+      margin: 0;
+    }
+    .legal-links {
+      display: flex;
+      gap: var(--ery-space-5);
+    }
+    .bottom-footer a {
+      color: var(--ery-text-subtle);
       text-decoration: none;
-      font-size: 1rem;
-      transition: color 0.3s ease;
+      transition: color var(--ery-motion-base) var(--ery-ease);
     }
-    .language-switcher a:hover {
-      color: var(--color-primary);
-    }
-    .language-switcher a.active {
-      color: var(--color-primary);
-      font-weight: 600;
+    .bottom-footer a:hover {
+      color: var(--ery-brand);
     }
   }
 </style>

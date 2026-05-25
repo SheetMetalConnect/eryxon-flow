@@ -1,27 +1,43 @@
 ---
 title: Changelog
-description: Release history and current maintenance status for Eryxon Flow.
+description: Release history and current release status for Eryxon Flow.
 ---
 
 ## Current Status
 
-The latest release is **v0.5.1**, published on May 6, 2026. Active development is currently on hold. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is.
+**v0.6** is the current stable line and installs as a desktop **PWA** from Chrome or Edge on Windows and macOS. Most underlying surfaces are still **Beta** — the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **iOS / iPadOS** and **Android** apps are **in development and not yet released**. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
 
-Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms. For new production deployments, use the self-hosting guides and plan to maintain your own fork if you need changes beyond v0.5.1.
+The last cut git tag is **v0.5.1** (May 6, 2026); the v0.6 line builds on it and has not been separately tagged.
+
+Eryxon Flow is free to use, fork, and adapt under the Apache License 2.0 — it is fully open source.
+
+For per-release summaries that separate shipped updates from Beta status and roadmap context, see the [release notes](/release-notes/).
+
+## v0.6 — stable PWA
+
+v0.6 is the current stable line. The installable PWA is shipped and usable today; install it from
+Chrome or Edge on Windows and macOS. The touch-first `/m/*` operator preview ships alongside it.
+The native iOS and Android apps are still in development and have not been released — follow them on
+the [roadmap](/roadmap/). The v0.6 line builds on v0.5.1 and has not been separately tagged.
 
 ## v0.5.1 - May 6, 2026
 
-Maintenance hotfix for release metadata and final handoff docs.
+Maintenance hotfix for release metadata and handoff docs. It clarified the `v0.5.0` rollout story for self-hosted and integration-heavy shops. This is the last cut git tag; the v0.6 line builds on it.
+
+### Why it matters
+
+- Keeps the release story aligned with the current [Deployment Guide](/guides/deployment/), [Batch & Nesting Management](/features/batch-management/), and [MCP Server Reference](/api/mcp-server-reference/)
+- Separates shipped work from Beta status and roadmap context
 
 ### Fixed
 
 - Refreshed stale OpenTrace knowledge graph counts after regenerating the local index
-- Aligned the README BSL conversion summary with the repository `LICENSE`
-- Marked v0.5.1 as the current maintenance hotfix while preserving v0.5.0 as the final active-development release
+- Aligned the README licensing summary with the repository `LICENSE`
+- Tagged v0.5.1 as the maintenance hotfix on top of v0.5.0
 
 ## v0.5.0 - May 6, 2026
 
-Final active-development release for self-hosted planning integration and shop floor execution.
+Last web-app feature release before the native mobile push. Adds self-hosted planning integration and shop floor execution hardening.
 
 ### Highlights
 

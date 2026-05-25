@@ -1,0 +1,120 @@
+---
+/*
+ * Release-note detail / permalink (ERY-72, Slice 3) — `/release-notes/<slug>/`.
+ *
+ * Per-version surface using the same design-system release structure as the changelog index,
+ * plus the proof + conversion chrome the ERY-54 brief calls for: setup/feature/deployment docs
+ * links, an intent-matched CTA (EditorialCta, reusing the preserved `data-cta-*` contract), and a
+ * GitHub release-notes / repo-changelog secondary CTA for deeper technical detail. Optional
+ * markdown body renders below the structured items. No freeze / maintenance framing.
+ */
+import { getCollection, render } from "astro:content";
+import EditorialLayout from "@/layouts/EditorialLayout.astro";
+import EditorialCta from "@/components/EditorialCta.astro";
+
+export async function getStaticPaths() {
+  const notes = await getCollection("releaseNotes", ({ data }) => !data.draft);
+  return notes.map((note) => ({ params: { slug: note.id }, props: { note } }));
+}
+
+const { note } = Astro.props;
+const { Content } = await render(note);
+const { title, version, date, status, summary, items, roadmap, docsLinks, githubUrl, ctaIntent } =
+  note.data;
+
+const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "long" });
+const badgeLabel = { stable: "Stable", preview: "Preview", beta: "Beta" } as const;
+const tagLabel = { added: "Added", fixed: "Fixed", changed: "Changed", removed: "Removed" } as const;
+const hasBody = (note.body ?? "").trim().length > 0;
+---
+
+<EditorialLayout title={`${version} — Release notes — Eryxon Flow`} description={summary}>
+  <div class="changelog-shell">
+    <div class="index-head" style="margin-bottom:24px">
+      <div class="index-eyebrow">
+        <a href="/release-notes/">Changelog</a> · {version}
+      </div>
+    </div>
+
+    <article class="release" style="border-bottom:none">
+      <header class="release-meta">
+        <div class="release-version">{version}</div>
+        <div class="release-date">{dateFmt.format(date)}</div>
+        <span class:list={["release-badge", status]}>{badgeLabel[status]}</span>
+      </header>
+      <div>
+        <h2 class="release-h">{title}</h2>
+        <p class="release-sub">{summary}</p>
+
+        {
+          items.length > 0 && (
+            <div class="release-items">
+              {items.map((item) => (
+                <div class="release-item">
+                  <span class:list={["release-tag", item.type]}>{tagLabel[item.type]}</span>
+                  <div>
+                    <h3 class="release-item-h">{item.title}</h3>
+                    <p class="release-item-b" set:html={item.body} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          )
+        }
+
+        {
+          roadmap.length > 0 && (
+            <div class="release-roadmap">
+              <p class="release-roadmap-label">On the roadmap — dated context, not a commitment</p>
+              <ul>
+                {roadmap.map((r) => (
+                  <li>
+                    {r.href ? <a href={r.href}>{r.label}</a> : r.label}
+                    {r.note && <span> — {r.note}</span>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        {hasBody && (
+          <div class="article-body" style="margin-top:32px">
+            <Content />
+          </div>
+        )}
+
+        {
+          docsLinks.length > 0 && (
+            <div class="release-roadmap" style="border-style:solid;margin-top:32px">
+              <p class="release-roadmap-label">Setup &amp; docs</p>
+              <ul>
+                {docsLinks.map((d) => (
+                  <li>{d.href ? <a href={d.href}>{d.label}</a> : d.label}</li>
+                ))}
+              </ul>
+            </div>
+          )
+        }
+
+        <EditorialCta intent={ctaIntent} surface="release_note" />
+
+        {
+          githubUrl && (
+            <p style="margin-top:20px;font-size:var(--ery-text-sm)">
+              <a
+                href={githubUrl}
+                rel="noopener"
+                data-cta-id="release_note_github"
+                data-cta-surface="release_note"
+                data-cta-kind="external"
+              >
+                Full release notes on GitHub →
+              </a>
+            </p>
+          )
+        }
+      </div>
+    </article>
+  </div>
+</EditorialLayout>

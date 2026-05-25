@@ -194,6 +194,73 @@ function useJobOperations(jobId: string) {
 
 ---
 
+## Request-Correlated Observability (Edge)
+
+Location: `supabase/functions/_shared/observability.ts`, wired through
+`supabase/functions/_shared/handler.ts` and
+`supabase/functions/_shared/validation/errorHandler.ts`.
+
+This is the managed-pilot incident-trace baseline (ERY-39 / ERY-46). It lets a
+single request be followed from the edge log line into a durable
+`activity_log` row using one shared id.
+
+### The request-correlation contract
+
+Every request that goes through `createApiHandler` / `serveApi` carries:
+
+| Field        | Meaning                                              |
+| ------------ | ---------------------------------------------------- |
+| `requestId`  | shared correlation id (see below)                    |
+| `service`    | edge function name (first path segment)              |
+| `route`      | request URL path                                     |
+| `method`     | HTTP method                                          |
+| `statusCode` | mapped HTTP status for the outcome                   |
+| `eventType`  | domain event, e.g. `issue.created`, `edge.error`     |
+| `errorCode`  | stable error code from `mapError` (failures only)    |
+
+The same fields exist on the frontend `LogContext` (`src/lib/logger.ts`) so a
+browser log can be stitched to the edge log by `requestId`.
+
+### Request id rule
+
+- The edge boundary reads an inbound `x-request-id` header. A **valid** value
+  (≤ 200 chars, `[A-Za-z0-9._:-]`) is trusted and reused; otherwise a fresh
+  uuid is minted via `resolveRequestId`.
+- The resolved id is **always returned** in the `x-request-id` response header
+  (success and failure), and exposed to browsers via CORS
+  (`Access-Control-Expose-Headers`).
+- The same id is written into both the structured edge log line (`edgeLog`)
+  and any persisted `activity_log.metadata.request_id`.
+
+### Persistence rule
+
+`shouldPersistPilotEvent` decides what reaches `activity_log`:
+
+- `warn` and `error` events are **always** persisted.
+- `info`/`debug` events are persisted **only** when their `eventType` is in
+  `PILOT_CRITICAL_EVENT_TYPES` (auth/session recovery, tenant switch, operator
+  login, time entry, issue creation, job/operation lifecycle, webhook/MQTT
+  dispatch failures).
+- Events with no `tenantId` are skipped (the column is `NOT NULL`; this also
+  avoids persisting pre-auth failures).
+- Persistence is **best-effort**: a write failure is logged but never breaks
+  the request path.
+
+The handler persists an `edge.error` event for every mapped failure, and
+handlers can record success-path lifecycle events via
+`ctx.recordPilotEvent({ eventType, action, ... })` (see `api-issues` for the
+`issue.created` example).
+
+### Tracing one incident
+
+1. Find the edge log line for the failing request and copy its `request_id`.
+2. Query `activity_log` for the matching row:
+   `select * from activity_log where metadata->>'request_id' = '<id>'`.
+3. The row's `metadata` carries `severity`, `error_code`, `status_code`,
+   `service`, and `route` — the full edge↔DB correlation.
+
+---
+
 ## Error Boundary
 
 Location: `src/components/ErrorBoundary.tsx`

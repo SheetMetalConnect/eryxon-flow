@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Eryxon Flow — Operator (tablet)</title>
+<link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+<link rel="stylesheet" href="../../colors_and_type.css" />
+<link rel="stylesheet" href="./styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body data-screen-label="Eryxon Flow Operator (tablet)">
+<div id="root"></div>
+
+<script type="text/babel" src="./components.jsx"></script>
+<script type="text/babel">
+const { useState, useMemo, useEffect } = React;
+
+/* ============================================================
+   Mock data — realistic shop-floor job queue
+   ============================================================ */
+const OPERATIONS = [
+  {
+    id: 'op-1',
+    jobNumber: 'WO-4218',
+    operationName: 'Laser cut',
+    partNumber: 'PN-902-A',
+    material: 'Stainless 304',
+    estimatedHours: 4.5, actualHours: 2.1,
+    qty: 200,
+    dueDate: '2026-05-24',  /* today */
+    status: 'in_progress',
+    activeOperator: 'Jonas',
+    hasPdf: true, hasModel: true,
+    issues: 0,
+  },
+  {
+    id: 'op-2',
+    jobNumber: 'WO-4221',
+    operationName: 'Press brake bend',
+    partNumber: 'PN-887',
+    material: 'Aluminium 5052',
+    estimatedHours: 2.0, actualHours: 2.4,
+    qty: 50,
+    dueDate: '2026-05-22',  /* overdue */
+    status: 'on_hold',
+    activeOperator: null,
+    hasPdf: true, hasModel: true,
+    issues: 2, issuesSeverity: 'high',
+  },
+  {
+    id: 'op-3',
+    jobNumber: 'WO-4225',
+    operationName: 'TIG weld assembly',
+    partNumber: 'PN-1021',
+    material: 'Mild steel S235',
+    estimatedHours: 6.0, actualHours: 0,
+    qty: 12,
+    dueDate: '2026-05-26',
+    status: 'not_started',
+    hasPdf: true, hasModel: false,
+    issues: 0,
+  },
+  {
+    id: 'op-4',
+    jobNumber: 'WO-4214',
+    operationName: 'Deburr & polish',
+    partNumber: 'PN-870-C',
+    material: 'Brass C360',
+    estimatedHours: 1.5, actualHours: 0,
+    qty: 30,
+    dueDate: '2026-05-28',
+    status: 'not_started',
+    hasPdf: false, hasModel: false,
+    issues: 0,
+  },
+  {
+    id: 'op-5',
+    jobNumber: 'WO-4230',
+    operationName: 'Powder coat — RAL 7016',
+    partNumber: 'PN-1144',
+    material: 'Mild steel',
+    estimatedHours: 3.0, actualHours: 0,
+    qty: 120,
+    dueDate: '2026-06-02',
+    status: 'not_started',
+    hasPdf: true, hasModel: false,
+    issues: 1, issuesSeverity: 'low',
+  },
+  {
+    id: 'op-6',
+    jobNumber: 'WO-4209',
+    operationName: 'Inspection & QA',
+    partNumber: 'PN-840',
+    material: 'Stainless 316',
+    estimatedHours: 0.75, actualHours: 0,
+    qty: 18,
+    dueDate: '2026-05-29',
+    status: 'not_started',
+    hasPdf: true, hasModel: true,
+    issues: 0,
+  },
+];
+
+/* ============================================================
+   App
+   ============================================================ */
+function App() {
+  const [operator, setOperator] = useState({
+    id: 1, name: 'Jonas Bekker', initials: 'JB', cell: 'Laser cutting',
+  });
+  const [query, setQuery] = useState('');
+  const [mine, setMine] = useState(false);
+  const [detail, setDetail] = useState(null);
+  const [activeOp, setActiveOp] = useState(OPERATIONS[0]);
+
+  // Tick for elapsed timer
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setTick(x => x + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const elapsed = useMemo(() => {
+    if (!activeOp) return '00:00:00';
+    // Pretend we've been timing for ~2h6m, plus a live second
+    const baseSeconds = Math.floor(activeOp.actualHours * 3600);
+    const liveSeconds = baseSeconds + Math.floor((Date.now() / 1000) % 60);
+    const h = Math.floor(liveSeconds / 3600);
+    const m = Math.floor((liveSeconds % 3600) / 60);
+    const s = liveSeconds % 60;
+    return [h, m, s].map(n => String(n).padStart(2, '0')).join(':');
+  }, [activeOp]);
+
+  const filtered = useMemo(() => {
+    const q = query.toLowerCase().trim();
+    return OPERATIONS.filter(op => {
+      if (mine && op.activeOperator !== 'Jonas' && op.status !== 'not_started') return false;
+      if (!q) return true;
+      return (
+        op.jobNumber.toLowerCase().includes(q) ||
+        op.operationName.toLowerCase().includes(q) ||
+        op.partNumber.toLowerCase().includes(q) ||
+        (op.material && op.material.toLowerCase().includes(q))
+      );
+    });
+  }, [query, mine]);
+
+  const active = filtered.filter(o => o.status !== 'completed').length;
+  const overdue = filtered.filter(o => {
+    if (!o.dueDate) return false;
+    return new Date(o.dueDate) < new Date('2026-05-24');
+  }).length;
+
+  if (!operator) {
+    return <TerminalLogin onLogin={setOperator} />;
+  }
+
+  return (
+    <div className="op-app operator-surface">
+      <OperatorStatusBar
+        operator={operator}
+        cell={operator.cell}
+        connected
+        onLogout={() => setOperator(null)}
+      />
+
+      <main className="op-main">
+        <div className="op-page-head">
+          <h1>Work queue</h1>
+          <div className="op-page-head-stats">
+            <b>{active}</b> active · <b style={{color: 'hsl(var(--danger))'}}>{overdue}</b> overdue
+          </div>
+        </div>
+
+        <QueueToolbar
+          query={query} onQuery={setQuery}
+          mine={mine} onMine={setMine}
+          filterCount={2}
+        />
+
+        <div className="op-queue-grid">
+          {filtered.map(op => (
+            <OperationCard
+              key={op.id}
+              op={op}
+              onOpen={setDetail}
+              mine={op.activeOperator === 'Jonas' || op.id === 'op-4'}
+            />
+          ))}
+        </div>
+      </main>
+
+      <CurrentlyTimingBar
+        active={activeOp}
+        elapsed={elapsed}
+        onPause={() => alert('Pause — would stop the time entry.')}
+        onIssue={() => alert('Issue — would open the issue form.')}
+        onComplete={() => alert('Complete — would open the production quantity modal.')}
+      />
+
+      <OperationDetail
+        op={detail}
+        onClose={() => setDetail(null)}
+        onStart={() => { setActiveOp(detail); setDetail(null); }}
+      />
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>

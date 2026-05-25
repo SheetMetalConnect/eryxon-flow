@@ -352,6 +352,67 @@ describe('AuthContext', () => {
     });
   });
 
+  describe('onboarding state hydration', () => {
+    const buildProfileSource = (profileData: unknown) => ({
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          maybeSingle: vi.fn().mockResolvedValue({ data: profileData, error: null }),
+        }),
+      }),
+    });
+
+    it('hydrates onboarding_completed and onboarding_step from the profile row', async () => {
+      mockGetSession.mockResolvedValue({ data: { session: mockSession }, error: null });
+      mockFrom.mockReturnValue(
+        buildProfileSource({ ...mockProfile, onboarding_completed: true, onboarding_step: 3 }),
+      );
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.profile?.onboarding_completed).toBe(true);
+      expect(result.current.profile?.onboarding_step).toBe(3);
+    });
+
+    it('coerces null onboarding fields to deterministic defaults', async () => {
+      mockGetSession.mockResolvedValue({ data: { session: mockSession }, error: null });
+      mockFrom.mockReturnValue(
+        buildProfileSource({ ...mockProfile, onboarding_completed: null, onboarding_step: null }),
+      );
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => expect(result.current.loading).toBe(false));
+
+      expect(result.current.profile?.onboarding_completed).toBe(false);
+      expect(result.current.profile?.onboarding_step).toBe(0);
+    });
+
+    it('refreshProfile re-fetches the profile so completion state updates', async () => {
+      mockGetSession.mockResolvedValue({ data: { session: mockSession }, error: null });
+      mockFrom.mockReturnValue(
+        buildProfileSource({ ...mockProfile, onboarding_completed: false, onboarding_step: 4 }),
+      );
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.profile?.onboarding_completed).toBe(false);
+
+      // Simulate the wizard finishing: next read returns completed state.
+      mockFrom.mockReturnValue(
+        buildProfileSource({ ...mockProfile, onboarding_completed: true, onboarding_step: 4 }),
+      );
+
+      await act(async () => {
+        await result.current.refreshProfile();
+      });
+
+      expect(result.current.profile?.onboarding_completed).toBe(true);
+    });
+  });
+
   describe('useAuth hook', () => {
     it('throws error when used outside AuthProvider', () => {
       // Suppress console.error for this test

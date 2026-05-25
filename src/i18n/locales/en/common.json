@@ -57,7 +57,8 @@
     "refresh": "Refresh",
     "noTenantId": "No tenant ID",
     "pageNotFound": "Oops! Page not found",
-    "returnToHome": "Return to Home"
+    "returnToHome": "Return to Home",
+    "dismiss": "Dismiss"
   },
   "forms": {
     "required": "This field is required",
@@ -178,5 +179,12 @@
   "table": {
     "selectAll": "Select all",
     "selectRow": "Select row"
+  },
+  "pwa": {
+    "updateAvailable": "A new version is available",
+    "updateDescription": "Reload to apply the update.",
+    "reload": "Reload",
+    "later": "Later",
+    "offlineReady": "Eryxon Flow is ready to work offline"
   }
 }

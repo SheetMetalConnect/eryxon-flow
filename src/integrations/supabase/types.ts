@@ -4156,6 +4156,13 @@ export type Database = {
           message: string
         }[]
       }
+      seed_demo_operator_assignment: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          assignment_id: string
+          message: string
+        }[]
+      }
       seed_demo_operators: {
         Args: { p_tenant_id: string }
         Returns: {

@@ -21,6 +21,22 @@ export interface LogContext {
   httpStatus?: number;
   /** Duration in milliseconds */
   durationMs?: number;
+  /**
+   * Request-correlation contract (ERY-46). When a client receives an
+   * `x-request-id` from an edge response, log it here so the browser log and
+   * the edge log/activity_log row share the same id.
+   */
+  requestId?: string;
+  /** Originating service / edge function name. */
+  service?: string;
+  /** Request route (URL path). */
+  route?: string;
+  /** HTTP method. */
+  method?: string;
+  /** Mapped HTTP status code for the request outcome. */
+  statusCode?: number;
+  /** Domain event type, e.g. `issue.created`, `operation.lifecycle`. */
+  eventType?: string;
   /** Additional metadata */
   [key: string]: unknown;
 }

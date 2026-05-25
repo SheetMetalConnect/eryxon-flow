@@ -1,0 +1,129 @@
+---
+/*
+ * BaseLayout — the redesign shell's HTML document (ERY-56, Slice 1).
+ *
+ * This is the marketing-first shell that REPLACES the Starlight component-override approach as
+ * the long-term website architecture (see ERY-53 brief). It owns <html>/<head>/<body> directly
+ * instead of injecting fragments into Starlight's shell, so marketing routes under `src/pages/`
+ * render without the docs-first chrome. Starlight still owns the live docs routes today; Slice 4
+ * migrates docs entry surfaces onto this shell.
+ *
+ * What it deliberately preserves from the working site:
+ *   - the vendor-neutral CTA analytics adapter (`components/Analytics.astro`, ERY-33)
+ *   - light-mode-primary, token-driven styling (canonical UX spec, ERY-52)
+ *   - locale-correct <html lang> and canonical/hreflang SEO tags
+ */
+import "@/styles/tokens.css";
+import Analytics from "@/components/Analytics.astro";
+import config from "@/config/config.json";
+import { localeFromPath, stripLocalePrefix, localizePath, htmlLang, SUPPORTED_LOCALES } from "@/lib/locale";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Override the auto-detected locale (defaults to the locale parsed from the URL). */
+  locale?: (typeof SUPPORTED_LOCALES)[number];
+}
+
+const { title, description = "", locale: localeProp } = Astro.props;
+
+const pathname = Astro.url.pathname;
+const locale = localeProp ?? localeFromPath(pathname);
+const siteUrl = config.site.url.replace(/\/$/, "");
+const basePath = stripLocalePrefix(pathname, locale);
+
+const canonical = `${siteUrl}${pathname}`;
+const alternates = SUPPORTED_LOCALES.map((lang) => ({
+  lang,
+  href: `${siteUrl}${localizePath(basePath, lang)}`,
+}));
+---
+
+<!doctype html>
+<html lang={htmlLang(locale)} data-shell="redesign">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="canonical" href={canonical} />
+    {alternates.map(({ lang, href }) => <link rel="alternate" hreflang={lang} href={href} />)}
+    <link rel="alternate" hreflang="x-default" href={`${siteUrl}${basePath}`} />
+    <meta property="og:locale" content={locale} />
+    {
+      alternates
+        .filter((a) => a.lang !== locale)
+        .map(({ lang }) => <meta property="og:locale:alternate" content={lang} />)
+    }
+
+    <!-- Inter (sans) + JetBrains Mono (mono), per canonical UX spec -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+
+    <!-- Vendor-neutral CTA analytics adapter (ERY-33) — preserved across the redesign -->
+    <Analytics />
+    <slot name="head" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
+
+<style is:global>
+  /* Minimal redesign-shell reset. Token-driven, light-mode primary, no orb/glass motifs. */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    background-color: var(--ery-surface);
+    color: var(--ery-text);
+    font-family: var(--ery-font-sans);
+    font-size: var(--ery-text-base);
+    line-height: var(--ery-leading-normal);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    /* Canonical package: semibold (600) headings with tight tracking, sentence case.
+     * No 700-bold, no gradient text. */
+    line-height: var(--ery-leading-tight);
+    font-weight: 600;
+    letter-spacing: var(--ery-tracking-tight);
+    margin: 0 0 var(--ery-space-4);
+  }
+  a {
+    color: var(--ery-brand);
+    text-decoration: none;
+    transition: color var(--ery-motion-base) var(--ery-ease);
+  }
+  a:hover {
+    color: var(--ery-brand-hover);
+  }
+  code,
+  pre,
+  kbd {
+    font-family: var(--ery-font-mono);
+  }
+  :focus-visible {
+    outline: 2px solid var(--ery-brand);
+    outline-offset: 2px;
+  }
+</style>

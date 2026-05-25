@@ -22,8 +22,9 @@ vi.mock('@/contexts/OperatorContext', () => ({
   useOperator: () => ({ activeOperator: null }),
 }));
 
+const mockProcessCAD = vi.fn();
 vi.mock('@/hooks/useCADProcessing', () => ({
-  useCADProcessing: () => ({ processCAD: vi.fn() }),
+  useCADProcessing: () => ({ processCAD: mockProcessCAD }),
   isCADServiceEnabled: () => false,
 }));
 
@@ -40,6 +41,7 @@ vi.mock('@/lib/database', () => ({
 }));
 
 let cellsResponse: { data: any; error: any } = { data: [], error: null };
+const mockCreateSignedUrl = vi.fn(() => Promise.resolve({ data: null }));
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
@@ -59,7 +61,7 @@ vi.mock('@/integrations/supabase/client', () => ({
     removeChannel: () => {},
     storage: {
       from: () => ({
-        createSignedUrl: () => Promise.resolve({ data: null }),
+        createSignedUrl: (...args: any[]) => mockCreateSignedUrl(...args),
       }),
     },
   },
@@ -88,6 +90,22 @@ const localStorageMock = {
   key: vi.fn(),
 };
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock, writable: true });
+Object.defineProperty(globalThis, 'fetch', {
+  value: vi.fn(() =>
+    Promise.resolve({
+      blob: () => Promise.resolve(new Blob(['step'])),
+    }),
+  ),
+  writable: true,
+});
+Object.defineProperty(globalThis.URL, 'createObjectURL', {
+  value: vi.fn(() => 'blob:step-preview'),
+  writable: true,
+});
+Object.defineProperty(globalThis.URL, 'revokeObjectURL', {
+  value: vi.fn(),
+  writable: true,
+});
 
 import { useOperatorTerminal } from './useOperatorTerminal';
 import { toast } from 'sonner';
@@ -128,6 +146,11 @@ describe('useOperatorTerminal', () => {
     mockStartTimeTracking.mockReset().mockResolvedValue(undefined);
     mockStopTimeTracking.mockReset().mockResolvedValue(undefined);
     mockCompleteOperation.mockReset().mockResolvedValue(undefined);
+    mockProcessCAD.mockReset();
+    mockCreateSignedUrl.mockReset().mockResolvedValue({ data: null });
+    vi.mocked(globalThis.fetch).mockReset().mockResolvedValue({
+      blob: () => Promise.resolve(new Blob(['step'])),
+    } as any);
     mockUseProfile.mockReturnValue(mockProfile as any);
     vi.mocked(toast.success).mockReset();
     vi.mocked(toast.error).mockReset();
@@ -393,5 +416,63 @@ describe('useOperatorTerminal', () => {
     });
 
     expect(toast.error).toHaveBeenCalledWith('Already clocked');
+  });
+
+  it('reuses stored PMI metadata for the matching STEP path', async () => {
+    const storedPmi = {
+      version: '1.0',
+      dimensions: [
+        {
+          id: 'dim-1',
+          type: 'linear',
+          value: 12,
+          unit: 'mm',
+          text: '12',
+          position: { x: 1, y: 2, z: 3 },
+          leader_points: [],
+        },
+      ],
+      geometric_tolerances: [],
+      datums: [],
+      surface_finishes: [],
+      weld_symbols: [],
+      notes: [],
+      graphical_pmi: [],
+    };
+
+    mockCreateSignedUrl.mockResolvedValue({
+      data: { signedUrl: 'https://example.com/bracket.step' },
+    });
+
+    mockFetchOperationsWithDetails.mockResolvedValue([
+      makeBaseOp({
+        part: {
+          ...makeBaseOp().part,
+          file_paths: ['tenant-1/parts/part-1/bracket.step'],
+          metadata: {
+            pmi: storedPmi,
+            cad_processing: {
+              source_path: 'tenant-1/parts/part-1/bracket.step',
+            },
+          },
+        },
+      }),
+    ]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    act(() => {
+      result.current.setSelectedJobId('op-1');
+    });
+
+    await waitFor(() => {
+      expect(result.current.pmiData).toEqual(storedPmi);
+    });
+
+    expect(mockProcessCAD).not.toHaveBeenCalled();
   });
 });

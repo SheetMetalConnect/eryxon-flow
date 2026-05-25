@@ -1,0 +1,144 @@
+---
+/*
+ * SiteHeader — decision-oriented marketing navigation (ERY-60 → v0.6 locale buildout).
+ *
+ * Fills the `header` slot of MarketingLayout (the wordmark is already rendered by the layout).
+ * IA per the ERY-54 brief: Pricing · Documentation · Blog · Changelog · Roadmap, with the
+ * free trial as the single CTA button.
+ *
+ * Locale-aware: nav labels are translated and the locale-bearing routes (Pricing) carry the
+ * current locale prefix. Docs/rollout/blog/changelog are single-language surfaces (docs +
+ * editorial collections) and always link to their canonical English paths. A compact language
+ * switcher (EN/NL/DE) is rendered at the end of the bar, preserving the current base path.
+ */
+import CtaButton from "@/components/marketing/CtaButton.astro";
+import { localizePath, stripLocalePrefix, localeFromPath, SUPPORTED_LOCALES, type Locale } from "@/lib/locale";
+
+interface Props {
+  locale?: Locale;
+  /** Marks the current section for aria-current. */
+  active?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | "roadmap" | null;
+}
+
+const { locale = "en", active = null } = Astro.props;
+
+const labels: Record<Locale, Record<string, string>> = {
+  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Start free trial" },
+  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Gratis uitproberen" },
+  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Kostenlos testen" },
+};
+const t = labels[locale];
+
+// Pricing is localized; the rest are single-language canonical paths.
+// Managed rollout now lives inline on the landing (#managed-rollout), so it is no
+// longer a top-level nav item — it's reachable from the homepage and pricing CTAs.
+const links = [
+  { key: "docs", label: t.docs, href: "/introduction/" },
+  { key: "blog", label: t.blog, href: "/blog/" },
+  { key: "changelog", label: t.changelog, href: "/release-notes/" },
+  { key: "roadmap", label: t.roadmap, href: localizePath("/roadmap/", locale) },
+] as const;
+
+// Language switcher: keep the visitor on the equivalent path in each locale, but only for the
+// pure-marketing surfaces that exist per locale (home + pricing). Elsewhere, switch to that
+// locale's home.
+const currentLocale = localeFromPath(Astro.url.pathname);
+const base = stripLocalePrefix(Astro.url.pathname, currentLocale);
+const localizedBase = base === "/" || base === "/roadmap/" ? base : "/";
+const langLinks = SUPPORTED_LOCALES.map((l) => ({
+  lang: l,
+  href: localizePath(localizedBase, l),
+  current: l === locale,
+}));
+---
+
+<nav aria-label="Primary" class="ery-nav">
+  <ul class="ery-nav__list">
+    {
+      links.map((link) => (
+        <li>
+          <a href={link.href} class="ery-nav__link" aria-current={active === link.key ? "page" : undefined}>
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="ery-langswitch" role="group" aria-label="Language">
+    {
+      langLinks.map((l) => (
+        <a
+          href={l.href}
+          class="ery-langswitch__opt"
+          aria-current={l.current ? "true" : undefined}
+          hreflang={l.lang}
+        >
+          {l.lang.toUpperCase()}
+        </a>
+      ))
+    }
+  </div>
+
+  <CtaButton href="https://app.eryxon.eu" ctaId="nav_primary_hosted" surface="site_header" kind="hosted_app" variant="primary" locale={locale} external>
+    {t.cta}
+  </CtaButton>
+</nav>
+
+<style>
+  .ery-nav {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-5);
+  }
+  .ery-nav__list {
+    display: flex;
+    align-items: center;
+    gap: var(--ery-space-5);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ery-nav__link {
+    color: var(--ery-text-muted);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+  }
+  .ery-nav__link:hover,
+  .ery-nav__link[aria-current="page"] {
+    color: var(--ery-text);
+  }
+
+  .ery-langswitch {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-sm);
+  }
+  .ery-langswitch__opt {
+    font-family: var(--ery-font-mono);
+    font-size: var(--ery-text-xs);
+    font-weight: 500;
+    color: var(--ery-text-muted);
+    padding: 3px 7px;
+    border-radius: 4px;
+    line-height: 1;
+  }
+  .ery-langswitch__opt:hover {
+    color: var(--ery-text);
+    background: var(--ery-surface-subtle);
+  }
+  .ery-langswitch__opt[aria-current="true"] {
+    color: var(--ery-brand-contrast);
+    background: var(--ery-brand);
+  }
+
+  /* On narrow screens the secondary links collapse; the language switcher + CTA stay. */
+  @media (max-width: 760px) {
+    .ery-nav__list {
+      display: none;
+    }
+  }
+</style>

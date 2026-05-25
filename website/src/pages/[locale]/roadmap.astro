@@ -1,0 +1,23 @@
+---
+/*
+ * Localized roadmap — `/nl/roadmap/` and `/de/roadmap/` (v0.6).
+ *
+ * Renders the shared `Roadmap.astro` (live public Canny board, fetched at build time + link-out)
+ * with locale-specific copy. `en` is the root locale, served by `pages/roadmap/index.astro`.
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Roadmap from "@/components/marketing/Roadmap.astro";
+import { roadmapCopy } from "@/lib/marketing-content";
+import type { Locale } from "@/lib/locale";
+
+export function getStaticPaths() {
+  return [{ params: { locale: "nl" } }, { params: { locale: "de" } }];
+}
+
+const locale = Astro.params.locale as Locale;
+const c = roadmapCopy(locale);
+---
+
+<SiteLayout title={c.title} description={c.description} locale={locale} activeNav="roadmap">
+  <Roadmap locale={locale} />
+</SiteLayout>

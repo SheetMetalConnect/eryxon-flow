@@ -45,5 +45,19 @@ serveApi(
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,
     validator: IssueValidator,
+    // Pilot-critical lifecycle event (ERY-46): persist issue creation into
+    // activity_log with the request-correlated id so a pilot incident trace
+    // links the edge log and the durable row.
+    onCreated: (ctx, record) =>
+      ctx.recordPilotEvent({
+        level: "info",
+        eventType: "issue.created",
+        action: "issue.created",
+        description: `Issue created: ${record?.title ?? record?.id ?? "unknown"}`,
+        entityType: "issue",
+        entityId: record?.id,
+        entityName: record?.title,
+        extra: { severity: record?.severity, issue_type: record?.issue_type },
+      }),
   })
 );

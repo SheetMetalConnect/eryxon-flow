@@ -1,0 +1,23 @@
+---
+/*
+ * Homepage — `/` (ERY-60 → v0.6 full-fidelity landing).
+ *
+ * Thin locale-agnostic shell (root locale = en). All landing markup + copy live in the shared
+ * `Landing.astro` component, ported section-for-section from the canonical kit landing
+ * (`ui_kits/marketing/index.html` + `components.jsx` + `styles.css`): hero, product-frame mockup,
+ * feature grid 00–05, how-it-works steps, API code block, integrations grid, dark CTA banner.
+ * The localized variants render the same component at `/nl/` and `/de/` (`pages/[locale]/index.astro`).
+ *
+ * Per Luke's content rules: no invented testimonials/stats, no customer names/logos, Luke's
+ * three-tier pricing model lives on `/pricing/` (not the kit's €199/€699).
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Landing from "@/components/marketing/Landing.astro";
+import { landingCopy } from "@/lib/marketing-content";
+
+const c = landingCopy("en");
+---
+
+<SiteLayout title={c.title} description={c.description} locale="en">
+  <Landing locale="en" />
+</SiteLayout>

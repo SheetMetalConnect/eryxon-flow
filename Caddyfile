@@ -1,12 +1,79 @@
-# Replace app.eryxon-flow.com with your domain
-app.eryxon-flow.com {
-    reverse_proxy app:80
+# Eryxon Flow — Caddy reverse proxy
+#
+# Caddy auto-issues TLS certificates so the PWA install prompt fires
+# (browsers gate Service Worker registration on a secure context).
+# Pick the section that matches your deployment.
 
-    # Security headers (Caddy adds many by default)
+# ─── A. Public host (Internet, ACME via Let's Encrypt) ────────────────────
+# Use this when the shop has a public-facing hostname and a real DNS record.
+# Caddy talks to Let's Encrypt automatically; nothing else to configure.
+#
+# eryxon.example.com {
+#     reverse_proxy eryxon-flow:80
+#     header {
+#         X-Frame-Options "DENY"
+#         X-Content-Type-Options "nosniff"
+#         X-XSS-Protection "1; mode=block"
+#         Referrer-Policy "strict-origin-when-cross-origin"
+#     }
+# }
+
+# ─── B. LAN host (no public DNS, no Internet ACME) ────────────────────────
+# This is the primary self-host path. The shop-floor server doesn't have
+# a public domain, so we let Caddy issue an *internal* cert from its own
+# CA for an mDNS hostname (e.g. `shop-floor.local`) plus the LAN IP.
+# Operators install the Caddy root once on each device; from then on the
+# PWA installs over HTTPS, the SW registers, and Bonjour resolves the
+# hostname on iOS / iPadOS / macOS / modern Android.
+#
+# How to use:
+#   1. Set $LAN_HOST to the operator-facing hostname (must end .local for
+#      Bonjour to resolve it without DNS). Example: shop-floor.local
+#   2. Set $LAN_IP to the static IP of this server on the LAN.
+#   3. `docker compose up -d caddy` — Caddy generates the internal CA on
+#      first start (root cert at /data/caddy/pki/authorities/local/root.crt
+#      inside the container).
+#   4. Copy that root.crt to each tablet and trust it:
+#        - iOS: AirDrop / email → Settings → Profile Downloaded → Install,
+#          then Settings → General → About → Certificate Trust Settings
+#          → enable.
+#        - Android: copy to device → Settings → Security → Encryption &
+#          Credentials → Install a certificate → CA certificate.
+#        - macOS: double-click → Keychain Access → Always Trust.
+
+{$LAN_HOST:shop-floor.local}, https://{$LAN_IP:127.0.0.1} {
+    # `tls internal` tells Caddy to issue a self-signed cert from its own
+    # CA. Browsers and WebViews will trust it once the root is installed.
+    tls internal
+
+    reverse_proxy eryxon-flow:80
+
+    # Same security-headers snippet that nginx includes; we re-emit them
+    # at the Caddy edge so they apply even when Caddy serves from cache.
     header {
         X-Frame-Options "DENY"
         X-Content-Type-Options "nosniff"
         X-XSS-Protection "1; mode=block"
         Referrer-Policy "strict-origin-when-cross-origin"
+        # Service-Worker-Allowed lets the SW manage paths beyond /sw.js.
+        ?Service-Worker-Allowed "/"
     }
+
+    # Don't cache the SW or the runtime config — operators must see new
+    # builds without manual reloads.
+    @nocache path /sw.js /env.js
+    header @nocache Cache-Control "no-cache, no-store, must-revalidate"
+
+    # Long-cache hashed assets.
+    @assets path /assets/*
+    header @assets Cache-Control "public, max-age=31536000, immutable"
 }
+
+# ─── C. Pure-HTTP LAN (no TLS at all) ─────────────────────────────────────
+# Discouraged — without TLS the browser refuses to register the Service
+# Worker, so the PWA install prompt never fires and offline support is
+# disabled. Native Capacitor builds still work because the in-app config
+# (`network_security_config.xml` on Android, NSAllowsLocalNetworking on
+# iOS) permits cleartext to RFC1918 ranges and .local. If you really
+# want HTTP-only LAN, expose port 80 from `eryxon-flow` directly and
+# skip this Caddy file entirely.

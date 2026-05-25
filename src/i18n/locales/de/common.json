@@ -55,7 +55,8 @@
     "refresh": "Aktualisieren",
     "noTenantId": "Keine Mandanten-ID",
     "pageNotFound": "Hoppla! Seite nicht gefunden",
-    "returnToHome": "Zurück zur Startseite"
+    "returnToHome": "Zurück zur Startseite",
+    "dismiss": "Schließen"
   },
   "forms": {
     "required": "Dieses Feld ist erforderlich",
@@ -176,5 +177,12 @@
   "table": {
     "selectAll": "Alle auswählen",
     "selectRow": "Zeile auswählen"
+  },
+  "pwa": {
+    "updateAvailable": "Eine neue Version ist verfügbar",
+    "updateDescription": "Neu laden, um das Update anzuwenden.",
+    "reload": "Neu laden",
+    "later": "Später",
+    "offlineReady": "Eryxon Flow ist bereit für die Offline-Nutzung"
   }
 }

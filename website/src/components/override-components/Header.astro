@@ -118,13 +118,16 @@ const hasSidebar = Astro.locals.starlightRoute.hasSidebar;
       )
     }
 
-    {!hasSidebar && <div class="mr-4"><LanguageSelect /></div> }
+    {/* Language switcher lives in the header on every surface. On docs pages it
+        previously sat in the removed horizontal tab-bar; it now sits here next
+        to search + theme so docs keep a single, calm navigation layer. */}
+    <div class="header-lang mr-4"><LanguageSelect /></div>
     {settings.theme_switcher && <ThemeSwitch className="lg:mx-6 mr-10" />}
 
     {
       navigation_button.enable && (
         <a
-          class="btn btn-outline-primary hidden! lg:inline-block!"
+          class="btn btn-primary whitespace-nowrap hidden! lg:inline-block!"
           href={navigation_button.link}
         >
           {navigation_button.translations

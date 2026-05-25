@@ -1,0 +1,23 @@
+---
+/*
+ * Localized imprint — `/nl/imprint/` and `/de/imprint/` (v0.6).
+ *
+ * Renders the shared `Legal.astro` with locale-specific Impressum copy. `en` is the root locale,
+ * served by `pages/imprint/index.astro`.
+ */
+import SiteLayout from "@/layouts/SiteLayout.astro";
+import Legal from "@/components/marketing/Legal.astro";
+import { imprintCopy } from "@/lib/marketing-content";
+import type { Locale } from "@/lib/locale";
+
+export function getStaticPaths() {
+  return [{ params: { locale: "nl" } }, { params: { locale: "de" } }];
+}
+
+const locale = Astro.params.locale as Locale;
+const copy = imprintCopy(locale);
+---
+
+<SiteLayout title={copy.title} description={copy.description} locale={locale}>
+  <Legal copy={copy} />
+</SiteLayout>

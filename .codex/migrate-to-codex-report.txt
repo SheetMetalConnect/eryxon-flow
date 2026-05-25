@@ -1,0 +1,46 @@
+Migration inventory:
+  active: instruction files - 2 found
+    - CLAUDE.md
+    - AGENTS.md
+  active: skills - 1 found
+    - explore-code
+  active: command sources - 3 found
+    provider: source command (3)
+      - explore
+      - graph-status
+      - interrogate
+  active: subagents - 8 found
+    - code-explorer
+    - dependency-analyzer
+    - explain-service
+    - find-usages
+    - opentrace
+    - repo-ops
+    - supabase-db
+    - tech-stack
+Migration surfaces:
+  active: AGENTS.md - 1 instruction file(s) found.
+  active: skills - 4 skill(s) converted.
+  active: MCP config - 1 MCP server(s) converted into config.toml.
+  active: subagents - 8 subagent(s) converted.
+Migration report:
+  manual_fix_required: AGENTS.md - Generated copy contains Claude-only instruction semantics.
+  manual_fix_required: .agents/skills/explore-code/SKILL.md - Manual review required for Claude skill fields: `allowed-tools`, `Triggers on`.
+  manual_fix_required: .agents/skills/source-command-explore/SKILL.md - Converted source command `explore` to a single-file Codex skill; review invocation and template placeholder semantics.
+  manual_fix_required: .agents/skills/source-command-graph-status/SKILL.md - Converted source command `graph-status` to a single-file Codex skill; review invocation and template placeholder semantics.
+  manual_fix_required: .agents/skills/source-command-interrogate/SKILL.md - Converted source command `interrogate` to a single-file Codex skill; review invocation and template placeholder semantics.
+  rewritten: .codex/config.toml - Converted 1 MCP server entries.
+  manual_fix_required: .codex/agents/code-explorer.toml - Manual review required for Claude subagent fields: `tools`, `Use when`.
+  manual_fix_required: .codex/agents/dependency-analyzer.toml - Manual review required for Claude subagent fields: `tools`, `Use when`.
+  manual_fix_required: .codex/agents/explain-service.toml - Manual review required for Claude subagent fields: `tools`, `Use when`.
+  manual_fix_required: .codex/agents/find-usages.toml - Manual review required for Claude subagent fields: `tools`, `Use when`.
+  manual_fix_required: .codex/agents/opentrace.toml - Manual review required for Claude subagent fields: `tools`, `Use when the user asks`.
+  manual_fix_required: .codex/agents/repo-ops.toml - Manual review required for Claude subagent fields: `tools`.
+  manual_fix_required: .codex/agents/supabase-db.toml - Manual review required for Claude subagent fields: `tools`.
+  manual_fix_required: .codex/agents/tech-stack.toml - Manual review required for Claude subagent fields: `tools`.
+  overwritten: .agents/skills/explore-code - Existing Codex skill will be replaced.
+  overwritten: .codex/agents/dependency-analyzer.toml - Existing Codex subagent will be replaced.
+  overwritten: .codex/agents/opentrace.toml - Existing Codex subagent will be replaced.
+  overwritten: .codex/agents/code-explorer.toml - Existing Codex subagent will be replaced.
+  overwritten: .codex/agents/explain-service.toml - Existing Codex subagent will be replaced.
+  overwritten: .codex/agents/find-usages.toml - Existing Codex subagent will be replaced.

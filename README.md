@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Self-hosted Planning & Shop Floor Execution for Job Shops</strong>
+  <strong>Open-source Planning & Shop Floor Execution for Job Shops</strong>
 </p>
 
 <p align="center">
@@ -13,8 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.5.1-blue" alt="Version" />
-  <img src="https://img.shields.io/badge/license-BSL--1.1-green" alt="License" />
+  <img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
   <img src="https://img.shields.io/badge/typescript-strict-3178C6?logo=typescript" alt="TypeScript" />
@@ -22,9 +21,11 @@
 
 ---
 
-> **Project Status (May 2026):** Stable v0.5.1 maintenance hotfix. v0.5.0 remains the final active-development release; active development is currently on hold, and the hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online as-is. This is a self-hosted planning integration and shop floor execution tool; you are free to use, fork, and adapt it as you wish under the BSL 1.1 license terms. The code builds, tests pass, and Docker deployment works out of the box. Start with the [Architecture docs](docs/ARCHITECTURE.md) and the [Changelog](CHANGELOG.md).
+Eryxon Flow is an open-source MES for metalworking job shops. It runs as a self-hosted platform and installs as a desktop app straight from your browser, no Electron or extra runtime. It's free under Apache 2.0: use it, fork it, adapt it however you like.
 
-Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and integrate with your ERP/planning system — all from one self-hosted platform.
+Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and connect it to your ERP or planning system.
+
+See the [Architecture docs](docs/ARCHITECTURE.md) to learn how it fits together, and the [Changelog](CHANGELOG.md) for what's new.
 
 Built for **high-mix, low-volume** production: sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through cutting, bending, welding, and assembly, this is for you.
 
@@ -54,7 +55,7 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 - Multi-language (English, Dutch, German)
 - Multi-tenant SaaS with row-level security
 - Self-hostable via Docker Compose
-- BSL 1.1 license (free for your business, converts to Apache 2.0 after the BSL change date)
+- Apache 2.0 license — fully open source, free for any use
 
 ## Quick Start
 
@@ -89,6 +90,30 @@ PostgreSQL + Auth + RLS + Realtime + Storage
 | 3D Viewer | Three.js with browser-side STEP parsing |
 | Deployment | Vercel (frontend), Supabase (backend), Docker (self-hosted) |
 | API | REST with API key auth, rate limiting, webhook dispatch |
+
+## Install as a Desktop App (PWA)
+
+Eryxon Flow ships as an installable Progressive Web App, so it runs as a standalone desktop application with its own Dock/Launchpad/Start-menu tile — no Electron, no extra runtime.
+
+**macOS — Safari 17+ (Sonoma):** open the app, then *File → Add to Dock…*. The app appears in Launchpad and Applications.
+
+**macOS / Windows / Linux — Chrome, Edge, Brave:** click the install icon at the right of the address bar (or *⋮ → Install / Apps → Install this site*). On macOS the resulting `.app` bundle shows up in Launchpad with the Eryxon icon.
+
+**iOS / iPadOS — Safari:** *Share → Add to Home Screen*.
+
+**Android — Chrome:** *⋮ → Install app*.
+
+The installed app launches in a standalone window with its own icon and works offline for assets it has already loaded. Runtime config (`/env.js`) and API calls always go to the network. When a new version ships, a toast prompts the operator to reload — no forced mid-shift reloads on shop-floor terminals.
+
+### Regenerating PWA icons
+
+If you change the brand mark, edit `public/pwa-icon.svg` and rerun:
+
+```bash
+npm run pwa:assets
+```
+
+This regenerates `pwa-{64,192,512}.png`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`, and `favicon.ico` from the SVG source.
 
 ## Self-Hosting
 
@@ -132,6 +157,14 @@ Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website
 | Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
 | Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
 
+### Native + PWA apps
+
+| Surface | Setup | Deploy + test guide |
+|---------|-------|---------------------|
+| iOS / iPadOS | [`docs/IOS.md`](docs/IOS.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#2-ios--ipados-native-app) |
+| Android | [`docs/ANDROID.md`](docs/ANDROID.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#3-android-native-app) |
+| Installable PWA (web + desktop) | n/a — `npm run build` | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#1-pwa-web--desktop-install) |
+
 ## AI Agent Support
 
 This repo is optimized for AI coding assistants:
@@ -141,7 +174,6 @@ This repo is optimized for AI coding assistants:
 | Claude Code | [CLAUDE.md](CLAUDE.md) |
 | GitHub Copilot | [.github/copilot-instructions.md](.github/copilot-instructions.md) |
 | Cursor | [.cursorrules](.cursorrules) |
-| Gemini | [GEMINI.md](GEMINI.md) |
 | Codex / Windsurf / Cline | [AGENTS.md](AGENTS.md) |
 
 Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and repo operations.
@@ -162,12 +194,11 @@ Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <questio
 
 ## License
 
-**Business Source License 1.1**
+**Apache License 2.0**
 
-- Free to use for your own manufacturing business
-- Source available for modification and self-hosting
-- Cannot offer as a competing hosted service
-- Converts to **Apache 2.0** after the BSL change date
+- Fully open source — free for any use, including commercial
+- Use, modify, fork, and self-host without restriction
+- Patent grant included
 
 See [LICENSE](LICENSE) for full terms.
 

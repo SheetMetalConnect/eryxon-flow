@@ -117,14 +117,14 @@ describe('validation utilities', () => {
       expect(result.offset).toBe(0);
     });
 
-    it('createJob schema requires customer_name and job_number', () => {
+    it('createJob schema requires customer and job_number', () => {
       const valid = {
-        customer_name: 'Acme Corp',
+        customer: 'Acme Corp',
         job_number: 'JOB-001',
       };
       expect(() => validateArgs(valid, toolSchemas.createJob)).not.toThrow();
 
-      expect(() => validateArgs({ customer_name: 'Acme' }, toolSchemas.createJob)).toThrow();
+      expect(() => validateArgs({ customer: 'Acme' }, toolSchemas.createJob)).toThrow();
       expect(() => validateArgs({ job_number: 'JOB-001' }, toolSchemas.createJob)).toThrow();
     });
 

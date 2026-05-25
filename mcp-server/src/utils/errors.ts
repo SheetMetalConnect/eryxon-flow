@@ -136,5 +136,17 @@ export function wrapError(error: unknown): AppError {
     });
   }
 
+  // Handle Supabase PostgrestError objects (plain objects with message property)
+  if (error && typeof error === 'object' && 'message' in error) {
+    const pgError = error as { message: string; code?: string; details?: string; hint?: string };
+    return new AppError(ErrorCode.DATABASE_ERROR, pgError.message, {
+      context: {
+        code: pgError.code,
+        details: pgError.details,
+        hint: pgError.hint,
+      },
+    });
+  }
+
   return new AppError(ErrorCode.INTERNAL_ERROR, String(error));
 }

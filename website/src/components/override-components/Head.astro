@@ -3,6 +3,8 @@ import { AstroFont } from "astro-font";
 import theme from "@/config/theme.json";
 import config from "@/config/config.json";
 import locales from "@/config/locals.json";
+import Analytics from "@/components/Analytics.astro";
+import { stripLocalePrefix, localizePath, isLocale, DEFAULT_LOCALE } from "@/lib/locale";
 const { head } = Astro.locals.starlightRoute;
 
 // font families
@@ -24,28 +26,22 @@ if (theme.fonts.font_family.secondary) {
     .replace(/:[ital,]*[ital@]*[wght@]*[0-9,;.]+/gi, "");
 }
 
-// SEO: Build hreflang alternate links for all locales
+// SEO: Build hreflang alternate links for all locales.
+// Locale path math is owned by `lib/locale.ts` — the single source of truth shared
+// with `layouts/BaseLayout.astro` (ERY-117 foundation handoff item 4). This override
+// no longer re-implements stripLocalePrefix/localizePath inline.
 const siteUrl = config.site.url.replace(/\/$/, "");
-const currentLocale = Astro.currentLocale || "en";
+const detectedLocale = Astro.currentLocale ?? DEFAULT_LOCALE;
+const currentLocale = isLocale(detectedLocale) ? detectedLocale : DEFAULT_LOCALE;
 const pathname = Astro.url.pathname;
-
-// Strip current locale prefix to get the base path
-function stripLocalePrefix(path: string, locale: string): string {
-  if (locale === "en") return path; // root locale has no prefix
-  const prefix = `/${locale}`;
-  if (path === prefix || path === `${prefix}/`) return "/";
-  if (path.startsWith(`${prefix}/`)) return path.slice(prefix.length);
-  return path;
-}
 
 const basePath = stripLocalePrefix(pathname, currentLocale);
 
-// Build alternate URLs for each locale
+// Build alternate URLs for each configured locale (locals.json: `root` === en).
 const localeEntries = Object.entries(locales) as [string, { lang: string; label: string }][];
-const alternates = localeEntries.map(([key, val]) => {
-  const lang = val.lang;
-  const localePath = key === "root" ? basePath : `/${lang}${basePath === "/" ? "/" : basePath}`;
-  return { lang, href: `${siteUrl}${localePath}` };
+const alternates = localeEntries.map(([, val]) => {
+  const lang = isLocale(val.lang) ? val.lang : DEFAULT_LOCALE;
+  return { lang, href: `${siteUrl}${localizePath(basePath, lang)}` };
 });
 
 // Serialized locale map for client-side auto-detect script
@@ -57,7 +53,27 @@ const supportedLangs = localeEntries.map(([key, val]) => ({
 
 ---
 
+<!-- Light-first guardrail: if no explicit user theme exists yet, seed light so
+     OS dark preference does not force dark-on-load on docs surfaces. -->
+<script is:inline>
+(() => {
+  try {
+    const storageKey = "starlight-theme";
+    const savedTheme = localStorage.getItem(storageKey);
+    if (savedTheme !== "light" && savedTheme !== "dark") {
+      localStorage.setItem(storageKey, "light");
+      document.documentElement.dataset.theme = "light";
+    }
+  } catch {
+    document.documentElement.dataset.theme = "light";
+  }
+})();
+</script>
+
 {head.map(({ tag: Tag, attrs, content }) => <Tag {...attrs} set:html={content} />)}
+
+<!-- Vendor-neutral CTA analytics adapter (ERY-33) -->
+<Analytics />
 
 <!-- SEO: canonical URL for this locale -->
 <link rel="canonical" href={`${siteUrl}${pathname}`} />
@@ -160,4 +176,3 @@ const supportedLangs = localeEntries.map(([key, val]) => ({
   });
 })();
 </script>
-

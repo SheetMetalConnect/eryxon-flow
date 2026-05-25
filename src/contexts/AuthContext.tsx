@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { queryClient } from "@/lib/queryClient";
 import { prefetchCommonData } from "@/lib/cacheInvalidation";
+import { registerPushNotifications } from "@/native";
 
 // SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
 // All actual authorization is enforced server-side via Row Level Security (RLS) policies
@@ -19,6 +20,10 @@ interface Profile {
   active: boolean;
   is_machine: boolean;
   is_root_admin: boolean;
+  // First-run onboarding state. The router (src/App.tsx) and the wizard
+  // (OnboardingWizard) gate on these, so they must be hydrated here.
+  onboarding_completed: boolean;
+  onboarding_step: number;
 }
 
 interface TenantInfo {
@@ -48,6 +53,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -60,18 +66,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // `SIGNED_IN` fires on first login *and* on every token refresh and on
+    // every browser tab restore — Supabase replays the most recent event to
+    // newly mounted listeners. We only want push registration to happen on
+    // a *fresh* sign-in (user id changed), so we track the last user id we
+    // already registered for.
+    let lastRegisteredUserId: string | null = null;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         // When a token refresh fails, session is null — purge the stale
         // refresh token from localStorage so the user can log in fresh.
         if (event === 'TOKEN_REFRESHED' && !session) {
-          logger.warn('AuthContext', 'Token refresh failed, signing out');
+          // Pilot-critical auth lifecycle event (ERY-51): a failed token refresh
+          // forces a re-login and is a common pilot incident trigger.
+          logger.warn('Token refresh failed, signing out', {
+            component: 'AuthContext',
+            service: 'client',
+            eventType: 'auth.session_recovery',
+            failureReason: 'token_refresh_failed',
+          });
           supabase.auth.signOut();
           setSession(null);
           setUser(null);
           setProfile(null);
           setTenant(null);
           setLoading(false);
+          lastRegisteredUserId = null;
           return;
         }
 
@@ -82,17 +103,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
+          // First fresh sign-in inside a Capacitor WebView triggers an
+          // APNs / FCM permission prompt and registers the device token.
+          // Skipped on TOKEN_REFRESHED, on USER_UPDATED, on tab restore, and
+          // when the user id hasn't changed since we last registered.
+          // No-op on the web (returns null). Backend dispatch isn't wired
+          // yet — see docs/IOS.md "Remaining iOS-only gaps" — but the
+          // token is logged so an admin can verify the handshake before
+          // flipping APNs on.
+          if (
+            event === 'SIGNED_IN' &&
+            session.user.id !== lastRegisteredUserId
+          ) {
+            lastRegisteredUserId = session.user.id;
+            void registerPushNotifications().then((reg) => {
+              if (reg) {
+                logger.debug('AuthContext', 'Push registration', reg.platform);
+              }
+            });
+          }
         } else {
           setProfile(null);
           setTenant(null);
           setLoading(false);
+          // No active user (e.g. SIGNED_OUT carries no session.user): clear the
+          // push-registration cache so signing back in as the same user during
+          // the same runtime re-registers the device token.
+          lastRegisteredUserId = null;
         }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (error) {
-        logger.error('AuthContext', 'Failed to recover session, signing out', error);
+        // Pilot-critical auth lifecycle event (ERY-51).
+        logger.error('Failed to recover session, signing out', error, {
+          component: 'AuthContext',
+          service: 'client',
+          eventType: 'auth.session_recovery',
+          failureReason: 'session_recovery_failed',
+        });
         supabase.auth.signOut();
         setSession(null);
         setUser(null);
@@ -106,6 +156,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
+        logger.info('Session recovered', {
+          component: 'AuthContext',
+          service: 'client',
+          eventType: 'auth.session_recovery',
+          userId: session.user.id,
+        });
         fetchProfile(session.user.id);
       } else {
         setProfile(null);
@@ -121,7 +177,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin")
+        .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin, onboarding_completed, onboarding_step")
         .eq("id", userId)
         .maybeSingle();
 
@@ -133,7 +189,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      setProfile(data as Profile);
+      // Columns are nullable in the DB (defaults applied on insert); coerce to
+      // concrete values so the router/wizard gates are deterministic.
+      setProfile({
+        ...(data as Profile),
+        onboarding_completed: data.onboarding_completed ?? false,
+        onboarding_step: data.onboarding_step ?? 0,
+      });
       await fetchTenant();
       prefetchCommonData(queryClient, data.tenant_id, {
         fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
@@ -187,16 +249,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
+      // Pilot-critical auth lifecycle event (ERY-51): root-admin tenant switch.
+      logger.info('Tenant switched', {
+        component: 'AuthContext',
+        service: 'client',
+        eventType: 'auth.tenant_switch',
+        userId: profile?.id,
+        entityType: 'tenant',
+        entityId: tenantId,
+      });
+
       await fetchTenant();
       window.location.reload();
     } catch (error) {
-      logger.error('AuthContext', 'Error switching tenant', error);
+      logger.error('Error switching tenant', error, {
+        component: 'AuthContext',
+        service: 'client',
+        eventType: 'auth.tenant_switch',
+        failureReason: 'tenant_switch_failed',
+        entityType: 'tenant',
+        entityId: tenantId,
+      });
       throw error;
     }
   };
 
   const refreshTenant = async () => {
     await fetchTenant();
+  };
+
+  // Re-hydrate the profile after a mutation that changes durable profile state
+  // (e.g. completing onboarding) so router gates reflect the new state without
+  // requiring a full reload.
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchProfile(user.id);
+    }
   };
 
   const signIn = async (email: string, password: string, captchaToken?: string | null) => {
@@ -264,7 +352,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signUp,
         signOut,
         switchTenant,
-        refreshTenant
+        refreshTenant,
+        refreshProfile
       }}
     >
       {children}
