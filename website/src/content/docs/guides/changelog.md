@@ -5,45 +5,24 @@ description: Release history and current release status for Eryxon Flow.
 
 ## Current Status
 
-The latest stable release is **v0.5.2**, published on May 9, 2026. Most of Eryxon Flow is still **Beta** — including the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **iOS / iPadOS**, **Android**, and the installable **PWA** shipped in `v0.5.2`. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
+**v0.6** is the current stable line and installs as a desktop **PWA** from Chrome or Edge on Windows and macOS. Most underlying surfaces are still **Beta** — the web app, REST API, webhooks, MQTT, and the FrePPLe and Odoo planning adapters. The **MCP server is Live**. Native **iOS / iPadOS** and **Android** apps are **in development and not yet released**. The hosted version at [app.eryxon.eu](https://app.eryxon.eu) remains online and free to try.
 
-Eryxon Flow is free to use, fork, and adapt under the Business Source License 1.1 terms.
+The last cut git tag is **v0.5.1** (May 6, 2026); the v0.6 line builds on it and has not been separately tagged.
 
-Need the historical rollout-oriented summary for the `v0.5.1` hotfix line? Read the [v0.5.1 hotfix proof snapshot](/guides/release-proof-v0-5-1/).
+Eryxon Flow is free to use, fork, and adapt under the Apache License 2.0 — it is fully open source.
 
 For per-release summaries that separate shipped updates from Beta status and roadmap context, see the [release notes](/release-notes/).
 
-## v0.5.2 - May 9, 2026
+## v0.6 — stable PWA
 
-Native-device and installable-web release that moved the product posture beyond the `v0.5.1` hotfix line.
-
-### Why it matters
-
-- Adds native iOS / iPadOS and Android shells plus an installable PWA around the existing React app
-- Introduces a touch-first `/m/*` route shell for operators across phone, tablet, and installable web runtimes
-- Refreshes website and docs status language for the `v0.5.x` line
-
-### Added
-
-- Native iOS / iPadOS app
-- Native Android app
-- Installable PWA
-- Touch-first `/m/*` route shell with queue, scanner, activity timeline, and terminal overview flows
-
-### Changed
-
-- Website and docs status language refreshed across the `v0.5.x` line
-- Capacitor plugin line pinned to `7.6`
-
-### Fixed
-
-- Mobile issue tab status mapping
-- Mobile login landing route
-- MQTT docs example columns
+v0.6 is the current stable line. The installable PWA is shipped and usable today; install it from
+Chrome or Edge on Windows and macOS. The touch-first `/m/*` operator preview ships alongside it.
+The native iOS and Android apps are still in development and have not been released — follow them on
+the [roadmap](/roadmap/). The v0.6 line builds on v0.5.1 and has not been separately tagged.
 
 ## v0.5.1 - May 6, 2026
 
-Maintenance hotfix for release metadata and handoff docs. It clarified the `v0.5.0` rollout story for self-hosted and integration-heavy shops before `v0.5.2` became current.
+Maintenance hotfix for release metadata and handoff docs. It clarified the `v0.5.0` rollout story for self-hosted and integration-heavy shops. This is the last cut git tag; the v0.6 line builds on it.
 
 ### Why it matters
 
@@ -54,8 +33,8 @@ Maintenance hotfix for release metadata and handoff docs. It clarified the `v0.5
 ### Fixed
 
 - Refreshed stale OpenTrace knowledge graph counts after regenerating the local index
-- Aligned the README BSL conversion summary with the repository `LICENSE`
-- Tagged v0.5.1 as the current maintenance hotfix on top of v0.5.0
+- Aligned the README licensing summary with the repository `LICENSE`
+- Tagged v0.5.1 as the maintenance hotfix on top of v0.5.0
 
 ## v0.5.0 - May 6, 2026
 

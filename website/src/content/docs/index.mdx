@@ -1,11 +1,11 @@
 ---
 title: Eryxon Flow - MES for Job Shops
-description: Manufacturing Execution System for Job Shops. Self-hostable, API-first browser app today, with native Android and iOS apps coming soon.
+description: Manufacturing Execution System for Job Shops. Open source (Apache 2.0), self-hostable, API-first. v0.6 installs as a desktop PWA; native Android and iOS apps are in development on the public roadmap.
 template: splash
 hero:
   title: |
     MES for <span class="text-primary">Job Shops</span>
-  tagline: The shop floor app your operators will actually use. Real-time job tracking in the browser today — native Android and iOS apps coming soon.
+  tagline: The shop floor app your operators will actually use. Real-time job tracking in the browser, installable as a desktop app — native Android and iOS apps are in development on the roadmap.
   actions:
     - text: Open Hosted Version
       link: https://app.eryxon.eu
@@ -32,26 +32,26 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 <div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
   <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-warning); background: color-mix(in srgb, var(--ery-warning) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-warning) 28%, transparent);">
     <span class="inline-block h-2 w-2 rounded-full animate-pulse" style="background: currentColor;"></span>
-    Web App — Beta
+    Web App + PWA — Stable (v0.6)
   </span>
   <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-success); background: color-mix(in srgb, var(--ery-success) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-success) 28%, transparent);">
-    Android (Native) — Coming Soon
+    Android (Native) — On the roadmap
   </span>
   <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium" style="color: var(--ery-info); background: color-mix(in srgb, var(--ery-info) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-info) 28%, transparent);">
-    iOS — Coming Soon
+    iOS — On the roadmap
   </span>
 </div>
 
-<Section title="One Platform, <span class='text-primary'>Every Screen</span>" description="From the office tablet to the shop floor terminal — Eryxon Flow runs natively where your team works. Most of the app is in Beta today; the MCP server is the first surface to graduate.">
+<Section title="One Platform, <span class='text-primary'>Every Screen</span>" description="From the office tablet to the shop floor terminal — Eryxon Flow runs where your team works. v0.6 is stable and installs as a desktop PWA; native mobile apps are in development on the roadmap.">
 <Grid columns={4}>
-  <Card title="Web App" icon="seti:globe" iconColor="#fbbf24" size="sm">
-    **Beta.** Tablet-friendly responsive web app. No install — just open the browser. Real-time updates via WebSockets. Hosted version is free to try.
+  <Card title="Web App + PWA" icon="seti:globe" iconColor="#fbbf24" size="sm">
+    **Stable (v0.6).** Tablet-friendly responsive web app that installs as a desktop PWA from Chrome or Edge. Real-time updates via WebSockets. Hosted version is free to try.
   </Card>
   <Card title="Android (Native)" icon="seti:mobile" iconColor="#34d399" size="sm">
-    **Coming Soon.** Native Android app with **offline support** and **fast cold start**. Designed for rugged tablets and phones on the shop floor.
+    **In development.** Native Android app with **offline support** and **fast cold start**, designed for rugged tablets and phones. Track it on the [public roadmap](/roadmap/).
   </Card>
   <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
-    **Coming Soon.** Native iPhone and iPad app for managers and operators on Apple devices.
+    **In development.** Native iPhone and iPad app for managers and operators on Apple devices. Track it on the [public roadmap](/roadmap/).
   </Card>
   <Card title="MCP · REST · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
     **MCP server: Live.** REST API, webhooks, and MQTT are in **Beta** alongside the web app. 24 REST endpoints today.
@@ -59,16 +59,16 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Grid>
 </Section>
 
-<Section title="Current <span class='text-primary'>Status</span>" description="v0.5.x is the stable line. Most surfaces are Beta — MCP is live, native mobile apps are next.">
+<Section title="Current <span class='text-primary'>Status</span>" description="v0.6 is the stable line and installs as a desktop PWA. MCP is live; native mobile apps are in development on the roadmap.">
 <Grid columns={3}>
   <Card title="Stable Release" icon="seti:tag" iconColor="#38bdf8">
-    **v0.5.1** is the current stable release, published on May 6, 2026. v0.5.0 introduced planning adapters, MCP HTTP transport, and MQTT reliability hardening. The app itself is still **Beta**.
+    **v0.6** is the current stable release and installs as a desktop PWA from Chrome or Edge. It builds on the v0.5.x line — planning adapters, MCP HTTP transport, and MQTT reliability hardening.
   </Card>
-  <Card title="Hosted Version (Beta)" icon="seti:globe" iconColor="#fbbf24">
-    The hosted version at [app.eryxon.eu](https://app.eryxon.eu) is online and free to try. Self-hosting is fully documented for production deployments — but expect Beta-level rough edges.
+  <Card title="Hosted Version" icon="seti:globe" iconColor="#fbbf24">
+    The hosted version at [app.eryxon.eu](https://app.eryxon.eu) is online and free to try. Self-hosting is fully documented for production deployments.
   </Card>
-  <Card title="Native Apps Coming" icon="seti:mobile" iconColor="#34d399">
-    Native **Android** (with offline support and fast cold start) and **iOS** apps are coming soon. The web app remains the primary surface today.
+  <Card title="Native Apps In Development" icon="seti:mobile" iconColor="#34d399">
+    Native **Android** (offline support, fast cold start) and **iOS** apps are in development — follow them on the [public roadmap](/roadmap/). The web app and PWA are the primary surface today.
   </Card>
 </Grid>
 </Section>
@@ -83,7 +83,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     Track jobs, parts, and operations through production. Visual work queues organized by configurable stages.
   </Card>
   <Card title="Self-Hostable" icon="seti:lock" iconColor="#34d399">
-    Your production data stays yours. Run on your own infrastructure with no usage limits. BSL 1.1 (free for internal use).
+    Your production data stays yours. Run on your own infrastructure with no usage limits. Apache 2.0 (free and open source).
   </Card>
   <Card title="ERP Integration" icon="seti:db" iconColor="#fb923c">
     Sync jobs and parts from your ERP via REST API and webhooks. CSV import/export included.
@@ -175,7 +175,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 />
 </Section>
 
-<Section title="Native <span class='text-primary'>Mobile Apps</span>" description="Native Android and iOS apps coming soon — built for shop floor reliability beyond what a browser can deliver.">
+<Section title="Native <span class='text-primary'>Mobile Apps</span>" description="Native Android and iOS apps are in development on the roadmap — built for shop floor reliability beyond what a browser can deliver.">
 <Grid columns={2}>
   <Card title="Android — Native, Offline-Capable" icon="seti:mobile" iconColor="#34d399">
     Built natively (not a wrapped web view) for **fast cold start** and **offline support** so operators can keep logging time and pulling work even when shop Wi-Fi drops.
@@ -185,7 +185,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Fast app open — operators won't wait between scans
     - Camera for issue photos and barcode scanning
 
-    <span class="inline-flex items-center rounded-full px-3 py-1 mt-4 text-sm font-medium" style="color: var(--ery-success); background: color-mix(in srgb, var(--ery-success) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-success) 28%, transparent);">Coming Soon</span>
+    <span class="inline-flex items-center rounded-full px-3 py-1 mt-4 text-sm font-medium" style="color: var(--ery-success); background: color-mix(in srgb, var(--ery-success) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-success) 28%, transparent);">In development</span>
   </Card>
   <Card title="iOS — iPhone & iPad" icon="seti:mobile" iconColor="#a78bfa">
     Native iOS app for managers, supervisors, and operators on Apple devices. Same real-time data as the web app, optimized for touch.
@@ -195,13 +195,13 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Push notifications for issues and approvals
     - Camera capture for NCRs
 
-    <span class="inline-flex items-center rounded-full px-3 py-1 mt-4 text-sm font-medium" style="color: var(--ery-info); background: color-mix(in srgb, var(--ery-info) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-info) 28%, transparent);">Coming Soon</span>
+    <span class="inline-flex items-center rounded-full px-3 py-1 mt-4 text-sm font-medium" style="color: var(--ery-info); background: color-mix(in srgb, var(--ery-info) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ery-info) 28%, transparent);">In development</span>
   </Card>
 </Grid>
 
 <div class="text-center mt-8">
   <p class="text-sm" style="color: var(--ery-text-muted);">
-    Today, the Beta web app at <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> works on every browser-capable device. Native apps will land alongside the web app, sharing the same backend and API.
+    Today, the v0.6 web app at <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> works on every browser-capable device and installs as a desktop PWA. Native apps are in development on the <a href="/roadmap/" class="text-primary hover:underline">roadmap</a> and will share the same backend and API.
   </p>
 </div>
 </Section>
@@ -271,15 +271,15 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
   <div class="p-8 rounded-2xl" style="background: var(--ery-surface-subtle); border: 1px solid var(--ery-border);">
     <div class="grid md:grid-cols-2 gap-8 items-center">
       <div>
-        <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
+        <h3 class="text-2xl font-bold mb-4">Apache License 2.0</h3>
         <p class="mb-6" style="color: var(--ery-text-muted);">
-          Eryxon Flow is source-available and free to use for your own manufacturing operations.
+          Eryxon Flow is free and open source. Use it for anything, including commercial use.
           Self-hosted installations have no usage limits.
         </p>
         <div class="space-y-3">
           <div class="flex items-center gap-3">
             <div class="text-primary font-bold">&#10003;</div>
-            <span>Free for internal business use</span>
+            <span>Free for any use, including commercial</span>
           </div>
           <div class="flex items-center gap-3">
             <div class="text-primary font-bold">&#10003;</div>
@@ -287,17 +287,17 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
           </div>
           <div class="flex items-center gap-3">
             <div class="text-primary font-bold">&#10003;</div>
-            <span>No usage limits when self-hosted</span>
+            <span>No usage limits, ever</span>
           </div>
-          <div class="flex items-center gap-3" style="color: var(--ery-error);">
-            <div class="font-bold">&#10007;</div>
-            <span>No commercial resale or competitive SaaS</span>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">&#10003;</div>
+            <span>Patent grant included</span>
           </div>
         </div>
       </div>
       <div class="text-center">
         <p class="mb-6 text-sm italic" style="color: var(--ery-text-subtle);">
-          "Use it, modify it, make it yours. Just don't host it and charge others for access."
+          "Use it, modify it, make it yours. It's open source — no strings."
         </p>
         <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">
           Read Full License terms on GitHub

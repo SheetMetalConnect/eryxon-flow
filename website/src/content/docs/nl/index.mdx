@@ -1,11 +1,11 @@
 ---
 title: Eryxon Flow - MES voor Job Shops
-description: Manufacturing Execution System voor Job Shops. Self-hostable, API-first browser-app vandaag — native Android- en iOS-apps binnenkort.
+description: Manufacturing Execution System voor Job Shops. Open source (Apache 2.0), self-hostable, API-first. v0.6 installeer je als desktop-PWA; native Android- en iOS-apps zijn in ontwikkeling op de publieke roadmap.
 template: splash
 hero:
   title: |
     MES voor <span class="text-primary">Job Shops</span>
-  tagline: De werkvloer-app die je operators echt gebruiken. Vandaag real-time taaktracking in de browser — native Android- en iOS-apps binnenkort.
+  tagline: De werkvloer-app die je operators echt gebruiken. Real-time taaktracking in de browser, installeerbaar als desktop-app — native Android- en iOS-apps zijn in ontwikkeling op de roadmap.
   actions:
     - text: Open Hosted Versie
       link: https://app.eryxon.eu
@@ -29,26 +29,26 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 <div class="flex flex-wrap items-center justify-center gap-3 -mt-8 mb-4">
   <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-sm font-medium text-amber-400 ring-1 ring-inset ring-amber-500/20">
     <span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-    Web App — Beta
+    Web App + PWA — Stabiel (v0.6)
   </span>
   <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-    Android (Native) — Binnenkort
+    Android (Native) — Op de roadmap
   </span>
   <span class="inline-flex items-center gap-2 rounded-full bg-sky-500/10 px-3 py-1 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">
-    iOS — Binnenkort
+    iOS — Op de roadmap
   </span>
 </div>
 
-<Section title="Eén Platform, <span class='text-primary'>Elk Scherm</span>" description="Van het kantoortablet tot het werkvloer-terminal — Eryxon Flow draait native daar waar uw team werkt. De meeste onderdelen zijn vandaag Beta; de MCP-server is het eerste oppervlak dat die status heeft verlaten.">
+<Section title="Eén Platform, <span class='text-primary'>Elk Scherm</span>" description="Van het kantoortablet tot het werkvloer-terminal — Eryxon Flow draait daar waar je team werkt. v0.6 is stabiel en installeer je als desktop-PWA; native mobile apps zijn in ontwikkeling op de roadmap.">
 <Grid columns={4}>
-  <Card title="Web App" icon="seti:globe" iconColor="#fbbf24" size="sm">
-    **Beta.** Tablet-vriendelijke responsive web-app. Geen installatie — open de browser. Real-time updates via WebSockets. Hosted versie gratis te proberen.
+  <Card title="Web App + PWA" icon="seti:globe" iconColor="#fbbf24" size="sm">
+    **Stabiel (v0.6).** Tablet-vriendelijke responsive web-app die je als desktop-PWA installeert vanuit Chrome of Edge. Real-time updates via WebSockets. Hosted versie gratis te proberen.
   </Card>
   <Card title="Android (Native)" icon="seti:mobile" iconColor="#34d399" size="sm">
-    **Binnenkort.** Native Android-app met **offline-ondersteuning** en **snel opstarten**. Voor robuuste tablets en telefoons op de werkvloer.
+    **In ontwikkeling.** Native Android-app met **offline-ondersteuning** en **snel opstarten**, voor robuuste tablets en telefoons. Volg het op de [publieke roadmap](/nl/roadmap/).
   </Card>
   <Card title="iOS" icon="seti:mobile" iconColor="#a78bfa" size="sm">
-    **Binnenkort.** Native iPhone- en iPad-app voor managers en operators op Apple-apparaten.
+    **In ontwikkeling.** Native iPhone- en iPad-app voor managers en operators op Apple-apparaten. Volg het op de [publieke roadmap](/nl/roadmap/).
   </Card>
   <Card title="MCP · REST · MQTT" icon="seti:json" iconColor="#fb923c" size="sm">
     **MCP-server: Live.** REST-API, webhooks en MQTT zijn in **Beta** samen met de web-app. Vandaag 24 REST-endpoints.
@@ -56,16 +56,16 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Grid>
 </Section>
 
-<Section title="Huidige <span class='text-primary'>Status</span>" description="v0.5.x is de stabiele lijn. De meeste oppervlakken zijn Beta — MCP is live, native mobile apps zijn de volgende stap.">
+<Section title="Huidige <span class='text-primary'>Status</span>" description="v0.6 is de stabiele lijn en installeer je als desktop-PWA. MCP is live; native mobile apps zijn in ontwikkeling op de roadmap.">
 <Grid columns={3}>
   <Card title="Stabiele Release" icon="seti:tag" iconColor="#38bdf8">
-    **v0.5.1** is de huidige stabiele release, gepubliceerd op 6 mei 2026. v0.5.0 introduceerde planning-adapters, MCP-HTTP-transport en MQTT-versterking. De app zelf blijft **Beta**.
+    **v0.6** is de huidige stabiele release en installeer je als desktop-PWA vanuit Chrome of Edge. Het bouwt voort op de v0.5.x-lijn — planning-adapters, MCP-HTTP-transport en MQTT-versterking.
   </Card>
-  <Card title="Hosted Versie (Beta)" icon="seti:globe" iconColor="#fbbf24">
-    De hosted versie op [app.eryxon.eu](https://app.eryxon.eu) is online en gratis te proberen. Self-hosting is gedocumenteerd voor productie-deployments — verwacht Beta-niveau scherpe randjes.
+  <Card title="Hosted Versie" icon="seti:globe" iconColor="#fbbf24">
+    De hosted versie op [app.eryxon.eu](https://app.eryxon.eu) is online en gratis te proberen. Self-hosting is volledig gedocumenteerd voor productie-deployments.
   </Card>
-  <Card title="Native Apps Komen" icon="seti:mobile" iconColor="#34d399">
-    Native **Android**-app (met offline-ondersteuning en snel opstarten) en **iOS**-app komen binnenkort. De web-app blijft vandaag het primaire oppervlak.
+  <Card title="Native Apps In Ontwikkeling" icon="seti:mobile" iconColor="#34d399">
+    Native **Android**-app (offline-ondersteuning, snel opstarten) en **iOS**-app zijn in ontwikkeling — volg ze op de [publieke roadmap](/nl/roadmap/). De web-app en PWA zijn vandaag het primaire oppervlak.
   </Card>
 </Grid>
 </Section>
@@ -80,7 +80,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     Prioriteer werkorders en beheer capaciteit met visuele werkkolommen per stadium.
   </Card>
   <Card title="Zelf te hosten" icon="seti:lock" iconColor="#34d399">
-    Houd uw productiegegevens op uw eigen server. Geen gebruikslimieten. BSL 1.1 licentie (gratis voor intern gebruik).
+    Houd uw productiegegevens op uw eigen server. Geen gebruikslimieten. Apache 2.0 licentie (gratis en open source).
   </Card>
   <Card title="ERP-Integratie" icon="seti:db" iconColor="#fb923c">
     Synchroniseer orders en onderdelen uit uw ERP via de REST API. Geen dubbele invoer.
@@ -173,7 +173,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 />
 </Section>
 
-<Section title="Native <span class='text-primary'>Mobile Apps</span>" description="Native Android- en iOS-apps komen binnenkort — voor werkvloer-betrouwbaarheid die een browser alleen niet kan leveren.">
+<Section title="Native <span class='text-primary'>Mobile Apps</span>" description="Native Android- en iOS-apps zijn in ontwikkeling op de roadmap — voor werkvloer-betrouwbaarheid die een browser alleen niet kan leveren.">
 <Grid columns={2}>
   <Card title="Android — Native, Offline" icon="seti:mobile" iconColor="#34d399">
     Native gebouwd (geen web-wrapper) voor **snel opstarten** en **offline-ondersteuning**, zodat operators tijd kunnen blijven registreren en werk oppakken — ook als de werkvloer-WiFi uitvalt.
@@ -183,7 +183,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Snel openen — operators wachten niet tussen scans
     - Camera voor probleemfoto's en barcode scannen
 
-    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">Binnenkort</span>
+    <span class="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 mt-4 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">In ontwikkeling</span>
   </Card>
   <Card title="iOS — iPhone & iPad" icon="seti:mobile" iconColor="#a78bfa">
     Native iOS-app voor managers, leidinggevenden en operators op Apple-apparaten. Dezelfde real-time data als de web-app, geoptimaliseerd voor touch.
@@ -193,13 +193,13 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
     - Push-notificaties voor problemen en goedkeuringen
     - Camera-opnames voor NCR's
 
-    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">Binnenkort</span>
+    <span class="inline-flex items-center rounded-full bg-sky-500/10 px-3 py-1 mt-4 text-sm font-medium text-sky-400 ring-1 ring-inset ring-sky-500/20">In ontwikkeling</span>
   </Card>
 </Grid>
 
 <div class="text-center mt-8">
   <p class="text-sm" style="color: color-mix(in srgb, var(--sl-color-white) 60%, transparent);">
-    Vandaag werkt de Beta web-app op <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> op elk apparaat met een browser. Native apps verschijnen naast de web-app — zelfde backend, zelfde API.
+    Vandaag werkt de v0.6 web-app op <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> op elk apparaat met een browser en installeer je hem als desktop-PWA. Native apps zijn in ontwikkeling op de <a href="/nl/roadmap/" class="text-primary hover:underline">roadmap</a> en delen dezelfde backend en API.
   </p>
 </div>
 </Section>
@@ -270,15 +270,15 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
   <div class="p-8 rounded-2xl" style="background: var(--ery-surface-subtle); border: 1px solid var(--ery-border);">
     <div class="grid md:grid-cols-2 gap-8 items-center">
       <div>
-        <h3 class="text-2xl font-bold mb-4">Business Source License 1.1</h3>
+        <h3 class="text-2xl font-bold mb-4">Apache License 2.0</h3>
         <p class="mb-6" style="color: var(--ery-text-muted);">
-          Eryxon Flow is source-available en gratis te gebruiken voor uw eigen productieactiviteiten.
+          Eryxon Flow is gratis en open source. Gebruik het waarvoor u wilt, ook commercieel.
           Zelf-gehoste installaties hebben geen gebruikslimieten.
         </p>
         <div class="space-y-3">
           <div class="flex items-center gap-3">
             <div class="text-primary font-bold">&#10003;</div>
-            <span>Gratis voor intern zakelijk gebruik</span>
+            <span>Gratis voor elk gebruik, ook commercieel</span>
           </div>
           <div class="flex items-center gap-3">
             <div class="text-primary font-bold">&#10003;</div>
@@ -286,17 +286,17 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
           </div>
           <div class="flex items-center gap-3">
             <div class="text-primary font-bold">&#10003;</div>
-            <span>Geen gebruikslimieten bij zelf hosten</span>
+            <span>Geen gebruikslimieten, nooit</span>
           </div>
-          <div class="flex items-center gap-3" style="color: var(--ery-error);">
-            <div class="font-bold">&#10007;</div>
-            <span>Geen commerciele wederverkoop of concurrerende SaaS</span>
+          <div class="flex items-center gap-3">
+            <div class="text-primary font-bold">&#10003;</div>
+            <span>Inclusief patentlicentie</span>
           </div>
         </div>
       </div>
       <div class="text-center">
         <p class="mb-6 text-sm italic" style="color: var(--ery-text-subtle);">
-          "Gebruik het, pas het aan, maak het van u. Host het alleen niet om anderen tegen betaling toegang te geven."
+          "Gebruik het, pas het aan, maak het van u. Het is open source — zonder addertjes."
         </p>
         <LinkButton href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" variant="minimal">
           Lees de volledige licentievoorwaarden op GitHub

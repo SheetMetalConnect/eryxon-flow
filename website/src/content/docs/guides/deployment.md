@@ -7,7 +7,7 @@ description: "Application deployment guide for Eryxon Flow."
 
 > **Want to try it first?** Open the <a href="https://app.eryxon.eu" data-cta-id="docs_deployment_hosted_try_first_en" data-cta-surface="deployment" data-cta-kind="hosted_app" data-cta-locale="en">hosted version at app.eryxon.eu</a> before deploying your own instance. It remains online as-is.
 
-For the current `v0.5.2` self-hosted evaluation path, cite this page for the shortest setup route and the [Self-Hosting Guide](/guides/self-hosting/) for the full production checklist. Use the [Changelog](/guides/changelog/) for current release posture; the `v0.5.1` proof snapshot is historical context only.
+For the current `v0.6` self-hosted evaluation path, cite this page for the shortest setup route and the [Self-Hosting Guide](/guides/self-hosting/) for the full production checklist. Use the [Changelog](/guides/changelog/) for current release posture; the `v0.5.1` proof snapshot is historical context only.
 
 ## Quick Start (Automated)
 
@@ -98,7 +98,7 @@ docker run -p 80:80 eryxon-flow
 
 ### Option D: Docker Compose + Optional Caddy HTTPS
 
-`v0.5.2` uses a single `docker-compose.yml` as the current self-hosted Docker path. If you want HTTPS, enable the optional `caddy` service that already ships in that file and edit the included `Caddyfile` for either a public hostname or a LAN-only rollout.
+`v0.6` uses a single `docker-compose.yml` as the current self-hosted Docker path. If you want HTTPS, enable the optional `caddy` service that already ships in that file and edit the included `Caddyfile` for either a public hostname or a LAN-only rollout.
 
 ```bash
 # In docker-compose.yml: uncomment the optional `caddy` service and the

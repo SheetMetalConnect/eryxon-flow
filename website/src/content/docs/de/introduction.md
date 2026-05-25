@@ -20,7 +20,7 @@ Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
   </a>
   <a href="/de/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
     <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Self-Hosting evaluieren</strong>
-    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Betreiben Sie Eryxon auf Ihrer eigenen Infrastruktur. Source-available unter BSL 1.1.</span>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Betreiben Sie Eryxon auf Ihrer eigenen Infrastruktur. Kostenlos und quelloffen unter Apache 2.0.</span>
   </a>
 </div>
 
@@ -32,7 +32,7 @@ Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
 - **Admins** erhalten Echtzeit-Transparenz: wer woran arbeitet, Issue-Freigaben, Termin-Overrides sowie Stufen- und Materialkonfiguration.
 - **Technische Evaluatoren** erhalten ein API-first System: 24 REST-Endpunkte, Webhooks, MQTT, MCP-Server und planungsseitige Adapter für FrePPLe und Odoo.
 
-> **Stand heute:** v0.5.1 ist die aktuelle stabile Linie. Web-App, REST API, Webhooks, MQTT und die FrePPLe/Odoo-Adapter sind **Beta**; der **MCP-Server ist Live**. Native **Android**- und **iOS**-Apps stehen auf der Roadmap - heute ist die Browser-App die Primäroberfläche.
+> **Stand heute:** v0.6 ist die stabile Linie und installiert sich als Desktop-PWA. Web-App, REST API, Webhooks, MQTT und die FrePPLe/Odoo-Adapter sind **Beta**; der **MCP-Server ist Live**. Native **Android**- und **iOS**-Apps stehen auf der Roadmap, noch nicht veröffentlicht — heute ist die Browser-App die Primäroberfläche.
 
 ## Was Es Macht
 
