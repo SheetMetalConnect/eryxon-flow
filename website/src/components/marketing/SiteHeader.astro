@@ -24,7 +24,7 @@ const { locale = "en", active = null } = Astro.props;
 
 const labels: Record<Locale, Record<string, string>> = {
   en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Start free trial" },
-  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Start gratis trial" },
+  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Gratis uitproberen" },
   de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Kostenlos testen" },
 };
 const t = labels[locale];
@@ -33,7 +33,7 @@ const t = labels[locale];
 // Managed rollout now lives inline on the landing (#managed-rollout), so it is no
 // longer a top-level nav item — it's reachable from the homepage and pricing CTAs.
 const links = [
-  { key: "pricing", label: t.pricing, href: localizePath("/pricing/", locale) },
+  { key: "pricing", label: t.pricing, href: `${localizePath("/", locale)}#pricing` },
   { key: "docs", label: t.docs, href: "/introduction/" },
   { key: "blog", label: t.blog, href: "/blog/" },
   { key: "changelog", label: t.changelog, href: "/release-notes/" },
@@ -45,7 +45,7 @@ const links = [
 // locale's home.
 const currentLocale = localeFromPath(Astro.url.pathname);
 const base = stripLocalePrefix(Astro.url.pathname, currentLocale);
-const localizedBase = base === "/" || base === "/pricing/" || base === "/roadmap/" ? base : "/";
+const localizedBase = base === "/" || base === "/roadmap/" ? base : "/";
 const langLinks = SUPPORTED_LOCALES.map((l) => ({
   lang: l,
   href: localizePath(localizedBase, l),

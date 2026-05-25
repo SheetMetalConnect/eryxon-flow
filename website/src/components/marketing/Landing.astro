@@ -28,7 +28,6 @@ const c = landingCopy(locale);
 const p = pricingCopy(locale);
 
 const docsHref = localizePath("/introduction/", locale);
-const pricingHref = localizePath("/pricing/", locale);
 const selfHostHref = localizePath("/guides/self-hosting/", locale);
 
 // Managed rollout now lives inline on this page (#managed-rollout); the hero secondary
@@ -240,9 +239,6 @@ const arrow =
       </a>
     </div>
   </div>
-  <p class="mk-pricing-all">
-    <a href={pricingHref} data-cta-id="home_pricing_all" data-cta-surface="homepage_pricing" data-cta-kind="internal">{c.pricing.allLink}</a>
-  </p>
 </section>
 
 <!-- 6c · Managed rollout, inline (folded in from the standalone page) -------- -->

@@ -175,7 +175,7 @@ const LANDING: Record<Locale, LandingCopy> = {
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Lasersnijden", queueTitle: "Werkwachtrij", cards: productCards },
     features: {
       eyebrow: "Wat je krijgt",
-      h2: "Alles wat een enkelstuks- en kleinserieshop nodig heeft.",
+      h2: "Alles wat een maakbedrijf met enkelstuks en kleine series nodig heeft.",
       lead: "Geen losse modules om bij te kopen, geen prijs per gebruiker, geen verrassingen. Het hele systeem vanaf dag één — van de tablet aan de machine tot de planner en de API.",
       items: [
         { title: "Tablets aan de machine", body: "Een wachtrij per cel, zoals een kanbanbord. Knoppen van 56 pixels, dus je raakt ze met werkhandschoenen. Status, deadline en doorlooptijd lees je van een meter afstand af." },
@@ -339,15 +339,15 @@ const PRICING: Record<Locale, PricingCopy> = {
   },
   nl: {
     title: "Prijzen — Eryxon Flow",
-    description: "Host zelf, gratis en open source, laat ons hosten tegen een vast tarief met onbeperkt gebruikers, of laat het on-prem draaien met updates, monitoring en back-ups. Drie manieren om het te draaien.",
-    hero: { eyebrow: "Prijzen", h1: "Drie manieren om het te draaien.", lead: "De software is gratis en open source. Host zelf, laat ons hosten tegen een vast tarief, of laat het on-prem voor je draaien." },
+    description: "Host zelf, gratis en open source, laat ons hosten tegen een vast tarief met onbeperkt gebruikers, of laat het op je eigen locatie draaien met updates, monitoring en back-ups. Drie manieren om het te draaien.",
+    hero: { eyebrow: "Prijzen", h1: "Drie manieren om het te draaien.", lead: "De software is gratis en open source. Host zelf, laat ons hosten tegen een vast tarief, of laat het op je eigen locatie voor je draaien." },
     plans: {
-      free: { head: "Gratis / self-hosted", name: "Gratis / self-hosted", price: "Gratis", period: "· open source", sub: "Apache 2.0, geen feature-slot. Host voor altijd zelf, of start een gratis trial.", cta: "Start gratis trial",
-        features: [{ text: "Volledig product, geen feature-slot" }, { text: "Zelf hosten via Docker Compose" }, { text: "Operatorterminals op je tablets" }, { text: "REST API en webhooks" }, { text: "Apache 2.0 — forken, houden" }] },
+      free: { head: "Gratis / zelf gehost", name: "Gratis / zelf gehost", price: "Gratis", period: "· open source", sub: "Apache 2.0, niks afgeschermd. Host voor altijd zelf, of probeer het eerst gratis uit.", cta: "Gratis uitproberen",
+        features: [{ text: "Het hele product, niks afgeschermd" }, { text: "Zelf hosten via Docker Compose" }, { text: "Operatorterminals op je tablets" }, { text: "REST API en webhooks" }, { text: "Apache 2.0 — forken en houden" }] },
       hosted: { head: "Gehost", name: "Gehost", flag: "Onbeperkt gebruikers", price: "Vast tarief", sub: "Wij hosten het voor je op app.eryxon.eu. Eén vast tarief, onbeperkt gebruikers.", ctaSoon: "Neem contact op",
         features: [{ text: "Wij hosten en draaien het voor je" }, { text: "Vast tarief, onbeperkt gebruikers" }, { text: "Dagelijkse back-ups" }, { text: "Updates automatisch geregeld" }] },
-      managed: { head: "Managed on-prem", name: "Managed on-prem", price: "Even overleggen", sub: "Geïnstalleerd op je eigen infrastructuur, met updates, monitoring en back-ups geregeld.", cta: "Neem contact op",
-        features: [{ text: "Geïnstalleerd op jouw infrastructuur" }, { text: "Updates, monitoring en back-ups" }, { text: "ERP-koppeling via REST en webhooks" }, { text: "Toegesneden op jouw shop" }] },
+      managed: { head: "Beheerd op locatie", name: "Beheerd op locatie", price: "Even overleggen", sub: "Geïnstalleerd op je eigen infrastructuur, met updates, monitoring en back-ups geregeld.", cta: "Neem contact op",
+        features: [{ text: "Geïnstalleerd op jouw infrastructuur" }, { text: "Updates, monitoring en back-ups" }, { text: "ERP-koppeling via REST en webhooks" }, { text: "Toegesneden op jouw bedrijf" }] },
     },
   },
   de: {
@@ -444,7 +444,7 @@ const ROADMAP: Record<Locale, RoadmapCopy> = {
     hero: {
       eyebrow: "Roadmap",
       h1: "Wat er aankomt voor Eryxon Flow.",
-      lead: "Dit zit er al in, hier bouwen we nu aan en dit staat op de planning. De roadmap is openbaar, dus laat weten wat voor jouw shop telt.",
+      lead: "Dit zit er al in, hier bouwen we nu aan en dit staat op de planning. De roadmap is openbaar, dus laat weten wat voor jouw bedrijf telt.",
     },
     columns: [
       { status: "shipped", label: "Klaar" },
@@ -468,8 +468,8 @@ const ROADMAP: Record<Locale, RoadmapCopy> = {
     vote: {
       eyebrow: "Praat mee",
       h: "Stem op wat we hierna bouwen.",
-      b: "De volgorde ligt niet vast. Helpt iets hier jouw shop, stem erop op het publieke board, of zet erbij wat er mist.",
-      cta: "Stem op het publieke board ↗",
+      b: "De volgorde ligt niet vast. Helpt iets hier jouw bedrijf, stem erop op het publieke bord, of zet erbij wat er mist.",
+      cta: "Stem op het publieke bord ↗",
     },
   },
   de: {

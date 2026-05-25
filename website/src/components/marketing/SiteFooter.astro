@@ -93,6 +93,10 @@ const resources = [
       <div class="ery-creator-meta">
         <p class="ery-creator-name">Luke van Enkhuizen</p>
         <p class="ery-creator-org">Sheet Metal Connect e.U.</p>
+        <nav class="ery-creator-links" aria-label="Contact Luke van Enkhuizen">
+          <a href="https://www.linkedin.com/in/lvanenkhuizen/" target="_blank" rel="noopener">LinkedIn</a>
+          <a href="mailto:luke@sheetmetalconnect.com">Email</a>
+        </nav>
       </div>
     </div>
   </section>
@@ -203,6 +207,18 @@ const resources = [
     font-size: var(--ery-text-xs);
     color: var(--ery-text-muted);
     line-height: var(--ery-leading-snug);
+  }
+  .ery-creator-links {
+    display: flex;
+    gap: var(--ery-space-3);
+    margin-block-start: var(--ery-space-2);
+  }
+  .ery-creator-links a {
+    font-size: var(--ery-text-xs);
+    color: var(--ery-text-muted);
+  }
+  .ery-creator-links a:hover {
+    color: var(--ery-brand);
   }
 
   .ery-flegal {
