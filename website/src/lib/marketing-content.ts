@@ -367,24 +367,19 @@ const PRICING: Record<Locale, PricingCopy> = {
 
 /* ---------- Roadmap ----------
  *
- * The roadmap is our own content first: three status columns (Shipped / In progress / Planned)
- * with real items, rendered in the marketing design system. The public Canny board is paired in
- * as a "vote on it" call to action, not as a bare iframe. Items are deliberately conservative and
- * truthful — native iOS/Android sit under "In progress" (work in flight, not yet shipped); nothing
- * here states a version number (versions live in the release notes, not on marketing pages).
+ * The roadmap renders the REAL public Canny board (`lib/canny.ts`, fetched at build time). It is
+ * NOT a hand-maintained list — every item shown is a real Canny post. This module holds only the
+ * locale-driven chrome: hero copy, the per-status column labels, the empty-state line, and the
+ * "vote on the public board" CTA. The items themselves come from Canny.
+ *
+ * Columns map 1:1 to Canny's own roadmap statuses (`CANNY_ROADMAP_STATUSES` in `lib/canny.ts`):
+ * "under review" → "planned" → "in progress" → "complete". If a status has no posts we render an
+ * honest empty column rather than inventing entries.
  */
-export type RoadmapStatus = "shipped" | "progress" | "planned";
-
-export interface RoadmapItem {
-  /** Which status column this item belongs to. */
-  status: RoadmapStatus;
-  title: string;
-  /** One short line. */
-  note: string;
-}
+import type { CannyRoadmapStatus } from "@/lib/canny";
 
 export interface RoadmapColumn {
-  status: RoadmapStatus;
+  status: CannyRoadmapStatus;
   label: string;
 }
 
@@ -392,45 +387,39 @@ export interface RoadmapCopy {
   title: string;
   description: string;
   hero: { eyebrow: string; h1: string; lead: string };
-  /** Column headers, in render order. */
+  /** Column headers keyed to Canny statuses, in render order. */
   columns: RoadmapColumn[];
-  /** All items; the component groups them by status. */
-  items: RoadmapItem[];
+  /** Shown in a column that currently has no posts, and as a banner when the whole board is empty/unavailable. */
+  empty: { column: string; board: string };
+  /** Localized score/comment affordance labels for the live cards. */
+  meta: { votes: string; comments: string };
   /** The "vote on the public board" call-to-action card. */
   vote: { eyebrow: string; h: string; b: string; cta: string };
 }
 
 /** Public Canny roadmap board. Single source of truth for the vote-CTA link-out. */
-export const CANNY_ROADMAP_URL = "https://eryxon.canny.io/";
+export { CANNY_PUBLIC_BOARD_URL as CANNY_ROADMAP_URL } from "@/lib/canny";
 
 const ROADMAP: Record<Locale, RoadmapCopy> = {
   en: {
     title: "Roadmap — Eryxon Flow",
-    description: "What's shipped, what we're building, and what's planned for Eryxon Flow. Public roadmap, open to your votes.",
+    description: "What we're reviewing, planning, building, and have shipped for Eryxon Flow. Public roadmap, straight from Canny, open to your votes.",
     hero: {
       eyebrow: "Roadmap",
       h1: "What's next for Eryxon Flow.",
-      lead: "Here's what's already in, what we're building now, and what's coming. The roadmap is public, so tell us what matters to your shop.",
+      lead: "This is our live public board: what we're reviewing, what's planned, what's in build, and what's shipped. It's public, so tell us what matters to your shop.",
     },
     columns: [
-      { status: "shipped", label: "Shipped" },
-      { status: "progress", label: "In progress" },
+      { status: "under review", label: "Under review" },
       { status: "planned", label: "Planned" },
+      { status: "in progress", label: "In progress" },
+      { status: "complete", label: "Shipped" },
     ],
-    items: [
-      { status: "shipped", title: "Operator terminals", note: "Touch work queues per cell, built for tablets at the machine." },
-      { status: "shipped", title: "Job & part tracking", note: "Cutting, bending, welding, assembly, finishing — across cells." },
-      { status: "shipped", title: "3D STEP viewer", note: "CAD in the browser, inside the operator detail view." },
-      { status: "shipped", title: "REST API & webhooks", note: "Filtering, pagination, search, and an event for every step." },
-      { status: "shipped", title: "MCP server", note: "Let an AI assistant read and act on shop-floor data." },
-      { status: "shipped", title: "Multi-tenant, multi-language", note: "Row-level security on PostgreSQL. EN / NL / DE." },
-      { status: "progress", title: "Native iOS app", note: "A real app for the App Store, on top of the operator UI. In build." },
-      { status: "progress", title: "Native Android app", note: "Same operator experience, packaged for Android. In build." },
-      { status: "progress", title: "Capacity & WIP dashboard", note: "Sharper planner view: WIP limits per cell and due-date heat." },
-      { status: "planned", title: "Planning adapters", note: "Ready-made connectors for common ERP and planning systems." },
-      { status: "planned", title: "Shift & label printing", note: "Print work tickets and labels straight from the queue." },
-      { status: "planned", title: "Reporting export", note: "Throughput and scrap numbers out to CSV and BI tools." },
-    ],
+    empty: {
+      column: "Nothing here yet.",
+      board: "The board is empty right now, or we couldn't reach it. See the latest on the public board.",
+    },
+    meta: { votes: "votes", comments: "comments" },
     vote: {
       eyebrow: "Have your say",
       h: "Vote on what we build next.",
@@ -440,31 +429,23 @@ const ROADMAP: Record<Locale, RoadmapCopy> = {
   },
   nl: {
     title: "Roadmap — Eryxon Flow",
-    description: "Wat er al in zit, waar we aan bouwen en wat er nog komt voor Eryxon Flow. Publieke roadmap, open om op te stemmen.",
+    description: "Wat we beoordelen, plannen, bouwen en al hebben opgeleverd voor Eryxon Flow. Publieke roadmap, rechtstreeks uit Canny, open om op te stemmen.",
     hero: {
       eyebrow: "Roadmap",
       h1: "Wat er aankomt voor Eryxon Flow.",
-      lead: "Dit zit er al in, hier bouwen we nu aan en dit staat op de planning. De roadmap is openbaar, dus laat weten wat voor jouw bedrijf telt.",
+      lead: "Dit is ons live publieke bord: wat we beoordelen, wat gepland staat, waar we aan bouwen en wat al klaar is. Het is openbaar, dus laat weten wat voor jouw bedrijf telt.",
     },
     columns: [
-      { status: "shipped", label: "Klaar" },
-      { status: "progress", label: "In ontwikkeling" },
-      { status: "planned", label: "Op de planning" },
+      { status: "under review", label: "In beoordeling" },
+      { status: "planned", label: "Gepland" },
+      { status: "in progress", label: "In ontwikkeling" },
+      { status: "complete", label: "Klaar" },
     ],
-    items: [
-      { status: "shipped", title: "Tablets aan de machine", note: "Werkwachtrij per cel, gemaakt voor tablets bij de machine." },
-      { status: "shipped", title: "Order- en onderdeelvolging", note: "Snijden, kanten, lassen, assemblage, afwerking, over de cellen heen." },
-      { status: "shipped", title: "3D STEP-viewer", note: "CAD in de browser, in het orderscherm van de operator." },
-      { status: "shipped", title: "REST API en webhooks", note: "Filteren, pagineren, zoeken en een event bij elke stap." },
-      { status: "shipped", title: "MCP-server", note: "Laat een AI-assistent meelezen en meewerken op je werkvloerdata." },
-      { status: "shipped", title: "Meerdere locaties en talen", note: "Row-level security op PostgreSQL. NL, DE en EN." },
-      { status: "progress", title: "Native iOS-app", note: "Een echte app voor de App Store, bovenop het operatorscherm. In de maak." },
-      { status: "progress", title: "Native Android-app", note: "Hetzelfde operatorscherm, verpakt voor Android. In de maak." },
-      { status: "progress", title: "Capaciteits- en WIP-scherm", note: "Scherper plannerszicht: WIP-limieten per cel en deadlinedruk." },
-      { status: "planned", title: "Planningskoppelingen", note: "Kant-en-klare koppelingen voor gangbare ERP- en planningssystemen." },
-      { status: "planned", title: "Werkbon en etiket printen", note: "Werkbonnen en etiketten direct uit de wachtrij printen." },
-      { status: "planned", title: "Rapportage-export", note: "Doorlooptijd- en afkeurcijfers naar CSV en BI-tools." },
-    ],
+    empty: {
+      column: "Hier staat nog niets.",
+      board: "Het bord is nu leeg, of we konden het niet bereiken. Bekijk de laatste stand op het publieke bord.",
+    },
+    meta: { votes: "stemmen", comments: "reacties" },
     vote: {
       eyebrow: "Praat mee",
       h: "Stem op wat we hierna bouwen.",
@@ -474,31 +455,23 @@ const ROADMAP: Record<Locale, RoadmapCopy> = {
   },
   de: {
     title: "Roadmap — Eryxon Flow",
-    description: "Was schon drin ist, woran wir bauen und was noch kommt für Eryxon Flow. Öffentliche Roadmap, offen für deine Stimmen.",
+    description: "Was wir prüfen, planen, bauen und schon ausgeliefert haben für Eryxon Flow. Öffentliche Roadmap, direkt aus Canny, offen für deine Stimmen.",
     hero: {
       eyebrow: "Roadmap",
       h1: "Was als Nächstes für Eryxon Flow kommt.",
-      lead: "Das ist schon drin, daran bauen wir gerade und das ist geplant. Die Roadmap ist öffentlich, also sag uns, was für deinen Betrieb zählt.",
+      lead: "Das ist unser live öffentliches Board: was wir prüfen, was geplant ist, woran wir bauen und was schon fertig ist. Es ist öffentlich, also sag uns, was für deinen Betrieb zählt.",
     },
     columns: [
-      { status: "shipped", label: "Fertig" },
-      { status: "progress", label: "In Arbeit" },
+      { status: "under review", label: "In Prüfung" },
       { status: "planned", label: "Geplant" },
+      { status: "in progress", label: "In Arbeit" },
+      { status: "complete", label: "Fertig" },
     ],
-    items: [
-      { status: "shipped", title: "Tablets an der Maschine", note: "Arbeitsliste je Zelle, gemacht für Tablets an der Maschine." },
-      { status: "shipped", title: "Auftrags- und Teileverfolgung", note: "Schneiden, Kanten, Schweißen, Montage, Finish, über die Zellen hinweg." },
-      { status: "shipped", title: "3D-STEP-Viewer", note: "CAD im Browser, im Auftragsfenster des Werkers." },
-      { status: "shipped", title: "REST-API und Webhooks", note: "Filtern, Paginieren, Suchen und ein Event bei jedem Schritt." },
-      { status: "shipped", title: "MCP-Server", note: "Lass einen KI-Assistenten auf den Werkstattdaten mitlesen und handeln." },
-      { status: "shipped", title: "Mehrere Standorte und Sprachen", note: "Row-Level-Security auf PostgreSQL. NL, DE und EN." },
-      { status: "progress", title: "Native iOS-App", note: "Eine echte App für den App Store, auf dem Werker-UI. Im Bau." },
-      { status: "progress", title: "Native Android-App", note: "Dasselbe Werker-Erlebnis, verpackt für Android. Im Bau." },
-      { status: "progress", title: "Kapazitäts- und WIP-Ansicht", note: "Schärfere Planeransicht: WIP-Limits je Zelle und Termindruck." },
-      { status: "planned", title: "Planungsanbindungen", note: "Fertige Konnektoren für gängige ERP- und Planungssysteme." },
-      { status: "planned", title: "Laufzettel- und Etikettendruck", note: "Laufzettel und Etiketten direkt aus der Liste drucken." },
-      { status: "planned", title: "Reporting-Export", note: "Durchsatz- und Ausschusszahlen nach CSV und in BI-Tools." },
-    ],
+    empty: {
+      column: "Hier steht noch nichts.",
+      board: "Das Board ist gerade leer, oder wir konnten es nicht erreichen. Sieh dir den aktuellen Stand auf dem öffentlichen Board an.",
+    },
+    meta: { votes: "Stimmen", comments: "Kommentare" },
     vote: {
       eyebrow: "Misch dich ein",
       h: "Stimm darüber ab, was wir als Nächstes bauen.",
