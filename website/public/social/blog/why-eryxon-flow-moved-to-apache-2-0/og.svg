@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#060a14"/>
+    <stop offset="100%" stop-color="#0f1c33"/>
+  </linearGradient>
+  <radialGradient id="glow" cx="0.78" cy="0.2" r="0.8">
+    <stop offset="0%" stop-color="#1e90ff" stop-opacity="0.42"/>
+    <stop offset="100%" stop-color="#1e90ff" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+<rect width="100%" height="100%" fill="url(#bg)"/>
+<rect width="100%" height="100%" fill="url(#glow)"/>
+
+<text x="74" y="94" fill="#7cc4ff" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="600">Open source for job shops</text>
+<text x="74" y="250" fill="#f6f9ff" font-family="Inter, Arial, sans-serif" font-size="56" font-weight="700">Why Eryxon Flow moved to Apache</text>
+<text x="74" y="316" fill="#f6f9ff" font-family="Inter, Arial, sans-serif" font-size="56" font-weight="700">2.0</text>
+<text x="74" y="578" fill="#93a6c9" font-family="Inter, Arial, sans-serif" font-size="24">eryxon.eu</text>
+<text x="256" y="578" fill="#e6eefc" font-family="Inter, Arial, sans-serif" font-size="24">eryxon flow</text>
+</svg>
