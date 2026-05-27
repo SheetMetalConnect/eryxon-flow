@@ -12,6 +12,11 @@ const profileBySlug = {
     title: 'Latest Development at Eryxon Flow',
     subtitle: 'Road to v0.7',
     kicker: 'Build update'
+  },
+  "why-eryxon-flow-moved-to-apache-2-0": {
+    title: "Why Eryxon Flow moved to Apache 2.0",
+    subtitle: "Deployment freedom for job shops",
+    kicker: "License update"
   }
 };
 
