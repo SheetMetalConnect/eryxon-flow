@@ -34,6 +34,7 @@ const siteUrl = config.site.url.replace(/\/$/, "");
 const detectedLocale = Astro.currentLocale ?? DEFAULT_LOCALE;
 const currentLocale = isLocale(detectedLocale) ? detectedLocale : DEFAULT_LOCALE;
 const pathname = Astro.url.pathname;
+const defaultSocialImage = `${siteUrl}/social/og-default.png`;
 
 const basePath = stripLocalePrefix(pathname, currentLocale);
 
@@ -89,6 +90,8 @@ const supportedLangs = localeEntries.map(([key, val]) => ({
 {alternates.filter(a => a.lang !== currentLocale).map(({ lang }) => (
   <meta property="og:locale:alternate" content={lang} />
 ))}
+<meta property="og:image" content={defaultSocialImage} />
+<meta property="twitter:image" content={defaultSocialImage} />
 
 <!-- google font css -->
     <AstroFont
