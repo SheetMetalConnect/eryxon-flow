@@ -15,6 +15,18 @@ export type SyncEventType =
   | "sync.resources.completed"
   | "sync.batch.completed";
 
+export type DncEventType =
+  | "dnc.transfer.created"
+  | "dnc.transfer.start"
+  | "dnc.transfer.complete"
+  | "dnc.transfer.fail"
+  | "dnc.transfer.retry"
+  | "dnc.transfer.claimed"
+  | "dnc.transfer.heartbeat"
+  | "dnc.transfer.ticket_completed"
+  | "dnc.transfer.ticket_failed"
+  | "dnc.transfer.ticket_expired";
+
 export type EntityEventType =
   | "job.created"
   | "job.updated"
@@ -32,7 +44,7 @@ export type EntityEventType =
   | "resource.updated"
   | "issue.created";
 
-export type EventType = SyncEventType | EntityEventType;
+export type EventType = SyncEventType | EntityEventType | DncEventType;
 
 export interface EventPayload {
   event: EventType;

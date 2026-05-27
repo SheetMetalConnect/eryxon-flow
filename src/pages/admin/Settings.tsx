@@ -14,6 +14,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useProfile } from "@/hooks/useProfile";
 import { useTenant } from "@/hooks/useTenant";
 import { useAuthActions } from "@/hooks/useAuthActions";
+import { usePwaInstall } from "@/hooks/usePwaInstall";
 const loadMockData = () => import("@/lib/mockDataGenerator");
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -30,6 +31,10 @@ import {
   AlertTriangle,
   Trash2,
   UserX,
+  Smartphone,
+  Download,
+  Monitor,
+  CheckCircle2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -44,6 +49,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PwaInstallCard } from "@/components/PwaInstallCard";
 
 export const Settings: React.FC = () => {
   const { t } = useTranslation();
@@ -205,6 +211,8 @@ export const Settings: React.FC = () => {
           )}
         </CardContent>
       </Card>
+
+      <PwaInstallCard />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>

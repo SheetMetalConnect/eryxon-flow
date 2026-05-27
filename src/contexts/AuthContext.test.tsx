@@ -34,6 +34,24 @@ vi.mock('react-router-dom', () => ({
   useNavigate: () => vi.fn(),
 }));
 
+// Mock terminalCache so we can verify degraded fallback
+const mockReadTerminalCache = vi.fn();
+const mockIsCacheValid = vi.fn();
+const mockUpdateTerminalCache = vi.fn();
+const mockClearTerminalCache = vi.fn();
+vi.mock('@/lib/terminalCache', () => ({
+  readTerminalCache: () => mockReadTerminalCache(),
+  isCacheValid: () => mockIsCacheValid(),
+  updateTerminalCache: (...args: unknown[]) => mockUpdateTerminalCache(...args),
+  clearTerminalCache: () => mockClearTerminalCache(),
+  cacheFromProfile: (...args: unknown[]) => { mockUpdateTerminalCache(...args); },
+}));
+
+// Mock native push notifications
+vi.mock('@/native', () => ({
+  registerPushNotifications: vi.fn().mockResolvedValue(null),
+}));
+
 // Import after mocking
 import { AuthProvider, useAuth } from './AuthContext';
 
@@ -173,6 +191,76 @@ describe('AuthContext', () => {
       expect(result.current.user?.id).toBe(mockUser.id);
       expect(result.current.profile).toBeNull();
       expect(result.current.tenant).toBeNull();
+    });
+  });
+
+  describe('degraded bootstrap fallback', () => {
+    beforeEach(() => {
+      mockReadTerminalCache.mockReset();
+      mockIsCacheValid.mockReset();
+    });
+
+    it('hydrates from cache when session recovery fails', async () => {
+      mockGetSession.mockRejectedValue(new Error('Network error'));
+      mockReadTerminalCache.mockReturnValue({
+        profile: {
+          id: 'user-123',
+          tenant_id: 'tenant-123',
+          username: 'cacheduser',
+          full_name: 'Cached User',
+          email: 'cached@test.com',
+          role: 'operator',
+          active: true,
+          is_machine: false,
+          is_root_admin: false,
+          onboarding_completed: true,
+          onboarding_step: 0,
+        },
+        tenant: {
+          id: 'tenant-123',
+          name: 'Cached Tenant',
+          company_name: null,
+          plan: 'pro',
+          status: 'active',
+          trial_ends_at: null,
+          working_days_mask: null,
+          whitelabel_enabled: false,
+          whitelabel_logo_url: null,
+          whitelabel_app_name: null,
+          whitelabel_primary_color: null,
+          whitelabel_favicon_url: null,
+        },
+        activeOperator: null,
+        selectedCellId: null,
+        cachedAt: Date.now(),
+      });
+      mockIsCacheValid.mockReturnValue(true);
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.profile?.full_name).toBe('Cached User');
+      expect(result.current.tenant?.name).toBe('Cached Tenant');
+      expect(result.current.connectionQuality).toBe('degraded');
+    });
+
+    it('starts in online state when live fetch succeeds', async () => {
+      mockGetSession.mockResolvedValue({
+        data: { session: mockSession },
+        error: null,
+      });
+
+      const { result } = renderHook(() => useAuth(), { wrapper });
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false);
+      });
+
+      expect(result.current.profile?.full_name).toBe('Test User');
+      expect(result.current.connectionQuality).toBe('online');
     });
   });
 

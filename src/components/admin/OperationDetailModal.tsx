@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getStorageUrl, STORAGE_BUCKETS } from '@/lib/storage-url';
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
 import {
@@ -213,16 +214,11 @@ export default function OperationDetailModal({
         return;
       }
 
-      const { data, error } = await supabase.storage
-        .from("parts-cad")
-        .createSignedUrl(filePath, 3600);
+      const { url } = await getStorageUrl(STORAGE_BUCKETS.PARTS_CAD, filePath, 3600);
 
-      if (error) throw error;
-      if (!data?.signedUrl) throw new Error("Failed to generate signed URL");
-
-      let viewUrl = data.signedUrl;
+      let viewUrl = url;
       if (fileType === "step") {
-        const response = await fetch(data.signedUrl);
+        const response = await fetch(url);
         const blob = await response.blob();
         viewUrl = URL.createObjectURL(blob);
       }

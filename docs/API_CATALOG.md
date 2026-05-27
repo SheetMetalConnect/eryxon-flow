@@ -30,6 +30,10 @@
 | 22 | api-webhooks | webhooks | CRUD | GET POST PATCH DELETE | no | no |
 | 23 | api-batches | operation_batches | CRUD + custom POST | GET POST PATCH DELETE | no | no |
 | 24 | api-batch-lifecycle | operation_batches | Custom | POST | N/A | no |
+| 25 | api-nc-programs | nc_programs | CRUD | GET POST PATCH DELETE | **yes** | no |
+| 26 | api-dnc-transfers | dnc_transfer_jobs | CRUD + custom POST | GET POST PATCH DELETE | no | no |
+| 27 | api-dnc-transfer-lifecycle | dnc_transfer_jobs | Custom | POST | N/A | no |
+| 28 | api-dnc-transfer-lifecycle | dnc_transfer_tickets | Custom (ticket routes) | POST | N/A | no |
 
 ## CRUD Builder Configs
 
@@ -49,6 +53,8 @@ api-time-entries:   table=time_entries, search=[notes], filters=[operation_id, o
 api-webhook-logs:   table=webhook_logs, filters=[webhook_id, status_code, event_type] (read-only)
 api-webhooks:       table=webhooks, search=[url], filters=[events, active]
 api-batches:        table=operation_batches, search=[batch_number, material], filters=[status, batch_type, cell_id, material], sort=[batch_number, created_at, status, batch_type], no soft delete
+api-nc-programs:    table=nc_programs, search=[program_name, description, post_processor], filters=[status, program_type, part_id, operation_id, version], enableSync=true
+api-dnc-transfers:  table=dnc_transfer_jobs, search=[notes], filters=[status, nc_program_id, target_machine_id, target_cell_id, transfer_protocol, operation_id]
 ```
 
 ### Custom endpoints
@@ -69,6 +75,25 @@ api-batch-lifecycle:      POST /start?id=xxx (creates time entries, sets in_prog
                           POST /stop?id=xxx (distributes time weighted by estimated_time, sets completed),
                           POST /add-operations?id=xxx (add operations to existing batch)
                           Webhook events: batch.started, batch.completed
+api-dnc-transfers:        Custom POST creates transfer job with validator + dispatches dnc.transfer.created event
+api-dnc-transfer-lifecycle:
+  Bridge claim/ticket contract (new):
+    POST /claim?id=xxx              — Bridge claims pending transfer (atomic, exclusive)
+                                      Body: { bridge_instance_id, lease_duration_seconds? }
+                                      Creates ticket, sets transferring
+    POST /tickets/:id/heartbeat     — Refresh ticket lease (extends lease_expires_at)
+    POST /tickets/:id/complete      — Complete ticket + transfer (ticket → completed, job → completed)
+    POST /tickets/:id/fail          — Fail ticket + transfer (ticket → failed, job → failed)
+                                      Body: { error_message? }
+  Legacy direct transitions:
+    POST /start?id=xxx              — pending → transferring (if bridge_instance_id in body, delegates to claim)
+    POST /complete?id=xxx           — transferring → completed (closes any active tickets)
+    POST /fail?id=xxx               — transferring/pending → failed (closes any active tickets)
+    POST /retry?id=xxx              — failed → pending (increments retry_count)
+  Webhook events:
+    dnc.transfer.claimed, dnc.transfer.heartbeat,
+    dnc.transfer.ticket_completed, dnc.transfer.ticket_failed, dnc.transfer.ticket_expired,
+    dnc.transfer.start, dnc.transfer.complete, dnc.transfer.fail, dnc.transfer.retry
 ```
 
 ## Authentication

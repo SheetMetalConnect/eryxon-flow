@@ -34,6 +34,8 @@ export interface Batch {
   updated_at: string | null;
   nesting_image_url: string | null;
   layout_image_url: string | null;
+  nesting_image_path: string | null;
+  layout_image_path: string | null;
   parent_batch_id: string | null;
   material_requirement_raised: boolean;
   material_requirement_metadata: Record<string, unknown> | null;
@@ -91,6 +93,8 @@ export interface CreateBatchInput {
   nesting_metadata?: Record<string, unknown>;
   nesting_image_url?: string;
   layout_image_url?: string;
+  nesting_image_path?: string;
+  layout_image_path?: string;
   parent_batch_id?: string;
   operation_ids?: string[];
 }
@@ -263,6 +267,8 @@ export function useCreateBatch() {
           nesting_metadata: input.nesting_metadata as unknown,
           nesting_image_url: input.nesting_image_url,
           layout_image_url: input.layout_image_url,
+          nesting_image_path: input.nesting_image_path,
+          layout_image_path: input.layout_image_path,
           parent_batch_id: input.parent_batch_id,
           created_by: profile.id,
           status: "draft" as const,

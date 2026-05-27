@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { STORAGE_BUCKETS, getStorageUrlOrNull } from '@/lib/storage-url';
 import { QueryKeys } from "@/lib/queryClient";
 import { useProfile } from "@/hooks/useProfile";
 import { Button } from "@/components/ui/button";
@@ -107,8 +108,10 @@ export default function BatchCreate() {
   const [searchParams] = useSearchParams();
 
   const [parentBatchId, setParentBatchId] = useState<string>("__none__");
-  const [nestingImageUrl, setNestingImageUrl] = useState("");
-  const [layoutImageUrl, setLayoutImageUrl] = useState("");
+  const [nestingImagePath, setNestingImagePath] = useState("");
+  const [layoutImagePath, setLayoutImagePath] = useState("");
+  const [nestingPreviewUrl, setNestingPreviewUrl] = useState<string | null>(null);
+  const [layoutPreviewUrl, setLayoutPreviewUrl] = useState<string | null>(null);
   const [metadataJson, setMetadataJson] = useState("{}");
   const [uploadingImage, setUploadingImage] = useState(false);
 
@@ -121,8 +124,8 @@ export default function BatchCreate() {
       setThickness(existingBatch.thickness_mm || undefined);
       setNotes(existingBatch.notes || "");
       setParentBatchId(existingBatch.parent_batch_id || "__none__");
-      setNestingImageUrl(existingBatch.nesting_image_url || "");
-      setLayoutImageUrl(existingBatch.layout_image_url || "");
+      setNestingImagePath(existingBatch.nesting_image_path || existingBatch.nesting_image_url || "");
+      setLayoutImagePath(existingBatch.layout_image_path || existingBatch.layout_image_url || "");
 
       if (existingBatch.nesting_metadata) {
         setMetadataJson(JSON.stringify(existingBatch.nesting_metadata, null, 2));
@@ -133,6 +136,20 @@ export default function BatchCreate() {
     }
   }, [isEditing, existingBatch, existingOperations]);
 
+  // Load signed URLs from stored paths for preview
+  useEffect(() => {
+    if (nestingImagePath && !nestingImagePath.startsWith('https://')) {
+      getStorageUrlOrNull(STORAGE_BUCKETS.BATCH_IMAGES, nestingImagePath, 3600)
+        .then(setNestingPreviewUrl);
+    }
+  }, [nestingImagePath]);
+
+  useEffect(() => {
+    if (layoutImagePath && !layoutImagePath.startsWith('https://')) {
+      getStorageUrlOrNull(STORAGE_BUCKETS.BATCH_IMAGES, layoutImagePath, 3600)
+        .then(setLayoutPreviewUrl);
+    }
+  }, [layoutImagePath]);
 
   // Handle operation pre-selection from search params (only for create)
   useEffect(() => {
@@ -303,19 +320,11 @@ export default function BatchCreate() {
         throw uploadError;
       }
 
-      // Use signed URL for private bucket (expires in 1 year)
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('batch-images')
-        .createSignedUrl(filePath, 31536000); // 1 year in seconds
-
-      if (signedUrlError || !signedUrlData) {
-        throw signedUrlError || new Error('Failed to generate signed URL');
-      }
-
+      // Store path instead of long-lived signed URL
       if (type === 'nesting') {
-        setNestingImageUrl(signedUrlData.signedUrl);
+        setNestingImagePath(filePath);
       } else {
-        setLayoutImageUrl(signedUrlData.signedUrl);
+        setLayoutImagePath(filePath);
       }
 
       toast.success(t("batches.imageUploaded"), { description: t("batches.imageUploadedDesc") });
@@ -348,8 +357,8 @@ export default function BatchCreate() {
       material: material || undefined,
       thickness_mm: thickness,
       notes: notes || undefined,
-      nesting_image_url: nestingImageUrl || undefined,
-      layout_image_url: layoutImageUrl || undefined,
+      nesting_image_path: nestingImagePath || undefined,
+      layout_image_path: layoutImagePath || undefined,
       parent_batch_id: parentBatchId === "__none__" ? null : parentBatchId,
       nesting_metadata: parsedMetadata,
     };
@@ -558,38 +567,36 @@ export default function BatchCreate() {
                 <div>
                   <Label>{t("batches.nestingImage")}</Label>
                   <div className="mt-2 flex items-center gap-2">
-                    {nestingImageUrl ? (
-                      <div className="relative group w-full h-24 border rounded overflow-hidden">
-                        <img src={nestingImageUrl} className="w-full h-full object-cover" />
-                        <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => setNestingImageUrl("")}>
-                          <Trash2 className="h-3 w-3" />
+                    {nestingImagePath ? (
+                      <div className="relative w-16 h-16 rounded overflow-hidden border">
+                        <img src={nestingPreviewUrl || nestingImagePath} className="w-full h-full object-cover" />
+                        <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => { setNestingImagePath(""); setNestingPreviewUrl(null); }}>
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
                     ) : (
-                      <Label htmlFor="nesting-upload" className="w-full h-24 border border-dashed rounded flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50">
-                        <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                        <span className="text-xs text-muted-foreground">{t("batches.upload")}</span>
-                        <Input id="nesting-upload" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'nesting')} disabled={uploadingImage} />
-                      </Label>
+                      <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('nesting-image-upload')?.click()} disabled={uploadingImage}>
+                        <Upload className="h-4 w-4 mr-1" />
+                        {uploadingImage ? "..." : t("batches.uploadNestingImage")}
+                      </Button>
                     )}
                   </div>
                 </div>
                 <div>
                   <Label>{t("batches.layoutImage")}</Label>
                   <div className="mt-2 flex items-center gap-2">
-                    {layoutImageUrl ? (
-                      <div className="relative group w-full h-24 border rounded overflow-hidden">
-                        <img src={layoutImageUrl} className="w-full h-full object-cover" />
-                        <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => setLayoutImageUrl("")}>
-                          <Trash2 className="h-3 w-3" />
+                    {layoutImagePath ? (
+                      <div className="relative w-16 h-16 rounded overflow-hidden border">
+                        <img src={layoutPreviewUrl || layoutImagePath} className="w-full h-full object-cover" />
+                        <Button type="button" variant="destructive" size="icon" className="absolute top-1 right-1 h-6 w-6" onClick={() => { setLayoutImagePath(""); setLayoutPreviewUrl(null); }}>
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
                     ) : (
-                      <Label htmlFor="layout-upload" className="w-full h-24 border border-dashed rounded flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50">
-                        <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                        <span className="text-xs text-muted-foreground">{t("batches.upload")}</span>
-                        <Input id="layout-upload" type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'layout')} disabled={uploadingImage} />
-                      </Label>
+                      <Button type="button" variant="outline" size="sm" onClick={() => document.getElementById('layout-image-upload')?.click()} disabled={uploadingImage}>
+                        <Upload className="h-4 w-4 mr-1" />
+                        {uploadingImage ? "..." : t("batches.uploadLayoutImage")}
+                      </Button>
                     )}
                   </div>
                 </div>

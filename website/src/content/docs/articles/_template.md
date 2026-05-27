@@ -13,6 +13,13 @@ description: One or two sentences. Used for SEO and social previews. Lead with t
 # Optional: set a publish date in the body or rely on Git history until the redesign adds dated metadata (ERY-49).
 ---
 
+<!-- editorial-review
+status: draft
+reviewer:
+date:
+guide: 2026-05-26-ery-212
+editorial-review -->
+
 Open with the operator/operations problem, not the product. Who is this for and what hurts today?
 
 ## What changed
@@ -25,7 +32,7 @@ Show it. Link to the relevant doc, capability, or changelog entry. Keep "coming 
 
 ## Where to go next
 
-Close with one clear next step. Reuse an existing CTA destination:
+Close with one clear next step. Reuse an existing CTA destination. Do not change the review block to `approved` until the checklist in `strategy/2026-05-26-ery-212-editorial-voice-guide-and-draft-gate.md` passes:
 
 - Try it: [hosted version](https://app.eryxon.eu)
 - Talk to us: [Managed Rollout](/managed-rollout/)

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Image as ImageIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { logger } from '@/lib/logger';
+import { getStorageUrlOrNull, STORAGE_BUCKETS } from '@/lib/storage-url';
 
 interface ImageThumbnailProps {
   imagePath: string;
@@ -26,12 +26,10 @@ export function ImageThumbnail({
 
     const loadImage = async () => {
       try {
-        const { data } = await supabase.storage
-          .from("parts-images")
-          .createSignedUrl(imagePath, 3600);
+        const url = await getStorageUrlOrNull(STORAGE_BUCKETS.PARTS_IMAGES, imagePath, 3600);
 
-        if (mounted && data?.signedUrl) {
-          setImageUrl(data.signedUrl);
+        if (mounted && url) {
+          setImageUrl(url);
           setError(false);
         }
       } catch (err) {

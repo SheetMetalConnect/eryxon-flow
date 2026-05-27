@@ -17,6 +17,13 @@ relatedLinks:
     note: "current release status and license note"
 ---
 
+<!-- editorial-review
+status: approved
+reviewer: CMO
+date: 2026-05-26
+guide: 2026-05-26-ery-212
+editorial-review -->
+
 Eryxon Flow now ships under Apache 2.0. For metalworking operators, production leads, and evaluators comparing rollout fit, that changes the question from "What am I allowed to do?" to "How do I want to run it: self-hosted, hosted, or with rollout help?"
 
 If you run a metalworking shop, the useful question is not whether the repository is merely visible. The useful question is whether your team can inspect the code, self-host it, adapt it to your routing and operator flow, and keep control of your production data without negotiating around licensing limits first.

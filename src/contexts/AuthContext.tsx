@@ -1,10 +1,18 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { queryClient } from "@/lib/queryClient";
 import { prefetchCommonData } from "@/lib/cacheInvalidation";
 import { registerPushNotifications } from "@/native";
+import {
+  readTerminalCache,
+  isCacheValid,
+  updateTerminalCache,
+  clearTerminalCache,
+  cacheFromProfile,
+  type ConnectionQuality,
+} from "@/lib/terminalCache";
 
 // SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
 // All actual authorization is enforced server-side via Row Level Security (RLS) policies
@@ -48,6 +56,7 @@ interface AuthContextType {
   profile: Profile | null;
   tenant: TenantInfo | null;
   loading: boolean;
+  connectionQuality: ConnectionQuality;
   signIn: (email: string, password: string, captchaToken?: string | null) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }, captchaToken?: string | null) => Promise<{ error: Error | null; data?: unknown }>;
   signOut: () => Promise<void>;
@@ -58,12 +67,68 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const LIVE_FETCH_TIMEOUT_MS = 5_000;
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [connectionQuality, setConnectionQuality] = useState<ConnectionQuality>("online");
+  const reconnectingRef = useRef(false);
+  const onlineHandlerRef = useRef<(() => void) | null>(null);
+
+  const hydrateFromCache = useCallback((): boolean => {
+    const cached = readTerminalCache();
+    if (isCacheValid(cached)) {
+      if (cached!.profile) {
+        setProfile({
+          ...cached!.profile,
+          onboarding_completed: cached!.profile.onboarding_completed ?? false,
+          onboarding_step: cached!.profile.onboarding_step ?? 0,
+        } as Profile);
+      }
+      if (cached!.tenant) {
+        setTenant(cached!.tenant as TenantInfo);
+      }
+      setConnectionQuality("degraded");
+      logger.info('AuthContext', 'Hydrated from terminal cache (degraded mode)');
+      return true;
+    }
+    return false;
+  }, []);
+
+  // ── Background reconnection ──
+  const attemptReconnect = useCallback(async () => {
+    if (reconnectingRef.current) return;
+    reconnectingRef.current = true;
+    try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (currentSession?.user) {
+        await fetchProfile(currentSession.user.id);
+        setConnectionQuality("online");
+        logger.info('AuthContext', 'Reconnected successfully');
+      }
+    } catch {
+      logger.warn('AuthContext', 'Reconnect attempt failed');
+    } finally {
+      reconnectingRef.current = false;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (connectionQuality !== "online") {
+      const handler = () => { void attemptReconnect(); };
+      onlineHandlerRef.current = handler;
+      window.addEventListener("online", handler);
+      return () => {
+        if (onlineHandlerRef.current) {
+          window.removeEventListener("online", onlineHandlerRef.current);
+        }
+      };
+    }
+  }, [connectionQuality, attemptReconnect]);
 
   useEffect(() => {
     // `SIGNED_IN` fires on first login *and* on every token refresh and on
@@ -91,6 +156,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setUser(null);
           setProfile(null);
           setTenant(null);
+          setConnectionQuality("offline");
           setLoading(false);
           lastRegisteredUserId = null;
           return;
@@ -101,7 +167,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           setTimeout(() => {
-            fetchProfile(session.user.id);
+            fetchProfile(session.user.id).catch((err) => {
+              logger.warn('AuthContext', 'Auth state change profile fetch failed', err);
+            });
           }, 0);
           // First fresh sign-in inside a Capacitor WebView triggers an
           // APNs / FCM permission prompt and registers the device token.
@@ -143,6 +211,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           eventType: 'auth.session_recovery',
           failureReason: 'session_recovery_failed',
         });
+        const cached = hydrateFromCache();
+        if (cached) {
+          setLoading(false);
+          return;
+        }
         supabase.auth.signOut();
         setSession(null);
         setUser(null);
@@ -162,7 +235,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           eventType: 'auth.session_recovery',
           userId: session.user.id,
         });
-        fetchProfile(session.user.id);
+        fetchProfileWithFallback(session.user.id);
       } else {
         setProfile(null);
         setTenant(null);
@@ -173,40 +246,70 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfileWithFallback = async (userId: string) => {
+    const timeoutId = setTimeout(() => {
+      hydrateFromCache();
+      setLoading(false);
+    }, LIVE_FETCH_TIMEOUT_MS);
+
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin, onboarding_completed, onboarding_step")
-        .eq("id", userId)
-        .maybeSingle();
-
-      if (error) throw error;
-
-      if (!data) {
-        setProfile(null);
-        setTenant(null);
-        return;
-      }
-
-      // Columns are nullable in the DB (defaults applied on insert); coerce to
-      // concrete values so the router/wizard gates are deterministic.
-      setProfile({
-        ...(data as Profile),
-        onboarding_completed: data.onboarding_completed ?? false,
-        onboarding_step: data.onboarding_step ?? 0,
-      });
-      await fetchTenant();
-      prefetchCommonData(queryClient, data.tenant_id, {
-        fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
-        fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
-        fetchScrapReasons: () => Promise.resolve(supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
-      });
-    } catch (error) {
-      logger.error('AuthContext', 'Error fetching profile', error);
+      await fetchProfile(userId);
+      clearTimeout(timeoutId);
+      setConnectionQuality("online");
+    } catch {
+      clearTimeout(timeoutId);
+      hydrateFromCache();
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
+  };
+
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin, onboarding_completed, onboarding_step")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data) {
+      setProfile(null);
+      setTenant(null);
+      return;
+    }
+
+    const resolvedProfile: Profile = {
+      ...(data as Profile),
+      onboarding_completed: data.onboarding_completed ?? false,
+      onboarding_step: data.onboarding_step ?? 0,
+    };
+    setProfile(resolvedProfile);
+    await fetchTenant();
+
+    cacheFromProfile(
+      {
+        id: resolvedProfile.id,
+        tenant_id: resolvedProfile.tenant_id,
+        username: resolvedProfile.username,
+        full_name: resolvedProfile.full_name,
+        email: resolvedProfile.email,
+        role: resolvedProfile.role,
+        active: resolvedProfile.active,
+        is_machine: resolvedProfile.is_machine,
+        is_root_admin: resolvedProfile.is_root_admin,
+        onboarding_completed: resolvedProfile.onboarding_completed,
+        onboarding_step: resolvedProfile.onboarding_step,
+      },
+      tenant,
+    );
+
+    prefetchCommonData(queryClient, data.tenant_id, {
+      fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
+      fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
+      fetchScrapReasons: () => Promise.resolve(supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
+    });
   };
 
   const fetchTenant = async () => {
@@ -217,7 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data && data.length > 0) {
         const tenantData = data[0] as Record<string, unknown>;
-        setTenant({
+        const resolvedTenant: TenantInfo = {
           id: tenantData.id as string,
           name: tenantData.name as string,
           company_name: (tenantData.company_name as string | null) ?? null,
@@ -230,10 +333,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           whitelabel_app_name: (tenantData.whitelabel_app_name as string | null) ?? null,
           whitelabel_primary_color: (tenantData.whitelabel_primary_color as string | null) ?? null,
           whitelabel_favicon_url: (tenantData.whitelabel_favicon_url as string | null) ?? null,
-        });
+        };
+        setTenant(resolvedTenant);
+        updateTerminalCache({ tenant: resolvedTenant });
       }
     } catch (error) {
       logger.error('AuthContext', 'Error fetching tenant', error);
+      throw error;
     }
   };
 
@@ -283,7 +389,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // requiring a full reload.
   const refreshProfile = async () => {
     if (user?.id) {
-      await fetchProfile(user.id);
+      try {
+        await fetchProfile(user.id);
+        setConnectionQuality("online");
+      } catch {
+        logger.warn('AuthContext', 'refreshProfile failed, staying in degraded mode');
+      }
     }
   };
 
@@ -338,6 +449,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
     setProfile(null);
     setTenant(null);
+    clearTerminalCache();
   };
 
   return (
@@ -348,6 +460,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         profile,
         tenant,
         loading,
+        connectionQuality,
         signIn,
         signUp,
         signOut,

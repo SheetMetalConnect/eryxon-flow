@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
+import { getStorageUrlOrNull, STORAGE_BUCKETS } from '@/lib/storage-url';
 import {
   useCADProcessing,
   isCADServiceEnabled,
@@ -16,6 +17,7 @@ import {
   type OperationWithDetails,
 } from "@/lib/database";
 import { getStoredPMIForPath } from "@/lib/cadProcessingMetadata";
+import { updateTerminalCache } from "@/lib/terminalCache";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
@@ -110,6 +112,7 @@ export function useOperatorTerminal() {
   const handleCellChange = (value: string) => {
     setSelectedCellId(value);
     localStorage.setItem("operator_selected_cell", value);
+    updateTerminalCache({ selectedCellId: value === "all" ? null : value });
     setSelectedJobId(null);
   };
 
@@ -233,22 +236,17 @@ export function useOperatorTerminal() {
           const lp = path.toLowerCase();
 
           if (lp.endsWith(".pdf") && !pdf) {
-            const { data } = await supabase.storage
-              .from("parts-cad")
-              .createSignedUrl(path, 3600);
-            if (data?.signedUrl) pdf = data.signedUrl;
+            pdf = await getStorageUrlOrNull(STORAGE_BUCKETS.PARTS_CAD, path, 3600);
           } else if (
             (lp.endsWith(".step") || lp.endsWith(".stp")) &&
             !step
           ) {
-            const { data } = await supabase.storage
-              .from("parts-cad")
-              .createSignedUrl(path, 3600);
-            if (data?.signedUrl) {
-              signedStep = data.signedUrl;
+            const signedUrl = await getStorageUrlOrNull(STORAGE_BUCKETS.PARTS_CAD, path, 3600);
+            if (signedUrl) {
+              signedStep = signedUrl;
               stepFileName = path.split("/").pop() || "model.step";
               stepStoragePath = path;
-              const response = await fetch(data.signedUrl);
+              const response = await fetch(signedUrl);
               const blob = await response.blob();
               step = URL.createObjectURL(blob);
             }

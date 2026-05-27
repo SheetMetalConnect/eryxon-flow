@@ -7,6 +7,7 @@ import {
   isIPhone,
   isNativeApp,
   isNativeIOS,
+  isStandalone,
   isTabletViewport,
   shouldUseMobileShell,
 } from "./platform";
@@ -130,6 +131,43 @@ describe("isTabletViewport — must not lie after rotation", () => {
     // were caching, this would still report false from the first call.
     setViewport(1180, 820);
     expect(isTabletViewport()).toBe(true);
+  });
+});
+
+describe("isStandalone", () => {
+  it("returns false when display-mode is browser", () => {
+    expect(isStandalone()).toBe(false);
+  });
+
+  it("returns true when display-mode is standalone", () => {
+    const originalMatch = window.matchMedia;
+    window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+      matches: query === "(display-mode: standalone)",
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })) as unknown as typeof window.matchMedia;
+    try {
+      expect(isStandalone()).toBe(true);
+    } finally {
+      window.matchMedia = originalMatch;
+    }
+  });
+
+  it("returns true when navigator.standalone is set (iOS <16.4)", () => {
+    Object.defineProperty(navigator, "standalone", {
+      configurable: true,
+      get: () => true,
+    });
+    try {
+      expect(isStandalone()).toBe(true);
+    } finally {
+      delete (navigator as Record<string, unknown>).standalone;
+    }
   });
 });
 

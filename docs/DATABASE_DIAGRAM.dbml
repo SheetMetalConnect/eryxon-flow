@@ -144,6 +144,38 @@ Enum waitlist_status {
   converted
 }
 
+Enum nc_program_status {
+  draft
+  active
+  archived
+  superseded
+}
+
+Enum nc_program_type {
+  cnc
+  laser
+  plasma
+  waterjet
+  robot
+  other
+}
+
+Enum dnc_transfer_status {
+  pending
+  transferring
+  completed
+  failed
+  cancelled
+}
+
+Enum dnc_transfer_protocol {
+  ftp
+  smb
+  mqtt
+  api
+  manual
+}
+
 // ============================================
 // CORE TABLES
 // ============================================
@@ -1262,6 +1294,96 @@ Table mcp_server_logs {
 }
 
 // ============================================
+// DNC / NC PROGRAMS DOMAIN
+// ============================================
+
+Table nc_programs {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+
+  part_id uuid [ref: > parts.id]
+  operation_id uuid [ref: > operations.id]
+
+  program_name text [not null]
+  description text
+  file_path text [not null]
+  file_size bigint
+  content_hash text
+  mime_type text [default: 'text/plain']
+
+  program_type nc_program_type [not null, default: 'cnc']
+  post_processor text
+  machine_type text
+  estimated_cycle_time_seconds int
+
+  version int [not null, default: 1]
+  previous_version_id uuid [ref: > nc_programs.id]
+
+  status nc_program_status [not null, default: 'draft']
+  notes text
+  metadata jsonb
+
+  external_id text
+  external_source text
+  sync_hash text
+  synced_at timestamptz
+
+  deleted_at timestamptz
+  deleted_by uuid [ref: > profiles.id]
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, program_name, version) [unique]
+    (tenant_id, external_source, external_id) [unique, where: 'external_id IS NOT NULL']
+  }
+
+  Note: 'NC (Numerical Control) program artifacts stored for transfer to CNC machines'
+}
+
+Table dnc_transfer_jobs {
+  id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
+
+  nc_program_id uuid [not null, ref: > nc_programs.id]
+
+  target_machine_id uuid [ref: > resources.id]
+  target_cell_id uuid [ref: > cells.id]
+  destination_path text
+
+  operation_id uuid [ref: > operations.id]
+
+  status dnc_transfer_status [not null, default: 'pending']
+  transfer_protocol dnc_transfer_protocol [default: 'ftp']
+  transfer_config jsonb
+
+  started_at timestamptz
+  completed_at timestamptz
+
+  error_message text
+  retry_count int [default: 0]
+  max_retries int [default: 3]
+
+  requested_by uuid [ref: > profiles.id]
+  approved_by uuid [ref: > profiles.id]
+
+  notes text
+  metadata jsonb
+
+  created_at timestamptz [default: `now()`]
+  updated_at timestamptz [default: `now()`]
+
+  indexes {
+    (tenant_id, status)
+    (tenant_id, nc_program_id)
+    (tenant_id) [where: 'status = pending']
+  }
+
+  Note: 'DNC transfer jobs — requests to send NC programs to CNC machines'
+}
+
+// ============================================
 // MQTT DOMAIN
 // ============================================
 
@@ -1498,6 +1620,11 @@ TableGroup mcp {
   mcp_server_config
   mcp_server_health
   mcp_server_logs
+}
+
+TableGroup dnc {
+  nc_programs
+  dnc_transfer_jobs
 }
 
 TableGroup mqtt {

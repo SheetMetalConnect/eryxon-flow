@@ -183,6 +183,45 @@
     "updateDescription": "Neu laden, um das Update anzuwenden.",
     "reload": "Neu laden",
     "later": "Später",
-    "offlineReady": "Eryxon Flow ist bereit für die Offline-Nutzung"
+    "offlineReady": "Eryxon Flow ist bereit für die Offline-Nutzung",
+    "install": {
+      "title": "App installieren",
+      "settingsDesc": "Installieren Sie Eryxon Flow auf Ihrem Gerät für ein Vollbild-Erlebnis mit Offline-Unterstützung.",
+      "settingsPrompt": "Klicken Sie auf die Schaltfläche unten, um Eryxon Flow zu installieren.",
+      "settingsManualPrompt": "Folgen Sie den Anweisungen Ihres Browsers, um Eryxon Flow zum Startbildschirm hinzuzufügen.",
+      "checking": "Installationsverfügbarkeit prüfen...",
+      "checkingDesc": "Wir prüfen, ob Eryxon Flow auf Ihrem Gerät installiert werden kann.",
+      "installed": "App ist installiert",
+      "installedDesc": "Eryxon Flow ist auf Ihrem Gerät installiert. Sie können es von Ihrem Startbildschirm starten.",
+      "installedMessage": "Sie sind bereit! Starten Sie Eryxon Flow von Ihrem Startbildschirm für das beste Erlebnis.",
+      "installable": "Eryxon Flow installieren",
+      "installableDesc": "Installieren Sie Eryxon Flow für schnellen Zugriff und Offline-Unterstützung.",
+      "installPrompt": "Klicken Sie auf Installieren, wenn Ihr Browser Sie auffordert, Eryxon Flow hinzuzufügen.",
+      "installButton": "App installieren",
+      "manualIOS": "Zum Startbildschirm hinzufügen (iPhone)",
+      "manualIPad": "Zum Startbildschirm hinzufügen (iPad)",
+      "manualDesc": "Ihr Browser unterstützt Progressive Web Apps. Fügen Sie Eryxon Flow manuell zum Startbildschirm hinzu.",
+      "manualPrompt": "Folgen Sie den Schritten unten, um Eryxon Flow zum Startbildschirm hinzuzufügen.",
+      "manualInstructions": "So installieren Sie:",
+      "manual": {
+        "ios": {
+          "step1": "Tippen Sie in Safari auf die Teilen-Schaltfläche (Quadrat mit Pfeil).",
+          "step2": "Scrollen Sie nach unten und tippen Sie auf \"Zum Startbildschirm\".",
+          "step3": "Benennen Sie die App und tippen Sie oben rechts auf \"Hinzufügen\".",
+          "step4": "Starten Sie Eryxon Flow von Ihrem Startbildschirm."
+        },
+        "ipad": {
+          "step1": "Tippen Sie in Safari auf die Teilen-Schaltfläche (Quadrat mit Pfeil).",
+          "step2": "Wählen Sie \"Zum Startbildschirm\" aus dem Teilen-Menü.",
+          "step3": "Benennen Sie die App und tippen Sie oben rechts auf \"Hinzufügen\".",
+          "step4": "Starten Sie Eryxon Flow von Ihrem Startbildschirm."
+        }
+      },
+      "remindLater": "Später erinnern",
+      "continue": "Fortfahren",
+      "notSupported": "Installation nicht unterstützt",
+      "notSupportedDesc": "Ihr Browser unterstützt die Installation von Eryxon Flow als App nicht.",
+      "notSupportedHint": "Sie können Eryxon Flow weiterhin im Browser verwenden. Für die beste Erfahrung nutzen Sie Chrome, Edge oder Safari."
+    }
   }
 }

@@ -44,6 +44,18 @@
   body.app-android {
     touch-action: manipulation;
   }
+
+  /* Standalone PWA shell: push content below the window-controls-overlay
+     title bar region (desktop PWA installed via Chromium / Edge). */
+  html[data-standalone="true"] {
+    --titlebar-area-height: env(titlebar-area-height, 0px);
+  }
+
+  html[data-standalone="true"] body {
+    /* The standalone window has no browser chrome; the overscroll rule
+       prevents rubber-band bleed into an empty background. */
+    overscroll-behavior: none;
+  }
 }
 
 @layer utilities {

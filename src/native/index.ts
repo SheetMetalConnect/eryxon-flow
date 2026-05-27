@@ -20,6 +20,7 @@ export {
   isNative,
   isNativeApp,
   isNativeIOS,
+  isStandalone,
   isTabletViewport,
   shouldUseMobileShell,
   __resetPlatformCache,

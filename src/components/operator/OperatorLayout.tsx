@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { DOCS_GUIDES_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
@@ -135,6 +136,7 @@ export const OperatorLayout = ({
   const { t } = useTranslation();
   const profile = useProfile();
   const { tenant } = useTenant();
+  const { connectionQuality } = useAuth();
   const { signOut } = useAuthActions();
   const { activeOperator } = useOperator();
   const location = useLocation();
@@ -177,6 +179,16 @@ export const OperatorLayout = ({
                   <span className="max-w-[120px] truncate text-sm font-bold sm:max-w-[200px]">
                     {tenant?.company_name || tenant?.name || t("app.name")}
                   </span>
+                  {connectionQuality === "degraded" && (
+                    <span className="ml-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold text-amber-500">
+                      {t("terminal.status.degraded", "Degraded")}
+                    </span>
+                  )}
+                  {connectionQuality === "offline" && (
+                    <span className="ml-2 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-500">
+                      {t("terminal.status.offline", "Offline")}
+                    </span>
+                  )}
                 </>
               )}
             </div>

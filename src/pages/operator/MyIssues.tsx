@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
+import { getStorageUrlOrNull, STORAGE_BUCKETS } from '@/lib/storage-url';
 import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { Badge } from "@/components/ui/badge";
@@ -75,10 +76,8 @@ export default function MyIssues() {
 
       const urls = await Promise.all(
         selectedIssue.image_paths.map(async (path) => {
-          const { data } = await supabase.storage
-            .from("issues")
-            .createSignedUrl(path, 3600);
-          return data?.signedUrl || "";
+          const url = await getStorageUrlOrNull(STORAGE_BUCKETS.ISSUES, path, 3600);
+          return url || "";
         }),
       );
 

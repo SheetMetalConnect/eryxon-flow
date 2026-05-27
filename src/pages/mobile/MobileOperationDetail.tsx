@@ -21,6 +21,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { useHaptics } from "@/hooks/useHaptics";
 import { supabase } from "@/integrations/supabase/client";
+import { getStorageUrl, STORAGE_BUCKETS } from '@/lib/storage-url';
 import {
   fetchOperationsWithDetails,
   startTimeTracking,
@@ -600,16 +601,13 @@ function FilesSection({ filePaths }: { filePaths: string[] }) {
     async (path: string, type: "pdf" | "step") => {
       setLoading(path);
       try {
-        const { data, error } = await supabase.storage
-          .from("parts-cad")
-          .createSignedUrl(path, 3600);
-        if (error || !data?.signedUrl) throw error ?? new Error("no_url");
-        let url = data.signedUrl;
+        const { url: signedUrl } = await getStorageUrl(STORAGE_BUCKETS.PARTS_CAD, path, 3600);
+        let url = signedUrl;
         if (type === "step") {
           // Three-mesh-bvh / occt-import-js can't always follow a redirected
           // signed URL because of fetch CORS — pre-fetch as a Blob and pass
           // a blob: URL into the loader instead.
-          const response = await fetch(data.signedUrl);
+          const response = await fetch(signedUrl);
           if (!response.ok) throw new Error(`fetch_${response.status}`);
           const blob = await response.blob();
           url = URL.createObjectURL(blob);

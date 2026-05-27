@@ -2,7 +2,7 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import "./i18n";
-import { getPlatform, initNativeShell, isNativeApp } from "@/native";
+import { getPlatform, initNativeShell, isNativeApp, isStandalone } from "@/native";
 
 // Tag the document up-front so global CSS can branch on the runtime platform
 // without waiting for React to mount. This drives the safe-area / overscroll
@@ -12,6 +12,10 @@ docEl.dataset.platform = getPlatform();
 if (isNativeApp()) {
   docEl.dataset.native = "true";
   document.body.dataset.native = "true";
+}
+if (isStandalone()) {
+  docEl.dataset.standalone = "true";
+  document.body.dataset.standalone = "true";
 }
 
 // Boot the native shell (status bar, splash, keyboard, hardware back).

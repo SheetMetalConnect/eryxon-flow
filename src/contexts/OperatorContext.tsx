@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useTenant } from "@/hooks/useTenant";
 import { logger } from "@/lib/logger";
+import { readTerminalCache, updateTerminalCache, clearTerminalCache } from "@/lib/terminalCache";
 
 /**
  * Active Operator - the employee currently working at the terminal
@@ -31,9 +32,63 @@ interface OperatorContextType {
   clearActiveOperator: () => void;
 }
 
-const STORAGE_KEY = "active_operator";
+const SESSION_STORAGE_KEY = "active_operator";
 
 const OperatorContext = createContext<OperatorContextType | undefined>(undefined);
+
+function parseStoredOperator(raw: string, tenantId: string): ActiveOperator | null {
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "id" in parsed &&
+      typeof (parsed as Record<string, unknown>).id === "string" &&
+      "employee_id" in parsed &&
+      typeof (parsed as Record<string, unknown>).employee_id === "string" &&
+      "full_name" in parsed &&
+      typeof (parsed as Record<string, unknown>).full_name === "string" &&
+      "tenant_id" in parsed &&
+      (parsed as Record<string, unknown>).tenant_id === tenantId
+    ) {
+      return parsed as ActiveOperator;
+    }
+  } catch {
+    /* invalid JSON */
+  }
+  return null;
+}
+
+function hydrateOperator(tenantId: string): ActiveOperator | null {
+  // Prefer sessionStorage first (current tab's session is freshest)
+  const sessionRaw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+  const fromSession = sessionRaw ? parseStoredOperator(sessionRaw, tenantId) : null;
+  if (fromSession) return fromSession;
+
+  // Fall back to localStorage (survives tab close, may be stale)
+  const cached = readTerminalCache();
+  if (cached?.activeOperator && cached.activeOperator.tenant_id === tenantId) {
+    // Re-populate sessionStorage so subsequent reads are fast
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(cached.activeOperator));
+    return cached.activeOperator;
+  }
+
+  return null;
+}
+
+function persistOperator(operator: ActiveOperator): void {
+  sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(operator));
+  updateTerminalCache({ activeOperator: operator });
+}
+
+function removeSessionOperator(): void {
+  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+}
+
+function clearPersistedOperator(): void {
+  sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  updateTerminalCache({ activeOperator: null });
+}
 
 export function OperatorProvider({ children }: { children: React.ReactNode }) {
   const profile = useProfile();
@@ -50,34 +105,11 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     }
 
     setIsLoading(true);
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    let nextOperator: ActiveOperator | null = null;
-    if (stored) {
-      try {
-        const parsed: unknown = JSON.parse(stored);
-        if (
-          typeof parsed === "object" &&
-          parsed !== null &&
-          "id" in parsed &&
-          typeof (parsed as Record<string, unknown>).id === "string" &&
-          "employee_id" in parsed &&
-          typeof (parsed as Record<string, unknown>).employee_id === "string" &&
-          "full_name" in parsed &&
-          typeof (parsed as Record<string, unknown>).full_name === "string" &&
-          "tenant_id" in parsed &&
-          (parsed as Record<string, unknown>).tenant_id === tenant.id
-        ) {
-          nextOperator = parsed as ActiveOperator;
-        } else {
-          // Only clear if we have a valid tenant and it doesn't match
-          sessionStorage.removeItem(STORAGE_KEY);
-        }
-      } catch {
-        sessionStorage.removeItem(STORAGE_KEY);
-      }
+    const operator = hydrateOperator(tenant.id);
+    if (operator) {
+      setActiveOperator(operator);
     }
     const loadTimeout = window.setTimeout(() => {
-      setActiveOperator(nextOperator);
       setIsLoading(false);
     }, 0);
     return () => clearTimeout(loadTimeout);
@@ -87,7 +119,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     if (!profile) {
       const clearTimeoutId = window.setTimeout(() => {
         setActiveOperator(null);
-        sessionStorage.removeItem(STORAGE_KEY);
+        removeSessionOperator();
         setIsLoading(false);
       }, 0);
       return () => clearTimeout(clearTimeoutId);
@@ -133,7 +165,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
         };
 
         setActiveOperator(operator);
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(operator));
+        persistOperator(operator);
 
         return { success: true, operator };
       } else {
@@ -157,7 +189,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
 
   const clearActiveOperator = useCallback(() => {
     setActiveOperator(null);
-    sessionStorage.removeItem(STORAGE_KEY);
+    clearPersistedOperator();
   }, []);
 
   return (

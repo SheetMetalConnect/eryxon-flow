@@ -18,12 +18,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
 import { cn } from "@/lib/utils";
 import { logger } from '@/lib/logger';
+import { getStorageUrlOrNull, STORAGE_BUCKETS } from '@/lib/storage-url';
 
 interface ImageInfo {
   path: string;
@@ -70,17 +70,12 @@ export function ImageGallery({
     try {
       const imageInfos = await Promise.all(
         imagePaths.map(async (path) => {
-          // Generate signed URL
-          const { data: signedData } = await supabase.storage
-            .from("parts-images")
-            .createSignedUrl(path, 3600); // 1 hour expiry
-
-          // Extract filename from path
+          const url = await getStorageUrlOrNull(STORAGE_BUCKETS.PARTS_IMAGES, path, 3600);
           const name = path.split("/").pop() || "";
 
           return {
             path,
-            url: signedData?.signedUrl || null,
+            url,
             name,
           };
         })

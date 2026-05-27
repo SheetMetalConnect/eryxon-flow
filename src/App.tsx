@@ -12,6 +12,7 @@ import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
 import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { PwaInstallPrompt } from "./components/PwaInstallPrompt";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
 import { Loader2 } from "lucide-react";
 import { queryClient } from "./lib/queryClient";
@@ -101,6 +102,7 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
+        <PwaInstallPrompt />
         <PwaUpdatePrompt />
         <BrowserRouter>
           <AuthProvider>

@@ -1,0 +1,44 @@
+/**
+ * PWA standalone display-mode overrides.
+ *
+ * Applied when the app is installed to the home screen / desktop and runs
+ * without browser chrome. Handles:
+ *   - Window Controls Overlay (title bar area on Chromium desktop PWAs)
+ *   - Safe area adjustments when there's no URL bar
+ *   - Drag regions for the title bar
+ */
+
+@layer base {
+  /* The WCO title bar region — only exists on desktop Chromium/Edge when
+     display_override includes window-controls-overlay. The env() variables
+     are set by the browser and collapse to 0px when not applicable. */
+  html[data-standalone="true"] {
+    --wco-width: env(titlebar-area-width, 0px);
+    --wco-height: env(titlebar-area-height, 0px);
+    --wco-x: env(titlebar-area-x, 0px);
+    --wco-y: env(titlebar-area-y, 0px);
+  }
+
+  /* Any element that should act as a drag handle for the WCO title bar.
+     The standalone window has no native title bar; this region lets the
+     user drag the window. */
+  html[data-standalone="true"] .titlebar-drag {
+    -webkit-app-region: drag;
+    app-region: drag;
+  }
+  html[data-standalone="true"] .titlebar-drag button,
+  html[data-standalone="true"] .titlebar-drag a,
+  html[data-standalone="true"] .titlebar-drag input {
+    -webkit-app-region: no-drag;
+    app-region: no-drag;
+  }
+
+  /* On mobile standalone (Android Chrome "Add to Home Screen"), the
+     app runs full-bleed without a URL bar. Ensure content doesn't hide
+     behind the status bar. */
+  @media (display-mode: standalone), (display-mode: fullscreen) {
+    html[data-platform="android"] body {
+      overscroll-behavior-y: none;
+    }
+  }
+}

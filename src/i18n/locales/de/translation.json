@@ -19,50 +19,55 @@
   "apiDocumentation": "API-Dokumentation",
   "myPlan": {
     "title": "Mein Plan",
-    "subtitle": "Sehen Sie Ihre Nutzung und die Optionen nach dem Test",
-    "contactUs": "Kontakt aufnehmen",
+    "comingSoon": "Demnächst",
+    "comingSoonTitle": "Abonnementverwaltung kommt bald",
+    "comingSoonSubtitle": "Professionelle Abonnementfunktionen werden finalisiert",
+    "comingSoonDescription": "Wir entwickeln ein umfassendes Abonnementverwaltungssystem. Derzeit sind alle Funktionen kostenlos verfügbar.",
+    "contactUs": "Kontaktieren Sie uns",
+    "currentlyFree": "Derzeit kostenlos für alle Benutzer",
+    "currentlyFreeDescription": "Alle Funktionen sind kostenlos verfügbar, während wir unsere Preisstruktur finalisieren.",
     "activeJobs": "Aktive Aufträge",
     "admins": "Administratoren",
+    "amount": "Betrag",
+    "apiCalls": "API-Aufrufe",
+    "billingCycle": "Abrechnungszyklus",
+    "billingHistory": "Abrechnungsverlauf",
+    "cancel": "Abo kündigen",
     "completedJobs": "Abgeschlossene Aufträge",
+    "contactToUpgrade": "Kontaktieren Sie uns für ein Upgrade",
+    "currentPlan": "Aktueller Plan",
+    "download": "Herunterladen",
+    "downgrade": "Plan downgraden",
+    "failed": "Fehlgeschlagen",
+    "invoiceDate": "Rechnungsdatum",
+    "managePayment": "Zahlungsmethode verwalten",
+    "manufacturingCells": "Fertigungszellen",
+    "mostPopular": "Am beliebtesten",
+    "nextBillingDate": "Nächstes Abrechnungsdatum",
+    "noSalesCalls": "Keine Vertriebsgespräche erforderlich",
     "operators": "Bediener",
+    "paid": "Bezahlt",
     "parts": "Teile",
-    "partsLimitReached": "Testlimit erreicht. Sehen Sie Ihre Planoptionen, um weiterzuarbeiten.",
+    "partsLimitReached": "Teilelimit erreicht",
+    "pending": "Ausstehend",
+    "perMonth": "pro Monat",
+    "plan": "Plan",
+    "planFeatures": "Plan-Funktionen",
+    "readyToUpgrade": "Bereit für ein Upgrade?",
+    "requestUpgrade": "Upgrade anfordern",
+    "status": "Status",
     "storage": "Speicher",
+    "subtitle": "Verwalten Sie Ihr Abonnement und Ihre Nutzung",
     "totalJobs": "Aufträge gesamt",
+    "unlimited": "Unbegrenzt",
+    "unknown": "Unbekannt",
+    "upgrade": "Plan upgraden",
+    "upgradeFromFree": "Upgrade von Kostenlos",
+    "upgradeFromPro": "Upgrade von Pro",
+    "upgradePlan": "Plan upgraden",
+    "usage": "Nutzung",
     "usageThisMonth": "Nutzung diesen Monat",
-    "apiRequests": "API-Anfragen",
-    "today": "heute",
-    "requestsThisMonth": "Anfragen diesen Monat",
-    "hostedTrial": "Gehostete Testversion",
-    "hostedTrialDescription": "Gehostete SaaS, 30-tägiger Test mit monatlichen Limits",
-    "selfHosted": "Self-Hosted",
-    "selfHostedDescription": "Alle Funktionen, unbegrenzte Nutzung auf Ihrer Infrastruktur",
-    "goSelfHosted": "Self-Hosting Anleitung",
-    "managedHosting": {
-      "title": "Verwaltetes Hosting",
-      "description": "Eine dedizierte, isolierte Instanz, die wir für Sie betreiben — Ihre eigene Datenbank, Backups und Versionsverwaltung.",
-      "cta": "Kontakt aufnehmen",
-      "benefit": {
-        "isolated": "Ihre eigene isolierte Datenbank",
-        "backups": "Backups von uns übernommen",
-        "versions": "Versionsverwaltung",
-        "whitelabel": "Whitelabeling"
-      }
-    },
-    "selfHostedCard": {
-      "title": "Self-Hosted",
-      "description": "Vollständig Open Source unter Apache 2.0. Betreiben Sie es auf Ihrer eigenen Infrastruktur.",
-      "consulting": "Hilfe bei der Einrichtung"
-    },
-    "benefit": {
-      "unlimitedJobs": "Unbegrenzte Aufträge",
-      "unlimitedParts": "Unbegrenzte Teile",
-      "fullApi": "Vollständiger API-Zugriff",
-      "yourData": "Vollständige Kontrolle über Ihre Daten"
-    },
-    "viewGuide": "Self-Hosting Anleitung",
-    "needHelp": "Hilfe benötigt?",
-    "helpDescription": "Sheet Metal Connect e.U. hilft Ihnen, Eryxon Flow für Ihren Betrieb einzurichten und zu betreiben."
+    "users": "Benutzer"
   },
   "help": "Hilfe",
   "about": "Über",
@@ -359,15 +364,17 @@
     "sampleDataNote": "Sie können diese Beispieldaten später in den Admin-Einstellungen löschen oder jederzeit neu importieren.",
     "tourComplete": "Tour abgeschlossen! Sie können sie jederzeit in den Einstellungen neu starten.",
     "onboardingComplete": "Einrichtung abgeschlossen! Willkommen bei Eryxon Flow 🎉",
-    "planSelection": {
-      "title": "Ihr Plan",
-      "subtitle": "Starten Sie mit der gehosteten Testversion. Sie können jederzeit zu verwaltetem Hosting oder Self-Hosting wechseln.",
-      "trialTitle": "Gehostete Testversion",
-      "trialDescription": "Betreiben Sie Eryxon Flow 30 Tage auf unserer gehosteten SaaS: 100 Aufträge und 500 Teile pro Monat, 2 GB Speicher, 100 API-Anfragen pro Tag.",
-      "contactUs": "Kontakt aufnehmen",
-      "continue": "Test starten",
-      "skip": "Vorerst überspringen",
-      "trialNote": "Nach dem Test: verwaltetes Hosting oder die Open-Source-App selbst hosten."
+    "steps": {
+      "team": "Team",
+      "teamDesc": "Team einrichten",
+      "plan": "Plan",
+      "planDesc": "Plan auswählen",
+      "data": "Daten",
+      "dataDesc": "Beispieldaten importieren",
+      "install": "Installieren",
+      "installDesc": "App installieren",
+      "complete": "Abschließen",
+      "completeDesc": "Einrichtung abschließen"
     }
   },
   "jobs": {
@@ -1248,63 +1255,72 @@
     }
   },
   "pricing": {
-    "title": "Pläne",
-    "subtitle": "Eryxon Flow ist Open Source unter Apache 2.0. Starten Sie mit der gehosteten Testversion, lassen Sie es von uns betreiben, oder hosten Sie selbst auf Ihrer eigenen Infrastruktur.",
-    "contactUs": "Kontakt aufnehmen",
-    "needHelp": "Hilfe bei Self-Hosting oder Einrichtung benötigt?",
-    "hostedTrial": {
-      "name": "Gehostete Testversion",
-      "description": "Betreiben Sie Eryxon Flow 30 Tage auf unserer gehosteten SaaS.",
-      "tryDemo": "Test starten",
-      "note": "Zur Evaluation. Während des Tests gelten Limits.",
+    "title": "Preise",
+    "subtitle": "Einfache, transparente Preise für europäische Metallverarbeiter. Keine Verkaufsgespräche, keine versteckten Kosten.",
+    "comingSoonTitle": "Preise kommen bald",
+    "comingSoonSubtitle": "Professionelle Preispläne werden derzeit finalisiert",
+    "comingSoonDescription": "Wir bereiten transparente, faire Preise für europäische Hersteller vor. Kontaktieren Sie uns für frühen Zugang und individuelle Angebote.",
+    "contactUs": "Kontaktieren Sie uns",
+    "monthly": "Monatlich",
+    "annually": "Jährlich",
+    "save20": "20% sparen",
+    "currentPlan": "Aktueller Plan",
+    "choosePlan": "Plan wählen",
+    "upgrade": "Upgrade anfordern",
+    "downgrade": "Downgrade",
+    "contactSales": "Vertrieb kontaktieren",
+    "managePlan": "Plan verwalten",
+    "hostedPlans": "Gehostete Pläne",
+    "hostedPlansDescription": "Vollständig verwalteter Cloud-Service, gehostet in der EU. Wir kümmern uns um alles.",
+    "free": {
+      "name": "Kostenlos",
+      "price": "€0",
+      "description": "Starten und evaluieren",
       "features": [
-        "30-tägiger Test",
-        "100 Aufträge pro Monat",
-        "500 Teile pro Monat",
-        "2 GB Speicher",
-        "100 API-Anfragen pro Tag"
+        "25 Aufträge pro Monat",
+        "250 Teile pro Monat",
+        "500MB Speicher",
+        "Eingeschränkter API-Zugriff",
+        "Webhooks inklusive",
+        "MCP Server inklusive",
+        "Nur Dokumentation"
       ]
     },
-    "managedHosting": {
-      "name": "Verwaltetes Hosting",
-      "description": "Eine dedizierte, isolierte Instanz, die wir für Sie betreiben.",
-      "cta": "Kontakt aufnehmen",
+    "pro": {
+      "name": "Pro",
+      "price": "€97",
+      "description": "Für Produktionsbetriebe",
       "features": [
-        "Eigene, vollständig isolierte Datenbank",
-        "Backups und Versionsverwaltung",
-        "Whitelabeling",
-        "Von uns betrieben und gewartet"
-      ]
-    },
-    "selfHosted": {
-      "name": "Self-Hosted",
-      "description": "Vollständig Open Source auf Ihrer eigenen Infrastruktur.",
-      "getStarted": "Self-Hosting Anleitung",
-      "consulting": "Hilfe bei der Einrichtung",
-      "features": [
-        "Open Source, Apache 2.0",
-        "Unbegrenzte Aufträge und Teile",
-        "Unbegrenzter Speicher",
+        "500 Aufträge pro Monat",
+        "5.000 Teile pro Monat",
+        "10GB Speicher",
         "Vollständiger API-Zugriff",
-        "Ihre eigene Infrastruktur"
+        "Webhooks",
+        "MCP Server",
+        "E-Mail-Support (ohne SLA)",
+        "Zusätzlicher Speicher auf Anfrage"
       ]
     },
-    "license": {
-      "title": "Lizenz (Apache 2.0)",
-      "tldr": "Vollständig Open Source. Nutzen, anpassen, selbst hosten und kommerziell einsetzen — ohne Einschränkungen.",
-      "allowed": "Sie dürfen",
-      "note": "Gut zu wissen",
-      "allowedItems": {
-        "selfHost": "Self-Hosting für eigene Betriebe, kostenlos",
-        "modify": "Forken und anpassen für Ihre Bedürfnisse",
-        "commercial": "Kommerziell nutzen, auch für andere hosten",
-        "consulting": "Nutzung für Entwicklung, Tests, Bildung"
-      },
-      "noteItems": {
-        "attribution": "Lizenz- und Copyright-Hinweis in Kopien beibehalten",
-        "patent": "Enthält eine ausdrückliche Patentlizenz"
-      }
-    }
+    "premium": {
+      "name": "Premium",
+      "price": "€497",
+      "description": "Für wachsende Betriebe",
+      "features": [
+        "Fair Use (hohe Limits)",
+        "100GB Speicher",
+        "Vollständiger API-Zugriff",
+        "Webhooks",
+        "MCP Server",
+        "SSO/SAML-Authentifizierung",
+        "White-Label (optional)",
+        "Prioritäts-E-Mail-Support",
+        "Zusätzlicher Speicher auf Anfrage"
+      ]
+    },
+    "perMonth": "/Monat",
+    "perYear": "/Jahr",
+    "billedMonthly": "Monatlich abgerechnet",
+    "billedAnnually": "Jährlich abgerechnet"
   },
   "myActivity": {
     "title": "Meine Aktivität",
@@ -1833,16 +1849,5 @@
     "lastWeek": "Letzte 7 Tage",
     "completedCount": "{{count}} fertig",
     "empty": "Keine erfasste Zeit in den letzten 7 Tagen"
-  },
-  "trialBanner": {
-    "title": "Sie nutzen die gehostete Testversion",
-    "titleWithDate": "Ihre gehostete Testversion endet am {{date}}",
-    "description": "Daten werden nach dem Test nicht aufbewahrt. Sehen Sie Ihre Planoptionen, um weiterzuarbeiten.",
-    "daysRemaining": "{{count}} Tag verbleibend",
-    "daysRemaining_plural": "{{count}} Tage verbleibend",
-    "expired": "Ihre Testversion ist abgelaufen",
-    "expiredDescription": "Der Testzeitraum ist beendet. Sehen Sie Ihre Planoptionen, um Ihre Daten zu behalten und weiterzuarbeiten.",
-    "seePlans": "Pläne ansehen",
-    "viewPlan": "Pläne ansehen"
   }
 }

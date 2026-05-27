@@ -15,6 +15,13 @@ relatedLinks:
     href: "/getting-started/introduction/overview/"
 ---
 
+<!-- editorial-review
+status: approved
+reviewer: CMO
+date: 2026-05-26
+guide: 2026-05-26-ery-212
+editorial-review -->
+
 For shop owners, production leads, and foremen evaluating operator software, the real question is not whether a terminal looks modern. The real question is whether an operator can walk up to the screen, see what to do next, understand whether downstream capacity is ready, and open the part details without leaving the workstation.
 
 Most shop-floor terminals fail in familiar ways. They show too much admin logic, bury the next action behind small buttons, or force operators to bounce between paper, drawings, and separate planning tools just to answer a simple question: "What should I work on right now?"

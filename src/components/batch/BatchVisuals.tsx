@@ -7,19 +7,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useUpdateBatch } from "@/hooks/useBatches";
+import { getStorageUrlOrNull, STORAGE_BUCKETS } from '@/lib/storage-url';
 import { toast } from "sonner";
 
 interface BatchVisualsProps {
   batch: {
     id: string;
     nesting_image_url?: string | null;
+    nesting_image_path?: string | null;
   };
+  tenantId: string;
 }
 
-export function BatchVisuals({ batch }: BatchVisualsProps) {
+export function BatchVisuals({ batch, tenantId }: BatchVisualsProps) {
   const { t } = useTranslation();
   const updateBatch = useUpdateBatch();
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [nestingUrl, setNestingUrl] = useState<string | null>(null);
+  const [loadingUrl, setLoadingUrl] = useState(false);
+
+  // Load signed URL from stored path
+  useState(() => {
+    if (batch.nesting_image_path) {
+      setLoadingUrl(true);
+      getStorageUrlOrNull(STORAGE_BUCKETS.BATCH_IMAGES, batch.nesting_image_path, 3600)
+        .then(setNestingUrl)
+        .finally(() => setLoadingUrl(false));
+    }
+  });
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'nesting' | 'layout') => {
     try {
@@ -30,7 +45,7 @@ export function BatchVisuals({ batch }: BatchVisualsProps) {
       const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
       const fileName = `${batch.id}/${type}-${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = `${tenantId}/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('batch-images')
@@ -40,20 +55,17 @@ export function BatchVisuals({ batch }: BatchVisualsProps) {
         throw uploadError;
       }
 
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('batch-images')
-        .createSignedUrl(filePath, 31536000);
-
-      if (signedUrlError || !signedUrlData) {
-        throw signedUrlError || new Error('Failed to generate signed URL');
-      }
-
+      // Store path instead of long-lived signed URL
       await updateBatch.mutateAsync({
         id: batch.id,
         updates: {
-          [type === 'nesting' ? 'nesting_image_url' : 'layout_image_url']: signedUrlData.signedUrl
+          [type === 'nesting' ? 'nesting_image_path' : 'layout_image_path']: filePath,
         }
       });
+
+      // Refresh the displayed URL
+      const url = await getStorageUrlOrNull(STORAGE_BUCKETS.BATCH_IMAGES, filePath, 3600);
+      if (url) setNestingUrl(url);
 
       toast.success(t("batches.imageUploadSuccess"));
     } catch (error: unknown) {
@@ -89,14 +101,18 @@ export function BatchVisuals({ batch }: BatchVisualsProps) {
         </div>
       </CardHeader>
       <CardContent>
-        {batch.nesting_image_url ? (
+        {loadingUrl ? (
+          <div className="flex items-center justify-center p-8">
+            <div className="animate-spin h-6 w-6 border-2 border-muted-foreground border-t-transparent rounded-full" />
+          </div>
+        ) : (nestingUrl || batch.nesting_image_url) ? (
           <div className="relative group">
             <img
-              src={batch.nesting_image_url}
+              src={nestingUrl || batch.nesting_image_url || ''}
               alt="Nesting Layout"
               className="rounded-md w-full h-auto max-h-[300px] object-contain border"
             />
-            <a href={batch.nesting_image_url} target="_blank" rel="noopener noreferrer" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <a href={nestingUrl || batch.nesting_image_url || '#'} target="_blank" rel="noopener noreferrer" className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
               <Button size="icon" variant="secondary">
                 <ExternalLink className="h-4 w-4" />
               </Button>

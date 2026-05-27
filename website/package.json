@@ -7,9 +7,10 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/check-editorial-review.mjs && astro build",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "node scripts/check-editorial-review.mjs && astro check",
+    "editorial:check": "node scripts/check-editorial-review.mjs",
     "tokens:check": "node scripts/check-token-drift.mjs"
   },
   "dependencies": {

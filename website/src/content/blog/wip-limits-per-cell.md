@@ -12,6 +12,13 @@ relatedLinks:
     href: "/getting-started/introduction/overview/"
 ---
 
+<!-- editorial-review
+status: approved
+reviewer: CMO
+date: 2026-05-26
+guide: 2026-05-26-ery-212
+editorial-review -->
+
 A high-mix, low-volume shop rarely has a throughput problem on any single machine. It has a
 *queue* problem: too many jobs released to the floor at once, so everything is "in progress" and
 nothing is finishing. A work-in-progress (WIP) limit per cell is the simplest tool for that.

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Users, CreditCard, Database, Rocket } from 'lucide-react';
+import { Check, Users, CreditCard, Database, Smartphone, Rocket } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlanSelection, PlanType } from './PlanSelection';
 import { MockDataImport } from './MockDataImport';
 import { TeamSetup } from './TeamSetup';
+import { PwaInstallStep } from './PwaInstallStep';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,8 +14,9 @@ import { useSubscription } from '@/hooks/useSubscription';
 import { useTranslation } from 'react-i18next';
 import AnimatedBackground from '@/components/AnimatedBackground';
 import { logger } from '@/lib/logger';
+import { usePwaInstall } from '@/hooks/usePwaInstall';
 
-const STEP_ICONS = [Users, CreditCard, Database, Rocket];
+const STEP_ICONS = [Users, CreditCard, Database, Smartphone, Rocket];
 type TenantPlan = Exclude<PlanType, 'self_hosted'>;
 
 export function OnboardingWizard() {
@@ -31,7 +33,8 @@ export function OnboardingWizard() {
     { id: 1, name: t('onboarding.steps.team'), description: t('onboarding.steps.teamDesc') },
     { id: 2, name: t('onboarding.steps.plan'), description: t('onboarding.steps.planDesc') },
     { id: 3, name: t('onboarding.steps.data'), description: t('onboarding.steps.dataDesc') },
-    { id: 4, name: t('onboarding.steps.complete'), description: t('onboarding.steps.completeDesc') },
+    { id: 4, name: t('onboarding.steps.install'), description: t('onboarding.steps.installDesc') },
+    { id: 5, name: t('onboarding.steps.complete'), description: t('onboarding.steps.completeDesc') },
   ];
 
   useEffect(() => {
@@ -114,14 +117,26 @@ export function OnboardingWizard() {
   const handleMockDataComplete = async () => {
     await updateOnboardingProgress(4, {
       mock_data_imported: true,
-      onboarding_completed: true,
     });
-    await completeOnboarding();
+    setCurrentStep(5);
   };
 
   const handleMockDataSkip = async () => {
     await updateOnboardingProgress(4, {
       mock_data_imported: false,
+    });
+    setCurrentStep(5);
+  };
+
+  const handlePwaInstallComplete = async () => {
+    await updateOnboardingProgress(5, {
+      onboarding_completed: true,
+    });
+    await completeOnboarding();
+  };
+
+  const handlePwaInstallSkip = async () => {
+    await updateOnboardingProgress(5, {
       onboarding_completed: true,
     });
     await completeOnboarding();
@@ -226,6 +241,9 @@ export function OnboardingWizard() {
               )}
               {currentStep === 3 && (
                 <MockDataImport onComplete={handleMockDataComplete} onSkip={handleMockDataSkip} />
+              )}
+              {currentStep === 4 && (
+                <PwaInstallStep onComplete={handlePwaInstallComplete} onSkip={handlePwaInstallSkip} />
               )}
             </CardContent>
           </Card>

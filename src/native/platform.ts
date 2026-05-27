@@ -132,6 +132,19 @@ export function hasFinePointer(): boolean {
   return window.matchMedia("(pointer: fine)").matches;
 }
 
+/**
+ * True when the PWA is running in standalone mode (installed to home screen).
+ * Checks both the standard `display-mode` media query and the legacy
+ * `navigator.standalone` property (iOS Safari < 16.4).
+ */
+export function isStandalone(): boolean {
+  if (typeof window === "undefined") return false;
+  if (window.matchMedia("(display-mode: standalone)").matches) return true;
+  if (window.matchMedia("(display-mode: fullscreen)").matches) return true;
+  if ("standalone" in navigator && (navigator as Navigator & { standalone?: boolean }).standalone) return true;
+  return false;
+}
+
 /** Reset cached detections (testing only). */
 export function __resetPlatformCache(): void {
   cachedNative = null;

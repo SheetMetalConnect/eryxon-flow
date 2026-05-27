@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { getStorageUrlOrNull, STORAGE_BUCKETS } from '@/lib/storage-url';
 import { useProfile } from "@/hooks/useProfile";
 import { SeverityBadge, StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
@@ -136,10 +137,8 @@ export default function IssueQueue() {
 
       const urls = await Promise.all(
         selectedIssue.image_paths.map(async (path) => {
-          const { data } = await supabase.storage
-            .from("issues")
-            .createSignedUrl(path, 3600);
-          return data?.signedUrl || "";
+          const url = await getStorageUrlOrNull(STORAGE_BUCKETS.ISSUES, path, 3600);
+          return url || "";
         }),
       );
 

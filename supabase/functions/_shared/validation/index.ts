@@ -19,3 +19,5 @@ export * from "./validators/JobValidator.ts";
 export * from "./validators/PartValidator.ts";
 export * from "./validators/OperationValidator.ts";
 export * from "./validators/IssueValidator.ts";
+export * from "./validators/NcProgramValidator.ts";
+export * from "./validators/DncTransferJobValidator.ts";

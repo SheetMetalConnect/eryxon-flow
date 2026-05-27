@@ -59,6 +59,12 @@ vi.mock('@/integrations/supabase/client', () => ({
       return ch;
     },
     removeChannel: () => {},
+    functions: {
+      invoke: vi.fn().mockResolvedValue({
+        data: { success: true, data: { url: 'https://example.com/file.pdf' } },
+        error: null,
+      }),
+    },
     storage: {
       from: () => ({
         createSignedUrl: (...args: any[]) => mockCreateSignedUrl(...args),

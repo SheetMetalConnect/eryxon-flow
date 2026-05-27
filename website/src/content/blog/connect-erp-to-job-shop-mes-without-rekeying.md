@@ -17,6 +17,13 @@ relatedLinks:
     href: "/api/payload-reference/"
 ---
 
+<!-- editorial-review
+status: approved
+reviewer: CMO
+date: 2026-05-26
+guide: 2026-05-26-ery-212
+editorial-review -->
+
 This article is for shop owners, technical leads, ERP implementers, and operations engineers evaluating whether Eryxon Flow can take released work from an ERP without forcing planners or operators to type the same jobs twice. The useful question is not whether an MES has an API. The useful question is whether the API matches how a job shop actually releases, updates, and closes work.
 
 If your ERP already owns customer orders, due dates, routing intent, and work-center assignments, your MES should not force someone in the office to rebuild that same structure by hand. Rekeying creates the exact problems a job shop is trying to remove: duplicate job numbers, stale routings on the floor, and arguments about which system is current.

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
+import { getStorageUrl, STORAGE_BUCKETS } from '@/lib/storage-url';
 import { QueryKeys } from "@/lib/queryClient";
 import { useProfile } from "@/hooks/useProfile";
 import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
@@ -171,17 +172,12 @@ export default function Parts() {
         return;
       }
 
-      const { data, error } = await supabase.storage
-        .from("parts-cad")
-        .createSignedUrl(filePath, 3600);
-
-      if (error) throw error;
-      if (!data?.signedUrl) throw new Error("Failed to generate signed URL");
+      const { url } = await getStorageUrl(STORAGE_BUCKETS.PARTS_CAD, filePath, 3600);
 
       // For STEP files, fetch as blob to avoid CORS issues
-      let viewUrl = data.signedUrl;
+      let viewUrl = url;
       if (fileType === "step") {
-        const response = await fetch(data.signedUrl);
+        const response = await fetch(url);
         const blob = await response.blob();
         viewUrl = URL.createObjectURL(blob);
       }

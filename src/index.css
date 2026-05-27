@@ -5,3 +5,5 @@
 @import './styles/mobile.css';
 /* iOS / iPadOS native-shell tuning — momentum scroll, dynamic-vh, dynamic type */
 @import './styles/mobile-ios.css';
+/* PWA standalone shell — title bar, drag regions, display-mode adjustments */
+@import './styles/standalone.css';

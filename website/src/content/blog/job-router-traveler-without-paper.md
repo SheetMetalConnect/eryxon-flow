@@ -16,6 +16,13 @@ relatedLinks:
     href: "/guides/deployment/"
 ---
 
+<!-- editorial-review
+status: approved
+reviewer: CMO
+date: 2026-05-26
+guide: 2026-05-26-ery-212
+editorial-review -->
+
 **A paper traveler is the document that follows a job around the shop:** which operations it
 needs, in what order, and who signed off on each step. It works until a job gets re-prioritised,
 an operation moves to a different machine, or someone needs the status while the paper is sitting

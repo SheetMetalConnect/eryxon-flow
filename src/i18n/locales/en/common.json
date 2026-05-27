@@ -185,6 +185,45 @@
     "updateDescription": "Reload to apply the update.",
     "reload": "Reload",
     "later": "Later",
-    "offlineReady": "Eryxon Flow is ready to work offline"
+    "offlineReady": "Eryxon Flow is ready to work offline",
+    "install": {
+      "title": "Install App",
+      "settingsDesc": "Install Eryxon Flow on your device for a full-screen, offline-capable experience.",
+      "settingsPrompt": "Tap the button below to install Eryxon Flow on your device.",
+      "settingsManualPrompt": "Follow your browser's instructions to add Eryxon Flow to your home screen.",
+      "checking": "Checking install availability...",
+      "checkingDesc": "We're checking if Eryxon Flow can be installed on your device.",
+      "installed": "App is installed",
+      "installedDesc": "Eryxon Flow is installed on your device. You can launch it from your home screen.",
+      "installedMessage": "You're all set! Launch Eryxon Flow from your home screen for the best experience.",
+      "installable": "Install Eryxon Flow",
+      "installableDesc": "Install Eryxon Flow on your device for quick access and offline support.",
+      "installPrompt": "Tap install when prompted by your browser to add Eryxon Flow to your device.",
+      "installButton": "Install App",
+      "manualIOS": "Add to Home Screen (iPhone)",
+      "manualIPad": "Add to Home Screen (iPad)",
+      "manualDesc": "Your browser supports Progressive Web Apps. Add Eryxon Flow to your home screen manually.",
+      "manualPrompt": "Follow the steps below to add Eryxon Flow to your home screen.",
+      "manualInstructions": "How to install:",
+      "manual": {
+        "ios": {
+          "step1": "Tap the Share button (square with arrow) in Safari.",
+          "step2": "Scroll down and tap \"Add to Home Screen\".",
+          "step3": "Name the app and tap \"Add\" in the top-right corner.",
+          "step4": "Launch Eryxon Flow from your home screen."
+        },
+        "ipad": {
+          "step1": "Tap the Share button (square with arrow) in Safari.",
+          "step2": "Select \"Add to Home Screen\" from the share menu.",
+          "step3": "Name the app and tap \"Add\" in the top-right corner.",
+          "step4": "Launch Eryxon Flow from your home screen."
+        }
+      },
+      "remindLater": "Remind me later",
+      "continue": "Continue",
+      "notSupported": "Install not supported",
+      "notSupportedDesc": "Your browser does not support installing Eryxon Flow as an app.",
+      "notSupportedHint": "You can still use Eryxon Flow in your browser. For the best experience, try using Chrome, Edge, or Safari."
+    }
   }
 }

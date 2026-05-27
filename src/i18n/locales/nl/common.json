@@ -184,6 +184,45 @@
     "updateDescription": "Herlaad om de update toe te passen.",
     "reload": "Herladen",
     "later": "Later",
-    "offlineReady": "Eryxon Flow is klaar om offline te werken"
+    "offlineReady": "Eryxon Flow is klaar om offline te werken",
+    "install": {
+      "title": "App installeren",
+      "settingsDesc": "Installeer Eryxon Flow op uw apparaat voor een volledig scherm, offline-capabele ervaring.",
+      "settingsPrompt": "Tik op de knop hieronder om Eryxon Flow op uw apparaat te installeren.",
+      "settingsManualPrompt": "Volg de instructies van uw browser om Eryxon Flow aan uw startscherm toe te voegen.",
+      "checking": "Beschikbaarheid installatie controleren...",
+      "checkingDesc": "We controleren of Eryxon Flow op uw apparaat kan worden geïnstalleerd.",
+      "installed": "App is geïnstalleerd",
+      "installedDesc": "Eryxon Flow is geïnstalleerd op uw apparaat. U kunt het starten vanaf uw startscherm.",
+      "installedMessage": "U bent helemaal klaar! Start Eryxon Flow vanaf uw startscherm voor de beste ervaring.",
+      "installable": "Installeer Eryxon Flow",
+      "installableDesc": "Installeer Eryxon Flow op uw apparaat voor snelle toegang en offline ondersteuning.",
+      "installPrompt": "Tik op installeren wanneer uw browser u vraagt om Eryxon Flow aan uw apparaat toe te voegen.",
+      "installButton": "App installeren",
+      "manualIOS": "Voeg toe aan startscherm (iPhone)",
+      "manualIPad": "Voeg toe aan startscherm (iPad)",
+      "manualDesc": "Uw browser ondersteunt Progressive Web Apps. Voeg Eryxon Flow handmatig toe aan uw startscherm.",
+      "manualPrompt": "Volg de onderstaande stappen om Eryxon Flow aan uw startscherm toe te voegen.",
+      "manualInstructions": "Hoe te installeren:",
+      "manual": {
+        "ios": {
+          "step1": "Tik op de Deel-knop (vierkant met pijl) in Safari.",
+          "step2": "Scroll naar beneden en tik op \"Zet in beginscherm\".",
+          "step3": "Noem de app en tik op \"Voeg toe\" rechtsboven.",
+          "step4": "Start Eryxon Flow vanaf uw startscherm."
+        },
+        "ipad": {
+          "step1": "Tik op de Deel-knop (vierkant met pijl) in Safari.",
+          "step2": "Selecteer \"Zet in beginscherm\" in het deelmenu.",
+          "step3": "Noem de app en tik op \"Voeg toe\" rechtsboven.",
+          "step4": "Start Eryxon Flow vanaf uw startscherm."
+        }
+      },
+      "remindLater": "Herinner me later",
+      "continue": "Doorgaan",
+      "notSupported": "Installatie niet ondersteund",
+      "notSupportedDesc": "Uw browser ondersteunt het installeren van Eryxon Flow als app niet.",
+      "notSupportedHint": "U kunt Eryxon Flow nog steeds in uw browser gebruiken. Probeer Chrome, Edge of Safari voor de beste ervaring."
+    }
   }
 }

@@ -305,6 +305,42 @@ else
   SKIP=$((SKIP + 4))
 fi
 
+# ── 9b. DNC Transfer Lifecycle (claim/ticket contract) ──────────────────────
+echo ""
+echo -e "${B}── DNC Transfer Lifecycle (claim/ticket) ──${N}"
+
+# Get a pending DNC transfer for testing
+DNC_RESP=$(_curl "$BASE_URL/api-dnc-transfers?status=pending&limit=1" --header "$AUTH")
+DNC_ID=$(echo "$DNC_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin)['data']['dnc_transfer_jobs']; print(d[0]['id'] if d else '')" 2>/dev/null || echo "")
+
+if [ -z "$DNC_ID" ]; then
+  # Try creating one via NC programs
+  NC_RESP=$(_curl "$BASE_URL/api-nc-programs?limit=1" --header "$AUTH")
+  NC_ID=$(echo "$NC_RESP" | python3 -c "import sys,json; n=json.load(sys.stdin)['data']['nc_programs']; print(n[0]['id'] if n else '')" 2>/dev/null || echo "")
+  if [ -n "$NC_ID" ]; then
+    DNCC_RESP=$(_curl "$BASE_URL/api-dnc-transfers" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+      -d "{\"nc_program_id\":\"$NC_ID\",\"transfer_protocol\":\"ftp\"}")
+    DNC_ID=$(echo "$DNCC_RESP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('data',{}).get('dnc_transfer_job',{}).get('id',''))" 2>/dev/null || echo "")
+  fi
+fi
+
+if [ -n "$DNC_ID" ]; then
+  # Claim the transfer — capture response to extract ticket ID
+  CLAIM_RESP=$(_curl "$BASE_URL/api-dnc-transfer-lifecycle/claim?id=$DNC_ID" -X POST --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"bridge_instance_id\":\"test-bridge-$TS\"}")
+  assert_success "DNC claim transfer" -X POST "$BASE_URL/api-dnc-transfer-lifecycle/claim?id=$DNC_ID" --header "$AUTH" -H "Content-Type: application/json" \
+    -d "{\"bridge_instance_id\":\"test-bridge-$TS\"}"
+
+  TICKET_ID=$(echo "$CLAIM_RESP" | python3 -c "import sys,json; print(json.load(sys.stdin).get('data',{}).get('ticket',{}).get('id',''))" 2>/dev/null || echo "")
+
+  if [ -n "$TICKET_ID" ]; then
+    assert_success "DNC ticket heartbeat" "$BASE_URL/api-dnc-transfer-lifecycle/tickets/$TICKET_ID/heartbeat" -X POST --header "$AUTH" -H "Content-Type: application/json" -d '{}'
+  fi
+else
+  echo -e "  ${Y}SKIP${N}  DNC claim/ticket (no NC programs or transfers available)"
+  SKIP=$((SKIP + 2))
+fi
+
 # ── 10. ERP Sync ─────────────────────────────────────────────────────────────
 echo ""
 echo -e "${B}── ERP Sync ──${N}"
