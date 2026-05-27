@@ -10,10 +10,11 @@ Target cadence is one publishable post every three days.
 
 ## Featured article
 
-- [Latest development at Eryxon Flow and the road to v0.7](/articles/latest-development-and-road-to-v0-7/)
+- [Why Eryxon Flow moved to Apache 2.0](/articles/why-eryxon-flow-moved-to-apache-2-0/)
 
 ## Latest articles
 
+- [Why Eryxon Flow moved to Apache 2.0](/articles/why-eryxon-flow-moved-to-apache-2-0/)
 - [Latest development at Eryxon Flow and the road to v0.7](/articles/latest-development-and-road-to-v0-7/)
 
 ## Looking for something specific?
