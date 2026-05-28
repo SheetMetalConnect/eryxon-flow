@@ -1,17 +1,24 @@
 ---
 title: Articles
-description: Biweekly, proof-led articles for metalworking job shops evaluating Eryxon Flow, from operator workflows and rollout planning to ERP-connected execution.
+description: Proof-led articles on running Eryxon Flow on the shop floor — rollout mechanics, operator workflows, and integration patterns for metalworking job shops.
 tableOfContents: false
 ---
 
-Biweekly articles for metalworking job-shop operators, operations leaders, and technical evaluators who need concrete answers before rollout. We focus on how Eryxon Flow fits daily production: operator workflows, rollout sequencing, and ERP-connected execution.
+Practical, proof-led writing for metalworking job-shop operators, operations leaders, and evaluators. Each piece is anchored in shipped capability and rollout evidence.
 
-Every piece here starts with proof: a shipped capability, a docs reference, a screenshot, or a real rollout pattern. If a claim cannot be backed up, it does not belong on this page.
+Target cadence is one publishable post every three days.
 
-New articles publish on a biweekly cadence. Use the list in the sidebar to browse the latest.
+## Featured article
 
-## Choose your next step
+- [Why Eryxon Flow moved to Apache 2.0](/articles/why-eryxon-flow-moved-to-apache-2-0/)
 
-- **See the product flow first:** [Quick Start](/guides/quick-start/) for a self-serve look at the hosted experience and setup path.
-- **Plan a guided deployment:** [Managed Rollout](/managed-rollout/) if you want help with rollout sequencing, deployment, and ERP fit.
-- **Validate what has shipped:** [Changelog](/guides/changelog/) for current product status and recent releases.
+## Latest articles
+
+- [Why Eryxon Flow moved to Apache 2.0](/articles/why-eryxon-flow-moved-to-apache-2-0/)
+- [Latest development at Eryxon Flow and the road to v0.7](/articles/latest-development-and-road-to-v0-7/)
+
+## Looking for something specific?
+
+- **Get started:** [Quick Start](/guides/quick-start/)
+- **See a guided rollout:** [Managed Rollout](/managed-rollout/)
+- **What shipped recently:** [Changelog](/guides/changelog/)
