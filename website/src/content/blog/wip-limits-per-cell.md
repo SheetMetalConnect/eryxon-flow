@@ -2,9 +2,10 @@
 title: "WIP limits per cell, in practice"
 description: "Why a work-in-progress limit on each cell does more for a high-mix shop than another scheduling algorithm — and how to set the first one."
 pubDate: 2026-05-20
+heroImage: "/social/og-default.png"
 author: "Eryxon"
 authorRole: "Eryxon Flow"
-category: "Engineering"
+category: "Planning"
 tags: ["QRM", "planning"]
 ctaIntent: "trial"
 relatedLinks:

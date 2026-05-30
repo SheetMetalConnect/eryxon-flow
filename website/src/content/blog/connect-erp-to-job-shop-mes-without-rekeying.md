@@ -2,9 +2,10 @@
 title: "How to connect your ERP to a job-shop MES without rekeying jobs"
 description: "A practical ERP sync path for job shops: push jobs, parts, and resources by API, match records by external IDs, preview changes when needed, and return production events by webhook."
 pubDate: 2026-05-22
+heroImage: "/social/og-default.png"
 author: "Eryxon"
 authorRole: "Eryxon Flow"
-category: "Engineering"
+category: "Integration"
 tags: ["ERP", "integration"]
 ctaIntent: "docs"
 featured: true

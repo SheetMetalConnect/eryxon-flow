@@ -60,7 +60,13 @@ const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
 
           {featured && (
             <a class="featured-post" href={`/blog/${featured.id}/`}>
+              {featured.data.heroImage ? (
+              <div class="featured-img">
+                <img src={featured.data.heroImage} alt={featured.data.title} loading="eager" />
+              </div>
+            ) : (
               <div class="featured-img">[ {featured.data.category} ]</div>
+            )}
               <div>
                 <span class="featured-tag">★ Featured · {featured.data.category}</span>
                 <h2 class="featured-h">{featured.data.title}</h2>
@@ -85,7 +91,11 @@ const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "medium" });
             <div class="post-grid">
               {rest.map((post) => (
                 <a class="post-card" href={`/blog/${post.id}/`}>
-                  <div class="post-img" />
+                  {post.data.heroImage ? (
+                <img class="post-img" src={post.data.heroImage} alt={post.data.title} loading="lazy" />
+              ) : (
+                <div class="post-img" />
+              )}
                   <span class="post-tag">{post.data.category}</span>
                   <h3 class="post-h">{post.data.title}</h3>
                   <div class="post-meta">

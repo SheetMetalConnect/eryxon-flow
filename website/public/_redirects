@@ -1,2 +1,3 @@
 /articles    /blog    301
 /articles/*  /blog/:splat  301
+/blog/why-eryxon-flow-moved-to-apache-2-0    /blog/why-eryxon-flow-is-now-apache-2-0    301
