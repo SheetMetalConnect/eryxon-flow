@@ -21,8 +21,8 @@ export const locales = locals
 export default defineConfig({
   site: site.url,
   redirects: {
-    "/blog": "/articles",
-    "/blog/why-eryxon-flow-moved-to-apache-2-0/": "/articles/why-eryxon-flow-moved-to-apache-2-0/",
+    "/articles": "/blog",
+    "/articles/why-eryxon-flow-moved-to-apache-2-0/": "/blog/why-eryxon-flow-moved-to-apache-2-0/",
   },
   // Use Astro's default Sharp image service. The previous `noop` service had no
   // dev endpoint, so every <img> (docs screenshots + logos) returned HTTP 500
