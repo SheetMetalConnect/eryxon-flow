@@ -52,6 +52,9 @@ const shareX = `https://twitter.com/intent/tweet?url=${encodeURIComponent(articl
         </div>
         <h1 class="article-h1">{title}</h1>
         <p class="article-lead">{description}</p>
+      {post.data.heroImage && (
+        <img class="article-hero" src={post.data.heroImage} alt={title} loading="eager" style="width:100%;border-radius:8px;margin:1.5rem 0;" />
+      )}
         <div class="article-meta">
           <span class="article-author">
             <span class="article-avatar">{initials(author)}</span>
