@@ -2,7 +2,7 @@
 title: "Run a job router without the paper traveler"
 description: "How a metalworking job shop can track an order through cutting, bending, and welding without printing a traveler for every job."
 pubDate: 2026-05-24
-heroImage: "/social/og-default.png"
+heroImage: "/social/blog/job-router-traveler-without-paper/og.svg"
 author: "Eryxon"
 authorRole: "Eryxon Flow"
 category: "Operations"

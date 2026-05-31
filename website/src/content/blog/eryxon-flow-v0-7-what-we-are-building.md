@@ -7,7 +7,7 @@ authorRole: "Eryxon Flow"
 category: "Development"
 tags: ["v0.7", "CAM", "batch", "roadmap"]
 featured: false
-heroImage: "/social/og-default.png"
+heroImage: "/social/blog/eryxon-flow-v0-7-what-we-are-building/og.svg"
 ctaIntent: "trial"
 relatedLinks:
   - label: "Roadmap"

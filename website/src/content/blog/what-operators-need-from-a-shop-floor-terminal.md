@@ -2,7 +2,7 @@
 title: "What operators actually need from a shop-floor terminal"
 description: "A useful shop-floor terminal does not need more dashboards. It needs touch-friendly priority, clear downstream signals, and instant access to drawings and 3D part context at the workstation."
 pubDate: 2026-05-18
-heroImage: "/social/og-default.png"
+heroImage: "/social/blog/what-operators-need-from-a-shop-floor-terminal/og.svg"
 author: "Eryxon"
 authorRole: "Eryxon Flow"
 category: "Shop Floor"

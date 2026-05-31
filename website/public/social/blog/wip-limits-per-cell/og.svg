@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#0f172a"/><stop offset="100%" stop-color="#1e293b"/></linearGradient></defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="0" y="0" width="8" height="630" fill="#f59e0b"/>
+  <text x="60" y="100" font-family="sans-serif" font-size="18" font-weight="bold" fill="#f59e0b">PLANNING</text>
+  <text x="60" y="290" font-family="sans-serif" font-size="56" font-weight="bold" fill="#f8fafc">WIP Limits Per Cell</text>
+  <text x="60" y="360" font-family="sans-serif" font-size="22" fill="#94a3b8">WIP QRM throughput</text>
+  <rect x="60" y="430" width="220" height="44" rx="6" fill="#f59e0b"/>
+  <text x="170" y="458" font-family="sans-serif" font-size="16" font-weight="bold" fill="#0f172a" text-anchor="middle">Read on eryxon.eu</text>
+  <text x="1140" y="600" font-family="sans-serif" font-size="14" fill="#475569" text-anchor="end">Eryxon Flow</text>
+</svg>
