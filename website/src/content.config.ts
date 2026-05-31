@@ -45,6 +45,7 @@ const blog = defineCollection({
     featured: z.boolean().default(false),
     /** Primary conversion intent for this article's end CTA. */
     ctaIntent: ctaIntent.default("docs"),
+    heroImage: z.string().optional(),
     /** Related docs/product-proof links shown beneath the article. */
     relatedLinks: z.array(labelledLink).default([]),
     draft: z.boolean().default(false),
@@ -91,6 +92,7 @@ const releaseNotes = defineCollection({
     /** Secondary CTA: GitHub release notes / repo changelog for deeper technical detail. */
     githubUrl: z.string().optional(),
     ctaIntent: ctaIntent.default("docs"),
+    heroImage: z.string().optional(),
     draft: z.boolean().default(false),
   }),
 });
