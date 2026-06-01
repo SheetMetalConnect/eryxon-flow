@@ -39,9 +39,29 @@ const siteUrl = config.site.url.replace(/\/$/, "");
 const articleUrl = `${siteUrl}/blog/${post.id}/`;
 const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(articleUrl)}`;
 const shareX = `https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(title)}`;
+const legacySocialAliasBySlug = {
+  "why-eryxon-flow-is-now-apache-2-0": "why-eryxon-flow-moved-to-apache-2-0",
+};
+const legacySocialAlias = legacySocialAliasBySlug[post.id as keyof typeof legacySocialAliasBySlug];
+const socialSlug = legacySocialAlias ?? post.id;
+const socialImagePath = legacySocialAlias
+  ? `/social/articles/${socialSlug}/og.png`
+  : post.data.heroImage;
+const socialImageUrl = socialImagePath ? `${siteUrl}${socialImagePath}` : `${siteUrl}/social/og-default.png`;
 ---
 
 <EditorialLayout title={`${title} — Eryxon Flow`} description={description}>
+  <Fragment slot="head">
+    <meta property="og:type" content="article" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={articleUrl} />
+    <meta property="og:image" content={socialImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageUrl} />
+  </Fragment>
   <div class:list={["article-shell", { "no-toc": toc.length === 0 }]}>
     <article>
       <header class="article-head">

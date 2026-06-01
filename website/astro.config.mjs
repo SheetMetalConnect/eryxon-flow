@@ -1,7 +1,6 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
-import { viewTransitions } from "astro-vtbot/starlight-view-transitions";
 
 import tailwindcss from "@tailwindcss/vite";
 import config from "./src/config/config.json";
@@ -22,7 +21,8 @@ export default defineConfig({
   site: site.url,
   redirects: {
     "/articles": "/blog",
-    "/articles/why-eryxon-flow-moved-to-apache-2-0/": "/blog/why-eryxon-flow-moved-to-apache-2-0/",
+    "/articles/why-eryxon-flow-moved-to-apache-2-0/": "/blog/why-eryxon-flow-is-now-apache-2-0/",
+    "/blog/why-eryxon-flow-moved-to-apache-2-0/": "/blog/why-eryxon-flow-is-now-apache-2-0/",
   },
   // Use Astro's default Sharp image service. The previous `noop` service had no
   // dev endpoint, so every <img> (docs screenshots + logos) returned HTTP 500
@@ -55,7 +55,7 @@ export default defineConfig({
     }),
   ],
   vite: {
-    plugins: /** @type {any} */ ([tailwindcss(), viewTransitions()]),
+    plugins: /** @type {any} */ ([tailwindcss()]),
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),

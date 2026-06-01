@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 const slug = process.argv[2];
 if (!slug) {
@@ -26,8 +28,18 @@ if (!profile) {
   process.exit(1);
 }
 
-const outDir = path.resolve('website/public/social/blog', slug);
-await fs.mkdir(outDir, { recursive: true });
+const scriptDir = path.dirname(fileURLToPath(import.meta.url));
+const siteDir = path.resolve(scriptDir, '..');
+const blogOutDir = path.join(siteDir, 'public', 'social', 'blog', slug);
+const articleAliasOutDir = path.join(
+  siteDir,
+  'public',
+  'social',
+  'articles',
+  slug === 'why-eryxon-flow-moved-to-apache-2-0' ? slug : slug
+);
+await fs.mkdir(blogOutDir, { recursive: true });
+await fs.mkdir(articleAliasOutDir, { recursive: true });
 
 function escapeXml(input) {
   return input
@@ -62,15 +74,17 @@ function svgTemplate({ width, height, title, subtitle, kicker }) {
 }
 
 const outputs = [
-  ['og.svg', 1200, 630],
-  ['linkedin.svg', 1200, 627],
-  ['x.svg', 1600, 900],
-  ['square.svg', 1080, 1080]
+  ['og', 1200, 630],
+  ['linkedin', 1200, 627],
+  ['x', 1600, 900],
+  ['square', 1080, 1080]
 ];
 
 for (const [name, width, height] of outputs) {
   const svg = svgTemplate({ width, height, ...profile });
-  await fs.writeFile(path.join(outDir, name), svg, 'utf8');
+  await fs.writeFile(path.join(blogOutDir, `${name}.svg`), svg, 'utf8');
+  await sharp(Buffer.from(svg)).png().toFile(path.join(articleAliasOutDir, `${name}.png`));
 }
 
-console.log(`Generated social SVG assets in ${outDir}`);
+console.log(`Generated social SVG assets in ${blogOutDir}`);
+console.log(`Generated social PNG aliases in ${articleAliasOutDir}`);
