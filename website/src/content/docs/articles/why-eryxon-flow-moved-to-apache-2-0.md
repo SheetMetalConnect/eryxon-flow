@@ -1,6 +1,6 @@
 ---
 title: Why Eryxon Flow moved to Apache 2.0
-description: Eryxon Flow is now source-available under Apache 2.0 so job shops can use, fork, modify, and deploy it freely, while Eryxon continues to offer hosted, managed, and rollout support as services.
+description: Eryxon Flow is now open source under Apache 2.0 so job shops can use, fork, modify, and deploy it freely, while Eryxon continues to offer hosted, managed, and rollout support as services.
 head:
   - tag: link
     attrs:
