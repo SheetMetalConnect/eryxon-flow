@@ -510,7 +510,8 @@
 .featured-img {
   aspect-ratio: 16 / 9;
   inline-size: min(100%, 380px);
-  block-size: clamp(132px, 18vw, 220px);
+  block-size: clamp(120px, 16vw, 170px);
+  max-inline-size: 340px;
   justify-self: center;
   overflow: hidden;
   background: repeating-linear-gradient(
@@ -589,7 +590,7 @@
 .post-img {
   aspect-ratio: 16 / 9;
   inline-size: 100%;
-  block-size: clamp(92px, 11vw, 132px);
+  block-size: clamp(86px, 11vw, 120px);
   object-fit: cover;
   display: block;
   background: repeating-linear-gradient(
@@ -786,10 +787,10 @@
   }
   .featured-img {
     inline-size: 100%;
-    block-size: clamp(120px, 26vw, 172px);
+    block-size: clamp(108px, 22vw, 150px);
   }
   .post-img {
-    block-size: clamp(88px, 18vw, 120px);
+    block-size: clamp(80px, 16vw, 108px);
   }
   .post-grid {
     grid-template-columns: 1fr 1fr;
@@ -807,9 +808,9 @@
     grid-template-columns: 1fr;
   }
   .featured-img {
-    block-size: clamp(104px, 32vw, 140px);
+    block-size: clamp(92px, 28vw, 124px);
   }
   .post-img {
-    block-size: clamp(82px, 28vw, 112px);
+    block-size: clamp(76px, 24vw, 100px);
   }
 }
