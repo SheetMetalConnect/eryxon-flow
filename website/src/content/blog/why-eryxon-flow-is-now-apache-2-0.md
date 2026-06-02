@@ -7,7 +7,7 @@ authorRole: "Sheet Metal Connect"
 category: "Open Source"
 tags: ["licensing", "Apache 2.0", "FOSS"]
 featured: true
-heroImage: "/social/blog/why-eryxon-flow-moved-to-apache-2-0/og.svg"
+heroImage: "/social/blog/why-eryxon-flow-is-now-apache-2-0/og.svg"
 ctaIntent: "rollout"
 relatedLinks:
   - label: "Self-hosting guide"

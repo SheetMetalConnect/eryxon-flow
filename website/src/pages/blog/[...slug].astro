@@ -39,13 +39,8 @@ const siteUrl = config.site.url.replace(/\/$/, "");
 const articleUrl = `${siteUrl}/blog/${post.id}/`;
 const shareLinkedIn = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(articleUrl)}`;
 const shareX = `https://twitter.com/intent/tweet?url=${encodeURIComponent(articleUrl)}&text=${encodeURIComponent(title)}`;
-const legacySocialAliasBySlug = {
-  "why-eryxon-flow-is-now-apache-2-0": "why-eryxon-flow-moved-to-apache-2-0",
-};
-const legacySocialAlias = legacySocialAliasBySlug[post.id as keyof typeof legacySocialAliasBySlug];
-const socialSlug = legacySocialAlias ?? post.id;
-const socialImagePath = legacySocialAlias
-  ? `/social/articles/${socialSlug}/og.png`
+const socialImagePath = post.id === "why-eryxon-flow-is-now-apache-2-0"
+  ? `/social/blog/${post.id}/og.png`
   : post.data.heroImage;
 const socialImageUrl = socialImagePath ? `${siteUrl}${socialImagePath}` : `${siteUrl}/social/og-default.png`;
 ---
