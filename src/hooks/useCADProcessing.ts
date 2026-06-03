@@ -18,14 +18,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useProfile } from '@/hooks/useProfile';
 import { QueryKeys } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
+import { invokeCadProxy, type CADSourceRef } from '@/lib/cadProxy';
 import {
   buildProcessedMetadata,
   type CADMetadataContext,
 } from '@/lib/cadProcessingMetadata';
 import {
   getCADConfig,
-  getActiveBackendUrl,
-  getActiveApiKey,
   getActiveTimeout,
   isBackendAvailable,
   determineBestBackend,
@@ -288,7 +287,7 @@ export function useCADProcessing() {
    * Process a CAD file through the configured backend
    */
   const processCAD = useCallback(async (
-    fileUrl: string,
+    source: CADSourceRef,
     fileName: string,
     options: UseCADProcessingOptions = {}
   ): Promise<CADProcessingResult> => {
@@ -300,10 +299,9 @@ export function useCADProcessing() {
       thumbnailSize = 256,
     } = options;
 
-    const backendUrl = getActiveBackendUrl();
     const currentMode = config.mode;
 
-    if (currentMode === 'frontend' || !backendUrl) {
+    if (currentMode === 'frontend') {
       return {
         success: false,
         geometry: null,
@@ -333,50 +331,21 @@ export function useCADProcessing() {
     setProcessingError(null);
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      const apiKey = getActiveApiKey();
-      if (apiKey) {
-        headers['X-API-Key'] = apiKey;
-      }
-
-      if (currentMode === 'byob' && config.byob.headers) {
-        Object.entries(config.byob.headers).forEach(([key, value]) => {
-          headers[key] = value;
-        });
-      }
-
       const timeout = getActiveTimeout();
-
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
-      const response = await fetch(`${backendUrl}/process`, {
-        method: 'POST',
-        headers,
-        signal: controller.signal,
-        body: JSON.stringify({
-          file_url: fileUrl,
+      const result = await Promise.race<CADProcessingResult>([
+        invokeCadProxy<CADProcessingResult>({
+          action: 'process',
+          source,
           file_name: fileName,
           include_geometry: includeGeometry,
           include_pmi: includePMI,
           generate_thumbnail: generateThumbnail,
           thumbnail_size: thumbnailSize,
         }),
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        if (response.status === 401 || response.status === 403) {
-          throw new Error('CAD service authentication failed');
-        }
-        throw new Error(`CAD processing failed: HTTP ${response.status}`);
-      }
-
-      const result: CADProcessingResult = await response.json();
+        new Promise<CADProcessingResult>((_, reject) => {
+          setTimeout(() => reject(new Error('CAD processing timed out')), timeout);
+        }),
+      ]);
 
       if (!result.success) {
         setProcessingError(result.error || 'Processing failed');
@@ -451,12 +420,12 @@ export function useCADProcessing() {
    */
   const processAndStore = useCallback(async (
     partId: string,
-    fileUrl: string,
+    source: CADSourceRef,
     fileName: string,
     options?: UseCADProcessingOptions,
     context?: { sourcePath?: string | null },
   ): Promise<CADProcessingResult> => {
-    const result = await processCAD(fileUrl, fileName, options);
+    const result = await processCAD(source, fileName, options);
 
     if (result.success) {
       try {

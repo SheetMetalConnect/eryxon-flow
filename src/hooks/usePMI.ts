@@ -9,11 +9,12 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useSession } from '@/hooks/useSession';
 import { QueryKeys } from '@/lib/queryClient';
 import { logger } from '@/lib/logger';
+import { getCADConfig, isBackendAvailable } from '@/config/cadBackend';
+import { invokeCadProxy, type CADSourceRef } from '@/lib/cadProxy';
 
 /**
  * PMI processing status for async extraction
@@ -141,8 +142,6 @@ export interface PMIExtractionResult {
   file_hash?: string;
 }
 
-const PMI_SERVICE_URL = import.meta.env.VITE_PMI_SERVICE_URL || import.meta.env.VITE_CAD_SERVICE_URL;
-const PMI_SERVICE_API_KEY = import.meta.env.VITE_CAD_SERVICE_API_KEY;
 const STEP_EXTENSIONS = ['step', 'stp'];
 
 function isStepFile(fileName: string): boolean {
@@ -154,11 +153,13 @@ function isStepFile(fileName: string): boolean {
  * Check if PMI service is configured
  */
 export function isPMIServiceEnabled(): boolean {
-  return Boolean(PMI_SERVICE_URL);
+  const config = getCADConfig();
+  return config.mode !== 'frontend' && (
+    isBackendAvailable('custom') || isBackendAvailable('byob')
+  );
 }
 
 export function usePMI(partId: string | undefined) {
-  const { session } = useSession();
   const queryClient = useQueryClient();
   const [isExtracting, setIsExtracting] = useState(false);
   const [extractionError, setExtractionError] = useState<string | null>(null);
@@ -256,10 +257,10 @@ export function usePMI(partId: string | undefined) {
    * Uses Supabase realtime for status updates - no need to poll
    */
   const extractPMIAsync = useCallback(async (
-    fileUrl: string,
+    source: CADSourceRef,
     fileName: string
   ): Promise<{ accepted: boolean; error?: string }> => {
-    if (!PMI_SERVICE_URL) {
+    if (!isPMIServiceEnabled()) {
       log.warn('PMI service not configured');
       return { accepted: false, error: 'PMI service not configured' };
     }
@@ -281,33 +282,15 @@ export function usePMI(partId: string | undefined) {
     setPmiStatus('processing');
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
+      log.debug('Calling CAD proxy for async PMI extraction');
 
-      if (PMI_SERVICE_API_KEY) {
-        headers['X-API-Key'] = PMI_SERVICE_API_KEY;
-      }
-
-      log.debug(`Calling ${PMI_SERVICE_URL}/process-async`);
-
-      const response = await fetch(`${PMI_SERVICE_URL}/process-async`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          part_id: partId,
-          file_url: fileUrl,
-          file_name: fileName,
-          include_geometry: true,
-          include_pmi: true,
-        }),
+      const result = await invokeCadProxy<{ accepted?: boolean; message?: string }>({
+        action: 'process-async',
+        source,
+        file_name: fileName,
+        include_geometry: true,
+        include_pmi: true,
       });
-
-      if (!response.ok) {
-        throw new Error(`PMI extraction failed: HTTP ${response.status}`);
-      }
-
-      const result = await response.json();
 
       if (!result.accepted) {
         throw new Error(result.message || 'Extraction not accepted');
@@ -322,13 +305,13 @@ export function usePMI(partId: string | undefined) {
       setPmiStatus('error');
       return { accepted: false, error: errorMessage };
     }
-  }, [partId, session?.access_token]);
+  }, [partId]);
 
   const extractPMI = useCallback(async (
-    fileUrl: string,
+    source: CADSourceRef,
     fileName: string
   ): Promise<PMIExtractionResult> => {
-    if (!PMI_SERVICE_URL) {
+    if (!isPMIServiceEnabled()) {
       return {
         success: false,
         pmi: null,
@@ -350,28 +333,11 @@ export function usePMI(partId: string | undefined) {
     setExtractionError(null);
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (PMI_SERVICE_API_KEY) {
-        headers['X-API-Key'] = PMI_SERVICE_API_KEY;
-      }
-
-      const response = await fetch(`${PMI_SERVICE_URL}/extract`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          file_url: fileUrl,
-          file_name: fileName,
-        }),
+      const result = await invokeCadProxy<PMIExtractionResult>({
+        action: 'extract',
+        source,
+        file_name: fileName,
       });
-
-      if (!response.ok) {
-        throw new Error(`PMI extraction failed: HTTP ${response.status}`);
-      }
-
-      const result: PMIExtractionResult = await response.json();
 
       if (result.success && result.pmi) {
         if (partId) {
@@ -508,10 +474,10 @@ export function usePMIExtraction() {
   const [extractionError, setExtractionError] = useState<string | null>(null);
 
   const extract = useCallback(async (
-    fileUrl: string,
+    source: CADSourceRef,
     fileName: string
   ): Promise<PMIExtractionResult> => {
-    if (!PMI_SERVICE_URL) {
+    if (!isPMIServiceEnabled()) {
       return {
         success: false,
         pmi: null,
@@ -532,28 +498,11 @@ export function usePMIExtraction() {
     setExtractionError(null);
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
-      if (PMI_SERVICE_API_KEY) {
-        headers['X-API-Key'] = PMI_SERVICE_API_KEY;
-      }
-
-      const response = await fetch(`${PMI_SERVICE_URL}/extract`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          file_url: fileUrl,
-          file_name: fileName,
-        }),
+      return await invokeCadProxy<PMIExtractionResult>({
+        action: 'extract',
+        source,
+        file_name: fileName,
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
-      return await response.json();
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Extraction failed';

@@ -19,19 +19,13 @@ export interface CADBackendConfig {
   /** Custom backend (Eryxon3D) configuration */
   custom: {
     enabled: boolean;
-    url: string;
-    apiKey: string;
     timeout: number;
   };
 
   /** Bring Your Own Backend configuration (placeholder) */
   byob: {
     enabled: boolean;
-    url: string;
-    apiKey: string;
     timeout: number;
-    /** Custom headers for authentication */
-    headers?: Record<string, string>;
   };
 
   /** Frontend-only processing configuration */
@@ -55,24 +49,19 @@ export interface CADBackendConfig {
 }
 
 /**
- * Default configuration with custom backend enabled
+ * Default configuration with frontend fallback enabled
  */
 const defaultConfig: CADBackendConfig = {
-  mode: 'custom',
+  mode: 'frontend',
 
   custom: {
-    enabled: !!import.meta.env.VITE_CAD_SERVICE_URL,  // Only enabled if URL is set
-    url: import.meta.env.VITE_CAD_SERVICE_URL || 'http://localhost:8888',
-    apiKey: import.meta.env.VITE_CAD_SERVICE_API_KEY || '',
+    enabled: false,
     timeout: 120000, // 2 minutes
   },
 
   byob: {
     enabled: false,
-    url: import.meta.env.VITE_BYOB_CAD_URL || '',
-    apiKey: import.meta.env.VITE_BYOB_CAD_API_KEY || '',
     timeout: 120000,
-    headers: {},
   },
 
   frontend: {
@@ -127,43 +116,13 @@ export function setCADBackendMode(mode: CADBackendMode): void {
 export function isBackendAvailable(mode: CADBackendMode): boolean {
   switch (mode) {
     case 'custom':
-      return activeConfig.custom.enabled && !!activeConfig.custom.url;
+      return activeConfig.custom.enabled;
     case 'byob':
-      return activeConfig.byob.enabled && !!activeConfig.byob.url;
+      return activeConfig.byob.enabled;
     case 'frontend':
       return activeConfig.frontend.enabled;
     default:
       return false;
-  }
-}
-
-/**
- * Get the URL for the active backend
- */
-export function getActiveBackendUrl(): string | null {
-  switch (activeConfig.mode) {
-    case 'custom':
-      return activeConfig.custom.url;
-    case 'byob':
-      return activeConfig.byob.url;
-    case 'frontend':
-      return null; // No URL for frontend-only
-    default:
-      return null;
-  }
-}
-
-/**
- * Get API key for the active backend
- */
-export function getActiveApiKey(): string {
-  switch (activeConfig.mode) {
-    case 'custom':
-      return activeConfig.custom.apiKey;
-    case 'byob':
-      return activeConfig.byob.apiKey;
-    default:
-      return '';
   }
 }
 
@@ -202,6 +161,8 @@ export function initCADConfig(): void {
   const envMode = import.meta.env.VITE_CAD_BACKEND_MODE as CADBackendMode | undefined;
   if (envMode && ['custom', 'byob', 'frontend'].includes(envMode)) {
     activeConfig.mode = envMode;
+    activeConfig.custom.enabled = envMode === 'custom';
+    activeConfig.byob.enabled = envMode === 'byob';
   } else {
     // Auto-detect best available backend
     activeConfig.mode = determineBestBackend();
@@ -218,8 +179,6 @@ export default {
   setConfig: setCADConfig,
   setMode: setCADBackendMode,
   isAvailable: isBackendAvailable,
-  getUrl: getActiveBackendUrl,
-  getApiKey: getActiveApiKey,
   getTimeout: getActiveTimeout,
   determineBest: determineBestBackend,
 };

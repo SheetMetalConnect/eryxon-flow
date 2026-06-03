@@ -22,6 +22,9 @@ mockChain.single = vi.fn(() => Promise.resolve({ data: { metadata: {} }, error: 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     from: vi.fn(() => mockChain),
+    functions: {
+      invoke: vi.fn(),
+    },
   },
 }));
 
@@ -29,13 +32,11 @@ vi.mock('@/integrations/supabase/client', () => ({
 vi.mock('@/config/cadBackend', () => ({
   getCADConfig: vi.fn(() => ({
     mode: 'custom',
-    custom: { enabled: true, url: 'http://localhost:8888', apiKey: 'test-key', timeout: 5000 },
-    byob: { enabled: false, url: '', apiKey: '', timeout: 5000, headers: {} },
+    custom: { enabled: true, timeout: 5000 },
+    byob: { enabled: false, timeout: 5000 },
     frontend: { enabled: true, wasmUrl: '', maxFileSize: 50000000 },
     features: { pmiExtraction: true, thumbnails: false, geometry: true },
   })),
-  getActiveBackendUrl: vi.fn(() => 'http://localhost:8888'),
-  getActiveApiKey: vi.fn(() => 'test-key'),
   getActiveTimeout: vi.fn(() => 5000),
   isBackendAvailable: vi.fn((mode: string) => mode === 'custom'),
   determineBestBackend: vi.fn(() => 'custom'),
@@ -64,9 +65,13 @@ const createWrapper = () => {
 };
 
 describe('useCADProcessing', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
-    global.fetch = vi.fn();
+    const { supabase } = await import('@/integrations/supabase/client');
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: null,
+      error: null,
+    } as any);
   });
 
   it('returns initial state correctly', () => {
@@ -90,7 +95,10 @@ describe('useCADProcessing', () => {
 
     let cadResult: any;
     await act(async () => {
-      cadResult = await result.current.processCAD('http://example.com/file.pdf', 'file.pdf');
+      cadResult = await result.current.processCAD(
+        { bucket: 'parts-cad', path: 'tenant-1/parts/file.pdf', recordId: 'part-1' },
+        'file.pdf',
+      );
     });
 
     expect(cadResult.success).toBe(false);
@@ -98,46 +106,17 @@ describe('useCADProcessing', () => {
   });
 
   it('processes supported file formats', async () => {
-    const mockResponse = {
-      ok: true,
-      json: () => Promise.resolve({
+    const { supabase } = await import('@/integrations/supabase/client');
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: {
         success: true,
         geometry: { meshes: [], bounding_box: { min: [0, 0, 0], max: [1, 1, 1], center: [0.5, 0.5, 0.5], size: [1, 1, 1] }, total_vertices: 100, total_faces: 50 },
         pmi: null,
         thumbnail_base64: null,
         file_hash: 'abc123',
         processing_time_ms: 500,
-      }),
-    };
-    vi.mocked(global.fetch).mockResolvedValue(mockResponse as any);
-
-    const { result } = renderHook(() => useCADProcessing(), {
-      wrapper: createWrapper(),
-    });
-
-    let cadResult: any;
-    await act(async () => {
-      cadResult = await result.current.processCAD('http://example.com/part.step', 'part.step');
-    });
-
-    expect(cadResult.success).toBe(true);
-    expect(cadResult.geometry.total_vertices).toBe(100);
-    expect(global.fetch).toHaveBeenCalledWith(
-      'http://localhost:8888/process',
-      expect.objectContaining({
-        method: 'POST',
-        headers: expect.objectContaining({
-          'Content-Type': 'application/json',
-          'X-API-Key': 'test-key',
-        }),
-      })
-    );
-  });
-
-  it('handles HTTP errors from backend', async () => {
-    vi.mocked(global.fetch).mockResolvedValue({
-      ok: false,
-      status: 500,
+      },
+      error: null,
     } as any);
 
     const { result } = renderHook(() => useCADProcessing(), {
@@ -146,42 +125,62 @@ describe('useCADProcessing', () => {
 
     let cadResult: any;
     await act(async () => {
-      cadResult = await result.current.processCAD('http://example.com/part.step', 'part.step');
+      cadResult = await result.current.processCAD(
+        { bucket: 'parts-cad', path: 'tenant-1/parts/part.step', recordId: 'part-1' },
+        'part.step',
+      );
+    });
+
+    expect(cadResult.success).toBe(true);
+    expect(cadResult.geometry.total_vertices).toBe(100);
+    expect(supabase.functions.invoke).toHaveBeenCalledWith(
+      'api-cad-proxy',
+      expect.objectContaining({
+        body: expect.objectContaining({
+          action: 'process',
+          file_name: 'part.step',
+          source: {
+            bucket: 'parts-cad',
+            path: 'tenant-1/parts/part.step',
+            recordId: 'part-1',
+          },
+        }),
+      }),
+    );
+  });
+
+  it('handles proxy errors from backend', async () => {
+    const { supabase } = await import('@/integrations/supabase/client');
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: null,
+      error: new Error('CAD processing failed: HTTP 500'),
+    } as any);
+
+    const { result } = renderHook(() => useCADProcessing(), {
+      wrapper: createWrapper(),
+    });
+
+    let cadResult: any;
+    await act(async () => {
+      cadResult = await result.current.processCAD(
+        { bucket: 'parts-cad', path: 'tenant-1/parts/part.step', recordId: 'part-1' },
+        'part.step',
+      );
     });
 
     expect(cadResult.success).toBe(false);
     expect(cadResult.error).toContain('HTTP 500');
   });
 
-  it('handles auth errors (401/403)', async () => {
-    vi.mocked(global.fetch).mockResolvedValue({
-      ok: false,
-      status: 401,
-    } as any);
-
-    const { result } = renderHook(() => useCADProcessing(), {
-      wrapper: createWrapper(),
-    });
-
-    let cadResult: any;
-    await act(async () => {
-      cadResult = await result.current.processCAD('http://example.com/part.stp', 'part.stp');
-    });
-
-    expect(cadResult.success).toBe(false);
-    expect(cadResult.error).toContain('authentication failed');
-  });
-
-  it('returns error when mode is frontend (no backend URL)', async () => {
-    const { getCADConfig, getActiveBackendUrl } = await import('@/config/cadBackend');
-    vi.mocked(getCADConfig).mockReturnValueOnce({
+  it('returns error when mode is frontend', async () => {
+    const { getCADConfig } = await import('@/config/cadBackend');
+    vi.mocked(getCADConfig).mockReturnValue({
       mode: 'frontend',
-      custom: { enabled: false, url: '', apiKey: '', timeout: 5000 },
-      byob: { enabled: false, url: '', apiKey: '', timeout: 5000 },
+      custom: { enabled: false, timeout: 5000 },
+      byob: { enabled: false, timeout: 5000 },
       frontend: { enabled: true, wasmUrl: '', maxFileSize: 50000000 },
       features: { pmiExtraction: true, thumbnails: false, geometry: true },
     });
-    vi.mocked(getActiveBackendUrl).mockReturnValueOnce(null);
 
     const { result } = renderHook(() => useCADProcessing(), {
       wrapper: createWrapper(),
@@ -189,19 +188,30 @@ describe('useCADProcessing', () => {
 
     let cadResult: any;
     await act(async () => {
-      cadResult = await result.current.processCAD('http://example.com/part.step', 'part.step');
+      cadResult = await result.current.processCAD(
+        { bucket: 'parts-cad', path: 'tenant-1/parts/part.step', recordId: 'part-1' },
+        'part.step',
+      );
     });
 
     expect(cadResult.success).toBe(false);
     expect(cadResult.error).toContain('No server backend');
+
+    vi.mocked(getCADConfig).mockReturnValue({
+      mode: 'custom',
+      custom: { enabled: true, timeout: 5000 },
+      byob: { enabled: false, timeout: 5000 },
+      frontend: { enabled: true, wasmUrl: '', maxFileSize: 50000000 },
+      features: { pmiExtraction: true, thumbnails: false, geometry: true },
+    });
   });
 
   it('accepts all supported extensions', async () => {
-    const mockResponse = {
-      ok: true,
-      json: () => Promise.resolve({ success: true, geometry: null, pmi: null, thumbnail_base64: null, file_hash: null, processing_time_ms: 0 }),
-    };
-    vi.mocked(global.fetch).mockResolvedValue(mockResponse as any);
+    const { supabase } = await import('@/integrations/supabase/client');
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { success: true, geometry: null, pmi: null, thumbnail_base64: null, file_hash: null, processing_time_ms: 0 },
+      error: null,
+    } as any);
 
     const { result } = renderHook(() => useCADProcessing(), {
       wrapper: createWrapper(),
@@ -210,7 +220,10 @@ describe('useCADProcessing', () => {
     const supportedExtensions = ['step', 'stp', 'iges', 'igs', 'brep'];
     for (const ext of supportedExtensions) {
       await act(async () => {
-        const r = await result.current.processCAD(`http://example.com/file.${ext}`, `file.${ext}`);
+        const r = await result.current.processCAD(
+          { bucket: 'parts-cad', path: `tenant-1/parts/file.${ext}`, recordId: 'part-1' },
+          `file.${ext}`,
+        );
         expect(r.success).toBe(true);
       });
     }

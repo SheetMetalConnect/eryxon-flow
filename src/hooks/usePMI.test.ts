@@ -3,14 +3,6 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-// Mock session
-vi.mock('@/hooks/useSession', () => ({
-  useSession: vi.fn(() => ({
-    user: { id: 'user-1' },
-    session: { access_token: 'test-token' },
-  })),
-}));
-
 vi.mock('@/lib/logger', () => ({
   logger: { error: vi.fn(), debug: vi.fn(), warn: vi.fn(), info: vi.fn() },
 }));
@@ -43,6 +35,9 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: vi.fn((table: string) => createTableChain(table)),
     channel: vi.fn(() => mockChannel),
     removeChannel: vi.fn(),
+    functions: {
+      invoke: vi.fn(),
+    },
   },
 }));
 
@@ -60,7 +55,7 @@ const createWrapper = () => {
 
 describe('isPMIServiceEnabled', () => {
   it('returns false when env var is not set', () => {
-    // In test env, VITE_PMI_SERVICE_URL is not set
+    // In test env, the client CAD proxy mode is not enabled.
     expect(isPMIServiceEnabled()).toBe(false);
   });
 });
@@ -214,7 +209,10 @@ describe('usePMI', () => {
       expect(result.current.isLoadingPMI).toBe(false);
     });
 
-    const res = await result.current.extractPMIAsync('https://example.com/file.step', 'part.step');
+    const res = await result.current.extractPMIAsync(
+      { bucket: 'parts-cad', path: 'tenant-1/parts/file.step', recordId: 'part-1' },
+      'part.step',
+    );
     expect(res.accepted).toBe(false);
     expect(res.error).toBe('PMI service not configured');
   });
@@ -234,7 +232,10 @@ describe('usePMI', () => {
     });
 
     // Service not configured takes precedence over file type check
-    const res = await result.current.extractPMIAsync('https://example.com/file.stl', 'part.stl');
+    const res = await result.current.extractPMIAsync(
+      { bucket: 'parts-cad', path: 'tenant-1/parts/file.stl', recordId: 'part-1' },
+      'part.stl',
+    );
     expect(res.accepted).toBe(false);
     expect(res.error).toBe('PMI service not configured');
   });
@@ -253,7 +254,10 @@ describe('usePMI', () => {
       expect(result.current.isLoadingPMI).toBe(false);
     });
 
-    const res = await result.current.extractPMI('https://example.com/file.step', 'part.step');
+    const res = await result.current.extractPMI(
+      { bucket: 'parts-cad', path: 'tenant-1/parts/file.step', recordId: 'part-1' },
+      'part.step',
+    );
     expect(res.success).toBe(false);
     expect(res.error).toBe('PMI service not configured');
   });
@@ -270,7 +274,10 @@ describe('usePMIExtraction', () => {
   it('extract returns error for non-STEP files', async () => {
     const { result } = renderHook(() => usePMIExtraction());
 
-    const res = await result.current.extract('https://example.com/file.obj', 'model.obj');
+    const res = await result.current.extract(
+      { bucket: 'parts-cad', path: 'tenant-1/parts/file.obj', recordId: 'part-1' },
+      'model.obj',
+    );
     expect(res.success).toBe(false);
     expect(res.pmi).toBeNull();
   });
@@ -278,7 +285,10 @@ describe('usePMIExtraction', () => {
   it('extract returns error when service not configured', async () => {
     const { result } = renderHook(() => usePMIExtraction());
 
-    const res = await result.current.extract('https://example.com/file.step', 'part.step');
+    const res = await result.current.extract(
+      { bucket: 'parts-cad', path: 'tenant-1/parts/file.step', recordId: 'part-1' },
+      'part.step',
+    );
     expect(res.success).toBe(false);
     expect(res.error).toBe('PMI service not configured');
   });
