@@ -22,9 +22,9 @@ Eryxon Flow is now fully open source under **Apache 2.0**. Every line ships unde
 
 You can install Eryxon Flow on your own hardware today. You can modify the source. You can run it for any number of users with no per-seat cap. The patent grant is explicit.
 
-## Why we moved from BSL to Apache 2.0
+## Why Apache 2.0 is simpler for job shops
 
-BSL raised the question "what am I allowed to do?" instead of "what do I want to do?" Apache 2.0 removes that friction entirely.
+Apache 2.0 removes licensing friction. Job shops can evaluate, adapt, and deploy Eryxon Flow without negotiating usage limits or second-guessing what the license allows.
 
 ## How we make it sustainable
 
