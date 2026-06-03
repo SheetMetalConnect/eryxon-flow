@@ -94,11 +94,11 @@ describe('useSubscription', () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.getPlanDisplayName('free')).toBe('Hosted Alpha Trial');
+      expect(result.current.getPlanDisplayName('free')).toBe('Hosted Trial');
       expect(result.current.getPlanDisplayName('pro')).toBe('Pro Plan');
-      expect(result.current.getPlanDisplayName('premium')).toBe('Premium Plan');
+      expect(result.current.getPlanDisplayName('premium')).toBe('Premium');
       expect(result.current.getPlanDisplayName('enterprise')).toBe(
-        'Enterprise Plan'
+        'Managed Hosting'
       );
     });
 

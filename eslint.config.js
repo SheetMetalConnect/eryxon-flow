@@ -28,6 +28,13 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
+      // React Hooks v7's recommended preset enables compiler-readiness rules.
+      // This app has legacy patterns that are runtime-valid but not yet compiler-ready;
+      // keep CI focused on correctness until a dedicated compiler migration lands.
+      "react-hooks/immutability": "off",
+      "react-hooks/preserve-manual-memoization": "off",
+      "react-hooks/refs": "off",
+      "react-hooks/set-state-in-effect": "off",
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },

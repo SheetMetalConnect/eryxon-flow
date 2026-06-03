@@ -98,7 +98,7 @@ export class FrePPLeAdapter implements PlanningAdapter {
    * Handles pagination automatically.
    */
   async pullResources(): Promise<PlanningResource[]> {
-    let url = `${this.baseUrl}/api/input/resource/?format=json`;
+    const url = `${this.baseUrl}/api/input/resource/?format=json`;
 
     const allResources: FrePPLeResource[] = [];
     let nextUrl: string | null = url;
