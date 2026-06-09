@@ -753,6 +753,13 @@
    ============================================================================ */
 
 @layer components {
+  /* Dark glass input/select surface shared by the admin config forms,
+   * extracted from a repeated inline arbitrary-value Tailwind class. */
+  .glass-input-dark {
+    background-color: rgba(17, 25, 40, 0.75);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
   /* Glass card pattern - Beautiful depth - Antigravity spec
    * 2025 Best Practices:
    * - @supports fallback for browsers without backdrop-filter

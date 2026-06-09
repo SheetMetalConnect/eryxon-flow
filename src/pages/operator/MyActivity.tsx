@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, subDays } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +47,7 @@ interface DayGroup {
 }
 
 export default function MyActivity() {
+  usePageTitle("navigation.myActivity");
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ROUTES } from "@/routes";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -381,7 +382,7 @@ export default function BatchCreate() {
             // Toast errors are handled by the mutation hooks
           }
 
-          navigate(`/admin/batches/${id}`);
+          navigate(`${ROUTES.ADMIN.BATCHES}/${id}`);
         }
       });
     } else {
@@ -393,7 +394,7 @@ export default function BatchCreate() {
         },
         {
           onSuccess: () => {
-            navigate("/admin/batches");
+            navigate(ROUTES.ADMIN.BATCHES);
           },
         }
       );
@@ -424,7 +425,7 @@ export default function BatchCreate() {
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <div>
-        <Button variant="outline" onClick={() => navigate("/admin/batches")} className="mb-4">
+        <Button variant="outline" onClick={() => navigate(ROUTES.ADMIN.BATCHES)} className="mb-4">
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("batches.backToBatches")}
         </Button>
         <h1 className="text-3xl font-bold">{isEditing ? t("batches.editBatch") : t("batches.createBatch")}</h1>
@@ -707,7 +708,7 @@ export default function BatchCreate() {
         </div>
 
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={() => navigate("/admin/batches")}>
+          <Button type="button" variant="outline" onClick={() => navigate(ROUTES.ADMIN.BATCHES)}>
             {t("common.cancel")}
           </Button>
           <Button type="submit" disabled={createBatch.isPending || updateBatch.isPending || !batchNumber || cellId === "__none__" || uploadingImage}>

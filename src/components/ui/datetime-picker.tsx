@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { formatClockTime } from "@/lib/time-utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -68,17 +69,8 @@ export function DateTimePicker({
     }));
   }, []);
 
-  const formatDateTime = (date: Date) => {
-    const dateStr = format(date, "PPP");
-    const hours = date.getHours();
-    const mins = date.getMinutes();
-    if (use24Hour) {
-      return `${dateStr} ${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
-    }
-    const period = hours >= 12 ? "PM" : "AM";
-    const displayHour = hours % 12 || 12;
-    return `${dateStr} ${String(displayHour).padStart(2, "0")}:${String(mins).padStart(2, "0")} ${period}`;
-  };
+  const formatDateTime = (date: Date) =>
+    `${format(date, "PPP")} ${formatClockTime(date, use24Hour)}`;
 
   const handleDateSelect = (date: Date | undefined) => {
     if (!date) {

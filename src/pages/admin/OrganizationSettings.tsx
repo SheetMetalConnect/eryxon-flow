@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
 import { logger } from '@/lib/logger';
+import { toTimeInputValue } from '@/lib/time-utils';
 import type { PlanningAdapterType } from '@/lib/planning';
 
 const TIMEZONES = [
@@ -83,20 +84,14 @@ export default function OrganizationSettings() {
 
       if (error) throw error;
 
-      // Format time from database format (HH:MM:SS) to input format (HH:MM)
-      const formatTime = (time: string | null) => {
-        if (!time) return '';
-        return time.substring(0, 5);
-      };
-
       setFormData({
         name: data.name || '',
         company_name: data.company_name || '',
         abbreviation: data.abbreviation || '',
         timezone: data.timezone || 'UTC',
         billing_email: data.billing_email || '',
-        factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
-        factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
+        factory_opening_time: toTimeInputValue(data.factory_opening_time) || '07:00',
+        factory_closing_time: toTimeInputValue(data.factory_closing_time) || '17:00',
         auto_stop_tracking: data.auto_stop_tracking || false,
         whitelabel_enabled: data.whitelabel_enabled || false,
         whitelabel_logo_url: data.whitelabel_logo_url || '',

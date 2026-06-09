@@ -356,9 +356,9 @@ const arrow =
     border-radius: 50%;
     background: var(--ery-border-strong);
   }
-  .mk-product-dot:nth-child(1) { background: #f95757; }
-  .mk-product-dot:nth-child(2) { background: #f9bc41; }
-  .mk-product-dot:nth-child(3) { background: #45c46c; }
+  .mk-product-dot:nth-child(1) { background: var(--ery-error); }
+  .mk-product-dot:nth-child(2) { background: var(--ery-warning); }
+  .mk-product-dot:nth-child(3) { background: var(--ery-success); }
   .mk-product-url {
     margin-inline-start: var(--ery-space-3);
     font-family: var(--ery-font-mono);
@@ -415,22 +415,22 @@ const arrow =
     overflow: hidden;
   }
   .mk-shot-stripe { inline-size: 4px; }
-  .mk-shot-stripe.is-active { background: #fbbc05; }
-  .mk-shot-stripe.is-pending { background: #5a5a5a; }
-  .mk-shot-stripe.is-on-hold { background: #f97316; }
+  .mk-shot-stripe.is-active { background: var(--ery-warning); }
+  .mk-shot-stripe.is-pending { background: var(--ery-border-dark); }
+  .mk-shot-stripe.is-on-hold { background: var(--ery-error); }
   .mk-shot-card-body { padding: var(--ery-space-2) var(--ery-space-3); flex: 1; min-inline-size: 0; }
   .mk-shot-card-row { display: flex; justify-content: space-between; align-items: center; gap: var(--ery-space-2); }
   .mk-shot-wo { font-family: var(--ery-font-mono); font-size: 11px; color: var(--ery-text-on-dark-muted); }
   .mk-shot-tag {
     font-size: 9px;
-    font-weight: 700;
+    font-weight: 600;
     letter-spacing: 0.08em;
     padding: 2px 5px;
     border-radius: 3px;
   }
-  .mk-shot-tag.is-today { background: rgba(251, 188, 5, 0.15); color: #fbbc05; }
-  .mk-shot-tag.is-soon { background: rgba(249, 115, 22, 0.15); color: #f97316; }
-  .mk-shot-tag.is-overdue { background: rgba(234, 67, 53, 0.15); color: #ea4335; }
+  .mk-shot-tag.is-today { background: color-mix(in srgb, var(--ery-warning) 15%, transparent); color: var(--ery-warning); }
+  .mk-shot-tag.is-soon { background: color-mix(in srgb, var(--ery-warning) 15%, transparent); color: var(--ery-warning); }
+  .mk-shot-tag.is-overdue { background: color-mix(in srgb, var(--ery-error) 15%, transparent); color: var(--ery-error); }
   .mk-shot-card-title { font-size: var(--ery-text-sm); font-weight: 600; margin-block-start: var(--ery-space-1); color: var(--ery-text-on-dark); }
   .mk-shot-card-meta { font-size: 11px; color: var(--ery-text-on-dark-muted); margin-block-start: var(--ery-space-1); }
 

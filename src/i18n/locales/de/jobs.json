@@ -81,7 +81,19 @@
     "packageCount": "Paketanzahl",
     "packages": "Pakete",
     "noDeliveryAddress": "Keine Lieferadresse festgelegt",
-    "fromParts": "aus Teilen"
+    "fromParts": "aus Teilen",
+    "noJobsFound": "Keine Aufträge gefunden",
+    "subtitle": "Verwalten Sie alle Aufträge, verfolgen Sie den Fortschritt und behalten Sie Termine im Blick",
+    "total": "Gesamt",
+    "overdue": "Überfällig",
+    "dueThisWeek": "Diese Woche fällig",
+    "details": "Details",
+    "files": "Dateien",
+    "statusUpdated": "Status aktualisiert",
+    "jobOnHold": "Auftrag wurde angehalten",
+    "jobResumed": "Auftrag wurde fortgesetzt",
+    "resumeJob": "Auftrag fortsetzen",
+    "putOnHold": "Anhalten"
   },
   "parts": {
     "title": "Teileverwaltung",
@@ -418,7 +430,13 @@
     "filesSelected": "{{count}} Foto(s)",
     "report": "Melden",
     "selectCategory": "Kategorie auswählen",
-    "category": "Kategorie",
+    "category": {
+      "equipment": "Maschine",
+      "material": "Material",
+      "quality": "Qualität",
+      "safety": "Sicherheit",
+      "process": "Prozess"
+    },
     "enterResolutionNotes": "Lösungsnotizen eingeben",
     "failedToReportIssue": "Problem konnte nicht gemeldet werden",
     "failedToUpdateIssue": "Problem konnte nicht aktualisiert werden",
@@ -506,7 +524,9 @@
     "affectedQuantityPlaceholder": "Anzahl der betroffenen Teile",
     "shortfallAlert": "Produktionsunterschreitung erkannt. Bitte geben Sie Details an, warum die Zielmenge nicht erreicht wurde.",
     "shortfallContext": "Produktionsunterschreitung melden",
-    "shortfallDescPlaceholder": "Was hat das Erreichen der Zielmenge verhindert?"
+    "shortfallDescPlaceholder": "Was hat das Erreichen der Zielmenge verhindert?",
+    "whatKindOfIssue": "Welche Art von Problem?",
+    "moreDetails": "Weitere Details"
   },
   "jobCreate": {
     "title": "Neuen Auftrag erstellen",
@@ -627,6 +647,7 @@
     "metadataHint": "Geben Sie zusätzliche Informationen im gültigen JSON-Format ein",
     "editOperationsHint": "Das Bearbeiten von Arbeitsgängen ist noch nicht verfügbar. Löschen Sie die Charge und erstellen Sie sie bei Bedarf neu.",
     "updating": "Wird aktualisiert...",
-    "updateBatch": "Charge aktualisieren"
+    "updateBatch": "Charge aktualisieren",
+    "noNestedBatches": "Noch keine verschachtelten Batches."
   }
 }

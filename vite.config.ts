@@ -83,6 +83,11 @@ export default defineConfig(({ mode }) => ({
     react(),
     applyCspBuildRewrites(),
     VitePWA({
+      // The ONLY service worker is the Workbox `generateSW` output written to
+      // dist/sw.js at build time (it precaches the app shell and handles the
+      // SKIP_WAITING message itself). Do not add a hand-written public/sw.js:
+      // generateSW overwrites it in dist/, so it would silently never ship.
+      //
       // Prompt the operator before activating a new SW: a Sonner toast in
       // src/components/PwaUpdatePrompt.tsx calls updateServiceWorker(true)
       // when the user clicks Reload. This prevents mid-shift forced reloads

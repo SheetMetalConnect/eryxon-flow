@@ -38,7 +38,8 @@
     },
     "cycleTime": {
       "title": "Cyclustijd per bewerking",
-      "minutes": "Minuten"
+      "minutes": "Minuten",
+      "median": "Mediaan"
     },
     "wipAge": {
       "title": "WIP Leeftijdsverdeling",
@@ -50,7 +51,8 @@
     },
     "throughput": {
       "title": "Doorvoer per cel",
-      "units": "Eenheden/dag"
+      "units": "Eenheden/dag",
+      "unitsPerDay": "Eenheden/dag"
     },
     "reliability": {
       "title": "Cel Betrouwbaarheid Heatmap",
@@ -58,7 +60,19 @@
       "week": "Week"
     },
     "loadError": "Fout bij laden van QRM dashboard gegevens",
-    "noData": "Geen QRM gegevens beschikbaar. Zorg ervoor dat u actieve orders en bewerkingen heeft."
+    "noData": "Geen QRM gegevens beschikbaar. Zorg ervoor dat u actieve orders en bewerkingen heeft.",
+    "flow": "Flow",
+    "operationsFlow": "Bewerkingsflow",
+    "wipLimit": "WIP-limiet",
+    "wipWarningThreshold": "Waarschuwing bij",
+    "wipLimitHelp": "Stel WIP-limieten in om overbelasting van deze fase te voorkomen. Laat leeg voor onbeperkt.",
+    "enforceLimit": "Limiet afdwingen",
+    "enforceLimitHelp": "Blokkeer nieuw werk bij volle capaciteit",
+    "showWarnings": "Visuele waarschuwingen",
+    "showWarningsHelp": "Toon capaciteitsindicatoren",
+    "settings": "WIP-limieten",
+    "unlimited": "Geen limiet",
+    "jobsInCell": "Opdrachten"
   },
   "quality": {
     "dashboardTitle": "Kwaliteitsoverzicht",

@@ -1,5 +1,7 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
+import { useDebouncedCallback } from "@/hooks/useDebounce";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -10,12 +12,12 @@ import OperationCard from "@/components/operator/OperationCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
-  Loader2,
   Search,
   Filter,
   PackageSearch,
   AlertTriangle,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import {
   Select,
@@ -52,6 +54,7 @@ interface CellOption {
 }
 
 export default function WorkQueue() {
+  usePageTitle("navigation.workQueue");
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
@@ -158,6 +161,13 @@ export default function WorkQueue() {
     }
   }, [activeOperator?.id, profile?.tenant_id, t]);
 
+  // Realtime delivers one event per touched row, so a single multi-operation
+  // action (or a busy shift) arrives as a burst. Coalesce bursts into one
+  // refetch instead of refetching the whole queue per event.
+  const scheduleRealtimeRefresh = useDebouncedCallback(() => {
+    void loadData();
+  }, 250);
+
   const setupRealtimeSubscriptions = useCallback(() => {
     if (!profile?.tenant_id) return;
 
@@ -171,9 +181,7 @@ export default function WorkQueue() {
           table: "operations",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => {
-          void loadData();
-        },
+        scheduleRealtimeRefresh,
       )
       .subscribe();
 
@@ -187,9 +195,7 @@ export default function WorkQueue() {
           table: "time_entries",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => {
-          void loadData();
-        },
+        scheduleRealtimeRefresh,
       )
       .subscribe();
 
@@ -197,13 +203,19 @@ export default function WorkQueue() {
       supabase.removeChannel(operationsChannel);
       supabase.removeChannel(timeEntriesChannel);
     };
-  }, [loadData, profile?.tenant_id]);
+  }, [profile?.tenant_id, scheduleRealtimeRefresh]);
 
   useEffect(() => {
     if (!profile?.tenant_id) return;
     void loadData();
     return setupRealtimeSubscriptions();
   }, [loadData, profile?.tenant_id, setupRealtimeSubscriptions]);
+
+  // Stable reference so the memoized OperationCard doesn't re-render when
+  // unrelated WorkQueue state (search text, filters) changes.
+  const handleCardUpdate = useCallback(() => {
+    void loadData();
+  }, [loadData]);
 
   const assignedPartIds = useMemo(
     () => new Set(myAssignments.map((assignment) => assignment.part_id)),
@@ -324,13 +336,19 @@ export default function WorkQueue() {
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100vh-160px)] items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">
-            {t("workQueue.loading", "Loading work queue")}
-          </p>
-        </div>
+      <div
+        className="flex h-[calc(100vh-160px)] gap-3 overflow-hidden pt-2"
+        aria-busy="true"
+        aria-label={t("workQueue.loading", "Loading work queue")}
+      >
+        {Array.from({ length: 4 }).map((_, column) => (
+          <div key={column} className="flex w-72 shrink-0 flex-col gap-2">
+            <Skeleton className="h-9 w-full" />
+            {Array.from({ length: 3 }).map((_, row) => (
+              <Skeleton key={row} className="h-24 w-full" />
+            ))}
+          </div>
+        ))}
       </div>
     );
   }
@@ -556,10 +574,9 @@ export default function WorkQueue() {
                         <OperationCard
                           key={operation.id}
                           operation={operation}
-                          onUpdate={() => void loadData()}
+                          onUpdate={handleCardUpdate}
                           compact
                           assignedToMe={Boolean(assignment)}
-                          assignedByName={assignment?.assigned_by_name}
                         />
                       );
                     })}

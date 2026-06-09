@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { ROUTES } from "@/routes";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -275,7 +276,7 @@ export default function ConfigApiKeys() {
               {t('apiKeys.exploreDocumentation')}
             </p>
             <Button asChild className="w-full sm:w-auto">
-              <a href="/api-docs" className="flex items-center gap-2">
+              <a href={ROUTES.COMMON.API_DOCS} className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
                 {t('apiKeys.openDocumentation')}
                 <ExternalLink className="h-4 w-4" />
@@ -310,7 +311,7 @@ export default function ConfigApiKeys() {
           <CardTitle>Quick Reference</CardTitle>
           <CardDescription>
             Quick overview of available endpoints.
-            <a href="/api-docs" className="text-primary hover:underline ml-2 inline-flex items-center gap-1">
+            <a href={ROUTES.COMMON.API_DOCS} className="text-primary hover:underline ml-2 inline-flex items-center gap-1">
               View full interactive documentation
               <ExternalLink className="h-3 w-3" />
             </a>
@@ -371,7 +372,7 @@ export default function ConfigApiKeys() {
             </div>
 
             <Button asChild variant="outline" className="w-full">
-              <a href="/api-docs" className="flex items-center gap-2">
+              <a href={ROUTES.COMMON.API_DOCS} className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
                 Explore Full API Documentation & Try It Out
                 <ExternalLink className="h-4 w-4" />

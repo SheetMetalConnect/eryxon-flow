@@ -1,10 +1,11 @@
 import { useTranslation } from "react-i18next";
+import { ROUTES } from "@/routes";
 import { useNavigate } from "react-router-dom";
 import { Layers, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { STATUS_COLORS } from "@/components/batch/BatchHeader";
+import { BATCH_STATUS_COLORS, BATCH_STATUS_CONFIG } from "@/components/batch/batchConfig";
 import { type BatchStatus } from "@/hooks/useBatches";
 
 interface SubBatch {
@@ -40,7 +41,7 @@ export function BatchSubBatches({ parentBatchId, subBatches }: BatchSubBatchesPr
         {subBatches && subBatches.length > 0 ? (
           <div className="space-y-2">
             {subBatches.map(sub => (
-              <div key={sub.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => navigate(`/admin/batches/${sub.id}`)}>
+              <div key={sub.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => navigate(`${ROUTES.ADMIN.BATCHES}/${sub.id}`)}>
                 <div className="flex items-center gap-3">
                   <Layers className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{sub.batch_number}</span>
@@ -48,13 +49,13 @@ export function BatchSubBatches({ parentBatchId, subBatches }: BatchSubBatchesPr
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline">{sub.operations_count} ops</Badge>
-                  <Badge className={STATUS_COLORS[sub.status]}>{sub.status}</Badge>
+                  <Badge className={BATCH_STATUS_COLORS[sub.status]}>{t(BATCH_STATUS_CONFIG[sub.status]?.label ?? sub.status)}</Badge>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground py-4 text-sm">{t("No nested batches yet.")}</p>
+          <p className="text-center text-muted-foreground py-4 text-sm">{t("batches.noNestedBatches")}</p>
         )}
       </CardContent>
     </Card>

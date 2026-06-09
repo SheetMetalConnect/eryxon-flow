@@ -4,6 +4,7 @@ import * as React from "react";
 import { Clock } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { formatClockTime } from "@/lib/time-utils";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -61,16 +62,6 @@ export function TimePicker({
     }));
   }, []);
 
-  const formatTime = (date: Date) => {
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    if (use24Hour) {
-      return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}`;
-    }
-    const period = hours >= 12 ? "PM" : "AM";
-    const displayHour = hours % 12 || 12;
-    return `${String(displayHour).padStart(2, "0")}:${String(minutes).padStart(2, "0")} ${period}`;
-  };
 
   const handleHourChange = (hourStr: string) => {
     const hour = parseInt(hourStr, 10);
@@ -113,7 +104,7 @@ export function TimePicker({
             )}
           >
             <Clock className="mr-2 h-4 w-4" />
-            {value ? formatTime(value) : <span>{placeholder}</span>}
+            {value ? formatClockTime(value, use24Hour) : <span>{placeholder}</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-4" align="start">

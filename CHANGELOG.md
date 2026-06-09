@@ -32,6 +32,8 @@ native iOS and Android apps are still in development and have not been released.
 - **Inline pricing on the landing page** — the three-tier pricing block now renders directly in `Landing.astro` (kit `.mk-pricing-grid` / `.mk-tier`, before the CTA banner), as the kit's `index.html` does with `<Pricing />`. Same three tiers from `pricingCopy`, a "See full pricing →" link to `/pricing/`, across EN / NL / DE.
 - **Inline hosted-and-managed section on the landing** (`#managed-rollout`) — a compact "rather not run it yourself?" block: short intro, three points (hosted / managed on-prem / ERP connected), and a `RolloutInquiry` get-in-touch button. Folded in from the standalone page, localized EN / NL / DE.
 - Marketing footer creator attribution: a "Created by" card crediting Luke van Enkhuizen — Sheet Metal Connect e.U., with a locally bundled, build-optimised avatar (`website/src/assets/luke-van-enkhuizen.jpg`).
+- **Offline banner on desktop terminals** — the desktop operator terminal and admin layouts now show the same amber "you're offline" banner the mobile shell already had, so a mid-shift WiFi drop is visible before an operator assumes a write saved.
+- **PWA regression tests** — the update-prompt flow (native-shell gating, persistent toast, Reload activates the waiting service worker, Later defers) and the install manifest (required fields, 192/512 any+maskable icons on disk, `/m/*` operator shortcuts, `index.html` wiring) are now locked in by the test suite instead of manual smoke checks only.
 
 ### Changed
 
@@ -48,11 +50,18 @@ native iOS and Android apps are still in development and have not been released.
 - Website conformance pass against the Eryxon design system: code blocks, the docs search modal, the theme-demo toggle, and feature cards now use solid surfaces, hairline borders, and design tokens — no gradients, glass / backdrop-blur, transform-on-hover, or hardcoded dark hex. Marketing and editorial headings aligned to the canonical 600-weight, sentence-case scale.
 - Removed the standalone "Managed rollout" item from the primary nav — the rollout content now lives inline on the landing (`#managed-rollout`), reachable from the hero secondary CTA and the managed-services pricing tier.
 - Slimmed the standalone `/managed-rollout/` page to a thin pointer (short intro + get-in-touch button + link to the homepage `#managed-rollout` section), dropping the "conversation, not a signup" copy and the long path-chooser tree. Existing deep links (footer, docs intros) keep working.
+- **Entry bundle halved** (1.44 MB → 0.74 MB minified): `App.tsx` imported the auth and operator page barrels statically, which pulled every operator page into the entry chunk and defeated the route-level code splitting. Only the landing `Auth` page stays eager; terminal login, password flows, and invitation acceptance now load as route chunks.
+- **Operator work queues handle realtime bursts calmly** — desktop and mobile queues coalesce per-row realtime events into a single refetch (250 ms trailing window) instead of refetching the whole queue once per event, and unchanged operation cards skip re-rendering (memoized `OperationCard`, stable callbacks). Queue loading states render skeleton placeholders instead of a bare spinner.
+- **Notification timestamps are locale-aware** — relative times ("5 minutes ago") now follow the active UI language via `Intl.RelativeTimeFormat` instead of hardcoded English.
+- **Shared helpers replace per-component copies** — time formatting (`src/lib/time-utils.ts`: elapsed timers, 12/24h clock, relative time, DB time → input value) and resource-status presentation (`src/lib/resource-status.ts`) consolidate five duplicated implementations across operator, terminal, and admin surfaces.
+- **Native build smoke lane fixed and split** — independent iOS and Android CI jobs (an iOS failure no longer masks Android results), Android on JDK 21 as Capacitor 7 requires, the generated iOS project floored to 15.5 for the ML Kit barcode pod, and Apple Silicon Rollup/SWC bindings repaired via a shared script. The native apps remain unreleased; this keeps the PR gate truthful.
 
 ### Removed
 
 - Dead `AccordionContainer.astro` website component (gradient-border + scale-animation legacy, unreferenced).
 - Marketing footer "Contact" column (managed-rollout, email, LinkedIn, and vanenkhuizen.com links) — replaced by the creator attribution card.
+- Dead `public/sw.js` — the Workbox `generateSW` output is, and always was, the only service worker that ships: the build overwrote the hand-written file in `dist/`, so it never ran in production. `vite.config.ts` now documents this so it can't be reintroduced.
+- Dead `TimeTypeSelector` operator component (exported, never imported).
 
 ## [Unreleased] — native shells + PWA (in development)
 
