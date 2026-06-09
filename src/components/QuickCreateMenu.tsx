@@ -1,4 +1,5 @@
 "use client";
+import { ROUTES } from "@/routes";
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";
@@ -30,7 +31,7 @@ export const QuickCreateMenu: React.FC<QuickCreateMenuProps> = ({ className }) =
     {
       label: "Job",
       icon: Briefcase,
-      action: () => navigate("/admin/jobs/new"),
+      action: () => navigate(ROUTES.ADMIN.JOBS_NEW),
       shortcut: "⌘N J",
     },
     {
@@ -48,7 +49,7 @@ export const QuickCreateMenu: React.FC<QuickCreateMenuProps> = ({ className }) =
     {
       label: "Issue",
       icon: AlertTriangle,
-      action: () => navigate("/admin/issues"),
+      action: () => navigate(ROUTES.ADMIN.ISSUES),
       shortcut: "",
     },
   ];

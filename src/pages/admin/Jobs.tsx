@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { ROUTES } from "@/routes";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
@@ -513,7 +514,7 @@ export default function Jobs() {
         description={t("jobs.subtitle", "Manage all jobs, track progress, and monitor deadlines")}
         action={{
           label: t("jobs.createJob"),
-          onClick: () => navigate("/admin/jobs/new"),
+          onClick: () => navigate(ROUTES.ADMIN.JOBS_NEW),
           icon: Plus,
         }}
       />

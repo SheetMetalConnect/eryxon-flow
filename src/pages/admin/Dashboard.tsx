@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { useProfile } from "@/hooks/useProfile";
@@ -531,7 +532,7 @@ export default function Dashboard() {
           value={stats.activeWorkers}
           description={t("dashboard.currentlyWorking")}
           icon={Users}
-          onClick={() => navigate("/admin/activity")}
+          onClick={() => navigate(ROUTES.ADMIN.ACTIVITY)}
         />
 
         <StatCard
@@ -539,7 +540,7 @@ export default function Dashboard() {
           value={stats.pendingIssues}
           description={t("dashboard.awaitingReview")}
           icon={AlertTriangle}
-          onClick={() => navigate("/admin/issues")}
+          onClick={() => navigate(ROUTES.ADMIN.ISSUES)}
         />
 
         <StatCard
@@ -547,7 +548,7 @@ export default function Dashboard() {
           value={stats.inProgressTasks}
           description={t("dashboard.activeTasks")}
           icon={Activity}
-          onClick={() => navigate("/admin/operations")}
+          onClick={() => navigate(ROUTES.ADMIN.OPERATIONS)}
         />
 
         <StatCard
@@ -555,7 +556,7 @@ export default function Dashboard() {
           value={stats.dueThisWeek}
           description={t("dashboard.jobsDue")}
           icon={Clock}
-          onClick={() => navigate("/admin/jobs")}
+          onClick={() => navigate(ROUTES.ADMIN.JOBS)}
         />
       </div>
 
