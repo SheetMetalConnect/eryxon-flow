@@ -16,11 +16,13 @@ on:
       - src/styles/mobile.css
       - src/styles/mobile-ios.css
 
+# iOS and Android run as independent jobs so an iOS failure no longer skips
+# Android validation (and vice-versa) — each lane reports its own status.
 jobs:
-  native-build-smoke:
-    name: iOS bootstrap + Android smoke
+  ios-smoke:
+    name: iOS bootstrap + simulator build
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 45
     permissions:
       contents: read
 
@@ -33,13 +35,7 @@ jobs:
           node-version: "20"
           cache: npm
 
-      - name: Setup Java 17
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "17"
-
-      - name: Capture native toolchain versions
+      - name: Capture iOS toolchain versions
         shell: bash
         run: |
           set -euo pipefail
@@ -49,11 +45,7 @@ jobs:
             echo "npm $(npm -v)"
             xcodebuild -version
             echo "CocoaPods $(pod --version)"
-            java -version
-            echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
-            ls "$ANDROID_HOME/platforms" | grep "android-35"
-            ls "$ANDROID_HOME/build-tools" | grep "35.0"
-          } 2>&1 | tee artifacts/toolchain.log
+          } 2>&1 | tee artifacts/ios-toolchain.log
 
       - name: Bootstrap iOS workspace
         shell: bash
@@ -61,6 +53,14 @@ jobs:
           set -euo pipefail
           mkdir -p artifacts
           npm run ios:init 2>&1 | tee artifacts/ios-init.log
+
+      - name: Assert iOS deployment-target floor
+        shell: bash
+        run: |
+          set -euo pipefail
+          # GoogleMLKit/BarcodeScanning (= 7.0.0) needs iOS 15.5+. Fail loudly if
+          # ios:init did not raise the Podfile floor before pods resolved.
+          grep -q "platform :ios, '15.5'" ios/App/Podfile
 
       - name: Build iOS simulator target
         shell: bash
@@ -77,6 +77,69 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             build 2>&1 | tee artifacts/ios-build.log | xcbeautify
 
+      - name: Upload iOS smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-build-smoke-ios-${{ github.run_id }}
+          if-no-files-found: warn
+          path: |
+            artifacts/*.log
+            ios/App/Podfile
+            ios/App/build/**
+
+  android-smoke:
+    name: Android debug + release assemble
+    runs-on: macos-15
+    timeout-minutes: 45
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Setup Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          # Capacitor 7's Android modules (android/app/capacitor.build.gradle)
+          # compile with sourceCompatibility VERSION_21, so the JDK must be ≥ 21.
+          java-version: "21"
+
+      - name: Capture Android toolchain versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          {
+            echo "Node $(node -v)"
+            echo "npm $(npm -v)"
+            java -version
+            echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
+            ls "$ANDROID_HOME/platforms" | grep "android-35"
+            ls "$ANDROID_HOME/build-tools" | grep "35.0"
+          } 2>&1 | tee artifacts/android-toolchain.log
+
+      - name: Install JS dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+
+      - name: Repair darwin-arm64 native bindings
+        shell: bash
+        run: |
+          set -euo pipefail
+          # macos runners are Apple Silicon; npm ci skips Rollup/SWC arm64
+          # bindings (npm optional-deps bug), which breaks `npm run build`.
+          bash scripts/repair-native-bindings.sh
+
       - name: Assemble Android debug APK
         shell: bash
         run: |
@@ -91,13 +154,12 @@ jobs:
           mkdir -p artifacts
           npm run android:assemble:release 2>&1 | tee artifacts/android-release.log
 
-      - name: Upload native smoke artifacts
+      - name: Upload Android smoke artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: native-build-smoke-${{ github.run_id }}
+          name: native-build-smoke-android-${{ github.run_id }}
           if-no-files-found: warn
           path: |
             artifacts/*.log
             android/app/build/outputs/**
-            ios/App/build/**
