@@ -30,13 +30,13 @@ const hasBody = (note.body ?? "").trim().length > 0;
 
 <EditorialLayout title={`${version} — Release notes — Eryxon Flow`} description={summary}>
   <div class="changelog-shell">
-    <div class="index-head" style="margin-bottom:24px">
+    <div class="index-head index-head--spaced">
       <div class="index-eyebrow">
         <a href="/release-notes/">Changelog</a> · {version}
       </div>
     </div>
 
-    <article class="release" style="border-bottom:none">
+    <article class="release release--flat">
       <header class="release-meta">
         <div class="release-version">{version}</div>
         <div class="release-date">{dateFmt.format(date)}</div>
@@ -79,14 +79,14 @@ const hasBody = (note.body ?? "").trim().length > 0;
         }
 
         {hasBody && (
-          <div class="article-body" style="margin-top:32px">
+          <div class="article-body article-body--spaced">
             <Content />
           </div>
         )}
 
         {
           docsLinks.length > 0 && (
-            <div class="release-roadmap" style="border-style:solid;margin-top:32px">
+            <div class="release-roadmap release-roadmap--solid">
               <p class="release-roadmap-label">Setup &amp; docs</p>
               <ul>
                 {docsLinks.map((d) => (
@@ -101,7 +101,7 @@ const hasBody = (note.body ?? "").trim().length > 0;
 
         {
           githubUrl && (
-            <p style="margin-top:20px;font-size:var(--ery-text-sm)">
+            <p class="release-source-link">
               <a
                 href={githubUrl}
                 rel="noopener"

@@ -18,12 +18,13 @@ import config from "@/config/config.json";
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string | null;
 }
 
-const { title, description } = Astro.props;
+const { title, description, ogImage } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} ogImage={ogImage}>
   <slot name="head" slot="head" />
 
   <header class="ery-header">
