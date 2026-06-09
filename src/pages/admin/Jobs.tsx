@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useMemo, useState } from "react";
 import { ROUTES } from "@/routes";
 import { useQuery } from "@tanstack/react-query";
@@ -87,6 +88,7 @@ interface JobData {
 }
 
 export default function Jobs() {
+  usePageTitle("navigation.jobs");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const profile = useProfile();

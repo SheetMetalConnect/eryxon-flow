@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -63,6 +64,7 @@ const URGENCY_LABEL: Record<DueUrgency, string> = {
  * gestures (Start / Pause / Issue) so the primary tasks never need a modal.
  */
 export default function MobileQueue() {
+  usePageTitle("navigation.workQueue");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const profile = useProfile();

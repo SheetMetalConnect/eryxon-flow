@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useState } from "react";
 import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
@@ -44,6 +45,7 @@ import { cn } from "@/lib/utils";
 import { BATCH_STATUS_CONFIG, BATCH_TYPE_CONFIG } from "@/components/batch/batchConfig";
 
 export default function Batches() {
+  usePageTitle("navigation.batches");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState<string | null>(null);

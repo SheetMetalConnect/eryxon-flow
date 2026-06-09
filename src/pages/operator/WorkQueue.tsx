@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useDebouncedCallback } from "@/hooks/useDebounce";
@@ -53,6 +54,7 @@ interface CellOption {
 }
 
 export default function WorkQueue() {
+  usePageTitle("navigation.workQueue");
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();

@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useEffect, useState, useMemo } from "react";
 import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
@@ -105,6 +106,7 @@ function StatCard({
 }
 
 export default function Dashboard() {
+  usePageTitle("navigation.dashboard");
   const { t } = useTranslation();
   const profile = useProfile();
   const navigate = useNavigate();
