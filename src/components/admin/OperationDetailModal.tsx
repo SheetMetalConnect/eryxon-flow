@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
+import { resourceStatusBadgeClass, resourceStatusLabel } from "@/lib/resource-status";
 import {
   Dialog,
   DialogContent,
@@ -486,21 +487,6 @@ export default function OperationDetailModal({
               {resourcesCount > 0 && (
                 <TabsContent value="resources" className="p-4 sm:p-6 space-y-3 m-0">
                   {resources?.map((r: { id: string; quantity: number; notes: string | null; resource?: { name: string; type: string; identifier?: string | null; location?: string | null; status?: string | null; metadata?: Record<string, unknown> | null } }) => {
-                    const statusColors: Record<string, string> = {
-                      available: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800",
-                      in_use: "text-amber-600 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800",
-                      maintenance: "text-red-600 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800",
-                      retired: "text-muted-foreground bg-muted/50 border-muted",
-                    };
-                    const getStatusLabel = (status: string) => {
-                      const labels: Record<string, string> = {
-                        available: t("terminal.resources.status.available"),
-                        in_use: t("terminal.resources.status.inUse"),
-                        maintenance: t("terminal.resources.status.maintenance"),
-                        retired: t("terminal.resources.status.retired"),
-                      };
-                      return labels[status] || status;
-                    };
                     return (
                       <div key={r.id} className="border rounded-lg p-4 bg-muted/20">
                         <div className="flex items-start justify-between gap-3">
@@ -526,9 +512,9 @@ export default function OperationDetailModal({
                           {r.resource?.status && (
                             <Badge
                               variant="outline"
-                              className={`text-xs shrink-0 ${statusColors[r.resource.status] || ""}`}
+                              className={`text-xs shrink-0 ${resourceStatusBadgeClass[r.resource.status] || ""}`}
                             >
-                              {getStatusLabel(r.resource.status)}
+                              {resourceStatusLabel(t, r.resource.status)}
                             </Badge>
                           )}
                         </div>

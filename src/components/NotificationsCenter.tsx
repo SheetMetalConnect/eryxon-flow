@@ -33,7 +33,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/time-utils";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Database } from "@/integrations/supabase/types";
 
@@ -49,6 +51,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
   const [open, setOpen] = React.useState(false);
   const [currentTab, setCurrentTab] = React.useState<"all" | "pinned">("all");
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
 
   const {
     notifications,
@@ -118,19 +121,6 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
 
   const getSeverityBadge = (severity: string) => {
     const colors = {
@@ -183,7 +173,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
 
         <div className="flex items-center gap-2 mt-1">
           <span className="text-[10px] text-muted-foreground/70">
-            {formatTime(notification.created_at)}
+            {formatRelativeTime(notification.created_at, i18n.language)}
           </span>
           {notification.pinned && (
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground bg-white/5 px-1.5 py-0.5 rounded">

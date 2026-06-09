@@ -8,6 +8,7 @@ import { stopTimeTracking, pauseTimeTracking, resumeTimeTracking } from "@/lib/d
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { formatElapsedSeconds } from "@/lib/time-utils";
 
 interface ActiveEntry {
   id: string;
@@ -198,16 +199,6 @@ export default function SessionTrackingBar() {
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const hrs = Math.floor(seconds / 3600);
-    const mins = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-
-    if (hrs > 0) {
-      return `${hrs}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   if (activeEntries.length === 0 || dismissed) return null;
 
@@ -285,7 +276,7 @@ export default function SessionTrackingBar() {
                     primaryEntry.is_paused ? "text-yellow-400" : "text-white"
                   )}
                 >
-                  {formatTime(elapsedSeconds[primaryEntry.id] || 0)}
+                  {formatElapsedSeconds(elapsedSeconds[primaryEntry.id] || 0)}
                 </div>
                 <div className="text-xs text-white/50">
                   {t("sessionTracking.elapsed")}
@@ -300,7 +291,7 @@ export default function SessionTrackingBar() {
                   primaryEntry.is_paused ? "text-yellow-400" : "text-white"
                 )}
               >
-                {formatTime(elapsedSeconds[primaryEntry.id] || 0)}
+                {formatElapsedSeconds(elapsedSeconds[primaryEntry.id] || 0)}
               </div>
 
               {primaryEntry.is_paused ? (
@@ -419,7 +410,7 @@ export default function SessionTrackingBar() {
                         entry.is_paused ? "text-yellow-400" : "text-white/80"
                       )}
                     >
-                      {formatTime(elapsedSeconds[entry.id] || 0)}
+                      {formatElapsedSeconds(elapsedSeconds[entry.id] || 0)}
                     </div>
                   </div>
                   <div className="flex items-center gap-1.5">
