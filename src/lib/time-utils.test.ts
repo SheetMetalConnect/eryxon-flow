@@ -59,30 +59,22 @@ describe("formatRelativeTime", () => {
     expect(formatRelativeTime("2026-06-09T11:59:30Z", "en")).toBe("now");
   });
 
-  it("formats minutes and hours in the past", () => {
-    expect(formatRelativeTime("2026-06-09T11:55:00Z", "en")).toBe(
-      "5 minutes ago",
-    );
-    expect(formatRelativeTime("2026-06-09T09:00:00Z", "en")).toBe(
-      "3 hours ago",
-    );
+  it("formats minutes and hours in the past compactly", () => {
+    expect(formatRelativeTime("2026-06-09T11:55:00Z", "en")).toBe("5m ago");
+    expect(formatRelativeTime("2026-06-09T09:00:00Z", "en")).toBe("3h ago");
   });
 
   it("formats whole days in the past", () => {
-    expect(formatRelativeTime("2026-06-06T12:00:00Z", "en")).toBe(
-      "3 days ago",
-    );
+    expect(formatRelativeTime("2026-06-06T12:00:00Z", "en")).toBe("3d ago");
   });
 
   it("localizes via the provided locale", () => {
-    expect(formatRelativeTime("2026-06-09T11:55:00Z", "de")).toBe(
-      "vor 5 Minuten",
-    );
+    expect(formatRelativeTime("2026-06-09T11:55:00Z", "de")).toBe("vor 5 m");
   });
 
   it("accepts Date instances", () => {
     expect(formatRelativeTime(new Date("2026-06-09T11:00:00Z"), "en")).toBe(
-      "1 hour ago",
+      "1h ago",
     );
   });
 });

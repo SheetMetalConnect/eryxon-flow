@@ -26,7 +26,6 @@ interface OperationCardProps {
   onUpdate: () => void;
   compact?: boolean;
   assignedToMe?: boolean;
-  assignedByName?: string;
 }
 
 /** Left-edge color stripe by status */

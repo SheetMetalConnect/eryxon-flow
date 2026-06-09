@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
+import { useDebouncedCallback } from "@/hooks/useDebounce";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -161,14 +162,9 @@ export default function WorkQueue() {
   // Realtime delivers one event per touched row, so a single multi-operation
   // action (or a busy shift) arrives as a burst. Coalesce bursts into one
   // refetch instead of refetching the whole queue per event.
-  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const scheduleRealtimeRefresh = useCallback(() => {
-    if (refreshTimer.current) clearTimeout(refreshTimer.current);
-    refreshTimer.current = setTimeout(() => {
-      refreshTimer.current = null;
-      void loadData();
-    }, 250);
-  }, [loadData]);
+  const scheduleRealtimeRefresh = useDebouncedCallback(() => {
+    void loadData();
+  }, 250);
 
   const setupRealtimeSubscriptions = useCallback(() => {
     if (!profile?.tenant_id) return;
@@ -202,10 +198,6 @@ export default function WorkQueue() {
       .subscribe();
 
     return () => {
-      if (refreshTimer.current) {
-        clearTimeout(refreshTimer.current);
-        refreshTimer.current = null;
-      }
       supabase.removeChannel(operationsChannel);
       supabase.removeChannel(timeEntriesChannel);
     };
@@ -583,7 +575,6 @@ export default function WorkQueue() {
                           onUpdate={handleCardUpdate}
                           compact
                           assignedToMe={Boolean(assignment)}
-                          assignedByName={assignment?.assigned_by_name}
                         />
                       );
                     })}

@@ -31,15 +31,19 @@ export function formatClockTime(date: Date, use24Hour: boolean): string {
 }
 
 /**
- * Locale-aware relative time: "now", "5 minutes ago", "vor 3 Stunden",
+ * Locale-aware relative time: "now", "5 min. ago", "vor 3 Std.",
  * "2 dagen geleden". Pass the active i18n language so operator-facing
- * timestamps follow the UI locale instead of hardcoded English.
+ * timestamps follow the UI locale instead of hardcoded English. Narrow
+ * style keeps the strings short enough for compact timestamp rows.
  */
 export function formatRelativeTime(date: string | Date, locale?: string): string {
   const then = typeof date === "string" ? new Date(date) : date;
   const diffMs = then.getTime() - Date.now();
   const abs = Math.abs(diffMs);
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale, {
+    numeric: "auto",
+    style: "narrow",
+  });
 
   if (abs < 60_000) return rtf.format(0, "second");
   if (abs < 3_600_000) return rtf.format(Math.trunc(diffMs / 60_000), "minute");

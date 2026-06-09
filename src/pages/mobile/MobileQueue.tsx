@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
+import { useDebouncedCallback } from "@/hooks/useDebounce";
 import { useOperator } from "@/contexts/OperatorContext";
 import { useNative } from "@/hooks/useNative";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -99,14 +100,9 @@ export default function MobileQueue() {
 
   // Realtime delivers one event per touched row; coalesce bursts into a
   // single refetch so multi-row actions don't trigger a refetch storm.
-  const refreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const scheduleRealtimeRefresh = useCallback(() => {
-    if (refreshTimer.current) clearTimeout(refreshTimer.current);
-    refreshTimer.current = setTimeout(() => {
-      refreshTimer.current = null;
-      void load();
-    }, 250);
-  }, [load]);
+  const scheduleRealtimeRefresh = useDebouncedCallback(() => {
+    void load();
+  }, 250);
 
   useEffect(() => {
     let cancelled = false;
@@ -139,10 +135,6 @@ export default function MobileQueue() {
       .subscribe();
     return () => {
       cancelled = true;
-      if (refreshTimer.current) {
-        clearTimeout(refreshTimer.current);
-        refreshTimer.current = null;
-      }
       void supabase.removeChannel(channel);
     };
   }, [load, profile?.tenant_id, scheduleRealtimeRefresh]);
