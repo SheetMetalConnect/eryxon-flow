@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";
@@ -12,8 +13,6 @@ import {
   Clock,
   Trash2,
   XCircle,
-  Scissors,
-  CircleDot,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,24 +41,7 @@ import {
 import { format } from "date-fns";
 import { useBatches, useUpdateBatchStatus, useDeleteBatch, type Batch, type BatchStatus, type BatchType } from "@/hooks/useBatches";
 import { cn } from "@/lib/utils";
-import type { LucideIcon } from "lucide-react";
-
-const BATCH_TYPE_CONFIG: Record<BatchType, { label: string; icon: LucideIcon; color: string }> = {
-  laser_nesting: { label: "batches.types.laserNesting", icon: Scissors, color: "text-orange-500" },
-  tube_batch: { label: "batches.types.tubeBatch", icon: CircleDot, color: "text-blue-500" },
-  saw_batch: { label: "batches.types.sawBatch", icon: Scissors, color: "text-yellow-500" },
-  finishing_batch: { label: "batches.types.finishingBatch", icon: CheckCircle2, color: "text-green-500" },
-  general: { label: "batches.types.general", icon: Layers, color: "text-gray-500" },
-};
-
-const STATUS_CONFIG: Record<BatchStatus, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-  draft: { label: "batches.status.draft", variant: "outline" },
-  ready: { label: "batches.status.ready", variant: "secondary" },
-  in_progress: { label: "batches.status.inProgress", variant: "default" },
-  completed: { label: "batches.status.completed", variant: "secondary" },
-  cancelled: { label: "batches.status.cancelled", variant: "destructive" },
-  blocked: { label: "batches.status.blocked", variant: "destructive" },
-};
+import { BATCH_STATUS_CONFIG, BATCH_TYPE_CONFIG } from "@/components/batch/batchConfig";
 
 export default function Batches() {
   const { t } = useTranslation();
@@ -159,7 +141,7 @@ export default function Batches() {
       ),
       cell: ({ row }) => {
         const status = row.getValue("status") as BatchStatus;
-        const config = STATUS_CONFIG[status];
+        const config = BATCH_STATUS_CONFIG[status];
         return <Badge variant={config.variant}>{t(config.label)}</Badge>;
       },
       filterFn: (row, id, value) => value.includes(row.getValue(id)),
@@ -190,7 +172,7 @@ export default function Batches() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => navigate(`/admin/batches/${batch.id}`)}>
+              <DropdownMenuItem onClick={() => navigate(`${ROUTES.ADMIN.BATCHES}/${batch.id}`)}>
                 <Eye className="mr-2 h-4 w-4" />
                 {t("common.view")}
               </DropdownMenuItem>
@@ -240,7 +222,7 @@ export default function Batches() {
     {
       id: "status",
       title: t("batches.status.label"),
-      options: Object.entries(STATUS_CONFIG).map(([value, config]) => ({
+      options: Object.entries(BATCH_STATUS_CONFIG).map(([value, config]) => ({
         label: t(config.label),
         value,
       })),
@@ -253,7 +235,7 @@ export default function Batches() {
         title={t("batches.title")}
         description={t("batches.description")}
         action={
-          <Button onClick={() => navigate("/admin/batches/new")}>
+          <Button onClick={() => navigate(ROUTES.ADMIN.BATCHES_NEW)}>
             <Plus className="mr-2 h-4 w-4" />
             {t("batches.createBatch")}
           </Button>
