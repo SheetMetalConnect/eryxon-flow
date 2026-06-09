@@ -75,17 +75,13 @@ jobs:
             echo "::warning::CLOUDFLARE_API_TOKEN not configured — skipping Pages deploy."
           fi
 
-      # TODO(ERY-306): cloudflare/pages-action@v1 is deprecated (Node 20
+      # wrangler-action@v3 replaces the deprecated pages-action@v1 (Node 20
       # actions are removed from runners 2026-09; forced to Node 24 from
-      # 2026-06-16). Migrate to cloudflare/wrangler-action@v3 with
-      # `wrangler pages deploy` when restoring the credentials.
+      # 2026-06-16).
       - name: Deploy to Cloudflare Pages
         if: steps.cf-creds.outputs.available == 'true'
-        uses: cloudflare/pages-action@v1
+        uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: eryxon-flow
-          directory: dist
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          wranglerVersion: '3'
+          command: pages deploy dist --project-name=eryxon-flow
