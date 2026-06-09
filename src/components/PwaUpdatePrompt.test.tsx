@@ -2,13 +2,22 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { PwaUpdatePrompt } from "./PwaUpdatePrompt";
 
+interface ToastOptions {
+  duration: number;
+  action: { label: string; onClick: () => void };
+  cancel: { label: string; onClick: () => void };
+}
+
 const mocks = vi.hoisted(() => ({
   isNativeApp: vi.fn(() => false),
   useRegisterSW: vi.fn(),
-  toast: Object.assign(vi.fn(() => "toast-id"), {
-    success: vi.fn(),
-    dismiss: vi.fn(),
-  }),
+  toast: Object.assign(
+    vi.fn<(message: string, options: ToastOptions) => string>(() => "toast-id"),
+    {
+      success: vi.fn(),
+      dismiss: vi.fn(),
+    },
+  ),
 }));
 
 vi.mock("@/native", () => ({ isNativeApp: mocks.isNativeApp }));
