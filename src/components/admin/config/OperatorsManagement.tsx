@@ -259,7 +259,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
                     onChange={(e) => setOperatorForm({ ...operatorForm, full_name: e.target.value })}
                     placeholder="John Smith"
                     required
-                    className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                    className="glass-input-dark"
                   />
                 </div>
 
@@ -273,7 +273,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
                     value={operatorForm.employee_id}
                     onChange={(e) => setOperatorForm({ ...operatorForm, employee_id: e.target.value })}
                     placeholder="Auto-generated if empty"
-                    className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                    className="glass-input-dark"
                   />
                 </div>
 
@@ -288,7 +288,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
                     required
                     minLength={4}
                     maxLength={6}
-                    className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                    className="glass-input-dark"
                   />
                   <p className="text-xs text-muted-foreground">
                     Operators will use Employee ID + PIN to login
@@ -475,7 +475,7 @@ export default function OperatorsManagement({ tenantId }: OperatorsManagementPro
                 required
                 minLength={4}
                 maxLength={6}
-                className="bg-[rgba(17,25,40,0.75)] border-white/10"
+                className="glass-input-dark"
               />
             </div>
 

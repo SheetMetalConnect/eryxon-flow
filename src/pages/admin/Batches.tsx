@@ -50,7 +50,7 @@ export default function Batches() {
   const navigate = useNavigate();
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const { data: batches, isLoading } = useBatches();
+  const { data: batches, isLoading, error, refetch } = useBatches();
   const updateStatus = useUpdateBatchStatus();
   const deleteBatch = useDeleteBatch();
 
@@ -269,16 +269,27 @@ export default function Batches() {
         ]}
       />
 
-      <DataTable
-        columns={columns}
-        data={batches || []}
-        filterableColumns={filterableColumns}
-        searchableColumns={[
-          { id: "batch_number", title: t("batches.batchNumber") },
-          { id: "material", title: t("batches.material") },
-        ]}
-        loading={isLoading}
-      />
+      {error ? (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            {t("common.failedToLoad")}
+          </p>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
+            {t("common.retry")}
+          </Button>
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={batches || []}
+          filterableColumns={filterableColumns}
+          searchableColumns={[
+            { id: "batch_number", title: t("batches.batchNumber") },
+            { id: "material", title: t("batches.material") },
+          ]}
+          loading={isLoading}
+        />
+      )}
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
         <AlertDialogContent>
