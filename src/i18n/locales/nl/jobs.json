@@ -159,7 +159,6 @@
     "parentPartOptional": "Bovenliggend onderdeel (optioneel)",
     "partCreated": "Onderdeel succesvol aangemaakt",
     "partDeleted": "Onderdeel succesvol verwijderd",
-    "partDetails": "Onderdeeldetails",
     "partNumber": "Onderdeelnummer",
     "partNumberRequired": "Onderdeelnummer is vereist",
     "partNumberMaterialRequired": "Onderdeelnummer en materiaal zijn vereist",
@@ -628,6 +627,7 @@
     "metadataHint": "Voer extra informatie in in geldig JSON-formaat",
     "editOperationsHint": "Bewerken van bewerkingen is nog niet beschikbaar. Verwijder de batch en maak deze opnieuw aan indien nodig.",
     "updating": "Bijwerken...",
-    "updateBatch": "Batch bijwerken"
+    "updateBatch": "Batch bijwerken",
+    "noNestedBatches": "Nog geen geneste batches."
   }
 }

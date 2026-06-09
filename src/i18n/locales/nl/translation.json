@@ -573,7 +573,8 @@
     "validationError": "Validatiefout",
     "stopping": "Stoppen...",
     "yes": "Ja",
-    "no": "Nee"
+    "no": "Nee",
+    "viewDetails": "Details bekijken"
   },
   "production": {
     "reportTitle": "Productie Melden",
@@ -1649,7 +1650,23 @@
     "serverError": "Serverfout. Probeer het later opnieuw.",
     "unauthorized": "U bent niet geautoriseerd om deze actie uit te voeren",
     "notFound": "Resource niet gevonden",
-    "validationError": "Controleer het formulier op fouten"
+    "validationError": "Controleer het formulier op fouten",
+    "center": "Meldingen",
+    "pinnedLabel": "Vastgezet",
+    "markAsRead": "Markeer als gelezen",
+    "pin": "Vastzetten",
+    "unpin": "Losmaken",
+    "dismiss": "Sluiten",
+    "loadingCenter": "Meldingen laden...",
+    "emptyPinned": "Geen vastgezette meldingen",
+    "caughtUp": "Je bent helemaal bij!",
+    "pinHint": "Zet belangrijke meldingen vast om ze hier te zien",
+    "empty": "Geen nieuwe meldingen",
+    "markAllAsRead": "Alles als gelezen markeren",
+    "unreadCount": "({{count}} ongelezen)",
+    "tabAll": "Alle",
+    "footerHint": "Gebruik het speldje om belangrijke meldingen bovenaan te houden",
+    "ariaLabel": "{{count}} meldingen"
   },
   "modals": {
     "confirmDelete": "Verwijdering bevestigen",

@@ -627,6 +627,7 @@
     "metadataHint": "Geben Sie zusätzliche Informationen im gültigen JSON-Format ein",
     "editOperationsHint": "Das Bearbeiten von Arbeitsgängen ist noch nicht verfügbar. Löschen Sie die Charge und erstellen Sie sie bei Bedarf neu.",
     "updating": "Wird aktualisiert...",
-    "updateBatch": "Charge aktualisieren"
+    "updateBatch": "Charge aktualisieren",
+    "noNestedBatches": "Noch keine verschachtelten Batches."
   }
 }

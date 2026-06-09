@@ -306,7 +306,9 @@
     "success": "Erfolg",
     "validationError": "Validierungsfehler",
     "yes": "Ja",
-    "no": "Nein"
+    "no": "Nein",
+    "stopping": "Wird gestoppt...",
+    "viewDetails": "Details anzeigen"
   },
   "production": {
     "reportTitle": "Produktion melden",
@@ -1382,7 +1384,23 @@
     "serverError": "Serverfehler. Bitte versuchen Sie es später erneut.",
     "unauthorized": "Sie sind nicht berechtigt, diese Aktion durchzuführen",
     "notFound": "Ressource nicht gefunden",
-    "validationError": "Bitte überprüfen Sie das Formular auf Fehler"
+    "validationError": "Bitte überprüfen Sie das Formular auf Fehler",
+    "center": "Benachrichtigungen",
+    "pinnedLabel": "Angeheftet",
+    "markAsRead": "Als gelesen markieren",
+    "pin": "Anheften",
+    "unpin": "Lösen",
+    "dismiss": "Verwerfen",
+    "loadingCenter": "Benachrichtigungen werden geladen...",
+    "emptyPinned": "Keine angehefteten Benachrichtigungen",
+    "caughtUp": "Alles erledigt!",
+    "pinHint": "Wichtige Benachrichtigungen anheften, um sie hier zu sehen",
+    "empty": "Keine neuen Benachrichtigungen",
+    "markAllAsRead": "Alle als gelesen markieren",
+    "unreadCount": "({{count}} ungelesen)",
+    "tabAll": "Alle",
+    "footerHint": "Mit dem Pin-Symbol bleiben wichtige Benachrichtigungen oben",
+    "ariaLabel": "{{count}} Benachrichtigungen"
   },
   "modals": {
     "confirmDelete": "Löschung bestätigen",
