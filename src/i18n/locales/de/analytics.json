@@ -38,7 +38,8 @@
     },
     "cycleTime": {
       "title": "Zykluszeit pro Arbeitsgang",
-      "minutes": "Minuten"
+      "minutes": "Minuten",
+      "median": "Median"
     },
     "wipAge": {
       "title": "WIP Altersverteilung",
@@ -50,7 +51,8 @@
     },
     "throughput": {
       "title": "Durchsatz pro Zelle",
-      "units": "Einheiten/Tag"
+      "units": "Einheiten/Tag",
+      "unitsPerDay": "Einheiten/Tag"
     },
     "reliability": {
       "title": "Zellen Zuverlässigkeit Heatmap",
@@ -58,7 +60,19 @@
       "week": "Woche"
     },
     "loadError": "Fehler beim Laden der QRM-Dashboard-Daten",
-    "noData": "Keine QRM-Daten verfügbar. Bitte stellen Sie sicher, dass Sie aktive Aufträge und Arbeitsgänge haben."
+    "noData": "Keine QRM-Daten verfügbar. Bitte stellen Sie sicher, dass Sie aktive Aufträge und Arbeitsgänge haben.",
+    "flow": "Fluss",
+    "operationsFlow": "Arbeitsgangfluss",
+    "wipLimit": "WIP-Limit",
+    "wipWarningThreshold": "Warnung ab",
+    "wipLimitHelp": "Legen Sie WIP-Limits fest, um eine Überlastung dieser Stufe zu vermeiden. Leer lassen für unbegrenzt.",
+    "enforceLimit": "Limit erzwingen",
+    "enforceLimitHelp": "Neue Arbeit an der Kapazitätsgrenze blockieren",
+    "showWarnings": "Visuelle Warnungen",
+    "showWarningsHelp": "Kapazitätsanzeigen einblenden",
+    "settings": "WIP-Limits",
+    "unlimited": "Kein Limit",
+    "jobsInCell": "Aufträge"
   },
   "quality": {
     "dashboardTitle": "Qualitätsübersicht",

@@ -156,7 +156,58 @@
       "successCreated": "Demodaten erfolgreich erstellt",
       "successCleared": "Demodaten erfolgreich gelöscht",
       "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
-      "errorClear": "Löschen der Demodaten fehlgeschlagen"
+      "errorClear": "Löschen der Demodaten fehlgeschlagen",
+      "confirmClearing": "Wird gelöscht...",
+      "confirmButton": "Demodaten Löschen"
+    },
+    "gdpr": {
+      "title": "Datenlöschung (DSGVO)",
+      "description": "Löschen Sie dauerhaft Ihr Konto oder alle Daten Ihrer Organisation",
+      "deleteAccount": {
+        "title": "Mein Konto löschen",
+        "description": "Löschen Sie dauerhaft Ihr Benutzerkonto und alle zugehörigen personenbezogenen Daten.",
+        "warning": "Warnung",
+        "warningMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Ihr Konto, Ihre Zeiteinträge, Zuweisungen und Probleme werden dauerhaft gelöscht.",
+        "button": "Mein Konto löschen",
+        "confirmTitle": "Ihr Konto löschen?",
+        "confirmMessage": "Dies löscht dauerhaft Ihr Konto und alle zugehörigen Daten:",
+        "confirmItems": {
+          "profile": "Ihr Benutzerprofil",
+          "timeEntries": "Alle von Ihnen erstellten Zeiteinträge",
+          "assignments": "Alle Ihre Zuweisungen",
+          "issues": "Alle von Ihnen gemeldeten Probleme"
+        },
+        "confirmWarning": "Diese Aktion kann nicht rückgängig gemacht werden",
+        "confirmDescription": "Sie werden sofort abgemeldet und können Ihr Konto nicht wiederherstellen.",
+        "confirmButton": "Mein Konto löschen",
+        "deleting": "Wird gelöscht..."
+      },
+      "deleteTenant": {
+        "title": "Gesamte Organisation löschen",
+        "description": "Löschen Sie dauerhaft Ihre Organisation und ALLE Daten aller Benutzer.",
+        "warningTitle": "Kritische Warnung",
+        "warningMessage": "Dies löscht ALLE Aufträge, Teile, Arbeitsgänge, Benutzer und Daten Ihrer gesamten Organisation. Diese Aktion betrifft ALLE Benutzer Ihrer Organisation und kann NICHT rückgängig gemacht werden.",
+        "button": "Gesamte Organisation löschen",
+        "confirmTitle": "Gesamte Organisation löschen?",
+        "confirmMessage": "Dies löscht dauerhaft Ihre Organisation und ALLE Daten:",
+        "confirmItems": {
+          "users": "Alle Benutzerkonten und Profile",
+          "jobs": "Alle Aufträge, Teile und Arbeitsgänge",
+          "timeEntries": "Alle Zeiteinträge und Zuweisungen",
+          "issues": "Alle Probleme und Produktionsdaten",
+          "config": "Alle Zellen, Materialien und Betriebsmittel",
+          "api": "Alle API-Schlüssel und Webhooks",
+          "all": "Alles Weitere in Ihrer Organisation"
+        },
+        "confirmWarningTitle": "KRITISCH: Dies betrifft ALLE Benutzer",
+        "confirmWarningMessage": "Dies löscht die Daten ALLER Benutzer in Ihrer Organisation. Alle verlieren den Zugriff. Diese Aktion ist DAUERHAFT und kann NICHT rückgängig gemacht werden.",
+        "confirmButton": "Organisation löschen",
+        "deleting": "Wird gelöscht..."
+      },
+      "exportFirst": "Exportieren Sie Ihre Daten vor dem Löschen über die",
+      "dataExportLink": "Datenexport-Funktion",
+      "privacyPolicyLink": "Datenschutzrichtlinie",
+      "seePolicy": "Bei Fragen zur Datenlöschung lesen Sie bitte unsere"
     }
   },
   "navigation": {
@@ -213,7 +264,8 @@
       "overview": "ÜBERSICHT",
       "operations": "ARBEITSGÄNGE",
       "data": "DATEN"
-    }
+    },
+    "batches": "Chargen"
   },
   "subscription": {
     "currentPlan": "Aktueller Plan",
@@ -252,7 +304,21 @@
     "totalJobs": "Aufträge gesamt",
     "totalParts": "Teile gesamt",
     "activeCells": "Aktive Fertigungszellen",
-    "completedToday": "Heute abgeschlossen"
+    "completedToday": "Heute abgeschlossen",
+    "startedAt": "Gestartet um",
+    "stopClockingTitle": "Zeiterfassung stoppen",
+    "stopClockingDescription": "Überprüfen Sie den aktiven Zeiteintrag und stoppen Sie die Zeiterfassung bei Bedarf.",
+    "stopClocking": "Zeiterfassung stoppen",
+    "clockingStopped": "Zeiterfassung gestoppt",
+    "clockingStoppedDescription": "Die Zeiterfassung für {{operator}} bei {{operation}} wurde gestoppt.",
+    "stopFailed": "Zeiterfassung konnte nicht gestoppt werden",
+    "stopAll": "Alle stoppen",
+    "stopAllClockings": "Alle Zeiterfassungen stoppen",
+    "allClockingsStopped": "Alle Zeiterfassungen gestoppt",
+    "allClockingsStoppedDescription": "{{count}} Zeiteinträge wurden gestoppt.",
+    "stopAllFailed": "Stoppen aller Zeiterfassungen fehlgeschlagen",
+    "pastClosingTimeWarning": "Betriebsende überschritten",
+    "pastClosingTimeDescription": "Nach Betriebsende ({{time}}) sind noch {{count}} Zeiteinträge aktiv. Sie sollten diese stoppen."
   },
   "workQueue": {
     "filtersAndControls": "Filter & Steuerung",
@@ -308,7 +374,8 @@
     "yes": "Ja",
     "no": "Nein",
     "stopping": "Wird gestoppt...",
-    "viewDetails": "Details anzeigen"
+    "viewDetails": "Details anzeigen",
+    "optional": "optional"
   },
   "production": {
     "reportTitle": "Produktion melden",
@@ -454,7 +521,19 @@
     "packageCount": "Paketanzahl",
     "packages": "Pakete",
     "noDeliveryAddress": "Keine Lieferadresse festgelegt",
-    "noShippingDetails": "Keine Versanddetails festgelegt"
+    "noShippingDetails": "Keine Versanddetails festgelegt",
+    "noJobsFound": "Keine Aufträge gefunden",
+    "subtitle": "Verwalten Sie alle Aufträge, verfolgen Sie den Fortschritt und behalten Sie Termine im Blick",
+    "total": "Gesamt",
+    "overdue": "Überfällig",
+    "dueThisWeek": "Diese Woche fällig",
+    "details": "Details",
+    "files": "Dateien",
+    "statusUpdated": "Status aktualisiert",
+    "jobOnHold": "Auftrag wurde pausiert",
+    "jobResumed": "Auftrag wurde fortgesetzt",
+    "resumeJob": "Auftrag fortsetzen",
+    "putOnHold": "Pausieren"
   },
   "parts": {
     "title": "Teileverwaltung",
@@ -710,7 +789,13 @@
     "filesSelected": "{{count}} Foto(s)",
     "report": "Melden",
     "selectCategory": "Kategorie auswählen",
-    "category": "Kategorie",
+    "category": {
+      "equipment": "Maschine",
+      "material": "Material",
+      "quality": "Qualität",
+      "safety": "Sicherheit",
+      "process": "Prozess"
+    },
     "enterResolutionNotes": "Lösungsnotizen eingeben",
     "failedToReportIssue": "Problem konnte nicht gemeldet werden",
     "failedToUpdateIssue": "Problem konnte nicht aktualisiert werden",
@@ -779,7 +864,9 @@
     "issueClosed": "Problem geschlossen",
     "deleteConfirm": "Möchten Sie dieses Problem wirklich löschen?",
     "searchIssues": "Probleme suchen...",
-    "noIssues": "Keine Probleme gefunden"
+    "noIssues": "Keine Probleme gefunden",
+    "whatKindOfIssue": "Welche Art von Problem?",
+    "moreDetails": "Weitere Details"
   },
   "stages": {
     "title": "Fertigungsstufen-Konfiguration",
@@ -1486,7 +1573,8 @@
     },
     "cycleTime": {
       "title": "Zykluszeit pro Arbeitsgang",
-      "minutes": "Minuten"
+      "minutes": "Minuten",
+      "median": "Median"
     },
     "wipAge": {
       "title": "WIP Altersverteilung",
@@ -1498,7 +1586,8 @@
     },
     "throughput": {
       "title": "Durchsatz pro Zelle",
-      "units": "Einheiten/Tag"
+      "units": "Einheiten/Tag",
+      "unitsPerDay": "Einheiten/Tag"
     },
     "reliability": {
       "title": "Zellen Zuverlässigkeit Heatmap",
@@ -1506,7 +1595,19 @@
       "week": "Woche"
     },
     "loadError": "Fehler beim Laden der QRM-Dashboard-Daten",
-    "noData": "Keine QRM-Daten verfügbar. Bitte stellen Sie sicher, dass Sie aktive Aufträge und Arbeitsgänge haben."
+    "noData": "Keine QRM-Daten verfügbar. Bitte stellen Sie sicher, dass Sie aktive Aufträge und Arbeitsgänge haben.",
+    "flow": "Fluss",
+    "operationsFlow": "Arbeitsgangfluss",
+    "wipLimit": "WIP-Limit",
+    "wipWarningThreshold": "Warnung ab",
+    "wipLimitHelp": "Setzen Sie WIP-Limits, um eine Überlastung dieser Fertigungsstufe zu vermeiden. Leer lassen für unbegrenzt.",
+    "enforceLimit": "Limit erzwingen",
+    "enforceLimitHelp": "Neue Arbeit bei erreichter Kapazität blockieren",
+    "showWarnings": "Visuelle Warnungen",
+    "showWarningsHelp": "Kapazitätsanzeigen einblenden",
+    "settings": "WIP-Limits",
+    "unlimited": "Kein Limit",
+    "jobsInCell": "Aufträge"
   },
   "terminal": {
     "columns": {
@@ -1862,5 +1963,156 @@
     "expiredDescription": "Der Testzeitraum ist beendet. Sehen Sie Ihre Planoptionen, um Ihre Daten zu behalten und weiterzuarbeiten.",
     "seePlans": "Pläne ansehen",
     "viewPlan": "Pläne ansehen"
+  },
+  "legal": {
+    "privacyPolicy": {
+      "title": "Datenschutzrichtlinie",
+      "backToAbout": "Zurück zur Über-Seite",
+      "lastUpdated": "Zuletzt aktualisiert",
+      "impressumLink": "Vollständige Unternehmensangaben finden Sie auf unserer",
+      "impressumText": "Impressum-Seite"
+    },
+    "termsOfService": {
+      "title": "Allgemeine Geschäftsbedingungen",
+      "backToAbout": "Zurück zur Über-Seite",
+      "lastUpdated": "Zuletzt aktualisiert",
+      "impressumLink": "Vollständige Unternehmensangaben finden Sie auf unserer",
+      "impressumText": "Impressum-Seite"
+    }
+  },
+  "organizationSettings": {
+    "title": "Organisationseinstellungen",
+    "subtitle": "Verwalten Sie Ihr Organisationsprofil und Ihre Einstellungen",
+    "companyInformation": "Firmeninformationen",
+    "updateOrgDetails": "Aktualisieren Sie Ihre Organisationsdaten",
+    "organizationName": "Organisationsname",
+    "companyName": "Firmenname",
+    "timezone": "Zeitzone",
+    "timezoneDescription": "Wird für Planung und Fälligkeitsdaten verwendet",
+    "billingEmail": "Rechnungs-E-Mail",
+    "saveChanges": "Änderungen speichern",
+    "settingsUpdated": "Organisationseinstellungen aktualisiert",
+    "factoryHours": {
+      "title": "Betriebszeiten",
+      "description": "Konfigurieren Sie Ihre Betriebszeiten und die Einstellungen für die automatische Zeiterfassung",
+      "openingTime": "Betriebsbeginn",
+      "closingTime": "Betriebsende",
+      "autoStopTracking": "Zeiterfassung automatisch stoppen",
+      "autoStopDescription": "Alle aktiven Zeiteinträge bei Betriebsende automatisch stoppen",
+      "autoStopWarning": "Aktive Zeiteinträge werden täglich um {{time}} automatisch gestoppt"
+    }
+  },
+  "management": {
+    "title": "Management-Konsole",
+    "subtitle": "Überblick über die Werkstattleistung und zentrale Kennzahlen"
+  },
+  "dataImport": {
+    "title": "Datenimport",
+    "description": "Importieren Sie Daten aus CSV-Dateien oder externen Systemen",
+    "needHelp": "Hilfe benötigt?",
+    "learnMoreSync": "Erfahren Sie mehr über Optionen zur Datensynchronisierung:",
+    "erpIntegrationGuide": "ERP-Integrationsleitfaden",
+    "apiDocumentation": "API-Dokumentation",
+    "steps": {
+      "select": "Entität wählen",
+      "upload": "Datei hochladen",
+      "map": "Felder zuordnen",
+      "preview": "Vorschau",
+      "import": "Import",
+      "complete": "Fertig"
+    },
+    "selectEntity": "Zu importierende Entität wählen",
+    "selectEntityDescription": "Wählen Sie die Art der Daten, die Sie importieren möchten",
+    "uploadFile": "CSV-Datei hochladen",
+    "uploadFileDescription": "Laden Sie Ihre CSV-Datei hoch oder laden Sie eine Vorlage herunter",
+    "uploadDescription": "Laden Sie eine CSV-Datei für {{entity}} hoch",
+    "mapFields": "Felder zuordnen",
+    "mapFieldsDescription": "Ordnen Sie Ihre CSV-Spalten den richtigen Feldern zu",
+    "previewData": "Datenvorschau",
+    "previewDataDescription": "Überprüfen und validieren Sie Ihre Daten vor dem Import",
+    "importing": "Wird importiert...",
+    "importingDescription": "Ihre Daten werden importiert",
+    "importComplete": "Import abgeschlossen",
+    "importCompleteDescription": "Ihre Daten wurden erfolgreich importiert",
+    "downloadTemplate": "Vorlage herunterladen",
+    "templateDownloaded": "Vorlage heruntergeladen",
+    "dropzoneText": "Ziehen Sie Ihre CSV-Datei hierher oder klicken Sie zum Auswählen",
+    "dragDrop": "Ziehen Sie Ihre CSV-Datei hierher oder klicken Sie zum Auswählen",
+    "csvOnly": "Es werden nur CSV-Dateien unterstützt",
+    "fileSelected": "Datei ausgewählt",
+    "rows": "Zeilen",
+    "rowsDetected": "Zeilen erkannt",
+    "columns": "Spalten",
+    "csvColumn": "CSV-Spalte",
+    "mapsTo": "Zugeordnet zu",
+    "sampleValue": "Beispielwert",
+    "skip": "Überspringen",
+    "ignore": "-- Ignorieren --",
+    "selectField": "Feld auswählen",
+    "requiredFields": "Pflichtfelder",
+    "requiredFieldsMissing": "Pflichtfelder fehlen",
+    "requiredFieldsMissingDescription": "Bitte ordnen Sie alle Pflichtfelder zu, bevor Sie fortfahren",
+    "missingRequired": "Fehlende Pflichtfelder",
+    "downloadTemplateHint": "Vorlage benötigt?",
+    "validationResults": "Validierungsergebnisse",
+    "validRecords": "Gültige Datensätze",
+    "invalidRecords": "Ungültige Datensätze",
+    "fieldMissing": "Pflichtfeld fehlt",
+    "invalidValue": "Ungültiger Wert",
+    "row": "Zeile",
+    "field": "Feld",
+    "error": "Fehler",
+    "errors": "Fehler",
+    "parseError": "Einlesefehler",
+    "parseWarnings": "Einlesewarnungen",
+    "processing": "Verarbeitung",
+    "recordsOf": "von",
+    "created": "Erstellt",
+    "updated": "Aktualisiert",
+    "skipped": "Übersprungen",
+    "failed": "Fehlgeschlagen",
+    "continue": "Weiter",
+    "back": "Zurück",
+    "preview": "Vorschau",
+    "previewImport": "Import-Vorschau",
+    "previewDescription": "Anzeige der ersten 5 Zeilen von {{count}} zu importierenden Datensätzen",
+    "importInfo": "Import-Informationen",
+    "willProcessRows": "{{count}} Zeilen werden verarbeitet",
+    "existingUpdated": "Datensätze mit übereinstimmender external_id werden aktualisiert",
+    "newCreated": "Neue Datensätze werden erstellt",
+    "startImport": "Import starten",
+    "importInProgress": "Import läuft",
+    "pleaseWait": "Bitte warten Sie, während Ihre Daten importiert werden...",
+    "complete": "abgeschlossen",
+    "importSummary": "Zusammenfassung Ihrer Importergebnisse",
+    "totalProcessed": "Insgesamt verarbeitet",
+    "errorDetails": "Fehlerdetails",
+    "importFailed": "Import fehlgeschlagen",
+    "importAnother": "Weitere Datei importieren",
+    "backToStart": "Zurück zum Start",
+    "noValidRecords": "Keine gültigen Datensätze zum Importieren",
+    "noValidRecordsDescription": "Bitte beheben Sie die Validierungsfehler und versuchen Sie es erneut",
+    "entities": {
+      "jobs": {
+        "name": "Aufträge",
+        "description": "Verkaufsaufträge und Fertigungsaufträge"
+      },
+      "parts": {
+        "name": "Teile",
+        "description": "Teile, Komponenten und Baugruppen"
+      },
+      "operations": {
+        "name": "Arbeitsgänge",
+        "description": "Fertigungsarbeitsgänge und Arbeitsplanschritte"
+      },
+      "cells": {
+        "name": "Zellen",
+        "description": "Fertigungszellen und Arbeitsplätze"
+      },
+      "resources": {
+        "name": "Betriebsmittel",
+        "description": "Werkzeuge, Geräte und Maschinen"
+      }
+    }
   }
 }

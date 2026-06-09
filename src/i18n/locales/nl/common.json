@@ -57,7 +57,8 @@
     "noTenantId": "Geen tenant-ID",
     "pageNotFound": "Oeps! Pagina niet gevonden",
     "returnToHome": "Terug naar startpagina",
-    "dismiss": "Sluiten"
+    "dismiss": "Sluiten",
+    "viewDetails": "Details bekijken"
   },
   "forms": {
     "required": "Dit veld is verplicht",

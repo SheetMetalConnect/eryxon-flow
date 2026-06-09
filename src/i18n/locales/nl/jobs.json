@@ -81,7 +81,19 @@
     "packageCount": "Aantal pakketten",
     "packages": "pakketten",
     "noDeliveryAddress": "Geen afleveradres ingesteld",
-    "fromParts": "van onderdelen"
+    "fromParts": "van onderdelen",
+    "noJobsFound": "Geen opdrachten gevonden",
+    "subtitle": "Beheer alle opdrachten, volg de voortgang en bewaak deadlines",
+    "total": "Totaal",
+    "overdue": "Achterstallig",
+    "dueThisWeek": "Deze week verwacht",
+    "details": "Details",
+    "files": "Bestanden",
+    "statusUpdated": "Status bijgewerkt",
+    "jobOnHold": "Opdracht is in de wacht gezet",
+    "jobResumed": "Opdracht is hervat",
+    "resumeJob": "Opdracht hervatten",
+    "putOnHold": "In de wacht zetten"
   },
   "parts": {
     "title": "Onderdelenbeheer",
@@ -418,7 +430,13 @@
     "filesSelected": "{{count}} foto('s)",
     "report": "Melden",
     "selectCategory": "Categorie selecteren",
-    "category": "Categorie",
+    "category": {
+      "equipment": "Machine",
+      "material": "Materiaal",
+      "quality": "Kwaliteit",
+      "safety": "Veiligheid",
+      "process": "Proces"
+    },
     "enterResolutionNotes": "Oplossingsnotities invoeren",
     "failedToReportIssue": "Probleem melden mislukt",
     "failedToUpdateIssue": "Probleem bijwerken mislukt",
@@ -506,7 +524,9 @@
     "affectedQuantityPlaceholder": "Aantal getroffen onderdelen",
     "shortfallAlert": "Productie tekort gedetecteerd. Geef details over waarom het doelbedrag niet is behaald.",
     "shortfallContext": "Meld productie tekort probleem",
-    "shortfallDescPlaceholder": "Wat verhinderde het behalen van de doelhoeveelheid?"
+    "shortfallDescPlaceholder": "Wat verhinderde het behalen van de doelhoeveelheid?",
+    "whatKindOfIssue": "Wat voor probleem?",
+    "moreDetails": "Meer details"
   },
   "jobCreate": {
     "title": "Nieuwe Order Aanmaken",

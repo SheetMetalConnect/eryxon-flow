@@ -64,21 +64,7 @@
     "needHelp": "Hulp nodig?",
     "helpDescription": "Sheet Metal Connect e.U. kan u helpen Eryxon Flow op te zetten en te draaien voor uw activiteiten."
   },
-  "help": {
-    "title": "Hulp",
-    "subtitle": "Hoe Eryxon Flow te gebruiken",
-    "apiDocs": "API-documentatie",
-    "apiDocsDescription": "Volledige API-referentie",
-    "github": "GitHub",
-    "githubDescription": "Broncode en documentatie",
-    "about": "Over",
-    "aboutDescription": "Over Eryxon Flow",
-    "gettingStarted": "Aan de slag",
-    "operatorGuide": "Operatorhandleiding",
-    "adminGuide": "Beheerdersgids",
-    "troubleshooting": "Probleemoplossing",
-    "faq": "Veelgestelde vragen"
-  },
+  "help": "Hulp",
   "about": "Over",
   "Material": "Materiaal",
   "Notes": "Notities",
@@ -359,7 +345,9 @@
       "successCreated": "Demonstratiedata succesvol aangemaakt",
       "successCleared": "Demonstratiedata succesvol verwijderd",
       "errorCreate": "Aanmaken demonstratiedata mislukt",
-      "errorClear": "Verwijderen demonstratiedata mislukt"
+      "errorClear": "Verwijderen demonstratiedata mislukt",
+      "confirmClearing": "Verwijderen...",
+      "confirmButton": "Demonstratiedata Verwijderen"
     },
     "gdpr": {
       "title": "Gegevensverwijdering (AVG)",
@@ -465,7 +453,8 @@
       "overview": "OVERZICHT",
       "operations": "BEWERKINGEN",
       "data": "GEGEVENS"
-    }
+    },
+    "batches": "Batches"
   },
   "subscription": {
     "currentPlan": "Huidig abonnement",
@@ -574,7 +563,8 @@
     "stopping": "Stoppen...",
     "yes": "Ja",
     "no": "Nee",
-    "viewDetails": "Details bekijken"
+    "viewDetails": "Details bekijken",
+    "optional": "optioneel"
   },
   "production": {
     "reportTitle": "Productie Melden",
@@ -720,7 +710,19 @@
     "packageCount": "Aantal pakketten",
     "packages": "pakketten",
     "noDeliveryAddress": "Geen afleveradres ingesteld",
-    "noShippingDetails": "Geen verzendgegevens ingesteld"
+    "noShippingDetails": "Geen verzendgegevens ingesteld",
+    "noJobsFound": "Geen opdrachten gevonden",
+    "subtitle": "Beheer alle opdrachten, volg de voortgang en bewaak deadlines",
+    "total": "Totaal",
+    "overdue": "Achterstallig",
+    "dueThisWeek": "Deadline deze week",
+    "details": "Details",
+    "files": "Bestanden",
+    "statusUpdated": "Status bijgewerkt",
+    "jobOnHold": "Opdracht is in de wacht gezet",
+    "jobResumed": "Opdracht is hervat",
+    "resumeJob": "Opdracht hervatten",
+    "putOnHold": "In de wacht zetten"
   },
   "parts": {
     "title": "Onderdelenbeheer",
@@ -976,7 +978,13 @@
     "filesSelected": "{{count}} foto('s)",
     "report": "Melden",
     "selectCategory": "Categorie selecteren",
-    "category": "Categorie",
+    "category": {
+      "equipment": "Machine",
+      "material": "Materiaal",
+      "quality": "Kwaliteit",
+      "safety": "Veiligheid",
+      "process": "Proces"
+    },
     "enterResolutionNotes": "Oplossingsnotities invoeren",
     "failedToReportIssue": "Probleem melden mislukt",
     "failedToUpdateIssue": "Probleem bijwerken mislukt",
@@ -1045,7 +1053,9 @@
     "issueClosed": "Probleem gesloten",
     "deleteConfirm": "Weet u zeker dat u dit probleem wilt verwijderen?",
     "searchIssues": "Problemen zoeken...",
-    "noIssues": "Geen problemen gevonden"
+    "noIssues": "Geen problemen gevonden",
+    "whatKindOfIssue": "Wat voor probleem?",
+    "moreDetails": "Meer details"
   },
   "stages": {
     "title": "Productiefase-configuratie",
@@ -1752,7 +1762,8 @@
     },
     "cycleTime": {
       "title": "Cyclustijd per bewerking",
-      "minutes": "Minuten"
+      "minutes": "Minuten",
+      "median": "Mediaan"
     },
     "wipAge": {
       "title": "WIP Leeftijdsverdeling",
@@ -1764,7 +1775,8 @@
     },
     "throughput": {
       "title": "Doorvoer per cel",
-      "units": "Eenheden/dag"
+      "units": "Eenheden/dag",
+      "unitsPerDay": "Eenheden/dag"
     },
     "reliability": {
       "title": "Cel Betrouwbaarheid Heatmap",
@@ -1772,7 +1784,19 @@
       "week": "Week"
     },
     "loadError": "Fout bij laden van QRM dashboard gegevens",
-    "noData": "Geen QRM gegevens beschikbaar. Zorg ervoor dat u actieve orders en bewerkingen heeft."
+    "noData": "Geen QRM gegevens beschikbaar. Zorg ervoor dat u actieve orders en bewerkingen heeft.",
+    "flow": "Flow",
+    "operationsFlow": "Bewerkingsflow",
+    "wipLimit": "WIP-limiet",
+    "wipWarningThreshold": "Waarschuwing bij",
+    "wipLimitHelp": "Stel WIP-limieten in om overbelasting van deze fase te voorkomen. Leeg laten voor onbeperkt.",
+    "enforceLimit": "Limiet afdwingen",
+    "enforceLimitHelp": "Blokkeer nieuw werk bij volle capaciteit",
+    "showWarnings": "Visuele waarschuwingen",
+    "showWarningsHelp": "Toon capaciteitsindicatoren",
+    "settings": "WIP-limieten",
+    "unlimited": "Geen limiet",
+    "jobsInCell": "Opdrachten"
   },
   "terminal": {
     "columns": {
@@ -2128,5 +2152,118 @@
     "expiredDescription": "De proefperiode is beëindigd. Bekijk uw abonnementsopties om uw gegevens te behouden en door te gaan.",
     "seePlans": "Bekijk opties",
     "viewPlan": "Bekijk opties"
+  },
+  "management": {
+    "title": "Managementconsole",
+    "subtitle": "Overzicht van fabrieksprestaties en kerncijfers"
+  },
+  "dataImport": {
+    "title": "Gegevensimport",
+    "description": "Importeer gegevens uit CSV-bestanden of externe systemen",
+    "needHelp": "Hulp nodig?",
+    "learnMoreSync": "Meer informatie over gegevenssynchronisatie:",
+    "erpIntegrationGuide": "ERP-integratiegids",
+    "apiDocumentation": "API-documentatie",
+    "steps": {
+      "select": "Entiteit kiezen",
+      "upload": "Bestand uploaden",
+      "map": "Velden koppelen",
+      "preview": "Voorbeeld",
+      "import": "Importeren",
+      "complete": "Voltooid"
+    },
+    "selectEntity": "Entiteit selecteren",
+    "selectEntityDescription": "Kies het type gegevens dat u wilt importeren",
+    "uploadFile": "CSV-bestand uploaden",
+    "uploadFileDescription": "Upload uw CSV-bestand of download een sjabloon",
+    "uploadDescription": "Upload een CSV-bestand voor {{entity}}",
+    "mapFields": "Velden koppelen",
+    "mapFieldsDescription": "Koppel uw CSV-kolommen aan de juiste velden",
+    "previewData": "Gegevens controleren",
+    "previewDataDescription": "Controleer en valideer uw gegevens voordat u importeert",
+    "importing": "Importeren...",
+    "importingDescription": "Uw gegevens worden geïmporteerd",
+    "importComplete": "Import voltooid",
+    "importCompleteDescription": "Uw gegevens zijn succesvol geïmporteerd",
+    "downloadTemplate": "Sjabloon downloaden",
+    "templateDownloaded": "Sjabloon gedownload",
+    "dropzoneText": "Sleep uw CSV-bestand hierheen of klik om te bladeren",
+    "dragDrop": "Sleep uw CSV-bestand hierheen of klik om te bladeren",
+    "csvOnly": "Alleen CSV-bestanden worden ondersteund",
+    "fileSelected": "Bestand geselecteerd",
+    "rows": "rijen",
+    "rowsDetected": "rijen gevonden",
+    "columns": "kolommen",
+    "csvColumn": "CSV-kolom",
+    "mapsTo": "Koppelt aan",
+    "sampleValue": "Voorbeeldwaarde",
+    "skip": "Overslaan",
+    "ignore": "-- Negeren --",
+    "selectField": "Veld selecteren",
+    "requiredFields": "Verplichte velden",
+    "requiredFieldsMissing": "Verplichte velden ontbreken",
+    "requiredFieldsMissingDescription": "Koppel alle verplichte velden voordat u verdergaat",
+    "missingRequired": "Ontbrekende verplichte velden",
+    "downloadTemplateHint": "Sjabloon nodig?",
+    "validationResults": "Validatieresultaten",
+    "validRecords": "Geldige records",
+    "invalidRecords": "Ongeldige records",
+    "fieldMissing": "Verplicht veld ontbreekt",
+    "invalidValue": "Ongeldige waarde",
+    "row": "Rij",
+    "field": "Veld",
+    "error": "Fout",
+    "errors": "Fouten",
+    "parseError": "Fout bij inlezen",
+    "parseWarnings": "Waarschuwingen bij inlezen",
+    "processing": "Verwerken",
+    "recordsOf": "van",
+    "created": "Aangemaakt",
+    "updated": "Bijgewerkt",
+    "skipped": "Overgeslagen",
+    "failed": "Mislukt",
+    "continue": "Doorgaan",
+    "back": "Terug",
+    "preview": "Voorbeeld",
+    "previewImport": "Importvoorbeeld",
+    "previewDescription": "Eerste 5 rijen van {{count}} te importeren records",
+    "importInfo": "Importinformatie",
+    "willProcessRows": "Er worden {{count}} rijen verwerkt",
+    "existingUpdated": "Records met een overeenkomende external_id worden bijgewerkt",
+    "newCreated": "Nieuwe records worden aangemaakt",
+    "startImport": "Import starten",
+    "importInProgress": "Import bezig",
+    "pleaseWait": "Een ogenblik geduld, uw gegevens worden geïmporteerd...",
+    "complete": "voltooid",
+    "importSummary": "Samenvatting van uw importresultaten",
+    "totalProcessed": "Totaal verwerkt",
+    "errorDetails": "Foutdetails",
+    "importFailed": "Import mislukt",
+    "importAnother": "Nog een bestand importeren",
+    "backToStart": "Terug naar begin",
+    "noValidRecords": "Geen geldige records om te importeren",
+    "noValidRecordsDescription": "Los de validatiefouten op en probeer het opnieuw",
+    "entities": {
+      "jobs": {
+        "name": "Orders",
+        "description": "Verkooporders en werkorders"
+      },
+      "parts": {
+        "name": "Onderdelen",
+        "description": "Onderdelen, componenten en samenstellingen"
+      },
+      "operations": {
+        "name": "Bewerkingen",
+        "description": "Productiebewerkingen en routingstappen"
+      },
+      "cells": {
+        "name": "Cellen",
+        "description": "Productiecellen en werkcentra"
+      },
+      "resources": {
+        "name": "Gereedschappen",
+        "description": "Gereedschappen, machines en apparatuur"
+      }
+    }
   }
 }
