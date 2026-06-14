@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 import { format } from "date-fns";
 import {
   Clock3,
@@ -26,7 +26,6 @@ interface OperationCardProps {
   onUpdate: () => void;
   compact?: boolean;
   assignedToMe?: boolean;
-  assignedByName?: string;
 }
 
 /** Left-edge color stripe by status */
@@ -44,7 +43,7 @@ const urgencyLabel: Record<string, string> = {
   soon: "SOON",
 };
 
-export default function OperationCard({
+function OperationCard({
   operation,
   onUpdate,
   compact = false,
@@ -237,3 +236,8 @@ export default function OperationCard({
     </>
   );
 }
+
+// Shallow-memoized: the work queue re-renders on every keystroke in the
+// search box and on every realtime refresh; cards whose props are unchanged
+// (operation reference, stable onUpdate) skip re-rendering entirely.
+export default memo(OperationCard);

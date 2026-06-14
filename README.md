@@ -202,6 +202,11 @@ Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <questio
 
 See [LICENSE](LICENSE) for full terms.
 
+## Contributing & Security
+
+- Want to help? Start with [CONTRIBUTING.md](CONTRIBUTING.md) — translations (NL/DE), bug reports from the shop floor, and code are all welcome.
+- Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY.md).
+
 ## Support
 
 - Issues: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)

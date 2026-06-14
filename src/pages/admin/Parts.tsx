@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -67,6 +68,7 @@ interface PartRow {
 }
 
 export default function Parts() {
+  usePageTitle("navigation.parts");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const profile = useProfile();

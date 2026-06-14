@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -42,6 +43,7 @@ interface Issue {
 }
 
 export default function MyIssues() {
+  usePageTitle("navigation.myIssues");
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();

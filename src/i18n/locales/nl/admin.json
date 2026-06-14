@@ -270,7 +270,9 @@
       "successCreated": "Demonstratiedata succesvol aangemaakt",
       "successCleared": "Demonstratiedata succesvol verwijderd",
       "errorCreate": "Aanmaken demonstratiedata mislukt",
-      "errorClear": "Verwijderen demonstratiedata mislukt"
+      "errorClear": "Verwijderen demonstratiedata mislukt",
+      "confirmClearing": "Verwijderen...",
+      "confirmButton": "Demonstratiedata Verwijderen"
     },
     "accountDeleted": "Account succesvol verwijderd",
     "accountDeleteFailed": "Verwijderen van account mislukt",

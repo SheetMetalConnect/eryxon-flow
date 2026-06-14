@@ -20,20 +20,6 @@ vi.mock("@/hooks/useAuthActions", () => ({
 vi.mock("@/hooks/useNative", () => ({
   useNative: () => useNativeMock(),
 }));
-vi.mock("@/components/auth/TurnstileWidget", () => ({
-  TurnstileWidget: (): null => null,
-  useTurnstile: (): {
-    captchaToken: string | null;
-    setCaptchaToken: ReturnType<typeof vi.fn>;
-    resetKey: number;
-    reset: ReturnType<typeof vi.fn>;
-  } => ({
-    captchaToken: null,
-    setCaptchaToken: vi.fn(),
-    resetKey: 0,
-    reset: vi.fn(),
-  }),
-}));
 vi.mock("@/components/LanguageSwitcher", () => ({
   LanguageSwitcher: () => <div>Language</div>,
 }));

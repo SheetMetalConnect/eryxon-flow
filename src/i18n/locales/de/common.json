@@ -56,7 +56,9 @@
     "noTenantId": "Keine Mandanten-ID",
     "pageNotFound": "Hoppla! Seite nicht gefunden",
     "returnToHome": "Zurück zur Startseite",
-    "dismiss": "Schließen"
+    "dismiss": "Schließen",
+    "stopping": "Wird gestoppt...",
+    "viewDetails": "Details anzeigen"
   },
   "forms": {
     "required": "Dieses Feld ist erforderlich",

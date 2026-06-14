@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
+import { resourceStatusLabel, resourceStatusTextClass } from '@/lib/resource-status';
 
 interface Resource {
   id: string;
@@ -73,34 +74,6 @@ export function OperationResources({ operationId, className }: OperationResource
     return null;
   }
 
-  const getStatusColor = (status?: string | null) => {
-    switch (status) {
-      case 'available':
-        return 'text-emerald-600 dark:text-emerald-400';
-      case 'in_use':
-        return 'text-amber-600 dark:text-amber-400';
-      case 'maintenance':
-        return 'text-red-600 dark:text-red-400';
-      default:
-        return 'text-muted-foreground';
-    }
-  };
-
-  const getStatusLabel = (status?: string | null) => {
-    switch (status) {
-      case 'available':
-        return t('terminal.resources.status.available');
-      case 'in_use':
-        return t('terminal.resources.status.inUse');
-      case 'maintenance':
-        return t('terminal.resources.status.maintenance');
-      case 'retired':
-        return t('terminal.resources.status.retired');
-      default:
-        return status || '';
-    }
-  };
-
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground uppercase tracking-wider font-medium">
@@ -140,9 +113,9 @@ export function OperationResources({ operationId, className }: OperationResource
             {opResource.resource.status && (
               <span className={cn(
                 "text-[9px] font-medium shrink-0",
-                getStatusColor(opResource.resource.status)
+                resourceStatusTextClass(opResource.resource.status)
               )}>
-                {getStatusLabel(opResource.resource.status)}
+                {resourceStatusLabel(t, opResource.resource.status)}
               </span>
             )}
           </div>

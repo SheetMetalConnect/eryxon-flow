@@ -194,14 +194,36 @@ async function startHttp(): Promise<void> {
     return true;
   };
 
-  // Health check endpoint
-  app.get("/health", (_req, res) => {
-    res.json({
-      status: "ok",
+  // Health check endpoint. Probes database connectivity so orchestrators
+  // (Docker healthcheck, uptime monitors) catch a broken Supabase link
+  // instead of reporting a healthy-but-useless server. The probe is a
+  // HEAD-style count on a small always-present table.
+  app.get("/health", async (_req, res) => {
+    let database: "ok" | "error" = "ok";
+    let databaseError: string | undefined;
+    try {
+      const { error } = await supabaseClient
+        .from("tenants")
+        .select("id", { count: "exact", head: true })
+        .limit(1);
+      if (error) {
+        database = "error";
+        databaseError = error.message;
+      }
+    } catch (probeError) {
+      database = "error";
+      databaseError =
+        probeError instanceof Error ? probeError.message : String(probeError);
+    }
+
+    res.status(database === "ok" ? 200 : 503).json({
+      status: database === "ok" ? "ok" : "degraded",
       version: "2.4.0",
       mode: config.mode,
       tools: stats.totalTools,
       transport: "streamable-http",
+      database,
+      ...(databaseError ? { databaseError } : {}),
     });
   });
 

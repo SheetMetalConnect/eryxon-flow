@@ -25,9 +25,16 @@ import {
   MobileRoutes,
 } from "./routes";
 
-import { Auth, AcceptInvitation, ForgotPassword, ResetPassword } from "./pages/auth";
-import { TerminalLogin } from "./pages/operator";
+// Auth is the landing page — keep it eager so first paint never waits on a
+// second chunk. Everything else routes through lazy() so the entry bundle
+// stays small; importing the page barrels here would statically link every
+// operator page into the entry chunk and defeat the route-level splitting.
+import Auth from "./pages/auth/Auth";
 
+const AcceptInvitation = lazy(() => import("./pages/auth/AcceptInvitation"));
+const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const TerminalLogin = lazy(() => import("./pages/operator/TerminalLogin"));
 const OnboardingWizard = lazy(() => import("./components/onboarding").then(m => ({ default: m.OnboardingWizard })));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -64,10 +71,10 @@ function AppRoutes() {
     <Routes>
       {/* Auth routes */}
       <Route path="/auth" element={<Auth />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/operator/login" element={<TerminalLogin />} />
-      <Route path="/accept-invitation/:token" element={<AcceptInvitation />} />
+      <Route path="/forgot-password" element={<LazyRoute><ForgotPassword /></LazyRoute>} />
+      <Route path="/reset-password" element={<LazyRoute><ResetPassword /></LazyRoute>} />
+      <Route path="/operator/login" element={<LazyRoute><TerminalLogin /></LazyRoute>} />
+      <Route path="/accept-invitation/:token" element={<LazyRoute><AcceptInvitation /></LazyRoute>} />
 
       <Route
         path="/onboarding"

@@ -1,4 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
+import { ROUTES } from "@/routes";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export default function BatchDetail() {
   if (!batch) {
     return (
       <div className="max-w-4xl mx-auto p-6">
-        <Button variant="outline" onClick={() => navigate("/admin/batches")}>
+        <Button variant="outline" onClick={() => navigate(ROUTES.ADMIN.BATCHES)}>
           <ArrowLeft className="mr-2 h-4 w-4" /> {t("batches.backToBatches")}
         </Button>
         <p className="mt-4 text-muted-foreground">{t("batches.notFound")}</p>

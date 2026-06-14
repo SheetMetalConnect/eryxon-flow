@@ -33,7 +33,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { formatRelativeTime } from "@/lib/time-utils";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Database } from "@/integrations/supabase/types";
 
@@ -49,6 +51,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
   const [open, setOpen] = React.useState(false);
   const [currentTab, setCurrentTab] = React.useState<"all" | "pinned">("all");
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
 
   const {
     notifications,
@@ -118,19 +121,6 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
     }
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return "Just now";
-    if (diffMins < 60) return `${diffMins}m ago`;
-    if (diffHours < 24) return `${diffHours}h ago`;
-    return `${diffDays}d ago`;
-  };
 
   const getSeverityBadge = (severity: string) => {
     const colors = {
@@ -183,12 +173,12 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
 
         <div className="flex items-center gap-2 mt-1">
           <span className="text-[10px] text-muted-foreground/70">
-            {formatTime(notification.created_at)}
+            {formatRelativeTime(notification.created_at, i18n.language)}
           </span>
           {notification.pinned && (
             <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground bg-white/5 px-1.5 py-0.5 rounded">
               <Pin className="h-2.5 w-2.5" />
-              Pinned
+              {t("notifications.pinnedLabel")}
             </span>
           )}
         </div>
@@ -209,7 +199,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
                   <Circle className="h-2 w-2 fill-primary text-primary" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Mark as read</TooltipContent>
+              <TooltipContent>{t("notifications.markAsRead")}</TooltipContent>
             </Tooltip>
           )}
 
@@ -229,7 +219,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              {notification.pinned ? "Unpin" : "Pin"}
+              {notification.pinned ? t("notifications.unpin") : t("notifications.pin")}
             </TooltipContent>
           </Tooltip>
 
@@ -244,7 +234,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
                 <X className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>Dismiss</TooltipContent>
+            <TooltipContent>{t("notifications.dismiss")}</TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
@@ -263,7 +253,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
           variant="ghost"
           size="icon"
           className={cn("relative h-9 w-9 hover:bg-white/10", className)}
-          aria-label={`${unreadCount} notifications`}
+          aria-label={t("notifications.ariaLabel", { count: unreadCount })}
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -289,10 +279,10 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
         <div className="px-4 py-3 border-b border-white/10">
           <div className="flex items-center justify-between">
             <span className="font-semibold text-sm">
-              Notifications{" "}
+              {t("notifications.center")}{" "}
               {unreadCount > 0 && (
                 <span className="text-muted-foreground">
-                  ({unreadCount} unread)
+                  {t("notifications.unreadCount", { count: unreadCount })}
                 </span>
               )}
             </span>
@@ -309,7 +299,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
                       <CheckCheck className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Mark all as read</TooltipContent>
+                  <TooltipContent>{t("notifications.markAllAsRead")}</TooltipContent>
                 </Tooltip>
               </TooltipProvider>
             )}
@@ -323,10 +313,10 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
           >
             <TabsList className="h-8 w-full bg-white/5">
               <TabsTrigger value="all" className="flex-1 text-xs h-7">
-                All ({notifications.length})
+                {t("notifications.tabAll")} ({notifications.length})
               </TabsTrigger>
               <TabsTrigger value="pinned" className="flex-1 text-xs h-7">
-                Pinned ({pinnedNotifications.length})
+                {t("notifications.pinnedLabel")} ({pinnedNotifications.length})
               </TabsTrigger>
             </TabsList>
           </Tabs>
@@ -338,7 +328,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
             <div className="py-12 text-center">
               <Spinner size="lg" className="mx-auto" />
               <p className="text-sm text-muted-foreground mt-3">
-                Loading notifications...
+                {t("notifications.loadingCenter")}
               </p>
             </div>
           ) : displayNotifications.length === 0 ? (
@@ -346,13 +336,13 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
               <CheckCircle className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
               <p className="text-sm text-muted-foreground">
                 {currentTab === "pinned"
-                  ? "No pinned notifications"
-                  : "You're all caught up!"}
+                  ? t("notifications.emptyPinned")
+                  : t("notifications.caughtUp")}
               </p>
               <p className="text-xs text-muted-foreground/70 mt-1">
                 {currentTab === "pinned"
-                  ? "Pin important notifications to see them here"
-                  : "No new notifications"}
+                  ? t("notifications.pinHint")
+                  : t("notifications.empty")}
               </p>
             </div>
           ) : (
@@ -366,7 +356,7 @@ export const NotificationsCenter: React.FC<NotificationsCenterProps> = ({
         {displayNotifications.length > 0 && (
           <div className="px-4 py-2 border-t border-white/10 text-center">
             <p className="text-[10px] text-muted-foreground/70">
-              Use the pin icon to keep important notifications at the top
+              {t("notifications.footerHint")}
             </p>
           </div>
         )}

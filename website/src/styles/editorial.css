@@ -814,3 +814,39 @@
     block-size: clamp(76px, 24vw, 100px);
   }
 }
+
+/* ── Former inline styles, extracted per the design rule (no style attributes) ── */
+
+.article-avatar--sm {
+  inline-size: 28px;
+  block-size: 28px;
+  font-size: 11px;
+}
+
+.article-hero {
+  inline-size: 100%;
+  border-radius: var(--ery-radius-sm);
+  margin-block: var(--ery-space-6);
+}
+
+.index-head--spaced {
+  margin-block-end: 24px;
+}
+
+.release--flat {
+  border-block-end: none;
+}
+
+.article-body--spaced {
+  margin-block-start: 32px;
+}
+
+.release-roadmap--solid {
+  border-style: solid;
+  margin-block-start: 32px;
+}
+
+.release-source-link {
+  margin-block-start: 20px;
+  font-size: var(--ery-text-sm);
+}

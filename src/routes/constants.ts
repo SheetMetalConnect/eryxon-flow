@@ -29,6 +29,8 @@ export const ROUTES = {
     DASHBOARD: "/admin/dashboard",
     JOBS: "/admin/jobs",
     JOBS_NEW: "/admin/jobs/new",
+    BATCHES: "/admin/batches",
+    BATCHES_NEW: "/admin/batches/new",
     PARTS: "/admin/parts",
     OPERATIONS: "/admin/operations",
     ASSIGNMENTS: "/admin/assignments",

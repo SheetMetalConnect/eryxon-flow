@@ -34,7 +34,21 @@
     "demoDataWipedDesc": "Alle Demodaten wurden erfolgreich gelöscht.",
     "wipeFailed": "Löschen fehlgeschlagen",
     "noActiveClockings": "Keine aktiven Zeiterfassungen",
-    "noActiveClockingsDescription": "Es gibt keine aktiven Zeiterfassungen zum Stoppen."
+    "noActiveClockingsDescription": "Es gibt keine aktiven Zeiterfassungen zum Stoppen.",
+    "startedAt": "Gestartet um",
+    "stopClockingTitle": "Zeiterfassung stoppen",
+    "stopClockingDescription": "Prüfen Sie die aktive Zeiterfassung und stoppen Sie sie bei Bedarf.",
+    "stopClocking": "Zeiterfassung stoppen",
+    "clockingStopped": "Zeiterfassung gestoppt",
+    "clockingStoppedDescription": "Die Zeiterfassung von {{operator}} für {{operation}} wurde gestoppt.",
+    "stopFailed": "Stoppen der Zeiterfassung fehlgeschlagen",
+    "stopAll": "Alle stoppen",
+    "stopAllClockings": "Alle Zeiterfassungen stoppen",
+    "allClockingsStopped": "Alle Zeiterfassungen gestoppt",
+    "allClockingsStoppedDescription": "{{count}} Zeiterfassungen wurden gestoppt.",
+    "stopAllFailed": "Stoppen aller Zeiterfassungen fehlgeschlagen",
+    "pastClosingTimeWarning": "Betriebsschluss wurde überschritten",
+    "pastClosingTimeDescription": "Es sind noch {{count}} Zeiterfassungen nach Betriebsschluss ({{time}}) aktiv. Sie sollten gestoppt werden."
   },
   "settings": {
     "title": "Einstellungen",
@@ -64,12 +78,63 @@
       "successCreated": "Demodaten erfolgreich erstellt",
       "successCleared": "Demodaten erfolgreich gelöscht",
       "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
-      "errorClear": "Löschen der Demodaten fehlgeschlagen"
+      "errorClear": "Löschen der Demodaten fehlgeschlagen",
+      "confirmClearing": "Wird gelöscht...",
+      "confirmButton": "Demodaten Löschen"
     },
     "accountDeleted": "Konto erfolgreich gelöscht",
     "accountDeleteFailed": "Löschen des Kontos fehlgeschlagen",
     "tenantDeleted": "Mandant erfolgreich gelöscht",
-    "tenantDeleteFailed": "Löschen des Mandanten fehlgeschlagen"
+    "tenantDeleteFailed": "Löschen des Mandanten fehlgeschlagen",
+    "gdpr": {
+      "title": "Datenlöschung (DSGVO)",
+      "description": "Löschen Sie dauerhaft Ihr Konto oder alle Daten Ihrer gesamten Organisation",
+      "deleteAccount": {
+        "title": "Mein Konto löschen",
+        "description": "Löschen Sie dauerhaft Ihr Benutzerkonto und alle zugehörigen personenbezogenen Daten.",
+        "warning": "Warnung",
+        "warningMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Ihr Konto, Ihre Zeiterfassungen, Zuweisungen und Probleme werden dauerhaft gelöscht.",
+        "button": "Mein Konto löschen",
+        "confirmTitle": "Ihr Konto löschen?",
+        "confirmMessage": "Dies löscht dauerhaft Ihr Konto und alle zugehörigen Daten:",
+        "confirmItems": {
+          "profile": "Ihr Benutzerprofil",
+          "timeEntries": "Alle von Ihnen erstellten Zeiterfassungen",
+          "assignments": "Alle Zuweisungen an Sie",
+          "issues": "Alle von Ihnen gemeldeten Probleme"
+        },
+        "confirmWarning": "Diese Aktion kann nicht rückgängig gemacht werden",
+        "confirmDescription": "Sie werden sofort abgemeldet und können Ihr Konto nicht wiederherstellen.",
+        "confirmButton": "Mein Konto löschen",
+        "deleting": "Wird gelöscht..."
+      },
+      "deleteTenant": {
+        "title": "Gesamte Organisation löschen",
+        "description": "Löschen Sie dauerhaft Ihre Organisation und ALLE Daten aller Benutzer.",
+        "warningTitle": "Kritische Warnung",
+        "warningMessage": "Dies löscht ALLE Aufträge, Teile, Arbeitsgänge, Benutzer und Daten Ihrer gesamten Organisation. Diese Aktion betrifft ALLE Benutzer Ihrer Organisation und kann NICHT rückgängig gemacht werden.",
+        "button": "Gesamte Organisation löschen",
+        "confirmTitle": "Gesamte Organisation löschen?",
+        "confirmMessage": "Dies löscht dauerhaft Ihre Organisation und ALLE Daten:",
+        "confirmItems": {
+          "users": "Alle Benutzerkonten und Profile",
+          "jobs": "Alle Aufträge, Teile und Arbeitsgänge",
+          "timeEntries": "Alle Zeiterfassungen und Zuweisungen",
+          "issues": "Alle Probleme und Produktionsdaten",
+          "config": "Alle Fertigungszellen, Materialien und Betriebsmittel",
+          "api": "Alle API-Schlüssel und Webhooks",
+          "all": "Alles Weitere in Ihrer Organisation"
+        },
+        "confirmWarningTitle": "KRITISCH: Dies betrifft ALLE Benutzer",
+        "confirmWarningMessage": "Dies löscht die Daten ALLER Benutzer Ihrer Organisation. Alle verlieren den Zugriff. Diese Aktion ist ENDGÜLTIG und kann NICHT rückgängig gemacht werden.",
+        "confirmButton": "Organisation löschen",
+        "deleting": "Wird gelöscht..."
+      },
+      "exportFirst": "Vor dem Löschen können Sie Ihre Daten exportieren. Nutzen Sie dazu die",
+      "dataExportLink": "Datenexport-Funktion",
+      "privacyPolicyLink": "Datenschutzerklärung",
+      "seePolicy": "Bei Fragen zur Datenlöschung lesen Sie bitte unsere"
+    }
   },
   "users": {
     "title": "Benutzerverwaltung",
@@ -427,7 +492,45 @@
     "externalServiceNote": "Diese Funktion erfordert einen externen Dienst. Siehe Self-Hosting-Anleitung für Bereitstellungsanweisungen."
   },
   "organizationSettings": {
-    "failedToLoad": "Organisationsdetails konnten nicht geladen werden"
+    "failedToLoad": "Organisationsdetails konnten nicht geladen werden",
+    "title": "Organisationseinstellungen",
+    "subtitle": "Verwalten Sie Ihr Organisationsprofil und Ihre Einstellungen",
+    "companyInformation": "Unternehmensinformationen",
+    "updateOrgDetails": "Aktualisieren Sie Ihre Organisationsdetails",
+    "organizationName": "Organisationsname",
+    "companyName": "Firmenname",
+    "timezone": "Zeitzone",
+    "timezoneDescription": "Wird für Terminierung und Fälligkeitsdaten verwendet",
+    "billingEmail": "Rechnungs-E-Mail",
+    "saveChanges": "Änderungen speichern",
+    "settingsUpdated": "Organisationseinstellungen aktualisiert",
+    "factoryHours": {
+      "title": "Betriebszeiten",
+      "description": "Konfigurieren Sie Ihre Betriebszeiten und die Einstellungen für die automatische Zeiterfassung",
+      "openingTime": "Betriebsbeginn",
+      "closingTime": "Betriebsschluss",
+      "autoStopTracking": "Zeiterfassung automatisch stoppen",
+      "autoStopDescription": "Alle aktiven Zeiterfassungen bei Betriebsschluss automatisch stoppen",
+      "autoStopWarning": "Aktive Zeiterfassungen werden täglich um {{time}} automatisch gestoppt"
+    },
+    "planning": {
+      "title": "Planungsintegration",
+      "description": "Verbinden Sie ein externes Planungs-/Terminierungssystem, um Fertigungsaufträge zu synchronisieren",
+      "adapter": "Planungssystem",
+      "adapterNone": "Keines (deaktiviert)",
+      "connectionUrl": "Verbindungs-URL",
+      "username": "Benutzername",
+      "password": "Passwort",
+      "syncInterval": "Synchronisationsintervall",
+      "minutes": "Minuten",
+      "testConnection": "Verbindung testen",
+      "save": "Planungskonfiguration speichern",
+      "saved": "Planungskonfiguration gespeichert",
+      "urlRequired": "Bitte geben Sie eine Verbindungs-URL ein",
+      "noAdapter": "Kein Adapter ausgewählt",
+      "connectionSuccess": "Verbindung erfolgreich",
+      "connectionFailed": "Verbindung fehlgeschlagen"
+    }
   },
   "stuckTimeEntries": {
     "stopped": "Zeiterfassung erfolgreich gestoppt"

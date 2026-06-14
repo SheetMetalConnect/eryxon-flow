@@ -45,7 +45,7 @@ const socialImagePath = post.id === "why-eryxon-flow-is-now-apache-2-0"
 const socialImageUrl = socialImagePath ? `${siteUrl}${socialImagePath}` : `${siteUrl}/social/og-default.png`;
 ---
 
-<EditorialLayout title={`${title} — Eryxon Flow`} description={description}>
+<EditorialLayout title={`${title} — Eryxon Flow`} description={description} ogImage={null}>
   <Fragment slot="head">
     <meta property="og:type" content="article" />
     <meta property="og:title" content={title} />
@@ -68,7 +68,7 @@ const socialImageUrl = socialImagePath ? `${siteUrl}${socialImagePath}` : `${sit
         <h1 class="article-h1">{title}</h1>
         <p class="article-lead">{description}</p>
       {post.data.heroImage && (
-        <img class="article-hero" src={post.data.heroImage} alt={title} loading="eager" style="width:100%;border-radius:8px;margin:1.5rem 0;" />
+        <img class="article-hero" src={post.data.heroImage} alt={title} loading="eager" />
       )}
         <div class="article-meta">
           <span class="article-author">

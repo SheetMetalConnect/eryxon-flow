@@ -3,6 +3,7 @@ import { useAuthActions } from "@/hooks/useAuthActions";
 import { useLocation } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { OperatorLayout } from "@/components/operator/OperatorLayout";
+import { OfflineBanner } from "@/components/mobile/OfflineBanner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -22,13 +23,20 @@ export default function Layout({ children }: LayoutProps) {
 
   const isOperatorPath = location.pathname.startsWith("/operator/");
 
-  if (isOperatorPath) {
-    return <OperatorLayout showBackToAdmin={profile.role === "admin"}>{children}</OperatorLayout>;
-  }
+  const layout = isOperatorPath ? (
+    <OperatorLayout showBackToAdmin={profile.role === "admin"}>{children}</OperatorLayout>
+  ) : profile.role === "admin" ? (
+    <AdminLayout>{children}</AdminLayout>
+  ) : (
+    <OperatorLayout>{children}</OperatorLayout>
+  );
 
-  if (profile.role === "admin") {
-    return <AdminLayout>{children}</AdminLayout>;
-  }
-
-  return <OperatorLayout>{children}</OperatorLayout>;
+  // Shop-floor WiFi drops mid-shift; desktop terminals need the same
+  // unambiguous "writes will fail" signal the mobile shell already shows.
+  return (
+    <>
+      <OfflineBanner />
+      {layout}
+    </>
+  );
 }

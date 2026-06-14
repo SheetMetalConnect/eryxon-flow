@@ -23,9 +23,15 @@ interface Props {
   description?: string;
   /** Override the auto-detected locale (defaults to the locale parsed from the URL). */
   locale?: (typeof SUPPORTED_LOCALES)[number];
+  /**
+   * Social preview image path; defaults to the brand card so shares never
+   * render bare. Pass `null` when the page supplies its own og/twitter tags
+   * through the head slot (e.g. blog articles), to avoid duplicate tags.
+   */
+  ogImage?: string | null;
 }
 
-const { title, description = "", locale: localeProp } = Astro.props;
+const { title, description = "", locale: localeProp, ogImage = "/social/og-default.png" } = Astro.props;
 
 const pathname = Astro.url.pathname;
 const locale = localeProp ?? localeFromPath(pathname);
@@ -57,6 +63,19 @@ const alternates = SUPPORTED_LOCALES.map((lang) => ({
       alternates
         .filter((a) => a.lang !== locale)
         .map(({ lang }) => <meta property="og:locale:alternate" content={lang} />)
+    }
+    {
+      ogImage && (
+        <>
+          <meta property="og:title" content={title} />
+          {description && <meta property="og:description" content={description} />}
+          <meta property="og:type" content="website" />
+          <meta property="og:url" content={canonical} />
+          <meta property="og:image" content={`${siteUrl}${ogImage}`} />
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:image" content={`${siteUrl}${ogImage}`} />
+        </>
+      )
     }
 
     <!-- Inter (sans) + JetBrains Mono (mono), per canonical UX spec -->

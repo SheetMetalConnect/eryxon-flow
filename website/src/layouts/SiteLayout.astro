@@ -17,12 +17,13 @@ interface Props {
   description?: string;
   locale?: Locale;
   activeNav?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | "roadmap" | null;
+  ogImage?: string | null;
 }
 
-const { title, description, locale = "en", activeNav = null } = Astro.props;
+const { title, description, locale = "en", activeNav = null, ogImage } = Astro.props;
 ---
 
-<MarketingLayout title={title} description={description}>
+<MarketingLayout title={title} description={description} ogImage={ogImage}>
   <slot name="head" slot="head" />
   <SiteHeader slot="header" locale={locale} active={activeNav} />
   <slot />

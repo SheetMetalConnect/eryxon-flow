@@ -1,3 +1,4 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -8,15 +9,16 @@ import {
   ChevronRight,
   Clock3,
   Flame,
-  Loader2,
   Pause,
   Play,
   Search,
   ScanLine,
   X,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { useProfile } from "@/hooks/useProfile";
+import { useDebouncedCallback } from "@/hooks/useDebounce";
 import { useOperator } from "@/contexts/OperatorContext";
 import { useNative } from "@/hooks/useNative";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -62,6 +64,7 @@ const URGENCY_LABEL: Record<DueUrgency, string> = {
  * gestures (Start / Pause / Issue) so the primary tasks never need a modal.
  */
 export default function MobileQueue() {
+  usePageTitle("navigation.workQueue");
   const { t } = useTranslation();
   const navigate = useNavigate();
   const profile = useProfile();
@@ -97,6 +100,12 @@ export default function MobileQueue() {
     }
   }, [profile?.tenant_id, t]);
 
+  // Realtime delivers one event per touched row; coalesce bursts into a
+  // single refetch so multi-row actions don't trigger a refetch storm.
+  const scheduleRealtimeRefresh = useDebouncedCallback(() => {
+    void load();
+  }, 250);
+
   useEffect(() => {
     let cancelled = false;
     queueMicrotask(() => {
@@ -113,7 +122,7 @@ export default function MobileQueue() {
           table: "operations",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => void load(),
+        scheduleRealtimeRefresh,
       )
       .on(
         "postgres_changes",
@@ -123,14 +132,14 @@ export default function MobileQueue() {
           table: "time_entries",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => void load(),
+        scheduleRealtimeRefresh,
       )
       .subscribe();
     return () => {
       cancelled = true;
       void supabase.removeChannel(channel);
     };
-  }, [load, profile?.tenant_id]);
+  }, [load, profile?.tenant_id, scheduleRealtimeRefresh]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -298,8 +307,14 @@ export default function MobileQueue() {
         className="flex-1 px-3 pb-3"
       >
         {loading ? (
-          <div className="flex h-40 items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <div
+            className="flex flex-col gap-2 pt-1"
+            aria-busy="true"
+            aria-label={t("workQueue.loading", "Loading work queue")}
+          >
+            {Array.from({ length: 6 }).map((_, row) => (
+              <Skeleton key={row} className="h-20 w-full rounded-lg" />
+            ))}
           </div>
         ) : filtered.length === 0 ? (
           <EmptyQueue
