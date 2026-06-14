@@ -13,7 +13,10 @@ import { checkRateLimit, RateLimitResult } from "./rate-limiter.ts";
 import { getRateLimitConfig } from "./plan-limits.ts";
 import { constantTimeCompare } from "./security.ts";
 
-// Custom error classes
+// Custom error classes. These are the canonical Unauthorized/Forbidden classes;
+// validation/errorHandler.ts imports them so mapError() recognizes them via
+// instanceof and maps them to 401/403 (issue #908). They must live here (not be
+// duplicated in errorHandler.ts) so the class thrown is the class checked.
 export class UnauthorizedError extends Error {
   constructor(message: string) {
     super(message);

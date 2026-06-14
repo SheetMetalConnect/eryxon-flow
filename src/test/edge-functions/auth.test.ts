@@ -13,11 +13,13 @@
 
 import { describe, it, expect, vi } from 'vitest';
 
-// Mock Deno.env (required by transitive imports through cors.ts)
-vi.stubGlobal('Deno', {
-  env: {
-    get: (key: string) => undefined,
-  },
+// Deno.env is read at module-eval time by cors.ts (pulled in transitively now
+// that auth.ts re-exports from validation/errorHandler.ts). vi.hoisted runs
+// before the import graph evaluates, so Deno exists in time.
+vi.hoisted(() => {
+  (globalThis as unknown as { Deno: unknown }).Deno = {
+    env: { get: (_key: string) => undefined },
+  };
 });
 
 // Mock the cache/rate-limiter dependencies that auth.ts imports
