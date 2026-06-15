@@ -8,8 +8,13 @@ import {
   ApiSuccessResponse,
   ValidationResult,
 } from "./types.ts";
-import { RateLimitError } from "../auth.ts";
+import { RateLimitError, UnauthorizedError, ForbiddenError } from "../auth.ts";
 import { getRateLimitHeaders } from "../rate-limiter.ts";
+
+// Re-export so existing importers of these from errorHandler.ts keep working.
+// auth.ts is the single source of truth for these classes, so mapError() below
+// checks the exact class that auth throws (issue #908).
+export { UnauthorizedError, ForbiddenError };
 
 /**
  * Custom error classes
@@ -41,20 +46,6 @@ export class ConflictError extends Error {
   ) {
     super(`${resource} with ${field} "${value}" already exists`);
     this.name = "ConflictError";
-  }
-}
-
-export class UnauthorizedError extends Error {
-  constructor(message: string = "Invalid or missing API key") {
-    super(message);
-    this.name = "UnauthorizedError";
-  }
-}
-
-export class ForbiddenError extends Error {
-  constructor(message: string = "Access denied") {
-    super(message);
-    this.name = "ForbiddenError";
   }
 }
 
