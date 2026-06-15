@@ -40,6 +40,12 @@ file_size_limit = "50MiB"
 [functions.api-assignments]
 verify_jwt = false
 
+[functions.api-batches]
+verify_jwt = false
+
+[functions.api-batch-lifecycle]
+verify_jwt = false
+
 [functions.api-cells]
 verify_jwt = false
 
