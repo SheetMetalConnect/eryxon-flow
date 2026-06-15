@@ -6,24 +6,17 @@
  * - POST /stop?id=xxx  - Stop a batch (distributes time, sets completed)
  * - POST /add-operations?id=xxx - Add operations to a batch
  *
- * Authentication: API key in Authorization header
+ * Routed through `serveApi` (createApiHandler) like the other lifecycle
+ * endpoints, so auth + tenant context, CORS, structured logging and error
+ * mapping are handled by the wrapper. (Previously used a raw `Deno.serve`
+ * handler that also had a duplicate `const error` declaration in the
+ * add-operations block — a parse error that boot-failed the function. ERY/#912.)
+ *
+ * Authentication: API key in Authorization header ("Bearer ery_live_xxx").
  */
 
-import { createClient } from "@supabase/supabase-js";
-import { authenticateAndSetContext } from "@shared/auth.ts";
-import { corsHeaders } from "@shared/cors.ts";
-import { handleOptions, handleError } from "@shared/validation/errorHandler.ts";
-
-function jsonResponse(data: object, status = 200) {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-function errorResponse(code: string, message: string, status = 400) {
-  return jsonResponse({ success: false, error: { code, message } }, status);
-}
+import { serveApi, errorResponse, successResponse } from "@shared/handler.ts";
+import { REQUEST_ID_HEADER } from "@shared/observability.ts";
 
 function normalizeOperationIds(value: unknown): { ids: string[]; error?: string } {
   if (!Array.isArray(value) || value.length === 0) {
@@ -90,12 +83,18 @@ async function validateOperationsUnassigned(
   return null;
 }
 
-async function triggerWebhook(tenantId: string, eventType: string, data: object) {
+async function triggerWebhook(
+  tenantId: string,
+  eventType: string,
+  data: object,
+  requestId: string,
+) {
   try {
     await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/webhook-dispatch`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        [REQUEST_ID_HEADER]: requestId,
         Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY")}`,
       },
       body: JSON.stringify({ tenant_id: tenantId, event_type: eventType, data }),
@@ -105,22 +104,16 @@ async function triggerWebhook(tenantId: string, eventType: string, data: object)
   }
 }
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") return handleOptions();
+serveApi(
+  async (req, ctx) => {
+    const { supabase, tenantId, url, requestId } = ctx;
 
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ""
-  );
-
-  try {
-    const { tenantId } = await authenticateAndSetContext(req, supabase);
-
-    const url = new URL(req.url);
     const batchId = url.searchParams.get("id");
     const action = url.pathname.split("/").pop(); // start, stop, add-operations
 
-    if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
+    if (!batchId) {
+      return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)", 400);
+    }
 
     const body = await req.json().catch(() => ({}));
 
@@ -132,12 +125,14 @@ Deno.serve(async (req) => {
       .eq("tenant_id", tenantId)
       .single();
 
-    if (batchErr || !batch) return errorResponse("NOT_FOUND", "Batch not found", 404);
+    if (batchErr || !batch) {
+      return errorResponse("NOT_FOUND", "Batch not found", 404);
+    }
 
     // ── Route to action ────────────────────────────────────────────
     if (action === "start") {
       if (batch.status !== "draft" && batch.status !== "ready") {
-        return errorResponse("INVALID_STATE", `Cannot start batch in '${batch.status}' status`);
+        return errorResponse("INVALID_STATE", `Cannot start batch in '${batch.status}' status`, 400);
       }
 
       // Get batch operations (batch already tenant-verified above)
@@ -148,19 +143,19 @@ Deno.serve(async (req) => {
         .eq("tenant_id", tenantId);
 
       if (!batchOps || batchOps.length === 0) {
-        return errorResponse("VALIDATION_ERROR", "Cannot start batch with no operations");
+        return errorResponse("VALIDATION_ERROR", "Cannot start batch with no operations", 400);
       }
 
       const opIds = batchOps.map((bo: any) => bo.operation_id);
       const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
-      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
+      if (operationError) return errorResponse("VALIDATION_ERROR", operationError, 400);
 
       const now = new Date().toISOString();
       // operator_id — required for manual starts, optional for machine-reported
       const operatorId = body.operator_id || null;
 
-      // Create time entries only if an operator is specified
-      // Machine-reported starts skip time tracking (CAD/CAM integration)
+      // Create time entries only if an operator is specified.
+      // Machine-reported starts skip time tracking (CAD/CAM integration).
       if (operatorId) {
         const timeEntries = opIds.map((opId: string) => ({
           tenant_id: tenantId,
@@ -193,17 +188,19 @@ Deno.serve(async (req) => {
         batch_number: batch.batch_number,
         operations: opIds.length,
         started_at: now,
-      });
+      }, requestId);
 
-      return jsonResponse({
-        success: true,
-        data: { batch_id: batchId, status: "in_progress", operations_started: opIds.length, started_at: now },
+      return successResponse({
+        batch_id: batchId,
+        status: "in_progress",
+        operations_started: opIds.length,
+        started_at: now,
       });
     }
 
     if (action === "stop") {
       if (batch.status !== "in_progress") {
-        return errorResponse("INVALID_STATE", `Cannot stop batch in '${batch.status}' status`);
+        return errorResponse("INVALID_STATE", `Cannot stop batch in '${batch.status}' status`, 400);
       }
 
       // Get operations with estimated_time for weighted distribution
@@ -214,12 +211,12 @@ Deno.serve(async (req) => {
         .eq("tenant_id", tenantId);
 
       if (!batchOps || batchOps.length === 0) {
-        return errorResponse("VALIDATION_ERROR", "No operations in batch");
+        return errorResponse("VALIDATION_ERROR", "No operations in batch", 400);
       }
 
       const opIds = batchOps.map((bo: any) => bo.operation_id);
       const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
-      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
+      if (operationError) return errorResponse("VALIDATION_ERROR", operationError, 400);
 
       // Find active time entries
       const { data: activeEntries } = await supabase
@@ -315,33 +312,30 @@ Deno.serve(async (req) => {
         batch_number: batch.batch_number,
         total_minutes: totalMinutes,
         distribution: dist,
-      });
+      }, requestId);
 
-      return jsonResponse({
-        success: true,
-        data: {
-          batch_id: batchId,
-          status: "completed",
-          total_minutes: totalMinutes,
-          distribution_method: distributionMethod,
-          operations: dist,
-        },
+      return successResponse({
+        batch_id: batchId,
+        status: "completed",
+        total_minutes: totalMinutes,
+        distribution_method: distributionMethod,
+        operations: dist,
       });
     }
 
     if (action === "add-operations") {
       if (batch.status !== "draft" && batch.status !== "ready") {
-        return errorResponse("INVALID_STATE", `Cannot modify operations in '${batch.status}' status`);
+        return errorResponse("INVALID_STATE", `Cannot modify operations in '${batch.status}' status`, 400);
       }
 
-      const { ids: opIds, error } = normalizeOperationIds(body.operation_ids);
-      if (error) return errorResponse("VALIDATION_ERROR", error);
+      const { ids: opIds, error: idsError } = normalizeOperationIds(body.operation_ids);
+      if (idsError) return errorResponse("VALIDATION_ERROR", idsError, 400);
 
       const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
-      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
+      if (operationError) return errorResponse("VALIDATION_ERROR", operationError, 400);
 
       const assignmentError = await validateOperationsUnassigned(supabase, tenantId, opIds);
-      if (assignmentError) return errorResponse("VALIDATION_ERROR", assignmentError);
+      if (assignmentError) return errorResponse("VALIDATION_ERROR", assignmentError, 400);
 
       const { data: existing } = await supabase
         .from("batch_operations")
@@ -360,14 +354,13 @@ Deno.serve(async (req) => {
         sequence_in_batch: startSeq + i,
       }));
 
-      const { error } = await supabase.from("batch_operations").insert(rows);
-      if (error) return errorResponse("INSERT_ERROR", error.message, 500);
+      const { error: insertError } = await supabase.from("batch_operations").insert(rows);
+      if (insertError) return errorResponse("INSERT_ERROR", insertError.message, 500);
 
-      return jsonResponse({ success: true, data: { batch_id: batchId, operations_added: opIds.length } });
+      return successResponse({ batch_id: batchId, operations_added: opIds.length });
     }
 
     return errorResponse("NOT_FOUND", `Unknown action: ${action}`, 404);
-  } catch (error) {
-    return handleError(error);
-  }
-});
+  },
+  { methods: ["POST", "OPTIONS"] },
+);

@@ -24,6 +24,7 @@ native iOS and Android apps are still in development and have not been released.
 - **`api-erp-sync` `/status` no longer 500s**: created the `sync_imports` table (defined in the baseline schema but missing on some projects) so sync history/status queries succeed.
 - **`api-cad-proxy` restored**: added the missing `_shared/private-storage.ts` signed-URL helper (and the matching `@/lib/privateObjectUrl` type) so the function deploys and runs. With no CAD backend configured it returns a clean "CAD proxy backend not configured" message instead of failing to load.
 - **`api-batches` / `api-batch-lifecycle` JWT gate**: pinned `verify_jwt = false` in `config.toml` so deploys keep API-key auth (a redeploy had defaulted them to gateway JWT, rejecting valid keys with `401`).
+- **`api-batch-lifecycle` boot failure (503)**: the function had a duplicate `const error` declaration in the `add-operations` block (a parse error) and used the old raw `Deno.serve` pattern, so it failed to start. Migrated it to the standard `serveApi` wrapper (auth/CORS/logging/error mapping handled centrally) like the other lifecycle endpoints; it now boots and responds normally.
 
 ### Added
 
