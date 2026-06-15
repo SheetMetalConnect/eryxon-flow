@@ -20,6 +20,10 @@ native iOS and Android apps are still in development and have not been released.
 ### Fixed
 
 - Sign-in / sign-up reliability: removed the unreliable captcha widget from the auth forms, fixed a post-login loading hang for accounts whose active tenant was misconfigured, and made activity-log audit triggers non-fatal so they can never block login or user management. Fixed an unreadable (low-contrast) auth notification.
+- **API error statuses corrected**: invalid/missing API keys now return `401` instead of `500` (duplicate error classes meant the mapper didn't recognise auth errors); `POST /api-webhooks` with a missing required field now returns a `422` validation error instead of a `500` NOT NULL crash.
+- **`api-erp-sync` `/status` no longer 500s**: created the `sync_imports` table (defined in the baseline schema but missing on some projects) so sync history/status queries succeed.
+- **`api-cad-proxy` restored**: added the missing `_shared/private-storage.ts` signed-URL helper (and the matching `@/lib/privateObjectUrl` type) so the function deploys and runs. With no CAD backend configured it returns a clean "CAD proxy backend not configured" message instead of failing to load.
+- **`api-batches` / `api-batch-lifecycle` JWT gate**: pinned `verify_jwt = false` in `config.toml` so deploys keep API-key auth (a redeploy had defaulted them to gateway JWT, rejecting valid keys with `401`).
 
 ### Added
 

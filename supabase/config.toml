@@ -46,6 +46,9 @@ verify_jwt = false
 [functions.api-batch-lifecycle]
 verify_jwt = false
 
+[functions.api-cad-proxy]
+verify_jwt = false
+
 [functions.api-cells]
 verify_jwt = false
 
