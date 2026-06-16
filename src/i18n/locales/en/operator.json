@@ -42,8 +42,38 @@
       "material": "Material",
       "quantity": "Qty",
       "hours": "Hours",
+      "plannedStart": "Start",
       "dueDate": "Due Date",
-      "files": "Files"
+      "files": "Files",
+      "backlogStatus": "Status"
+    },
+    "encoding": {
+      "status": {
+        "active": "Active",
+        "pending": "Pending",
+        "expected": "Expected",
+        "done": "Done",
+        "blocked": "Blocked"
+      },
+      "type": {
+        "scan": "Scan",
+        "cut": "Cut",
+        "bend": "Bend",
+        "weld": "Weld",
+        "assembly": "Assembly",
+        "qc": "QC"
+      },
+      "priority": {
+        "rush": "Rush"
+      }
+    },
+    "instructions": {
+      "title": "Cell instructions",
+      "stepHighlights": "Step highlights",
+      "viewSteps": "View steps",
+      "fallbackHint": "Use routing steps as the fallback operator guide.",
+      "missingTitle": "Instructions missing",
+      "missingBody": "No operator instructions are attached to this cell yet. Review routing steps before you start."
     },
     "inProcess": "In Process",
     "inBuffer": "In Buffer",
@@ -91,6 +121,74 @@
       "unknown": "Unknown",
       "finalStep": "Final step",
       "cannotProceed": "Cannot proceed - next cell at capacity"
+    },
+    "batchFlow": {
+      "title": "Batch {{batchNumber}} detected",
+      "description": "This operation belongs to batch {{batchNumber}}. Choose whether to run this operation alone or process the full batch.",
+      "descriptionWithSheet": "This operation belongs to batch {{batchNumber}} on sheet {{sheetNumber}}. Choose whether to run this operation alone or process the full batch.",
+      "members": "{{count}} members",
+      "ready": "{{count}} ready",
+      "completed": "{{count}} completed",
+      "active": "{{count}} active",
+      "singleAction": "Scan this operation only",
+      "batchAction": "Scan full batch",
+      "batchRunning": "Batch flow active",
+      "chooseMode": "Choose single operation or full batch before starting.",
+      "startBatch": "Start batch",
+      "stopBatch": "Stop batch",
+      "batchStarted": "Started batch flow for {{count}} operations",
+      "batchStopped": "Stopped batch flow for {{count}} operations",
+      "unavailable": {
+        "closed": "This batch is already closed, so full-batch scanning is unavailable.",
+        "partial": "Some batch members already started or finished. Full-batch scanning is disabled to avoid partial batch conflicts.",
+        "active_elsewhere": "Another operator is already active on part of this batch. Finish or stop that work before running the full batch.",
+        "completed_members": "Some batch members are already completed. Continue with a single operation instead."
+      }
+    },
+    "scanner": {
+      "success": "Scanned {{token}} and selected {{operation}}.",
+      "errors": {
+        "no_match": "Scanned {{token}}, but no matching operation is available in this tenant.",
+        "duplicate_match": "Scanned {{token}}, but it matches {{count}} operations. Use a more specific token.",
+        "closed": "Scanned {{token}}, but {{operation}} is already closed or completed.",
+        "active_by_other_operator": "Scanned {{token}}, but {{operation}} is already active for {{operator}}."
+      }
+    },
+    "workModes": {
+      "title": "Operator state",
+      "description": "Keep setup/prep separate from production and show what can start right now.",
+      "workingHoursActive": "Working hours active",
+      "outsideWorkingHours": "Outside working hours",
+      "modes": {
+        "notWorking": "Not working",
+        "setup": "Setup / prep",
+        "production": "Production"
+      },
+      "actions": {
+        "startSetup": "Start setup",
+        "startProduction": "Start production"
+      },
+      "summary": {
+        "readyForSetup": "{{count}} setup-ready",
+        "readyForProduction": "{{count}} production-ready",
+        "blockedSetup": "{{count}} blocked by setup",
+        "blockedWorkingHours": "{{count}} blocked by hours"
+      },
+      "readiness": {
+        "not_working": "Not working",
+        "blocked_working_hours": "Blocked by working hours",
+        "blocked_setup": "Setup required first",
+        "ready_for_setup": "Ready for setup",
+        "ready_for_production": "Ready for production",
+        "in_setup": "Preparing now",
+        "in_production": "Producing now"
+      },
+      "errors": {
+        "selectMode": "Select setup/prep or production before starting work.",
+        "outsideWorkingHours": "This tenant only allows terminal work during configured working hours.",
+        "setupRequired": "Production is blocked until setup/prep has been recorded for this operation.",
+        "setupDisabled": "Setup/prep mode is disabled for this tenant."
+      }
     }
   },
   "sessionTracking": {
@@ -153,9 +251,12 @@
     "authRequiredDesc": "Please log in with your terminal account to access the shop floor.",
     "goToLogin": "Go to Login",
     "currentOperator": "Current Operator",
-    "continueAs": "Continue as",
+    "reverifyAs": "Re-verify as",
     "switchOperator": "Switch Operator",
     "switchToAnother": "Switch to Another Operator",
+    "reverifyHint": "Re-enter the current operator PIN to unlock this shared device",
+    "idleTimeoutLocked": "This shared terminal locked after inactivity. Re-enter the operator PIN to continue.",
+    "sessionExpiredLocked": "This shared terminal requires operator re-verification before work can continue.",
     "accountLocked": "Account Temporarily Locked",
     "tryAgainIn": "Try again in {{minutes}} minute(s)",
     "attemptsRemaining": "{{count}} attempt(s) remaining"

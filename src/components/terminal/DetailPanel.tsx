@@ -20,7 +20,6 @@ import {
   ChevronDown,
   ChevronRight,
   PackageCheck,
-  Zap,
   Layers3,
 } from "lucide-react";
 import { CncProgramQrCode } from "./CncProgramQrCode";
@@ -40,6 +39,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { IconDisplay } from "@/components/ui/icon-picker";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
+import {
+  getTerminalOperationType,
+  TerminalEncodingBadges,
+  TerminalInstructionFallback,
+} from "./terminalEncoding";
 
 interface Substep {
   id: string;
@@ -56,6 +60,9 @@ interface DetailPanelProps {
   onStart?: () => void;
   onPause?: () => void;
   onComplete?: () => void;
+  startActionLabel?: string;
+  pauseActionLabel?: string;
+  showCompleteActionOverride?: boolean;
   stepUrl?: string | null;
   pdfUrl?: string | null;
   pmiData?: PMIData | null;
@@ -71,6 +78,9 @@ export function DetailPanel({
   onStart,
   onPause,
   onComplete,
+  startActionLabel,
+  pauseActionLabel,
+  showCompleteActionOverride,
   stepUrl,
   pdfUrl,
   pmiData,
@@ -96,6 +106,11 @@ export function DetailPanel({
   );
   const profile = useProfile();
   const defaultTab: ViewerTab = job.hasModel ? "3d" : job.hasPdf ? "pdf" : "ops";
+  const [activeTab, setActiveTab] = useState<ViewerTab>(defaultTab);
+
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab, job.id]);
 
   useEffect(() => {
     const fetchSubsteps = async () => {
@@ -215,7 +230,8 @@ export function DetailPanel({
   }, [job.isCurrentUserClocked, job.status, t]);
 
   const showCompleteAction =
-    job.status === "in_progress" || job.isCurrentUserClocked;
+    showCompleteActionOverride ??
+    (job.status === "in_progress" || job.isCurrentUserClocked);
   const completeDisabled =
     Boolean(job.activeTimeEntryId) || isBlockedByCapacity;
   const completeTitle = job.activeTimeEntryId
@@ -229,6 +245,18 @@ export function DetailPanel({
           "Cannot complete because the next cell is at capacity.",
         )
       : t("terminal.completeOperation", "Complete operation");
+
+  const currentOperationSubsteps = substepsByOperation[job.operationId] || [];
+  const currentOperationInstructionSteps = currentOperationSubsteps.filter((substep) =>
+    Boolean(substep.notes?.trim()),
+  );
+  const instructionPreview = job.notes?.trim() || currentOperationInstructionSteps[0]?.notes?.trim() || null;
+  const hasInstructionFallback = !instructionPreview && currentOperationInstructionSteps.length === 0;
+  const operationType = getTerminalOperationType(job);
+  const viewSteps = () => {
+    setActiveTab("ops");
+    setExpandedOperations((prev) => new Set(prev).add(job.operationId));
+  };
 
   const renderOperations = () => {
     if (operations.length === 0) {
@@ -362,9 +390,6 @@ export function DetailPanel({
       {/* ── Minimal header: just identity + status (table already shows the rest) ── */}
       <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
         <div className="flex min-w-0 items-center gap-2">
-          {job.isBulletCard ? (
-            <Zap className="h-4 w-4 shrink-0 text-destructive" />
-          ) : null}
           <h2 className="truncate font-mono text-sm font-semibold text-foreground">
             {String(job.jobCode ?? "")}
           </h2>
@@ -372,22 +397,92 @@ export function DetailPanel({
             {String(job.description ?? "")}
           </span>
         </div>
-        <Badge
-          variant="outline"
-          className={cn("shrink-0 rounded-full text-[10px]", statusBadge.className)}
-        >
-          {statusBadge.label}
-        </Badge>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+          {job.modeSummary ? (
+            <Badge variant="outline" className="rounded-full text-[10px]">
+              {t(`terminal.workModes.readiness.${job.modeSummary.readiness}`)}
+            </Badge>
+          ) : null}
+          <Badge
+            variant="outline"
+            className={cn("shrink-0 rounded-full text-[10px]", statusBadge.className)}
+          >
+            {statusBadge.label}
+          </Badge>
+        </div>
       </div>
 
-      {/* Notes (only extra info not in the table) */}
-      {job.notes ? (
-        <div className="shrink-0 border-b border-border px-3 py-1.5">
-          <div className="rounded-md bg-muted/20 px-2 py-1 text-xs text-muted-foreground">
-            {String(job.notes)}
+      <div className="shrink-0 border-b border-border px-3 py-2">
+        <div className="rounded-xl border border-border bg-muted/20 p-3">
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="space-y-1">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                {t("terminal.instructions.title", "Cell instructions")}
+              </div>
+              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <span>{job.cellName || t("terminal.columns.cell")}</span>
+                <span
+                  className="inline-flex h-2.5 w-2.5 rounded-full border border-white/20"
+                  style={{ backgroundColor: job.cellColor || undefined }}
+                />
+              </div>
+            </div>
+            <TerminalEncodingBadges job={job} t={t} />
+          </div>
+
+          <div className="mt-3 space-y-2">
+            {instructionPreview ? (
+              <div className="rounded-lg border border-border bg-background/70 px-3 py-2 text-sm leading-5 text-foreground">
+                {instructionPreview}
+              </div>
+            ) : (
+              <TerminalInstructionFallback t={t} />
+            )}
+
+            {currentOperationInstructionSteps.length > 0 ? (
+              <div className="rounded-lg border border-border/70 bg-background/40 px-3 py-2">
+                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  {t("terminal.instructions.stepHighlights", "Step highlights")}
+                </div>
+                <div className="space-y-1">
+                  {currentOperationInstructionSteps.slice(0, 2).map((substep) => (
+                    <div key={substep.id} className="text-xs text-muted-foreground">
+                      <span className="font-medium text-foreground">{substep.name}:</span>{" "}
+                      {substep.notes}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className={cn(
+                  "rounded-full px-2 py-0 text-[10px] uppercase tracking-wide",
+                  operationType.chipClassName,
+                )}
+              >
+                {t(operationType.label.key, operationType.label.fallback)}
+              </Badge>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={viewSteps}
+                className="min-h-9 rounded-full px-3 text-xs"
+              >
+                {t("terminal.instructions.viewSteps", "View steps")}
+              </Button>
+              {hasInstructionFallback ? (
+                <span className="text-xs text-muted-foreground">
+                  {t("terminal.instructions.fallbackHint", "Use routing steps as the fallback operator guide.")}
+                </span>
+              ) : null}
+            </div>
           </div>
         </div>
-      ) : null}
+      </div>
 
       {/* ── Routing progress (compact) ── */}
       {job.jobId ? (
@@ -432,7 +527,8 @@ export function DetailPanel({
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <Tabs
           key={`${job.id}-${defaultTab}`}
-          defaultValue={defaultTab}
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as ViewerTab)}
           className="flex h-full flex-col"
         >
           <div className="shrink-0 border-b border-border px-3 py-2">
@@ -532,7 +628,7 @@ export function DetailPanel({
               className="min-h-10 rounded-lg bg-emerald-600 text-sm text-white hover:bg-emerald-700"
             >
               <Play className="mr-1.5 h-4 w-4" />
-              {t("operations.start", "Start")}
+              {startActionLabel ?? t("operations.start", "Start")}
             </Button>
           ) : (
             <Button
@@ -541,7 +637,7 @@ export function DetailPanel({
               className="min-h-10 rounded-lg text-sm"
             >
               <Pause className="mr-1.5 h-4 w-4" />
-              {t("operations.pause", "Pause")}
+              {pauseActionLabel ?? t("operations.pause", "Pause")}
             </Button>
           )}
 

@@ -1,10 +1,10 @@
 /**
- * Odoo MRP Planning Adapter (Scaffold)
+ * Odoo MRP Planning Adapter
  *
  * Connects to Odoo via JSON-RPC to pull manufacturing orders from
- * `mrp.production` and `mrp.workorder` models.
+ * `mrp.production` and work centers from `mrp.workcenter`.
  *
- * Authentication: Session-based via `/web/session/authenticate`
+ * Authentication: JSON-RPC `common.authenticate`
  * Protocol: JSON-RPC 2.0 POST to `/jsonrpc`
  *
  * @see https://www.odoo.com/documentation/17.0/developer/reference/external_api.html
@@ -25,21 +25,18 @@ export class OdooAdapter implements PlanningAdapter {
   readonly name = 'odoo';
 
   private readonly baseUrl: string;
-  private readonly db: string;
+  private readonly databaseName: string;
   private uid: number | null = null;
   private sessionId: string | null = null;
   private requestId = 0;
 
   constructor(private readonly config: PlanningConfig) {
     this.baseUrl = config.baseUrl.replace(/\/+$/, '');
-    // Odoo DB name is typically the first path segment or configured separately.
-    // We extract it from the URL or default to 'odoo'.
-    const urlObj = new URL(config.baseUrl);
-    this.db = urlObj.pathname.replace(/^\//, '').split('/')[0] || 'odoo';
+    this.databaseName = this.requireDatabaseName(config);
   }
 
   /**
-   * Test connectivity by authenticating against the Odoo session endpoint.
+   * Test connectivity by authenticating against Odoo's JSON-RPC endpoint.
    */
   async testConnection(): Promise<boolean> {
     try {
@@ -51,8 +48,8 @@ export class OdooAdapter implements PlanningAdapter {
   }
 
   /**
-   * Pull manufacturing orders from mrp.production model.
-   * Filters to confirmed/in_progress orders.
+   * Pull manufacturing orders from `mrp.production`.
+   * Filters to confirmed/in-progress orders.
    */
   async pullWorkOrders(since?: Date): Promise<PlanningWorkOrder[]> {
     await this.ensureAuthenticated();
@@ -116,16 +113,24 @@ export class OdooAdapter implements PlanningAdapter {
   /**
    * Push actual start time for a manufacturing order.
    *
-   * TODO: Implement via write() on mrp.production.
+   * Odoo computes `state` from workflow methods and stock/work order progress.
+   * We avoid direct state writes and only confirm draft orders plus set the
+   * actual start timestamp.
    */
   async pushOrderStart(orderId: string, actualStart: Date): Promise<void> {
     await this.ensureAuthenticated();
 
+    const parsedOrderId = this.parseOrderId(orderId);
+    const state = await this.fetchOrderState(parsedOrderId);
+
+    if (state === 'draft') {
+      await this.callMethod('mrp.production', 'action_confirm', [[parsedOrderId]]);
+    }
+
     await this.callMethod('mrp.production', 'write', [
-      [parseInt(orderId, 10)],
+      [parsedOrderId],
       {
         date_start: actualStart.toISOString().replace('T', ' ').slice(0, 19),
-        state: 'progress',
       },
     ]);
   }
@@ -133,8 +138,9 @@ export class OdooAdapter implements PlanningAdapter {
   /**
    * Push order completion.
    *
-   * TODO: In production, this should use mrp.production button_mark_done()
-   * or the produce wizard. For now, we do a direct write.
+   * Odoo finalization should run through `button_mark_done()` instead of a
+   * direct `state='done'` write so server-side stock and workflow hooks run.
+   * We set `qty_producing` first, then invoke the workflow method.
    */
   async pushOrderCompletion(
     orderId: string,
@@ -143,13 +149,16 @@ export class OdooAdapter implements PlanningAdapter {
   ): Promise<void> {
     await this.ensureAuthenticated();
 
+    const parsedOrderId = this.parseOrderId(orderId);
+
     await this.callMethod('mrp.production', 'write', [
-      [parseInt(orderId, 10)],
+      [parsedOrderId],
       {
-        qty_produced: qty,
-        state: 'done',
+        qty_producing: qty,
       },
     ]);
+
+    await this.callMethod('mrp.production', 'button_mark_done', [[parsedOrderId]]);
   }
 
   // ---------------------------------------------------------------------------
@@ -164,7 +173,7 @@ export class OdooAdapter implements PlanningAdapter {
       params: {
         service: 'common',
         method: 'authenticate',
-        args: [this.db, this.config.username ?? '', this.config.password ?? '', {}],
+        args: [this.databaseName, this.config.username ?? '', this.config.password ?? '', {}],
       },
     };
 
@@ -229,6 +238,15 @@ export class OdooAdapter implements PlanningAdapter {
     throw new Error(`Odoo search_read exceeded ${maxPages * pageSize} records for ${model}`);
   }
 
+  private async fetchOrderState(orderId: number): Promise<string | null> {
+    const result = await this.callMethod('mrp.production', 'read', [[orderId]], {
+      fields: ['state'],
+      limit: 1,
+    });
+    const orders = Array.isArray(result) ? result as Array<{ state?: string }> : [];
+    return orders[0]?.state ?? null;
+  }
+
   private async callMethod(
     model: string,
     method: string,
@@ -243,7 +261,7 @@ export class OdooAdapter implements PlanningAdapter {
         service: 'object',
         method: 'execute_kw',
         args: [
-          this.db,
+          this.databaseName,
           this.uid,
           this.config.password ?? '',
           model,
@@ -278,6 +296,22 @@ export class OdooAdapter implements PlanningAdapter {
     }
 
     return data.result;
+  }
+
+  private parseOrderId(orderId: string): number {
+    const parsedOrderId = parseInt(orderId, 10);
+    if (!Number.isInteger(parsedOrderId) || parsedOrderId <= 0) {
+      throw new Error(`Invalid Odoo order id: ${orderId}`);
+    }
+    return parsedOrderId;
+  }
+
+  private requireDatabaseName(config: PlanningConfig): string {
+    const databaseName = config.databaseName?.trim();
+    if (!databaseName) {
+      throw new Error('Odoo requires an explicit database name in planning configuration');
+    }
+    return databaseName;
   }
 
   // ---------------------------------------------------------------------------

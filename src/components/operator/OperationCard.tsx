@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { useState } from "react";
 import { format } from "date-fns";
 import {
   Clock3,
@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useProfile } from "@/hooks/useProfile";
 import { useOperationIssues } from "@/hooks/useOperationIssues";
+import { Chip } from "@/components/ui/chip";
 import OperationDetailModal from "./OperationDetailModal";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ interface OperationCardProps {
   onUpdate: () => void;
   compact?: boolean;
   assignedToMe?: boolean;
+  assignedByName?: string;
 }
 
 /** Left-edge color stripe by status */
@@ -43,7 +45,7 @@ const urgencyLabel: Record<string, string> = {
   soon: "SOON",
 };
 
-function OperationCard({
+export default function OperationCard({
   operation,
   onUpdate,
   compact = false,
@@ -81,6 +83,7 @@ function OperationCard({
     const lp = p.toLowerCase();
     return lp.endsWith(".step") || lp.endsWith(".stp");
   });
+  const hasHandoffNote = Boolean(operation.notes?.trim());
 
   return (
     <>
@@ -185,6 +188,16 @@ function OperationCard({
             </div>
 
             <div className="flex items-center gap-1">
+              {hasHandoffNote ? (
+                <Chip
+                  variant="outline"
+                  size="sm"
+                  icon={<FileText className="h-3 w-3" />}
+                  className="max-w-[150px] border-primary/20 bg-primary/5 text-[9px] text-foreground"
+                >
+                  {t("operations.handoffRemarks.hasNote")}
+                </Chip>
+              ) : null}
               {isActive ? (
                 <span
                   className="flex items-center gap-0.5 rounded bg-primary/10 px-1 py-0.5 text-[9px] font-semibold text-primary"
@@ -236,8 +249,3 @@ function OperationCard({
     </>
   );
 }
-
-// Shallow-memoized: the work queue re-renders on every keystroke in the
-// search box and on every realtime refresh; cards whose props are unchanged
-// (operation reference, stable onUpdate) skip re-rendering entirely.
-export default memo(OperationCard);

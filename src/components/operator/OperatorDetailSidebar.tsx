@@ -2,9 +2,11 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DetailPanel } from "@/components/terminal/DetailPanel";
+import { BatchFlowPrompt } from "@/components/operator/BatchFlowPrompt";
 import { TerminalJob } from "@/types/terminal";
 import type { PMIData, GeometryData } from "@/hooks/useCADProcessing";
 import type { OperationWithDetails } from "@/lib/database";
+import type { BatchPromptState } from "@/hooks/useOperatorTerminal";
 
 interface OperatorDetailSidebarProps {
   collapsed: boolean;
@@ -13,6 +15,11 @@ interface OperatorDetailSidebarProps {
   onStart: () => Promise<void>;
   onPause: () => Promise<void>;
   onComplete: () => Promise<void>;
+  startActionLabel?: string;
+  pauseActionLabel?: string;
+  showCompleteAction?: boolean;
+  batchPrompt: BatchPromptState | null;
+  onSelectBatchMode: (mode: "single" | "batch") => void;
   stepUrl: string | null;
   pdfUrl: string | null;
   pmiData: PMIData | null;
@@ -28,6 +35,11 @@ export function OperatorDetailSidebar({
   onStart,
   onPause,
   onComplete,
+  startActionLabel,
+  pauseActionLabel,
+  showCompleteAction,
+  batchPrompt,
+  onSelectBatchMode,
   stepUrl,
   pdfUrl,
   pmiData,
@@ -62,18 +74,29 @@ export function OperatorDetailSidebar({
           </span>
         </div>
       ) : selectedJob ? (
-        <DetailPanel
-          job={selectedJob}
-          onStart={onStart}
-          onPause={onPause}
-          onComplete={onComplete}
-          stepUrl={stepUrl}
-          pdfUrl={pdfUrl}
-          pmiData={pmiData}
-          serverGeometry={serverGeometry}
-          operations={operations}
-          onDataRefresh={onDataRefresh}
-        />
+        <div className="flex min-h-0 flex-1 flex-col">
+          {batchPrompt ? (
+            <BatchFlowPrompt
+              prompt={batchPrompt}
+              onSelectMode={onSelectBatchMode}
+            />
+          ) : null}
+          <DetailPanel
+            job={selectedJob}
+            onStart={onStart}
+            onPause={onPause}
+            onComplete={onComplete}
+            startActionLabel={startActionLabel}
+            pauseActionLabel={pauseActionLabel}
+            showCompleteActionOverride={showCompleteAction}
+            stepUrl={stepUrl}
+            pdfUrl={pdfUrl}
+            pmiData={pmiData}
+            serverGeometry={serverGeometry}
+            operations={operations}
+            onDataRefresh={onDataRefresh}
+          />
+        </div>
       ) : (
         <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-muted-foreground">
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/10">

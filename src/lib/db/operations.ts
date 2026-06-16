@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { dispatchOperationStarted, dispatchOperationCompleted } from "../event-dispatch";
 import { logger } from '@/lib/logger';
+import { parseOperatorTerminalModeNote } from "@/features/operator-terminal/workModes";
 
 interface OperationQueryResult {
   status: string;
@@ -21,9 +22,17 @@ interface OperationQueryResult {
 interface ActiveTimeEntryResult {
   id: string;
   operation_id: string;
+  operator_id: string;
+  start_time: string;
+  notes?: string | null;
   operations?: {
     operation_name: string;
   };
+  operator?: {
+    full_name: string;
+  } | {
+    full_name: string;
+  }[];
 }
 
 interface JobOperationResult {
@@ -60,9 +69,11 @@ interface CompleteOperationQueryResult {
 export interface OperationWithDetails {
   id: string;
   operation_name: string;
+  operation_type: string | null;
   sequence: number;
   estimated_time: number;
   actual_time: number;
+  updated_at: string | null;
   status: "not_started" | "in_progress" | "completed" | "on_hold";
   completion_percentage: number;
   notes: string | null;
@@ -73,7 +84,6 @@ export interface OperationWithDetails {
     id: string;
     part_number: string;
     material: string;
-    metadata?: Record<string, unknown> | null;
     quantity: number;
     parent_part_id: string | null;
     file_paths: string[] | null;
@@ -99,13 +109,110 @@ export interface OperationWithDetails {
     id: string;
     operator_id: string;
     start_time: string;
+    notes?: string | null;
     operator: {
       full_name: string;
     };
   };
+  operator_mode_summary?: {
+    active_mode: "setup" | "production" | null;
+    has_setup_history: boolean;
+  };
+  batch_context?: OperationBatchContext | null;
 }
 
-export async function fetchOperationsWithDetails(tenantId: string): Promise<OperationWithDetails[]> {
+export interface OperationBatchMember {
+  operation_id: string;
+  operation_name: string;
+  part_id: string;
+  status: "not_started" | "in_progress" | "completed" | "on_hold";
+  sequence_in_batch: number | null;
+  active_time_entry?: {
+    operator_id: string;
+    operator_name: string;
+    notes?: string | null;
+  };
+}
+
+export interface OperationBatchContext {
+  batch_id: string;
+  batch_number: string;
+  batch_type: Tables<"operation_batches">["batch_type"];
+  status: Tables<"operation_batches">["status"];
+  operations_count: number;
+  material: string | null;
+  nesting_metadata: Record<string, unknown> | null;
+  sequence_in_batch: number | null;
+  parent_batch: {
+    id: string;
+    batch_number: string;
+    batch_type: Tables<"operation_batches">["batch_type"];
+    status: Tables<"operation_batches">["status"];
+  } | null;
+  members: OperationBatchMember[];
+}
+
+interface BatchLinkResult {
+  batch_id: string;
+  operation_id: string;
+  sequence_in_batch: number | null;
+  batch: {
+    id: string;
+    batch_number: string;
+    batch_type: Tables<"operation_batches">["batch_type"];
+    status: Tables<"operation_batches">["status"];
+    operations_count: number;
+    material: string | null;
+    nesting_metadata: Record<string, unknown> | null;
+    parent_batch: {
+      id: string;
+      batch_number: string;
+      batch_type: Tables<"operation_batches">["batch_type"];
+      status: Tables<"operation_batches">["status"];
+    } | null;
+  } | {
+    id: string;
+    batch_number: string;
+    batch_type: Tables<"operation_batches">["batch_type"];
+    status: Tables<"operation_batches">["status"];
+    operations_count: number;
+    material: string | null;
+    nesting_metadata: Record<string, unknown> | null;
+    parent_batch: {
+      id: string;
+      batch_number: string;
+      batch_type: Tables<"operation_batches">["batch_type"];
+      status: Tables<"operation_batches">["status"];
+    }[];
+  }[];
+}
+
+interface BatchMemberResult {
+  batch_id: string;
+  operation_id: string;
+  sequence_in_batch: number | null;
+  operation: {
+    id: string;
+    status: OperationWithDetails["status"];
+    operation_name: string;
+    part_id: string;
+  } | {
+    id: string;
+    status: OperationWithDetails["status"];
+    operation_name: string;
+    part_id: string;
+  }[];
+}
+
+interface OperationModeHistoryResult {
+  operation_id: string;
+  notes: string | null;
+}
+
+async function fetchOperationsWithDetailsInternal(
+  tenantId: string,
+  includeCompleted: boolean,
+): Promise<OperationWithDetails[]> {
   const { data: operations, error: operationsError } = await supabase
     .from("operations")
     .select(`
@@ -114,7 +221,6 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
         id,
         part_number,
         material,
-        metadata,
         quantity,
         parent_part_id,
         file_paths,
@@ -138,7 +244,6 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
       )
     `)
     .eq("tenant_id", tenantId)
-    .neq("status", "completed")  // Exclude completed operations from terminal view
     .order("sequence");
 
   if (operationsError) {
@@ -151,6 +256,10 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     return [];
   }
 
+  const visibleOperations = includeCompleted
+    ? operations
+    : operations.filter((operation) => operation.status !== "completed");
+
   const { data: activeEntries, error: entriesError } = await supabase
     .from("time_entries")
     .select(`
@@ -158,6 +267,7 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
       operation_id,
       operator_id,
       start_time,
+      notes,
       operator:profiles!inner(full_name)
     `)
     .eq("tenant_id", tenantId)
@@ -168,28 +278,187 @@ export async function fetchOperationsWithDetails(tenantId: string): Promise<Oper
     throw entriesError;
   }
 
-  return operations.map((operation) => {
-    const entry = activeEntries?.find((e) => e.operation_id === operation.id);
-    // Ensure the nested operator join is an object with full_name, not an array.
-    // PostgREST may return arrays for ambiguous FK relationships.
-    const safeEntry = entry
-      ? {
-          id: entry.id,
-          operator_id: entry.operator_id,
-          start_time: entry.start_time,
-          operator: Array.isArray(entry.operator)
-            ? (entry.operator[0] as { full_name: string })
-            : (entry.operator as { full_name: string }),
-        }
-      : undefined;
-    return { ...operation, active_time_entry: safeEntry };
+  const operationIds = visibleOperations.map((operation) => operation.id);
+  const activeEntriesByOperation = new Map(
+    (activeEntries ?? []).map((entry) => [
+      entry.operation_id,
+      {
+        id: entry.id,
+        operator_id: entry.operator_id,
+        start_time: entry.start_time,
+        notes: entry.notes ?? null,
+        operator: Array.isArray(entry.operator)
+          ? (entry.operator[0] as { full_name: string })
+          : (entry.operator as { full_name: string }),
+      },
+    ]),
+  );
+  const setupHistoryByOperation = new Set<string>();
+
+  const batchContextsByOperation = new Map<string, OperationBatchContext>();
+
+  if (operationIds.length > 0) {
+    const { data: modeHistory, error: modeHistoryError } = await supabase
+      .from("time_entries")
+      .select("operation_id, notes")
+      .eq("tenant_id", tenantId)
+      .in("operation_id", operationIds)
+      .like("notes", "operator-mode:%");
+
+    if (modeHistoryError) {
+      logger.error("Database", "Error fetching operator mode history", modeHistoryError);
+      throw modeHistoryError;
+    }
+
+    for (const entry of (modeHistory ?? []) as OperationModeHistoryResult[]) {
+      if (parseOperatorTerminalModeNote(entry.notes) === "setup") {
+        setupHistoryByOperation.add(entry.operation_id);
+      }
+    }
+
+    const { data: batchLinks, error: batchLinksError } = await supabase
+      .from("batch_operations")
+      .select(`
+        batch_id,
+        operation_id,
+        sequence_in_batch,
+        batch:operation_batches!batch_operations_batch_id_fkey(
+          id,
+          batch_number,
+          batch_type,
+          status,
+          operations_count,
+          material,
+          nesting_metadata,
+          parent_batch:operation_batches!operation_batches_parent_batch_id_fkey(
+            id,
+            batch_number,
+            batch_type,
+            status
+          )
+        )
+      `)
+      .in("operation_id", operationIds)
+      .eq("tenant_id", tenantId);
+
+    if (batchLinksError) {
+      logger.error("Database", "Error fetching batch links for operations", batchLinksError);
+      throw batchLinksError;
+    }
+
+    const batchIds = Array.from(
+      new Set((batchLinks ?? []).map((link) => link.batch_id)),
+    );
+
+    const membersByBatchId = new Map<string, OperationBatchMember[]>();
+
+    if (batchIds.length > 0) {
+      const { data: batchMembers, error: batchMembersError } = await supabase
+        .from("batch_operations")
+        .select(`
+          batch_id,
+          operation_id,
+          sequence_in_batch,
+          operation:operations!batch_operations_operation_id_fkey(
+            id,
+            status,
+            operation_name,
+            part_id
+          )
+        `)
+        .in("batch_id", batchIds)
+        .eq("tenant_id", tenantId)
+        .order("sequence_in_batch", { ascending: true });
+
+      if (batchMembersError) {
+        logger.error("Database", "Error fetching batch members for operations", batchMembersError);
+        throw batchMembersError;
+      }
+
+      for (const member of (batchMembers ?? []) as BatchMemberResult[]) {
+        const operation = Array.isArray(member.operation)
+          ? member.operation[0]
+          : member.operation;
+
+        if (!operation) continue;
+
+        const safeEntry = activeEntriesByOperation.get(member.operation_id);
+        const existingMembers = membersByBatchId.get(member.batch_id) ?? [];
+        existingMembers.push({
+          operation_id: member.operation_id,
+          operation_name: operation.operation_name,
+          part_id: operation.part_id,
+          status: operation.status,
+          sequence_in_batch: member.sequence_in_batch,
+          active_time_entry: safeEntry
+            ? {
+                operator_id: safeEntry.operator_id,
+                operator_name: safeEntry.operator.full_name,
+                notes: safeEntry.notes ?? null,
+              }
+            : undefined,
+        });
+        membersByBatchId.set(member.batch_id, existingMembers);
+      }
+    }
+
+    for (const link of (batchLinks ?? []) as BatchLinkResult[]) {
+      const batch = Array.isArray(link.batch) ? link.batch[0] : link.batch;
+      if (!batch) continue;
+
+      const parentBatch = Array.isArray(batch.parent_batch)
+        ? batch.parent_batch[0]
+        : batch.parent_batch;
+
+      batchContextsByOperation.set(link.operation_id, {
+        batch_id: batch.id,
+        batch_number: batch.batch_number,
+        batch_type: batch.batch_type,
+        status: batch.status,
+        operations_count: batch.operations_count,
+        material: batch.material,
+        nesting_metadata: batch.nesting_metadata,
+        sequence_in_batch: link.sequence_in_batch,
+        parent_batch: parentBatch
+          ? {
+              id: parentBatch.id,
+              batch_number: parentBatch.batch_number,
+              batch_type: parentBatch.batch_type,
+              status: parentBatch.status,
+            }
+          : null,
+        members: membersByBatchId.get(batch.id) ?? [],
+      });
+    }
+  }
+
+  return visibleOperations.map((operation) => {
+    const safeEntry = activeEntriesByOperation.get(operation.id);
+    return {
+      ...operation,
+      active_time_entry: safeEntry,
+      operator_mode_summary: {
+        active_mode: parseOperatorTerminalModeNote(safeEntry?.notes ?? null),
+        has_setup_history: setupHistoryByOperation.has(operation.id),
+      },
+      batch_context: batchContextsByOperation.get(operation.id) ?? null,
+    };
   });
+}
+
+export async function fetchOperationsWithDetails(tenantId: string): Promise<OperationWithDetails[]> {
+  return fetchOperationsWithDetailsInternal(tenantId, false);
+}
+
+export async function fetchOperationLookupDetails(tenantId: string): Promise<OperationWithDetails[]> {
+  return fetchOperationsWithDetailsInternal(tenantId, true);
 }
 
 export async function startTimeTracking(
   operationId: string,
   operatorId: string,
-  tenantId: string
+  tenantId: string,
+  notes?: string,
 ) {
   const { data: existingForOperation } = await supabase
     .from("time_entries")
@@ -267,6 +536,7 @@ export async function startTimeTracking(
     operator_id: operatorId,
     tenant_id: tenantId,
     start_time: startedAt,
+    notes: notes ?? null,
   });
 
   if (timeError) throw timeError;

@@ -12,10 +12,12 @@ export type IssuesTable = {
     corrective_action: string | null
     created_at: string | null
     created_by: string
+    current_cell_id: string | null
     description: string
     disposition: DatabaseEnums["ncr_disposition"] | null
     id: string
     image_paths: string[] | null
+    intended_next_cell_id: string | null
     issue_type: DatabaseEnums["issue_type"] | null
     ncr_category: DatabaseEnums["ncr_category"] | null
     operation_id: string
@@ -38,10 +40,12 @@ export type IssuesTable = {
     corrective_action?: string | null
     created_at?: string | null
     created_by: string
+    current_cell_id?: string | null
     description: string
     disposition?: DatabaseEnums["ncr_disposition"] | null
     id?: string
     image_paths?: string[] | null
+    intended_next_cell_id?: string | null
     issue_type?: DatabaseEnums["issue_type"] | null
     ncr_category?: DatabaseEnums["ncr_category"] | null
     operation_id: string
@@ -64,10 +68,12 @@ export type IssuesTable = {
     corrective_action?: string | null
     created_at?: string | null
     created_by?: string
+    current_cell_id?: string | null
     description?: string
     disposition?: DatabaseEnums["ncr_disposition"] | null
     id?: string
     image_paths?: string[] | null
+    intended_next_cell_id?: string | null
     issue_type?: DatabaseEnums["issue_type"] | null
     ncr_category?: DatabaseEnums["ncr_category"] | null
     operation_id?: string
@@ -87,10 +93,24 @@ export type IssuesTable = {
   }
   Relationships: [
     {
+      foreignKeyName: "issues_current_cell_id_fkey"
+      columns: ["current_cell_id"]
+      isOneToOne: false
+      referencedRelation: "cells"
+      referencedColumns: ["id"]
+    },
+    {
       foreignKeyName: "issues_created_by_fkey"
       columns: ["created_by"]
       isOneToOne: false
       referencedRelation: "profiles"
+      referencedColumns: ["id"]
+    },
+    {
+      foreignKeyName: "issues_intended_next_cell_id_fkey"
+      columns: ["intended_next_cell_id"]
+      isOneToOne: false
+      referencedRelation: "cells"
       referencedColumns: ["id"]
     },
     {

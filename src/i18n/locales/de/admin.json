@@ -17,13 +17,24 @@
     "activeTasks": "Aktive Aufgaben",
     "dueThisWeek": "Diese Woche fällig",
     "jobsDue": "Fällige Aufträge",
+    "activeJobProgress": "Fortschritt aktiver Aufträge",
+    "activeJobsCount": "Aktive Aufträge",
+    "averageCompletion": "Durchschnittlicher Fortschritt",
+    "jobsAtHundredPercent": "Aufträge bei 100 %",
+    "noActiveJobProgress": "Derzeit gibt es keine aktiven Aufträge mit zu verfolgendem Fortschritt",
     "activeWork": "Aktive Arbeiten",
     "noActiveWork": "Derzeit keine aktiven Arbeiten",
     "operator": "Bediener",
     "operation": "Arbeitsgang",
+    "operations": "Arbeitsgänge",
     "job": "Auftrag",
     "part": "Teil",
     "cell": "Fertigungszelle",
+    "status": "Status",
+    "completion": "Fortschritt",
+    "completedOperations": "Abgeschlossene Arbeitsgänge",
+    "dueDate": "Fälligkeitsdatum",
+    "noDueDate": "Kein Fälligkeitsdatum",
     "elapsedTime": "Verstrichene Zeit",
     "quickStats": "Schnellstatistiken",
     "totalJobs": "Aufträge gesamt",
@@ -34,21 +45,7 @@
     "demoDataWipedDesc": "Alle Demodaten wurden erfolgreich gelöscht.",
     "wipeFailed": "Löschen fehlgeschlagen",
     "noActiveClockings": "Keine aktiven Zeiterfassungen",
-    "noActiveClockingsDescription": "Es gibt keine aktiven Zeiterfassungen zum Stoppen.",
-    "startedAt": "Gestartet um",
-    "stopClockingTitle": "Zeiterfassung stoppen",
-    "stopClockingDescription": "Prüfen Sie die aktive Zeiterfassung und stoppen Sie sie bei Bedarf.",
-    "stopClocking": "Zeiterfassung stoppen",
-    "clockingStopped": "Zeiterfassung gestoppt",
-    "clockingStoppedDescription": "Die Zeiterfassung von {{operator}} für {{operation}} wurde gestoppt.",
-    "stopFailed": "Stoppen der Zeiterfassung fehlgeschlagen",
-    "stopAll": "Alle stoppen",
-    "stopAllClockings": "Alle Zeiterfassungen stoppen",
-    "allClockingsStopped": "Alle Zeiterfassungen gestoppt",
-    "allClockingsStoppedDescription": "{{count}} Zeiterfassungen wurden gestoppt.",
-    "stopAllFailed": "Stoppen aller Zeiterfassungen fehlgeschlagen",
-    "pastClosingTimeWarning": "Betriebsschluss wurde überschritten",
-    "pastClosingTimeDescription": "Es sind noch {{count}} Zeiterfassungen nach Betriebsschluss ({{time}}) aktiv. Sie sollten gestoppt werden."
+    "noActiveClockingsDescription": "Es gibt keine aktiven Zeiterfassungen zum Stoppen."
   },
   "settings": {
     "title": "Einstellungen",
@@ -78,63 +75,12 @@
       "successCreated": "Demodaten erfolgreich erstellt",
       "successCleared": "Demodaten erfolgreich gelöscht",
       "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
-      "errorClear": "Löschen der Demodaten fehlgeschlagen",
-      "confirmClearing": "Wird gelöscht...",
-      "confirmButton": "Demodaten Löschen"
+      "errorClear": "Löschen der Demodaten fehlgeschlagen"
     },
     "accountDeleted": "Konto erfolgreich gelöscht",
     "accountDeleteFailed": "Löschen des Kontos fehlgeschlagen",
     "tenantDeleted": "Mandant erfolgreich gelöscht",
-    "tenantDeleteFailed": "Löschen des Mandanten fehlgeschlagen",
-    "gdpr": {
-      "title": "Datenlöschung (DSGVO)",
-      "description": "Löschen Sie dauerhaft Ihr Konto oder alle Daten Ihrer gesamten Organisation",
-      "deleteAccount": {
-        "title": "Mein Konto löschen",
-        "description": "Löschen Sie dauerhaft Ihr Benutzerkonto und alle zugehörigen personenbezogenen Daten.",
-        "warning": "Warnung",
-        "warningMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Ihr Konto, Ihre Zeiterfassungen, Zuweisungen und Probleme werden dauerhaft gelöscht.",
-        "button": "Mein Konto löschen",
-        "confirmTitle": "Ihr Konto löschen?",
-        "confirmMessage": "Dies löscht dauerhaft Ihr Konto und alle zugehörigen Daten:",
-        "confirmItems": {
-          "profile": "Ihr Benutzerprofil",
-          "timeEntries": "Alle von Ihnen erstellten Zeiterfassungen",
-          "assignments": "Alle Zuweisungen an Sie",
-          "issues": "Alle von Ihnen gemeldeten Probleme"
-        },
-        "confirmWarning": "Diese Aktion kann nicht rückgängig gemacht werden",
-        "confirmDescription": "Sie werden sofort abgemeldet und können Ihr Konto nicht wiederherstellen.",
-        "confirmButton": "Mein Konto löschen",
-        "deleting": "Wird gelöscht..."
-      },
-      "deleteTenant": {
-        "title": "Gesamte Organisation löschen",
-        "description": "Löschen Sie dauerhaft Ihre Organisation und ALLE Daten aller Benutzer.",
-        "warningTitle": "Kritische Warnung",
-        "warningMessage": "Dies löscht ALLE Aufträge, Teile, Arbeitsgänge, Benutzer und Daten Ihrer gesamten Organisation. Diese Aktion betrifft ALLE Benutzer Ihrer Organisation und kann NICHT rückgängig gemacht werden.",
-        "button": "Gesamte Organisation löschen",
-        "confirmTitle": "Gesamte Organisation löschen?",
-        "confirmMessage": "Dies löscht dauerhaft Ihre Organisation und ALLE Daten:",
-        "confirmItems": {
-          "users": "Alle Benutzerkonten und Profile",
-          "jobs": "Alle Aufträge, Teile und Arbeitsgänge",
-          "timeEntries": "Alle Zeiterfassungen und Zuweisungen",
-          "issues": "Alle Probleme und Produktionsdaten",
-          "config": "Alle Fertigungszellen, Materialien und Betriebsmittel",
-          "api": "Alle API-Schlüssel und Webhooks",
-          "all": "Alles Weitere in Ihrer Organisation"
-        },
-        "confirmWarningTitle": "KRITISCH: Dies betrifft ALLE Benutzer",
-        "confirmWarningMessage": "Dies löscht die Daten ALLER Benutzer Ihrer Organisation. Alle verlieren den Zugriff. Diese Aktion ist ENDGÜLTIG und kann NICHT rückgängig gemacht werden.",
-        "confirmButton": "Organisation löschen",
-        "deleting": "Wird gelöscht..."
-      },
-      "exportFirst": "Vor dem Löschen können Sie Ihre Daten exportieren. Nutzen Sie dazu die",
-      "dataExportLink": "Datenexport-Funktion",
-      "privacyPolicyLink": "Datenschutzerklärung",
-      "seePolicy": "Bei Fragen zur Datenlöschung lesen Sie bitte unsere"
-    }
+    "tenantDeleteFailed": "Löschen des Mandanten fehlgeschlagen"
   },
   "users": {
     "title": "Benutzerverwaltung",
@@ -243,8 +189,14 @@
     "violatedBelief": "Verletzte Erwartung",
     "expected": "Erwartet",
     "actual": "Tatsächlich",
+    "batch": "Charge",
+    "job": "Auftrag",
+    "part": "Teil",
+    "operation": "Arbeitsgang",
     "deviation": "Abweichung",
     "neverOccurred": "Nie eingetreten",
+    "ownerPath": "Eigentümerpfad",
+    "recommendedAction": "Empfohlene Maßnahme",
     "acknowledge": "Bestätigen",
     "resolve": "Lösen",
     "dismiss": "Ablehnen",
@@ -325,85 +277,72 @@
     "reviewed": "Überprüft"
   },
   "pricing": {
-    "title": "Pläne",
-    "subtitle": "Eryxon Flow ist Open Source unter Apache 2.0. Starten Sie mit der gehosteten Testversion, lassen Sie es von uns betreiben, oder hosten Sie selbst auf Ihrer eigenen Infrastruktur.",
-    "contactUs": "Kontakt aufnehmen",
-    "needHelp": "Hilfe bei Self-Hosting oder Einrichtung benötigt?",
-    "hostedTrial": {
-      "name": "Gehostete Testversion",
-      "description": "Betreiben Sie Eryxon Flow 30 Tage auf unserer gehosteten SaaS.",
-      "tryDemo": "Test starten",
-      "note": "Zur Evaluation. Während des Tests gelten Limits.",
+    "title": "Loslegen",
+    "subtitle": "Das MES für Metallverarbeitung, mit dem Sie gerne arbeiten. Self-Hosting für alle Funktionen.",
+    "contactUs": "Kontaktieren Sie uns",
+    "recommended": "Empfohlen",
+    "needHelp": "Hilfe bei Self-Hosting oder Anpassung benötigt?",
+    "hostedDemo": {
+      "name": "Gehostete Demo",
+      "description": "Online ausprobieren mit begrenzter Nutzung",
+      "tryDemo": "Live-Demo testen",
+      "note": "Nur für Evaluation und Bildungszwecke",
       "features": [
-        "30-tägiger Test",
-        "100 Aufträge pro Monat",
-        "500 Teile pro Monat",
-        "2 GB Speicher",
-        "100 API-Anfragen pro Tag"
-      ]
-    },
-    "managedHosting": {
-      "name": "Verwaltetes Hosting",
-      "description": "Eine dedizierte, isolierte Instanz, die wir für Sie betreiben.",
-      "cta": "Kontakt aufnehmen",
-      "features": [
-        "Eigene, vollständig isolierte Datenbank",
-        "Backups und Versionsverwaltung",
-        "Whitelabeling",
-        "Von uns betrieben und gewartet"
+        "Begrenzte Aufträge und Teile",
+        "Begrenzter Speicher",
+        "Begrenzter API-Zugriff",
+        "Nur Dokumentation"
       ]
     },
     "selfHosted": {
       "name": "Self-Hosted",
-      "description": "Vollständig Open Source auf Ihrer eigenen Infrastruktur.",
-      "getStarted": "Self-Hosting Anleitung",
-      "consulting": "Hilfe bei der Einrichtung",
+      "description": "Alle Funktionen auf Ihrer eigenen Infrastruktur",
+      "getStarted": "Self-Hosting Anleitung ansehen",
       "features": [
-        "Open Source, Apache 2.0",
         "Unbegrenzte Aufträge und Teile",
         "Unbegrenzter Speicher",
         "Vollständiger API-Zugriff",
-        "Ihre eigene Infrastruktur"
+        "Vollständige Webhook-Unterstützung",
+        "MCP Server inklusive",
+        "Vollständige Datenkontrolle"
       ]
     },
     "license": {
       "title": "Lizenz (Apache 2.0)",
-      "tldr": "Vollständig Open Source. Nutzen, anpassen, selbst hosten und kommerziell einsetzen — ohne Einschränkungen.",
-      "allowed": "Sie dürfen",
-      "note": "Gut zu wissen",
+      "tldr": "Nutzen, anpassen, selbst hosten und weitergeben. Bei Weitergabe Lizenztext und Hinweise beibehalten.",
+      "allowed": "Erlaubt",
+      "notAllowed": "Nicht erlaubt",
       "allowedItems": {
-        "selfHost": "Self-Hosting für eigene Betriebe, kostenlos",
-        "modify": "Forken und anpassen für Ihre Bedürfnisse",
-        "commercial": "Kommerziell nutzen, auch für andere hosten",
+        "selfHost": "Selbst hosten oder kommerziell betreiben",
+        "modify": "Forken, anpassen und Änderungen weitergeben",
         "consulting": "Nutzung für Entwicklung, Tests, Bildung"
       },
-      "noteItems": {
-        "attribution": "Lizenz- und Copyright-Hinweis in Kopien beibehalten",
-        "patent": "Enthält eine ausdrückliche Patentlizenz"
+      "notAllowedItems": {
+        "resell": "Weitergabe ohne Lizenztext und erforderliche Hinweise"
       }
     }
   },
   "myPlan": {
     "title": "Mein Plan",
-    "subtitle": "Sehen Sie Ihre Nutzung und die Optionen nach dem Test",
-    "contactUs": "Kontakt aufnehmen",
+    "subtitle": "Nutzung und Deployment-Optionen ansehen",
+    "contactUs": "Kontaktieren Sie uns",
     "activeJobs": "Aktive Aufträge",
     "admins": "Administratoren",
     "completedJobs": "Abgeschlossene Aufträge",
     "operators": "Bediener",
     "parts": "Teile",
-    "partsLimitReached": "Testlimit erreicht. Sehen Sie Ihre Planoptionen, um weiterzuarbeiten.",
+    "partsLimitReached": "Demo-Limit erreicht. Self-Hosting für unbegrenzte Nutzung.",
     "storage": "Speicher",
     "totalJobs": "Aufträge gesamt",
     "usageThisMonth": "Nutzung diesen Monat",
-    "apiRequests": "API-Anfragen",
+    "apiRequests": "API Anfragen",
     "today": "heute",
     "requestsThisMonth": "Anfragen diesen Monat",
     "hostedDemo": "Gehostete Demo",
     "hostedDemoDescription": "Begrenzte Nutzung für Evaluation und Bildungszwecke",
     "selfHosted": "Self-Hosted",
     "selfHostedDescription": "Alle Funktionen, unbegrenzte Nutzung auf Ihrer Infrastruktur",
-    "goSelfHosted": "Self-Hosting Anleitung",
+    "goSelfHosted": "Self-Hosting starten",
     "unlimitedWithSelfHost": "Unbegrenzt mit Self-Hosting",
     "selfHostBenefits": "Self-Hosting von Eryxon Flow für unbegrenzte Nutzung und vollständige Kontrolle über Ihre Daten.",
     "benefit": {
@@ -412,38 +351,20 @@
       "fullApi": "Vollständiger API-Zugriff",
       "yourData": "Vollständige Kontrolle über Ihre Daten"
     },
-    "viewGuide": "Self-Hosting Anleitung",
+    "viewGuide": "Self-Hosting Anleitung ansehen",
     "needHelp": "Hilfe benötigt?",
-    "helpDescription": "Sheet Metal Connect e.U. hilft Ihnen, Eryxon Flow für Ihren Betrieb einzurichten und zu betreiben.",
-    "hostedTrial": "Gehostete Testversion",
-    "hostedTrialDescription": "Gehostete SaaS, 30-tägiger Test mit monatlichen Limits",
-    "managedHosting": {
-      "title": "Verwaltetes Hosting",
-      "description": "Eine dedizierte, isolierte Instanz, die wir für Sie betreiben — Ihre eigene Datenbank, Backups und Versionsverwaltung.",
-      "cta": "Kontakt aufnehmen",
-      "benefit": {
-        "isolated": "Ihre eigene isolierte Datenbank",
-        "backups": "Backups von uns übernommen",
-        "versions": "Versionsverwaltung",
-        "whitelabel": "Whitelabeling"
-      }
-    },
-    "selfHostedCard": {
-      "title": "Self-Hosted",
-      "description": "Vollständig Open Source unter Apache 2.0. Betreiben Sie es auf Ihrer eigenen Infrastruktur.",
-      "consulting": "Hilfe bei der Einrichtung"
-    }
+    "helpDescription": "Sheet Metal Connect e.U. kann Ihnen bei der Einrichtung und Anpassung von Eryxon Flow helfen."
   },
   "trialBanner": {
-    "title": "Sie nutzen die gehostete Testversion",
-    "titleWithDate": "Ihre gehostete Testversion endet am {{date}}",
-    "description": "Daten werden nach dem Test nicht aufbewahrt. Sehen Sie Ihre Planoptionen, um weiterzuarbeiten.",
+    "title": "Sie nutzen die kostenlose Testversion",
+    "titleWithDate": "Ihre kostenlose Testversion endet am {{date}}",
+    "description": "Dateien und Daten werden nach dem Testzeitraum nicht aufbewahrt. Hosten Sie Eryxon Flow selbst für unbegrenzte Nutzung und vollständige Datenkontrolle.",
     "daysRemaining": "{{count}} Tag verbleibend",
     "daysRemaining_plural": "{{count}} Tage verbleibend",
     "expired": "Ihre Testversion ist abgelaufen",
-    "expiredDescription": "Der Testzeitraum ist beendet. Sehen Sie Ihre Planoptionen, um Ihre Daten zu behalten und weiterzuarbeiten.",
-    "seePlans": "Pläne ansehen",
-    "viewPlan": "Pläne ansehen"
+    "expiredDescription": "Ihr Testzeitraum ist beendet. Hosten Sie Eryxon Flow selbst, um Ihre Daten zu behalten und alle Funktionen weiter zu nutzen.",
+    "upgradeCta": "Self-Hosting Anleitung ansehen",
+    "viewPlan": "Plan ansehen"
   },
   "featureFlags": {
     "title": "Feature-Flags",
@@ -493,35 +414,30 @@
   },
   "organizationSettings": {
     "failedToLoad": "Organisationsdetails konnten nicht geladen werden",
-    "title": "Organisationseinstellungen",
-    "subtitle": "Verwalten Sie Ihr Organisationsprofil und Ihre Einstellungen",
-    "companyInformation": "Unternehmensinformationen",
-    "updateOrgDetails": "Aktualisieren Sie Ihre Organisationsdetails",
-    "organizationName": "Organisationsname",
-    "companyName": "Firmenname",
-    "timezone": "Zeitzone",
-    "timezoneDescription": "Wird für Terminierung und Fälligkeitsdaten verwendet",
-    "billingEmail": "Rechnungs-E-Mail",
-    "saveChanges": "Änderungen speichern",
-    "settingsUpdated": "Organisationseinstellungen aktualisiert",
-    "factoryHours": {
-      "title": "Betriebszeiten",
-      "description": "Konfigurieren Sie Ihre Betriebszeiten und die Einstellungen für die automatische Zeiterfassung",
-      "openingTime": "Betriebsbeginn",
-      "closingTime": "Betriebsschluss",
-      "autoStopTracking": "Zeiterfassung automatisch stoppen",
-      "autoStopDescription": "Alle aktiven Zeiterfassungen bei Betriebsschluss automatisch stoppen",
-      "autoStopWarning": "Aktive Zeiterfassungen werden täglich um {{time}} automatisch gestoppt"
+    "operatorTerminalModes": {
+      "title": "Arbeitsmodi im Operator-Terminal",
+      "description": "Aktivieren Sie Arbeitszeit-, Ruest-/Vorbereitungs- und Produktionsstatus je Werkstatt.",
+      "enabled": "Arbeitsmodi fuer Operatoren aktivieren",
+      "enabledDescription": "Zeigt einen getrennten Terminalstatus fuer nicht arbeiten, Ruesten/Vorbereitung und Produktion.",
+      "enforceWorkingHours": "Arbeitszeiten erzwingen",
+      "enforceWorkingHoursDescription": "Blockiert Terminalstarts ausserhalb der konfigurierten Fabrikzeiten.",
+      "setupPrepEnabled": "Ruest-/Vorbereitungsmodus aktivieren",
+      "setupPrepEnabledDescription": "Operatoren koennen Ruesten oder Maschinenvorbereitung getrennt von Produktion buchen.",
+      "setupRequired": "Ruesten vor Produktion verlangen",
+      "setupRequiredDescription": "Blockiert den Produktionsstart, bis Ruesten/Vorbereitung fuer den Vorgang erfasst wurde."
     },
     "planning": {
       "title": "Planungsintegration",
       "description": "Verbinden Sie ein externes Planungs-/Terminierungssystem, um Fertigungsaufträge zu synchronisieren",
       "adapter": "Planungssystem",
-      "adapterNone": "Keines (deaktiviert)",
+      "adapterNone": "Keine (deaktiviert)",
       "connectionUrl": "Verbindungs-URL",
+      "databaseName": "Datenbankname",
+      "databasePlaceholder": "odoo-prod",
+      "databaseHelp": "Für Odoo erforderlich. Verlassen Sie sich nicht auf den URL-Pfad zur Datenbankauswahl.",
       "username": "Benutzername",
       "password": "Passwort",
-      "syncInterval": "Synchronisationsintervall",
+      "syncInterval": "Synchronisierungsintervall",
       "minutes": "Minuten",
       "testConnection": "Verbindung testen",
       "save": "Planungskonfiguration speichern",
@@ -534,22 +450,5 @@
   },
   "stuckTimeEntries": {
     "stopped": "Zeiterfassung erfolgreich gestoppt"
-  },
-  "pilotActivation": {
-    "title": "Pilot aktivieren",
-    "description": "Vom Demo-Datensatz zu einem Bediener, der zugewiesene Arbeit übernimmt — in drei Schritten.",
-    "progress": "{{completed}}/{{total}} erledigt",
-    "step1Title": "Teammitglied oder Bediener hinzufügen",
-    "step1Desc": "Lade ein Teammitglied per E-Mail ein oder erstelle einen Bediener ohne E-Mail mit PIN.",
-    "step1Cta": "Hinzufügen",
-    "step2Title": "Arbeitsgang zuweisen",
-    "step2Desc": "Wähle ein Teil und weise dessen Arbeitsgänge einem Bediener zu.",
-    "step2Cta": "Zuweisen",
-    "step3Title": "Bediener übernimmt die Arbeit",
-    "step3Desc": "Teile den Bediener-Login, damit die zugewiesene Arbeit in seiner Warteschlange erscheint.",
-    "step3Cta": "Login öffnen",
-    "refresh": "Status aktualisieren",
-    "readyTitle": "Pilot bereit 🎉",
-    "readyDescription": "Ein Bediener hat jetzt zugewiesene Arbeit — dieser Mandant erreichte den Pilot-Meilenstein."
   }
 }

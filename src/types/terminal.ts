@@ -1,3 +1,5 @@
+import type { OperatorTerminalMode, TerminalJobModeSummary } from "@/features/operator-terminal/workModes";
+
 export interface TerminalJob {
     id: string;
     jobCode: string;
@@ -23,6 +25,7 @@ export interface TerminalJob {
     activeOperatorName?: string; // Name of the operator currently clocked on
     isCurrentUserClocked?: boolean; // True if current user is clocked on this operation
     notes?: string | null;
+    operationType?: string | null;
     cellName?: string;
     cellColor?: string;
     cellId: string;
@@ -32,4 +35,14 @@ export interface TerminalJob {
     cncProgramName?: string | null;
     isBulletCard?: boolean | null; // QRM: Rush/priority order flag
     plannedStart?: string | null; // Scheduled start date of operation
+    batchContext?: {
+        batchId: string;
+        batchNumber: string;
+        batchType: string;
+        status: string;
+        parentBatchNumber?: string | null;
+        operationsCount: number;
+    } | null;
+    operatorMode?: Exclude<OperatorTerminalMode, "not_working"> | null;
+    modeSummary?: TerminalJobModeSummary;
 }

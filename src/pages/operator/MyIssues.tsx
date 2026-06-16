@@ -1,4 +1,3 @@
-import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,6 +30,12 @@ interface Issue {
   reviewed_at: string | null;
   resolution_notes: string | null;
   image_paths: string[] | null;
+  current_cell: {
+    name: string;
+  } | null;
+  intended_next_cell: {
+    name: string;
+  } | null;
   operation: {
     operation_name: string;
     part: {
@@ -43,7 +48,6 @@ interface Issue {
 }
 
 export default function MyIssues() {
-  usePageTitle("navigation.myIssues");
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
@@ -111,6 +115,8 @@ export default function MyIssues() {
       .from("issues")
       .select(`
         *,
+        current_cell:cells!issues_current_cell_id_fkey(name),
+        intended_next_cell:cells!issues_intended_next_cell_id_fkey(name),
         operation:operations!inner(
           operation_name,
           part:parts!inner(
@@ -370,6 +376,24 @@ export default function MyIssues() {
                       </div>
                     </div>
                   ) : null}
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {t("issues.currentLocation", "Current location")}
+                    </div>
+                    <div className="mt-1 text-sm text-foreground">
+                      {selectedIssue.current_cell?.name ||
+                        t("issues.noLocationCaptured", "Not captured")}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                      {t("issues.intendedNextLocation", "Intended next location")}
+                    </div>
+                    <div className="mt-1 text-sm text-foreground">
+                      {selectedIssue.intended_next_cell?.name ||
+                        t("issues.noLocationCaptured", "Not captured")}
+                    </div>
+                  </div>
                 </div>
 
                 {selectedIssue.resolution_notes ? (

@@ -2,6 +2,7 @@
 // New code should import from '@/lib/db' or the specific sub-module directly.
 export {
   fetchOperationsWithDetails,
+  fetchOperationLookupDetails,
   startTimeTracking,
   completeOperation,
   stopTimeTracking,

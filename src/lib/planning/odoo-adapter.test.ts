@@ -5,7 +5,8 @@ import type { PlanningConfig } from './types';
 function createConfig(overrides?: Partial<PlanningConfig>): PlanningConfig {
   return {
     adapter: 'odoo',
-    baseUrl: 'https://odoo.example.com/prod',
+    baseUrl: 'https://odoo.example.com',
+    databaseName: 'manufacturing_prod',
     username: 'admin',
     password: 'secret',
     syncIntervalMinutes: 15,
@@ -53,7 +54,7 @@ describe('OdooAdapter', () => {
       service: 'object',
       method: 'execute_kw',
       args: [
-        'prod',
+        'manufacturing_prod',
         7,
         'secret',
         'mrp.workcenter',
@@ -66,6 +67,13 @@ describe('OdooAdapter', () => {
         },
       ],
     });
+  });
+
+  it('requires an explicit database name instead of inferring one from the URL path', () => {
+    expect(() => new OdooAdapter(createConfig({
+      baseUrl: 'https://odoo.example.com/prod',
+      databaseName: '   ',
+    }))).toThrow('Odoo requires an explicit database name in planning configuration');
   });
 
   it('keeps missing Odoo dates as null instead of inventing current timestamps', async () => {
@@ -96,5 +104,66 @@ describe('OdooAdapter', () => {
 
     expect(orders[0].plannedStart).toBeNull();
     expect(orders[0].plannedEnd).toBeNull();
+  });
+
+  it('confirms draft orders before setting the actual start timestamp', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ jsonrpc: '2.0', id: 1, result: 7 }))
+      .mockResolvedValueOnce(jsonResponse({
+        jsonrpc: '2.0',
+        id: 2,
+        result: [{ state: 'draft' }],
+      }))
+      .mockResolvedValueOnce(jsonResponse({ jsonrpc: '2.0', id: 3, result: true }))
+      .mockResolvedValueOnce(jsonResponse({ jsonrpc: '2.0', id: 4, result: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const adapter = new OdooAdapter(createConfig());
+    await adapter.pushOrderStart('42', new Date('2026-05-26T08:30:00Z'));
+
+    const confirmPayload = JSON.parse((fetchMock.mock.calls[2][1] as RequestInit).body as string);
+    expect(confirmPayload.params.args.slice(3)).toEqual([
+      'mrp.production',
+      'action_confirm',
+      [[42]],
+      {},
+    ]);
+
+    const writePayload = JSON.parse((fetchMock.mock.calls[3][1] as RequestInit).body as string);
+    expect(writePayload.params.args.slice(3)).toEqual([
+      'mrp.production',
+      'write',
+      [[42], { date_start: '2026-05-26 08:30:00' }],
+      {},
+    ]);
+  });
+
+  it('completes orders through button_mark_done instead of writing state directly', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse({ jsonrpc: '2.0', id: 1, result: 7 }))
+      .mockResolvedValueOnce(jsonResponse({ jsonrpc: '2.0', id: 2, result: true }))
+      .mockResolvedValueOnce(jsonResponse({ jsonrpc: '2.0', id: 3, result: true }));
+    vi.stubGlobal('fetch', fetchMock);
+
+    const adapter = new OdooAdapter(createConfig());
+    await adapter.pushOrderCompletion('42', 8, 0);
+
+    const writePayload = JSON.parse((fetchMock.mock.calls[1][1] as RequestInit).body as string);
+    expect(writePayload.params.args.slice(3)).toEqual([
+      'mrp.production',
+      'write',
+      [[42], { qty_producing: 8 }],
+      {},
+    ]);
+
+    const donePayload = JSON.parse((fetchMock.mock.calls[2][1] as RequestInit).body as string);
+    expect(donePayload.params.args.slice(3)).toEqual([
+      'mrp.production',
+      'button_mark_done',
+      [[42]],
+      {},
+    ]);
   });
 });

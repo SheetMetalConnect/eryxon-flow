@@ -1,8 +1,15 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { useTenant } from "@/hooks/useTenant";
 import { logger } from "@/lib/logger";
+import {
+  OPERATOR_IDLE_TIMEOUT_MS,
+  OPERATOR_RESUME_STORAGE_KEY,
+  OPERATOR_SESSION_CHECK_INTERVAL_MS,
+  OPERATOR_SESSION_TTL_MS,
+  type OperatorSessionLockReason,
+} from "./operatorSession";
 
 /**
  * Active Operator - the employee currently working at the terminal
@@ -26,12 +33,12 @@ interface VerifyPinResult {
 
 interface OperatorContextType {
   activeOperator: ActiveOperator | null;
+  resumeOperator: ActiveOperator | null;
   isLoading: boolean;
+  lockReason: OperatorSessionLockReason;
   verifyAndSwitchOperator: (employeeId: string, pin: string) => Promise<VerifyPinResult>;
   clearActiveOperator: () => void;
 }
-
-const STORAGE_KEY = "active_operator";
 
 const OperatorContext = createContext<OperatorContextType | undefined>(undefined);
 
@@ -39,19 +46,40 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
   const profile = useProfile();
   const { tenant } = useTenant();
   const [activeOperator, setActiveOperator] = useState<ActiveOperator | null>(null);
+  const [resumeOperator, setResumeOperator] = useState<ActiveOperator | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [lockReason, setLockReason] = useState<OperatorSessionLockReason>(null);
+  const verifiedAtRef = useRef<number | null>(null);
+  const lastInteractionAtRef = useRef<number | null>(null);
 
-  // Load active operator from sessionStorage on mount (sessionStorage clears on tab close)
+  const clearResumeOperator = useCallback(() => {
+    setResumeOperator(null);
+    sessionStorage.removeItem(OPERATOR_RESUME_STORAGE_KEY);
+  }, []);
+
+  const lockOperatorSession = useCallback((
+    reason: Exclude<OperatorSessionLockReason, null>,
+  ) => {
+    setActiveOperator(null);
+    verifiedAtRef.current = null;
+    lastInteractionAtRef.current = null;
+    setLockReason(reason);
+  }, []);
+
+  // Restore only non-authorizing operator metadata after reload.
   useEffect(() => {
     if (tenant?.id === undefined) {
-      setActiveOperator(null);
-      setIsLoading(false);
-      return;
+      const resetTimeout = window.setTimeout(() => {
+        setActiveOperator(null);
+        setResumeOperator(null);
+        setLockReason(null);
+        setIsLoading(false);
+      }, 0);
+      return () => clearTimeout(resetTimeout);
     }
 
-    setIsLoading(true);
-    const stored = sessionStorage.getItem(STORAGE_KEY);
-    let nextOperator: ActiveOperator | null = null;
+    const stored = sessionStorage.getItem(OPERATOR_RESUME_STORAGE_KEY);
+    let nextResumeOperator: ActiveOperator | null = null;
     if (stored) {
       try {
         const parsed: unknown = JSON.parse(stored);
@@ -67,19 +95,24 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
           "tenant_id" in parsed &&
           (parsed as Record<string, unknown>).tenant_id === tenant.id
         ) {
-          nextOperator = parsed as ActiveOperator;
+          nextResumeOperator = parsed as ActiveOperator;
         } else {
-          // Only clear if we have a valid tenant and it doesn't match
-          sessionStorage.removeItem(STORAGE_KEY);
+          sessionStorage.removeItem(OPERATOR_RESUME_STORAGE_KEY);
         }
       } catch {
-        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(OPERATOR_RESUME_STORAGE_KEY);
       }
     }
+
     const loadTimeout = window.setTimeout(() => {
-      setActiveOperator(nextOperator);
+      setActiveOperator(null);
+      setResumeOperator(nextResumeOperator);
+      verifiedAtRef.current = null;
+      lastInteractionAtRef.current = null;
+      setLockReason(null);
       setIsLoading(false);
     }, 0);
+
     return () => clearTimeout(loadTimeout);
   }, [tenant?.id]);
 
@@ -87,13 +120,63 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     if (!profile) {
       const clearTimeoutId = window.setTimeout(() => {
         setActiveOperator(null);
-        sessionStorage.removeItem(STORAGE_KEY);
+        setResumeOperator(null);
+        setLockReason(null);
+        verifiedAtRef.current = null;
+        lastInteractionAtRef.current = null;
+        sessionStorage.removeItem(OPERATOR_RESUME_STORAGE_KEY);
         setIsLoading(false);
       }, 0);
+
       return () => clearTimeout(clearTimeoutId);
     }
     return;
   }, [profile]);
+
+  useEffect(() => {
+    if (!activeOperator) return;
+
+    const recordActivity = () => {
+      lastInteractionAtRef.current = Date.now();
+    };
+
+    const sessionCheck = window.setInterval(() => {
+      const now = Date.now();
+      const verifiedAt = verifiedAtRef.current;
+      const lastInteractionAt = lastInteractionAtRef.current;
+
+      if (verifiedAt !== null && now - verifiedAt >= OPERATOR_SESSION_TTL_MS) {
+        lockOperatorSession("session_expired");
+        return;
+      }
+
+      if (
+        lastInteractionAt !== null &&
+        now - lastInteractionAt >= OPERATOR_IDLE_TIMEOUT_MS
+      ) {
+        lockOperatorSession("idle_timeout");
+      }
+    }, OPERATOR_SESSION_CHECK_INTERVAL_MS);
+
+    const events: Array<keyof WindowEventMap> = [
+      "pointerdown",
+      "pointermove",
+      "keydown",
+      "scroll",
+      "touchstart",
+    ];
+
+    events.forEach((eventName) => {
+      window.addEventListener(eventName, recordActivity, { passive: true });
+    });
+
+    return () => {
+      window.clearInterval(sessionCheck);
+      events.forEach((eventName) => {
+        window.removeEventListener(eventName, recordActivity);
+      });
+    };
+  }, [activeOperator, lockOperatorSession]);
 
   const verifyAndSwitchOperator = useCallback(async (
     employeeId: string,
@@ -132,8 +215,13 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
           tenant_id: result.tenant_id,
         };
 
+        const now = Date.now();
         setActiveOperator(operator);
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(operator));
+        setResumeOperator(operator);
+        setLockReason(null);
+        verifiedAtRef.current = now;
+        lastInteractionAtRef.current = now;
+        sessionStorage.setItem(OPERATOR_RESUME_STORAGE_KEY, JSON.stringify(operator));
 
         return { success: true, operator };
       } else {
@@ -157,14 +245,19 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
 
   const clearActiveOperator = useCallback(() => {
     setActiveOperator(null);
-    sessionStorage.removeItem(STORAGE_KEY);
-  }, []);
+    setLockReason(null);
+    verifiedAtRef.current = null;
+    lastInteractionAtRef.current = null;
+    clearResumeOperator();
+  }, [clearResumeOperator]);
 
   return (
     <OperatorContext.Provider
       value={{
         activeOperator,
+        resumeOperator,
         isLoading,
+        lockReason,
         verifyAndSwitchOperator,
         clearActiveOperator,
       }}

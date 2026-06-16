@@ -54,6 +54,7 @@ import IssueForm from "./IssueForm";
 import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
 import SubstepsManager from "./SubstepsManager";
+import HandoffRemarksSection from "./HandoffRemarksSection";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 
@@ -336,6 +337,14 @@ export default function OperationDetailModal({
               </div>
             </div>
 
+            <HandoffRemarksSection
+              operationId={operation.id}
+              tenantId={profile?.tenant_id}
+              note={operation.notes}
+              updatedAt={operation.updated_at}
+              onSaved={onUpdate}
+            />
+
             {/* Quick controls: Rush + Hold */}
             <div className="flex items-center gap-2">
               <button
@@ -409,13 +418,6 @@ export default function OperationDetailModal({
                   </span>{" "}
                   {t("operations.currentlyWorking")}
                 </div>
-              </div>
-            )}
-
-            {typeof operation.notes === "string" && operation.notes && (
-              <div className="bg-muted/30 rounded-md p-3">
-                <div className="text-xs text-muted-foreground mb-1">{t("operations.notes")}</div>
-                <div className="text-sm">{operation.notes}</div>
               </div>
             )}
 

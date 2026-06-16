@@ -19,6 +19,8 @@ import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 
 const AVAILABLE_EVENTS = [
+  { id: 'batch.started', label: 'Batch Started', description: 'When a batch enters in_progress via operator or machine monitoring' },
+  { id: 'batch.completed', label: 'Batch Completed', description: 'When a batch completes via operator or machine monitoring' },
   { id: 'job.created', label: 'Job Created', description: 'When a new job is created via API' },
   { id: 'job.started', label: 'Job Started', description: 'When a job changes to in_progress' },
   { id: 'job.stopped', label: 'Job Stopped', description: 'When a job is put on hold' },
@@ -490,6 +492,8 @@ export default function ConfigWebhooks() {
                   <div>
                     <h4 className="text-sm font-medium text-muted-foreground mb-2">Job Lifecycle</h4>
                     <ul className="space-y-2 text-sm">
+                      <li><code className="bg-muted px-2 py-1 rounded">batch.started</code> - When a batch enters in_progress via operator or machine monitoring</li>
+                      <li><code className="bg-muted px-2 py-1 rounded">batch.completed</code> - When a batch completes via operator or machine monitoring</li>
                       <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - When a new job is created via API</li>
                       <li><code className="bg-muted px-2 py-1 rounded">job.started</code> - When a job changes to in_progress</li>
                       <li><code className="bg-muted px-2 py-1 rounded">job.stopped</code> - When a job is put on hold</li>

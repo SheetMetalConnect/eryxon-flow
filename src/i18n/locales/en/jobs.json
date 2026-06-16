@@ -93,7 +93,8 @@
     "packageCount": "Package Count",
     "packages": "packages",
     "noDeliveryAddress": "No delivery address set",
-    "fromParts": "from parts"
+    "fromParts": "from parts",
+    "status": "Status"
   },
   "parts": {
     "title": "Parts Management",
@@ -146,6 +147,7 @@
     "filterByMaterial": "Filter by Material",
     "filterByStatus": "Filter by Status",
     "filterByType": "Filter by Type",
+    "job": "Job",
     "jobNumber": "Job Number",
     "jobRequired": "Job is required",
     "loadingPartDetails": "Loading part details...",
@@ -171,6 +173,7 @@
     "parentPartOptional": "Parent part (optional)",
     "partCreated": "Part created successfully",
     "partDeleted": "Part deleted successfully",
+    "partDetails": "Part Details",
     "partNumber": "Part Number",
     "partNumberRequired": "Part number is required",
     "partNumberMaterialRequired": "Part number and material are required",
@@ -446,6 +449,7 @@
     "issueDetails": "Issue Details",
     "issueQueue": "Issue Review Queue",
     "issueReported": "Issue reported successfully",
+    "issueReportedPhotosPending": "Issue saved. Photos could not be attached this time.",
     "issueSummary": "Issue Summary",
     "issuePhoto": "Issue Photo",
     "low": "Low",
@@ -523,6 +527,9 @@
     },
     "affectedQuantity": "Affected Quantity",
     "affectedQuantityPlaceholder": "Number of parts affected",
+    "currentLocation": "Current location",
+    "intendedNextLocation": "Intended next location",
+    "noLocationCaptured": "Not captured",
     "shortfallAlert": "Production shortfall detected. Please provide details about why the target quantity was not met.",
     "shortfallContext": "Report production shortfall issue",
     "shortfallDescPlaceholder": "What prevented reaching the target quantity?"
@@ -646,7 +653,6 @@
     "metadataHint": "Enter extra information in valid JSON format",
     "editOperationsHint": "Editing operations is not yet available. Delete and recreate batch if needed.",
     "updating": "Updating...",
-    "updateBatch": "Update Batch",
-    "noNestedBatches": "No nested batches yet."
+    "updateBatch": "Update Batch"
   }
 }

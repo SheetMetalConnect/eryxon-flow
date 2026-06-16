@@ -81,19 +81,7 @@
     "packageCount": "Aantal pakketten",
     "packages": "pakketten",
     "noDeliveryAddress": "Geen afleveradres ingesteld",
-    "fromParts": "van onderdelen",
-    "noJobsFound": "Geen opdrachten gevonden",
-    "subtitle": "Beheer alle opdrachten, volg de voortgang en bewaak deadlines",
-    "total": "Totaal",
-    "overdue": "Achterstallig",
-    "dueThisWeek": "Deze week verwacht",
-    "details": "Details",
-    "files": "Bestanden",
-    "statusUpdated": "Status bijgewerkt",
-    "jobOnHold": "Opdracht is in de wacht gezet",
-    "jobResumed": "Opdracht is hervat",
-    "resumeJob": "Opdracht hervatten",
-    "putOnHold": "In de wacht zetten"
+    "fromParts": "van onderdelen"
   },
   "parts": {
     "title": "Onderdelenbeheer",
@@ -171,6 +159,7 @@
     "parentPartOptional": "Bovenliggend onderdeel (optioneel)",
     "partCreated": "Onderdeel succesvol aangemaakt",
     "partDeleted": "Onderdeel succesvol verwijderd",
+    "partDetails": "Onderdeeldetails",
     "partNumber": "Onderdeelnummer",
     "partNumberRequired": "Onderdeelnummer is vereist",
     "partNumberMaterialRequired": "Onderdeelnummer en materiaal zijn vereist",
@@ -430,13 +419,7 @@
     "filesSelected": "{{count}} foto('s)",
     "report": "Melden",
     "selectCategory": "Categorie selecteren",
-    "category": {
-      "equipment": "Machine",
-      "material": "Materiaal",
-      "quality": "Kwaliteit",
-      "safety": "Veiligheid",
-      "process": "Proces"
-    },
+    "category": "Categorie",
     "enterResolutionNotes": "Oplossingsnotities invoeren",
     "failedToReportIssue": "Probleem melden mislukt",
     "failedToUpdateIssue": "Probleem bijwerken mislukt",
@@ -445,6 +428,7 @@
     "issueDetails": "Probleemdetails",
     "issueQueue": "Probleembeoordelingswachtrij",
     "issueReported": "Probleem succesvol gemeld",
+    "issueReportedPhotosPending": "Probleem opgeslagen. Foto's konden deze keer niet worden toegevoegd.",
     "issueSummary": "Probleemsamenvatting",
     "issuePhoto": "Probleemfoto",
     "low": "Laag",
@@ -484,6 +468,9 @@
     "resolutionNotes": "Oplossingsnotities",
     "photos": "Foto's",
     "uploadPhoto": "Foto uploaden",
+    "currentLocation": "Huidige locatie",
+    "intendedNextLocation": "Beoogde volgende locatie",
+    "noLocationCaptured": "Niet vastgelegd",
     "job": "Opdracht",
     "part": "Onderdeel",
     "operation": "Bewerking",
@@ -522,11 +509,9 @@
     },
     "affectedQuantity": "Getroffen Aantal",
     "affectedQuantityPlaceholder": "Aantal getroffen onderdelen",
-    "shortfallAlert": "Productie tekort gedetecteerd. Geef details over waarom het doelbedrag niet is behaald.",
+    "shortfallAlert": "Productietekort gedetecteerd. Geef details over waarom de doelhoeveelheid niet is behaald.",
     "shortfallContext": "Meld productie tekort probleem",
-    "shortfallDescPlaceholder": "Wat verhinderde het behalen van de doelhoeveelheid?",
-    "whatKindOfIssue": "Wat voor probleem?",
-    "moreDetails": "Meer details"
+    "shortfallDescPlaceholder": "Wat verhinderde het behalen van de doelhoeveelheid?"
   },
   "jobCreate": {
     "title": "Nieuwe Order Aanmaken",
@@ -647,7 +632,6 @@
     "metadataHint": "Voer extra informatie in in geldig JSON-formaat",
     "editOperationsHint": "Bewerken van bewerkingen is nog niet beschikbaar. Verwijder de batch en maak deze opnieuw aan indien nodig.",
     "updating": "Bijwerken...",
-    "updateBatch": "Batch bijwerken",
-    "noNestedBatches": "Nog geen geneste batches."
+    "updateBatch": "Batch bijwerken"
   }
 }

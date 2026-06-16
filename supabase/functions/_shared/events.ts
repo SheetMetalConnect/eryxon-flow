@@ -16,6 +16,8 @@ export type SyncEventType =
   | "sync.batch.completed";
 
 export type EntityEventType =
+  | "batch.started"
+  | "batch.completed"
   | "job.created"
   | "job.updated"
   | "job.started"

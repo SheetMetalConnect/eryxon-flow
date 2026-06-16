@@ -1,7 +1,17 @@
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import type { HandlerContext } from "@shared/handler.ts";
-import { BadRequestError, createSuccessResponse, NotFoundError } from "@shared/validation/errorHandler.ts";
+import {
+  BadRequestError,
+  createSuccessResponse,
+  NotFoundError,
+} from "@shared/validation/errorHandler.ts";
+import {
+  isTenantScopedObjectPath,
+  normalizePrivateObjectPath,
+  PRIVATE_SIGNED_URL_TTL_SECONDS,
+  resolveAuthorizedPrivateObjectPath,
+} from "@shared/private-storage.ts";
 
 function normalizeOperationIds(value: unknown): string[] {
   if (value === undefined || value === null) return [];
@@ -23,6 +33,24 @@ function normalizeOperationIds(value: unknown): string[] {
   return ids;
 }
 
+function normalizeProductionMode(
+  value: unknown,
+  batchType: unknown,
+): "manual" | "automated" | undefined {
+  if (value === undefined) return undefined;
+  if (value !== "manual" && value !== "automated") {
+    throw new BadRequestError(
+      "production_mode must be either 'manual' or 'automated'",
+    );
+  }
+  if (value === "automated" && batchType !== "laser_nesting") {
+    throw new BadRequestError(
+      "production_mode 'automated' is only supported for laser_nesting batches",
+    );
+  }
+  return value;
+}
+
 async function assertTenantRecord(
   supabase: any,
   table: string,
@@ -42,7 +70,9 @@ async function assertTenantRecord(
   }
 
   if (!data) {
-    throw new BadRequestError(`${label} must belong to the authenticated tenant`);
+    throw new BadRequestError(
+      `${label} must belong to the authenticated tenant`,
+    );
   }
 }
 
@@ -52,17 +82,91 @@ async function validateBatchReferences(
   batchData: Record<string, unknown>,
   batchId?: string,
 ): Promise<void> {
-  if (typeof batchData.cell_id === "string" && batchData.cell_id.trim().length > 0) {
-    await assertTenantRecord(supabase, "cells", batchData.cell_id.trim(), tenantId, "cell_id");
+  if (
+    typeof batchData.cell_id === "string" && batchData.cell_id.trim().length > 0
+  ) {
+    await assertTenantRecord(
+      supabase,
+      "cells",
+      batchData.cell_id.trim(),
+      tenantId,
+      "cell_id",
+    );
   }
 
-  if (typeof batchData.parent_batch_id === "string" && batchData.parent_batch_id.trim().length > 0) {
+  if (
+    typeof batchData.parent_batch_id === "string" &&
+    batchData.parent_batch_id.trim().length > 0
+  ) {
     const parentBatchId = batchData.parent_batch_id.trim();
     if (batchId && parentBatchId === batchId) {
-      throw new BadRequestError("parent_batch_id cannot reference the same batch");
+      throw new BadRequestError(
+        "parent_batch_id cannot reference the same batch",
+      );
     }
-    await assertTenantRecord(supabase, "operation_batches", parentBatchId, tenantId, "parent_batch_id");
+    await assertTenantRecord(
+      supabase,
+      "operation_batches",
+      parentBatchId,
+      tenantId,
+      "parent_batch_id",
+    );
   }
+}
+
+function normalizeBatchImageField(
+  value: unknown,
+  tenantId: string,
+  fieldName: "nesting_image_url" | "layout_image_url",
+): string | null | undefined {
+  if (value === undefined) return undefined;
+  if (value === null || value === "") return null;
+  if (typeof value !== "string") {
+    throw new BadRequestError(`${fieldName} must be a string`);
+  }
+
+  const normalizedPath = normalizePrivateObjectPath(value, "batch-images");
+  if (!normalizedPath || !isTenantScopedObjectPath(normalizedPath, tenantId)) {
+    throw new BadRequestError(
+      `${fieldName} must be a tenant-scoped batch-images object path`,
+    );
+  }
+
+  return normalizedPath;
+}
+
+function normalizeBatchImageFields(
+  batchData: Record<string, unknown>,
+  tenantId: string,
+): Record<string, unknown> {
+  const normalized = { ...batchData };
+  const productionMode = normalizeProductionMode(
+    batchData.production_mode,
+    batchData.batch_type,
+  );
+  if (productionMode !== undefined) {
+    normalized.production_mode = productionMode;
+  }
+
+  const nestingImagePath = normalizeBatchImageField(
+    batchData.nesting_image_url,
+    tenantId,
+    "nesting_image_url",
+  );
+  if (nestingImagePath !== undefined) {
+    normalized.nesting_image_url = nestingImagePath;
+  }
+
+  const layoutImagePath = normalizeBatchImageField(
+    batchData.layout_image_url,
+    tenantId,
+    "layout_image_url",
+  );
+  if (layoutImagePath !== undefined) {
+    normalized.layout_image_url = layoutImagePath;
+  }
+
+  return normalized;
 }
 
 async function assertOperationsBelongToTenant(
@@ -82,10 +186,14 @@ async function assertOperationsBelongToTenant(
     throw new Error(`Failed to validate operation_ids: ${error.message}`);
   }
 
-  const foundIds = new Set((data || []).map((operation: { id: string }) => operation.id));
+  const foundIds = new Set(
+    (data || []).map((operation: { id: string }) => operation.id),
+  );
   const missingIds = operationIds.filter((id) => !foundIds.has(id));
   if (missingIds.length > 0) {
-    throw new BadRequestError("operation_ids must reference operations in the authenticated tenant");
+    throw new BadRequestError(
+      "operation_ids must reference operations in the authenticated tenant",
+    );
   }
 }
 
@@ -103,11 +211,15 @@ async function assertOperationsUnassigned(
     .in("operation_id", operationIds);
 
   if (error) {
-    throw new Error(`Failed to validate batch operation assignments: ${error.message}`);
+    throw new Error(
+      `Failed to validate batch operation assignments: ${error.message}`,
+    );
   }
 
   if ((data || []).length > 0) {
-    throw new BadRequestError("operation_ids must not already be assigned to another batch");
+    throw new BadRequestError(
+      "operation_ids must not already be assigned to another batch",
+    );
   }
 }
 
@@ -129,14 +241,18 @@ async function assertOperationsUnassigned(
  *   operation_ids?: string[]
  * }
  */
-async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Response> {
+async function handleCreateBatch(
+  req: Request,
+  ctx: HandlerContext,
+): Promise<Response> {
   const { supabase, tenantId } = ctx;
   const body = await req.json();
 
   const { operation_ids, ...batchData } = body;
+  const normalizedBatchData = normalizeBatchImageFields(batchData, tenantId);
   const operationIds = normalizeOperationIds(operation_ids);
 
-  await validateBatchReferences(supabase, tenantId, batchData);
+  await validateBatchReferences(supabase, tenantId, normalizedBatchData);
   await assertOperationsBelongToTenant(supabase, tenantId, operationIds);
   await assertOperationsUnassigned(supabase, tenantId, operationIds);
 
@@ -144,9 +260,9 @@ async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Res
   const { data: batch, error: batchError } = await supabase
     .from("operation_batches")
     .insert({
-      ...batchData,
+      ...normalizedBatchData,
       tenant_id: tenantId,
-      status: batchData.status || "draft",
+      status: normalizedBatchData.status || "draft",
     })
     .select()
     .single();
@@ -188,7 +304,10 @@ async function handleCreateBatch(req: Request, ctx: HandlerContext): Promise<Res
   }, 201);
 }
 
-async function handleUpdateBatch(req: Request, ctx: HandlerContext): Promise<Response> {
+async function handleUpdateBatch(
+  req: Request,
+  ctx: HandlerContext,
+): Promise<Response> {
   const { supabase, tenantId, url } = ctx;
   const batchId = url.searchParams.get("id");
   if (!batchId) {
@@ -197,12 +316,16 @@ async function handleUpdateBatch(req: Request, ctx: HandlerContext): Promise<Res
 
   const body = await req.json();
   if (body.operation_ids !== undefined) {
-    throw new BadRequestError("operation_ids cannot be changed with PATCH; use api-batch-lifecycle/add-operations");
+    throw new BadRequestError(
+      "operation_ids cannot be changed with PATCH; use api-batch-lifecycle/add-operations",
+    );
   }
 
-  await validateBatchReferences(supabase, tenantId, body, batchId);
+  const normalizedBody = normalizeBatchImageFields(body, tenantId);
 
-  const updateData = { ...body };
+  await validateBatchReferences(supabase, tenantId, normalizedBody, batchId);
+
+  const updateData = { ...normalizedBody };
   delete updateData.id;
   delete updateData.tenant_id;
   delete updateData.created_at;
@@ -231,11 +354,71 @@ async function handleUpdateBatch(req: Request, ctx: HandlerContext): Promise<Res
   return createSuccessResponse({ batch: data });
 }
 
-// Main CRUD handler
-serveApi(
-  createCrudHandler({
-    table: "operation_batches",
-    selectFields: `
+async function handleGetBatch(
+  req: Request,
+  ctx: HandlerContext,
+): Promise<Response> {
+  if (ctx.lastSegment !== "image-url") {
+    return defaultBatchHandler(req, ctx);
+  }
+
+  const batchId = ctx.pathSegments[ctx.pathSegments.length - 2];
+  if (!batchId || batchId === "api-batches") {
+    throw new BadRequestError("Batch ID is required");
+  }
+
+  const requestedPath = ctx.url.searchParams.get("path");
+  if (!requestedPath) {
+    throw new BadRequestError("path is required");
+  }
+
+  const { supabase, tenantId } = ctx;
+  const { data: batch, error: batchError } = await supabase
+    .from("operation_batches")
+    .select("nesting_image_url, layout_image_url")
+    .eq("id", batchId)
+    .eq("tenant_id", tenantId)
+    .maybeSingle();
+
+  if (batchError) {
+    throw new Error(
+      `Failed to validate batch image access: ${batchError.message}`,
+    );
+  }
+
+  if (!batch) {
+    throw new NotFoundError("batch", batchId);
+  }
+
+  const authorizedPath = resolveAuthorizedPrivateObjectPath(
+    [batch.nesting_image_url, batch.layout_image_url],
+    requestedPath,
+    tenantId,
+    "batch-images",
+  );
+
+  if (!authorizedPath) {
+    throw new NotFoundError("Batch image not found");
+  }
+
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+    .from("batch-images")
+    .createSignedUrl(authorizedPath, PRIVATE_SIGNED_URL_TTL_SECONDS);
+
+  if (signedUrlError) {
+    throw new Error(`Failed to create signed URL: ${signedUrlError.message}`);
+  }
+
+  return createSuccessResponse({
+    path: authorizedPath,
+    url: signedUrlData?.signedUrl || null,
+    expires_in: PRIVATE_SIGNED_URL_TTL_SECONDS,
+  });
+}
+
+const batchesCrudConfig = {
+  table: "operation_batches",
+  selectFields: `
       id,
       batch_number,
       batch_type,
@@ -244,6 +427,7 @@ serveApi(
       material,
       thickness_mm,
       notes,
+      production_mode,
       nesting_metadata,
       nesting_image_url,
       layout_image_url,
@@ -258,15 +442,24 @@ serveApi(
       cell:cells(id, name),
       created_by_profile:profiles!operation_batches_created_by_fkey(full_name)
     `,
-    searchFields: ["batch_number", "material"],
-    allowedFilters: ["status", "batch_type", "cell_id", "material"],
-    fuzzyFilters: ["batch_number", "material"],
-    sortableFields: ["batch_number", "created_at", "status", "batch_type"],
-    defaultSort: { field: "created_at", direction: "desc" },
-    softDelete: false,
+  searchFields: ["batch_number", "material"],
+  allowedFilters: ["status", "batch_type", "cell_id", "material"],
+  fuzzyFilters: ["batch_number", "material"],
+  sortableFields: ["batch_number", "created_at", "status", "batch_type"],
+  defaultSort: { field: "created_at", direction: "desc" as const },
+  softDelete: false,
+};
+
+const defaultBatchHandler = createCrudHandler(batchesCrudConfig);
+
+// Main CRUD handler
+serveApi(
+  createCrudHandler({
+    ...batchesCrudConfig,
     customHandlers: {
+      get: handleGetBatch,
       post: handleCreateBatch,
       patch: handleUpdateBatch,
     },
-  })
+  }),
 );

@@ -42,8 +42,38 @@
       "material": "Material",
       "quantity": "Menge",
       "hours": "Stunden",
+      "plannedStart": "Start",
       "dueDate": "Fälligkeitsdatum",
-      "files": "Dateien"
+      "files": "Dateien",
+      "backlogStatus": "Status"
+    },
+    "encoding": {
+      "status": {
+        "active": "Aktiv",
+        "pending": "Wartend",
+        "expected": "Erwartet",
+        "done": "Fertig",
+        "blocked": "Blockiert"
+      },
+      "type": {
+        "scan": "Scan",
+        "cut": "Schneiden",
+        "bend": "Biegen",
+        "weld": "Schweißen",
+        "assembly": "Montage",
+        "qc": "QS"
+      },
+      "priority": {
+        "rush": "Eil"
+      }
+    },
+    "instructions": {
+      "title": "Zellanweisungen",
+      "stepHighlights": "Schritthinweise",
+      "viewSteps": "Schritte ansehen",
+      "fallbackHint": "Verwenden Sie die Routingschritte als Ersatz für die Bedienanweisung.",
+      "missingTitle": "Anweisungen fehlen",
+      "missingBody": "Für diese Zelle sind noch keine Bedienanweisungen hinterlegt. Prüfen Sie die Routingschritte, bevor Sie beginnen."
     },
     "inProcess": "In Bearbeitung",
     "inBuffer": "Im Puffer",
@@ -91,6 +121,74 @@
       "unknown": "Unbekannt",
       "finalStep": "Letzter Schritt",
       "cannotProceed": "Kann nicht fortfahren - nächste Zelle auf Kapazität"
+    },
+    "batchFlow": {
+      "title": "Batch {{batchNumber}} erkannt",
+      "description": "Dieser Arbeitsgang gehört zu Batch {{batchNumber}}. Wählen Sie, ob nur dieser Arbeitsgang oder der gesamte Batch bearbeitet werden soll.",
+      "descriptionWithSheet": "Dieser Arbeitsgang gehört zu Batch {{batchNumber}} auf Blech {{sheetNumber}}. Wählen Sie, ob nur dieser Arbeitsgang oder der gesamte Batch bearbeitet werden soll.",
+      "members": "{{count}} Positionen",
+      "ready": "{{count}} bereit",
+      "completed": "{{count}} abgeschlossen",
+      "active": "{{count}} aktiv",
+      "singleAction": "Nur diesen Arbeitsgang scannen",
+      "batchAction": "Gesamten Batch scannen",
+      "batchRunning": "Batch-Ablauf aktiv",
+      "chooseMode": "Wählen Sie vor dem Start Einzelarbeitsgang oder Gesamtbatch aus.",
+      "startBatch": "Batch starten",
+      "stopBatch": "Batch stoppen",
+      "batchStarted": "Batch-Ablauf für {{count}} Arbeitsgänge gestartet",
+      "batchStopped": "Batch-Ablauf für {{count}} Arbeitsgänge gestoppt",
+      "unavailable": {
+        "closed": "Dieser Batch ist bereits abgeschlossen, daher ist das Scannen des Gesamtbatchs nicht verfügbar.",
+        "partial": "Einige Batch-Mitglieder wurden bereits gestartet oder abgeschlossen. Das Gesamtbatch-Scannen ist deaktiviert, um Teilbatch-Konflikte zu vermeiden.",
+        "active_elsewhere": "Ein anderer Bediener arbeitet bereits an einem Teil dieses Batchs. Beenden oder stoppen Sie diese Arbeit, bevor Sie den Gesamtbatch starten.",
+        "completed_members": "Einige Batch-Mitglieder sind bereits abgeschlossen. Fahren Sie stattdessen mit einem einzelnen Arbeitsgang fort."
+      }
+    },
+    "scanner": {
+      "success": "{{token}} gescannt und {{operation}} ausgewählt.",
+      "errors": {
+        "no_match": "{{token}} wurde gescannt, aber in diesem Mandanten ist kein passender Arbeitsgang verfügbar.",
+        "duplicate_match": "{{token}} wurde gescannt, passt aber zu {{count}} Arbeitsgängen. Verwenden Sie ein genaueres Token.",
+        "closed": "{{token}} wurde gescannt, aber {{operation}} ist bereits geschlossen oder abgeschlossen.",
+        "active_by_other_operator": "{{token}} wurde gescannt, aber {{operation}} ist bereits für {{operator}} aktiv."
+      }
+    },
+    "workModes": {
+      "title": "Operatorstatus",
+      "description": "Halten Sie Ruesten/Vorbereitung getrennt von Produktion und zeigen Sie, was jetzt starten kann.",
+      "workingHoursActive": "Arbeitszeit aktiv",
+      "outsideWorkingHours": "Ausserhalb der Arbeitszeit",
+      "modes": {
+        "notWorking": "Nicht arbeiten",
+        "setup": "Ruesten / Vorbereitung",
+        "production": "Produktion"
+      },
+      "actions": {
+        "startSetup": "Ruesten starten",
+        "startProduction": "Produktion starten"
+      },
+      "summary": {
+        "readyForSetup": "{{count}} bereit fuer Ruesten",
+        "readyForProduction": "{{count}} bereit fuer Produktion",
+        "blockedSetup": "{{count}} durch Ruesten blockiert",
+        "blockedWorkingHours": "{{count}} durch Arbeitszeit blockiert"
+      },
+      "readiness": {
+        "not_working": "Nicht arbeiten",
+        "blocked_working_hours": "Durch Arbeitszeit blockiert",
+        "blocked_setup": "Ruesten zuerst erforderlich",
+        "ready_for_setup": "Bereit fuer Ruesten",
+        "ready_for_production": "Bereit fuer Produktion",
+        "in_setup": "Wird vorbereitet",
+        "in_production": "Wird produziert"
+      },
+      "errors": {
+        "selectMode": "Waehlen Sie vor dem Start Ruesten/Vorbereitung oder Produktion.",
+        "outsideWorkingHours": "Dieser Mandant erlaubt Terminalarbeit nur waehrend der konfigurierten Arbeitszeit.",
+        "setupRequired": "Produktion ist blockiert, bis Ruesten/Vorbereitung fuer diesen Arbeitsgang erfasst wurde.",
+        "setupDisabled": "Der Ruest-/Vorbereitungsmodus ist fuer diesen Mandanten deaktiviert."
+      }
     }
   },
   "sessionTracking": {
@@ -153,9 +251,12 @@
     "authRequiredDesc": "Melden Sie sich mit Ihrem Terminal-Konto an, um Zugang zur Werkhalle zu erhalten.",
     "goToLogin": "Zur Anmeldung",
     "currentOperator": "Aktueller Bediener",
-    "continueAs": "Weiter als",
+    "reverifyAs": "Erneut verifizieren als",
     "switchOperator": "Bediener wechseln",
     "switchToAnother": "Zu anderem Bediener wechseln",
+    "reverifyHint": "Geben Sie die PIN des aktuellen Bedieners erneut ein, um dieses gemeinsam genutzte Gerät zu entsperren",
+    "idleTimeoutLocked": "Dieses gemeinsam genutzte Terminal wurde nach Inaktivität gesperrt. Geben Sie die Bediener-PIN erneut ein, um fortzufahren.",
+    "sessionExpiredLocked": "Dieses gemeinsam genutzte Terminal erfordert eine erneute Bediener-Verifizierung, bevor die Arbeit fortgesetzt werden kann.",
     "accountLocked": "Konto vorübergehend gesperrt",
     "tryAgainIn": "Erneut versuchen in {{minutes}} Minute(n)",
     "attemptsRemaining": "{{count}} Versuch(e) verbleibend"

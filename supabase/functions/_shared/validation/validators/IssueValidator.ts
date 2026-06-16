@@ -30,7 +30,9 @@ export interface IssueData {
   operation_id: string;
   title: string;
   description: string;
+  current_cell_id?: string;
   issue_type?: string;
+  intended_next_cell_id?: string;
   severity?: string;
   status?: string;
   reported_by_id?: string;
@@ -128,6 +130,28 @@ export class IssueValidator extends BaseValidator<IssueData> {
         false,
       );
       if (reporterError) errors.push(reporterError);
+    }
+
+    if (entity.current_cell_id !== undefined) {
+      const currentCellError = this.validateForeignKey(
+        entity,
+        "current_cell_id",
+        context.validCellIds,
+        index,
+        false,
+      );
+      if (currentCellError) errors.push(currentCellError);
+    }
+
+    if (entity.intended_next_cell_id !== undefined) {
+      const nextCellError = this.validateForeignKey(
+        entity,
+        "intended_next_cell_id",
+        context.validCellIds,
+        index,
+        false,
+      );
+      if (nextCellError) errors.push(nextCellError);
     }
 
     // Optional: resolved_by_id

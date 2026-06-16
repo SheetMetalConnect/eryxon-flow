@@ -46,6 +46,25 @@ export const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   advancedCAD: true,
 };
 
+const FEATURE_FLAG_KEYS = Object.keys(DEFAULT_FEATURE_FLAGS) as Array<keyof FeatureFlags>;
+
+function normalizeFeatureFlags(storedFlags: unknown): FeatureFlags {
+  const normalized = { ...DEFAULT_FEATURE_FLAGS };
+
+  if (!storedFlags || typeof storedFlags !== 'object') {
+    return normalized;
+  }
+
+  const raw = storedFlags as Record<string, unknown>;
+  for (const key of FEATURE_FLAG_KEYS) {
+    if (typeof raw[key] === 'boolean') {
+      normalized[key] = raw[key] as boolean;
+    }
+  }
+
+  return normalized;
+}
+
 /**
  * Feature flag metadata for UI display
  */
@@ -139,11 +158,7 @@ export function useFeatureFlags() {
 
       if (error) throw error;
 
-      const storedFlags = data?.feature_flags as Partial<FeatureFlags> | null;
-      return {
-        ...DEFAULT_FEATURE_FLAGS,
-        ...(storedFlags || {}),
-      };
+      return normalizeFeatureFlags(data?.feature_flags);
     },
     enabled: !!tenant?.id,
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
@@ -153,15 +168,29 @@ export function useFeatureFlags() {
     mutationFn: async (newFlags: Partial<FeatureFlags>) => {
       if (!tenant?.id) throw new Error('No tenant');
 
+      const { data: tenantData, error: tenantError } = await supabase
+        .from('tenants')
+        .select('feature_flags')
+        .eq('id', tenant.id)
+        .single();
+
+      if (tenantError) throw tenantError;
+
       const mergedFlags = {
-        ...DEFAULT_FEATURE_FLAGS,
-        ...flags,
+        ...normalizeFeatureFlags(tenantData?.feature_flags),
         ...newFlags,
       };
 
+      const preservedFlags =
+        tenantData?.feature_flags &&
+        typeof tenantData.feature_flags === 'object' &&
+        !Array.isArray(tenantData.feature_flags)
+          ? { ...(tenantData.feature_flags as Record<string, unknown>) }
+          : {};
+
       const { error } = await supabase
         .from('tenants')
-        .update({ feature_flags: mergedFlags })
+        .update({ feature_flags: { ...preservedFlags, ...mergedFlags } })
         .eq('id', tenant.id);
 
       if (error) throw error;
