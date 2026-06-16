@@ -60,19 +60,45 @@ const mockCells = [
   { id: "cell-2", name: "Brake", color: "#16a34a" },
 ];
 
-const createQueryBuilder = (data: unknown[]) => ({
-  select: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  order: vi.fn().mockResolvedValue({ data, error: null }),
-});
+const tenantSettings = {
+  feature_flags: null,
+  factory_opening_time: "07:00:00",
+  factory_closing_time: "17:00:00",
+  timezone: "UTC",
+};
+
+const createQueryBuilder = (table: string, data: unknown[]) => {
+  const chain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn(),
+    single: vi.fn(),
+  };
+
+  chain.order.mockImplementation(() =>
+    Promise.resolve({
+      data,
+      error: null,
+    }),
+  );
+
+  chain.single.mockImplementation(() =>
+    Promise.resolve({
+      data: table === "tenants" ? tenantSettings : null,
+      error: null,
+    }),
+  );
+
+  return chain;
+};
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: vi.fn((table: string) => {
       if (table === "cells") {
-        return createQueryBuilder(mockCells);
+        return createQueryBuilder(table, mockCells);
       }
-      return createQueryBuilder([]);
+      return createQueryBuilder(table, []);
     }),
     channel: vi.fn(() => ({
       on: vi.fn().mockReturnThis(),
