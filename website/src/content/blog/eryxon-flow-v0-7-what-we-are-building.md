@@ -18,7 +18,7 @@ relatedLinks:
     href: "/features/batch-management/"
 ---
 
-Eryxon Flow v0.7 is about removing ambiguity on the shop floor. A planner should know where a part is supposed to go next. An operator should know whether work is ready for setup or production. A quality issue should carry enough context to fix the problem without reconstructing the route afterwards.
+Eryxon Flow v0.7 is about removing ambiguity on the shop floor. A planner should know where a part is supposed to go next. An operator should know whether work is ready for setup or production. A quality issue should carry enough context to fix the problem without reconstructing the route afterward.
 
 The current release candidate focuses on four connected areas.
 
