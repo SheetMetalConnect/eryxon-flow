@@ -15,7 +15,7 @@ BEGIN
     ADD CONSTRAINT issues_current_cell_tenant_fkey
     FOREIGN KEY (tenant_id, current_cell_id)
     REFERENCES public.cells(tenant_id, id)
-    ON DELETE SET NULL;
+    ON DELETE SET NULL (current_cell_id);
   END IF;
 
   IF NOT EXISTS (
@@ -26,7 +26,7 @@ BEGIN
     ADD CONSTRAINT issues_intended_next_cell_tenant_fkey
     FOREIGN KEY (tenant_id, intended_next_cell_id)
     REFERENCES public.cells(tenant_id, id)
-    ON DELETE SET NULL;
+    ON DELETE SET NULL (intended_next_cell_id);
   END IF;
 END $$;
 
