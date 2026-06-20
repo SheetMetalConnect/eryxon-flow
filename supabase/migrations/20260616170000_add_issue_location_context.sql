@@ -4,6 +4,7 @@ ADD COLUMN IF NOT EXISTS intended_next_cell_id uuid;
 
 CREATE INDEX IF NOT EXISTS idx_issues_current_cell_id ON public.issues (current_cell_id);
 CREATE INDEX IF NOT EXISTS idx_issues_intended_next_cell_id ON public.issues (intended_next_cell_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cells_tenant_id_id ON public.cells (tenant_id, id);
 
 DO $$
 BEGIN
