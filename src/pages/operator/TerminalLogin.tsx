@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
@@ -31,6 +31,7 @@ import { logger } from "@/lib/logger";
 export default function TerminalLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const profile = useProfile();
   const { user } = useSession();
   const { loading: authLoading } = useAuthActions();
@@ -105,7 +106,8 @@ export default function TerminalLogin() {
       const result = await verifyAndSwitchOperator(employeeId.trim(), pin);
 
       if (result.success) {
-        navigate(ROUTES.OPERATOR.WORK_QUEUE);
+        const from = (location.state as { from?: string })?.from;
+        navigate(from || ROUTES.OPERATOR.WORK_QUEUE);
       } else {
         setErrorCode(result.error_code || null);
         setError(result.error_message || t("terminalLogin.invalidCredentials"));

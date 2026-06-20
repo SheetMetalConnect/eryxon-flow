@@ -624,11 +624,7 @@
     "viewGuide": "Bekijk Self-Hosting Handleiding",
     "needHelp": "Hulp Nodig?",
     "helpDescription": "Sheet Metal Connect e.U. kan u helpen bij het opzetten en aanpassen van Eryxon Flow voor uw activiteiten.",
-    "usageThisMonth": "Gebruik deze maand",
     "users": "Gebruikers",
-    "apiRequests": "API Verzoeken",
-    "today": "vandaag",
-    "requestsThisMonth": "verzoeken deze maand",
     "upgradeRequest": {
       "subject": "Upgrade Aanvraag: {{planName}}",
       "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"

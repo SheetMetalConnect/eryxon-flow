@@ -15,6 +15,20 @@ ON CONFLICT (id) DO NOTHING;
 -- Storage policies (Idempotent using DO blocks for PG15 compatibility)
 DO $$
 BEGIN
+    -- Drop legacy policies without tenant isolation
+    DROP POLICY IF EXISTS "Anyone can upload to parts-images" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can read from parts-images" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can delete from parts-images" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can upload to issues" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can read from issues" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can delete from issues" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can upload to parts-cad" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can read from parts-cad" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can delete from parts-cad" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can upload to batch-images" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can read from batch-images" ON storage.objects;
+    DROP POLICY IF EXISTS "Anyone can delete from batch-images" ON storage.objects;
+
     -- parts-images
     BEGIN CREATE POLICY "Tenant scoped upload to parts-images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'parts-images' AND (storage.foldername(name))[1] = (SELECT tenant_id::text FROM public.profiles WHERE id = auth.uid())); EXCEPTION WHEN duplicate_object THEN NULL; END;
     BEGIN CREATE POLICY "Tenant scoped read from parts-images" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'parts-images' AND (storage.foldername(name))[1] = (SELECT tenant_id::text FROM public.profiles WHERE id = auth.uid())); EXCEPTION WHEN duplicate_object THEN NULL; END;

@@ -418,7 +418,13 @@
     "filesSelected": "{{count}} Foto(s)",
     "report": "Melden",
     "selectCategory": "Kategorie auswählen",
-    "category": "Kategorie",
+    "category": {
+      "equipment": "Ausrüstung",
+      "material": "Material",
+      "quality": "Qualität",
+      "safety": "Sicherheit",
+      "process": "Prozess"
+    },
     "enterResolutionNotes": "Lösungsnotizen eingeben",
     "failedToReportIssue": "Problem konnte nicht gemeldet werden",
     "failedToUpdateIssue": "Problem konnte nicht aktualisiert werden",

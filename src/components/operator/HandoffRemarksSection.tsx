@@ -80,7 +80,7 @@ export default function HandoffRemarksSection({
     setCurrentUpdatedAt(updatedAt ?? null);
     setDraft(note ?? "");
     setValidationMessage(null);
-  }, [isEditing, note, updatedAt]);
+  }, [note, updatedAt]);
 
   useEffect(() => {
     if (!currentNote || isExpanded) {

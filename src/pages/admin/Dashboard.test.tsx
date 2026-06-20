@@ -203,6 +203,10 @@ describe("Dashboard", () => {
     vi.stubGlobal("clearInterval", vi.fn());
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("renders active job progress for not-started and in-progress jobs", async () => {
     render(React.createElement(Dashboard));
 

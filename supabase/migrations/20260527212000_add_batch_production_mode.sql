@@ -17,8 +17,12 @@ DO $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1
-    FROM pg_constraint
-    WHERE conname = 'operation_batches_automated_laser_only'
+    FROM pg_constraint c
+    JOIN pg_class t ON c.conrelid = t.oid
+    JOIN pg_namespace n ON t.relnamespace = n.oid
+    WHERE c.conname = 'operation_batches_automated_laser_only'
+      AND t.relname = 'operation_batches'
+      AND n.nspname = 'public'
   ) THEN
     ALTER TABLE public.operation_batches
       ADD CONSTRAINT operation_batches_automated_laser_only

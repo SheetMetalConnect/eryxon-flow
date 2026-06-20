@@ -509,7 +509,7 @@ Deno.serve(async (req) => {
   const repository = createRepository(supabase);
   const service = createBatchLifecycleService(repository, {
     dispatch: (tenantId, event) =>
-      dispatchEvent(tenantId, event.eventType, event.data, event.context),
+      dispatchEvent(tenantId, event.eventType, event.data),
   });
   const monitor = createAutomatedExceptionMonitor(
     createAutomatedMonitorRepository(supabase),
@@ -522,12 +522,11 @@ Deno.serve(async (req) => {
     const batchId = url.searchParams.get("id");
     const action = url.pathname.split("/").pop(); // start, stop, add-operations
 
-    if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
-
     const body = await req.json().catch(() => ({}));
 
     // ── Route to action ────────────────────────────────────────────
     if (action === "start") {
+      if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
       const data = await service.startBatch(
         tenantId,
         batchId,
@@ -537,6 +536,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "stop") {
+      if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
       const data = await service.stopBatch(
         tenantId,
         batchId,
@@ -546,6 +546,9 @@ Deno.serve(async (req) => {
     }
 
     if (action === "add-operations") {
+      if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
+      const batch = await repository.getBatch(tenantId, batchId);
+      if (!batch) return errorResponse("NOT_FOUND", "Batch not found", 404);
       if (batch.status !== "draft" && batch.status !== "ready") {
         return errorResponse("INVALID_STATE", `Cannot modify operations in '${batch.status}' status`);
       }

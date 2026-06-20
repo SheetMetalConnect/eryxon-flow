@@ -154,8 +154,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         .select("cell_id, sequence, status")
         .eq("part_id", typedOperation.part.id)
         .gt("sequence", typedOperation.sequence)
-        .order("sequence", { ascending: true })
-        .limit(5);
+        .order("sequence", { ascending: true });
 
       const { currentCellId, intendedNextCellId } = deriveIssueLocationContext({
         operationCellId: typedOperation.cell_id,

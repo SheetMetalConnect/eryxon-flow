@@ -140,5 +140,14 @@ serveApi(
     customHandlers: {
       get: handleGet,
     },
+    onCreated: async (issue, ctx) => {
+      await ctx.dispatchEvent("issue.created", {
+        issue_id: issue.id,
+        operation_id: issue.operation_id,
+        severity: issue.severity,
+        description: issue.description,
+        created_at: issue.created_at,
+      });
+    },
   }),
 );
