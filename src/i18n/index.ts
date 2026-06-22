@@ -66,6 +66,7 @@ const deepMerge = (
   source: Record<string, unknown>
 ): Record<string, unknown> => {
   for (const [key, value] of Object.entries(source)) {
+    if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
     if (isPlainObject(value)) {
       const existing = target[key];
       target[key] = deepMerge(isPlainObject(existing) ? existing : {}, value);

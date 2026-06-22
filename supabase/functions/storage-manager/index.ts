@@ -95,10 +95,10 @@ serve(async (req) => {
     // Handle different actions
     switch (body.action) {
       case 'recalculate':
-        return await handleRecalculateStorage(supabaseAdmin, tenantId);
+        return await handleRecalculateStorage(supabaseAdmin, tenantId, corsHeaders);
 
       case 'validate_upload':
-        return await handleValidateUpload(supabaseAdmin, tenantId, body.file_size_bytes);
+        return await handleValidateUpload(supabaseAdmin, tenantId, body.file_size_bytes, corsHeaders);
 
       case 'track_operation':
         return await handleTrackOperation(
@@ -106,7 +106,8 @@ serve(async (req) => {
           tenantId,
           body.operation,
           body.file_path,
-          body.file_size_bytes
+          body.file_size_bytes,
+          corsHeaders
         );
 
       default:
@@ -135,7 +136,7 @@ serve(async (req) => {
 /**
  * Recalculate storage usage for a tenant by listing all files in their storage paths
  */
-async function handleRecalculateStorage(supabase: any, tenantId: string) {
+async function handleRecalculateStorage(supabase: any, tenantId: string, corsHeaders: Record<string, string>) {
   try {
     // List all files for this tenant in the parts-cad bucket
     const { data: files, error: listError } = await supabase.storage
@@ -222,7 +223,7 @@ async function handleRecalculateStorage(supabase: any, tenantId: string) {
 /**
  * Validate if an upload is allowed based on storage quota
  */
-async function handleValidateUpload(supabase: any, tenantId: string, fileSizeBytes: number) {
+async function handleValidateUpload(supabase: any, tenantId: string, fileSizeBytes: number, corsHeaders: Record<string, string>) {
   try {
     const { data, error } = await supabase.rpc('can_upload_file', {
       p_tenant_id: tenantId,
@@ -275,7 +276,8 @@ async function handleTrackOperation(
   tenantId: string,
   operation: 'upload' | 'delete',
   filePath: string,
-  fileSizeBytes: number
+  fileSizeBytes: number,
+  corsHeaders: Record<string, string>
 ) {
   try {
     // Update storage usage
