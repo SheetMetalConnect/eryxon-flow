@@ -296,7 +296,10 @@
     "autoRefreshing": "auto-refreshing every 10s",
     "noActivitiesFound": "No activities found",
     "tryAdjustingFilters": "Try adjusting your filters or search query",
-    "loadMore": "Load More"
+    "loadMore": "Load More",
+    "last": "Last",
+    "noActivities": "No activities found",
+    "tryAdjusting": "Try adjusting your filters or search query"
   },
   "exceptionInbox": {
     "title": "Exception Inbox",
@@ -377,7 +380,8 @@
     "viewDetails": "View Details",
     "weekCompleted": "Completed This Week",
     "weekTime": "Week's Time",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "loading": "Loading activity"
   },
   "myIssues": {
     "title": "My Issues",
@@ -395,7 +399,12 @@
     "rejected": "Rejected",
     "reportIssue": "Report Issue",
     "resolutionNotes": "Resolution Notes",
-    "reviewed": "Reviewed"
+    "reviewed": "Reviewed",
+    "highSeverity": "High severity",
+    "lastReported": "Last reported",
+    "loading": "Loading issues",
+    "openIssues": "Open issues",
+    "resolvedIssues": "Resolved"
   },
   "pricing": {
     "title": "Get Started",
@@ -426,7 +435,8 @@
         "Full webhook support",
         "MCP Server included",
         "Complete data control"
-      ]
+      ],
+      "consulting": "Get Setup Help"
     },
     "license": {
       "title": "License (Apache 2.0)",
@@ -436,11 +446,40 @@
       "allowedItems": {
         "selfHost": "Self-host or run it commercially",
         "modify": "Fork, modify, and redistribute your changes",
-        "consulting": "Use for development, testing, education"
+        "consulting": "Use for development, testing, education",
+        "commercial": "Use it commercially in your business"
       },
       "notAllowedItems": {
         "resell": "Redistribute it without the required license and notices"
+      },
+      "note": "Conditions",
+      "noteItems": {
+        "attribution": "Keep the license and copyright notices",
+        "patent": "Includes a patent grant under Apache 2.0"
       }
+    },
+    "hostedTrial": {
+      "description": "Try Eryxon Flow online with a free hosted trial",
+      "features": [
+        "Hosted by us, no setup needed",
+        "Limited jobs and parts",
+        "Limited storage",
+        "For evaluation only"
+      ],
+      "name": "Hosted Trial",
+      "note": "For evaluation and educational purposes only",
+      "tryDemo": "Start Free Trial"
+    },
+    "managedHosting": {
+      "cta": "Request Managed Hosting",
+      "description": "We host and maintain Eryxon Flow for you",
+      "features": [
+        "Fully managed by us",
+        "Automatic backups and updates",
+        "Your own isolated environment",
+        "Priority support"
+      ],
+      "name": "Managed Hosting"
     }
   },
   "myPlan": {
@@ -474,7 +513,25 @@
     },
     "viewGuide": "View Self-Hosting Guide",
     "needHelp": "Need Help?",
-    "helpDescription": "Sheet Metal Connect e.U. can help you set up and customize Eryxon Flow for your operations."
+    "helpDescription": "Sheet Metal Connect e.U. can help you set up and customize Eryxon Flow for your operations.",
+    "hostedTrial": "Hosted Trial",
+    "hostedTrialDescription": "A free trial of Eryxon Flow, hosted by us for evaluation",
+    "managedHosting": {
+      "benefit": {
+        "backups": "Automatic backups and updates",
+        "isolated": "Your own isolated environment",
+        "versions": "Always on the latest version",
+        "whitelabel": "White-label options available"
+      },
+      "cta": "Request Managed Hosting",
+      "description": "We run and maintain Eryxon Flow for you, so you can focus on production",
+      "title": "Managed Hosting"
+    },
+    "selfHostedCard": {
+      "consulting": "Get Setup Help",
+      "description": "Run Eryxon Flow on your own infrastructure with full control over your data",
+      "title": "Self-Hosted"
+    }
   },
   "trialBanner": {
     "title": "You are on the free trial",
@@ -485,7 +542,8 @@
     "expired": "Your trial has expired",
     "expiredDescription": "Your trial period has ended. Self-host Eryxon Flow to keep your data and continue using all features.",
     "upgradeCta": "View Self-Hosting Guide",
-    "viewPlan": "View Plan"
+    "viewPlan": "View Plan",
+    "seePlans": "See Plans"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -535,5 +593,55 @@
   },
   "stuckTimeEntries": {
     "stopped": "Time entry stopped successfully"
+  },
+  "calendar": {
+    "capacity": "capacity",
+    "dayTypes": {
+      "closure": "Closure",
+      "halfDay": "Half Day",
+      "holiday": "Holiday",
+      "working": "Working Day"
+    },
+    "deleteDialog": {
+      "description": "Are you sure you want to remove this calendar entry? The day will revert to default settings.",
+      "title": "Delete Calendar Entry"
+    },
+    "description": "Manage holidays, closures, and special working days",
+    "editDescription": "Edit this calendar entry",
+    "form": {
+      "capacity": "Capacity",
+      "closed": "Closed",
+      "closingTime": "Closing",
+      "dayType": "Day Type",
+      "fullCapacity": "Full",
+      "halfCapacity": "Half",
+      "name": "Name / Description",
+      "namePlaceholder": "e.g., Christmas, Factory Maintenance",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes...",
+      "openingTime": "Opening",
+      "timeHint": "Leave empty to use default factory hours",
+      "timeOverride": "Time Override"
+    },
+    "legend": "Legend",
+    "messages": {
+      "added": "Calendar entry added",
+      "deleteFailed": "Failed to delete",
+      "deleted": "Calendar entry removed",
+      "loadFailed": "Failed to load calendar",
+      "saveFailed": "Failed to save",
+      "updated": "Calendar updated"
+    },
+    "specialDays": "Special Days This Month",
+    "specialDaysDescription": "Custom calendar entries for this month",
+    "title": "Factory Calendar"
+  },
+  "pilotActivation": {
+    "description": "Complete these steps to get your first operator working",
+    "progress": "{{completed}} of {{total}} done",
+    "readyDescription": "Your pilot is up and running. An operator now has assigned work.",
+    "readyTitle": "You're ready to go!",
+    "refresh": "Refresh",
+    "title": "Activate Your Pilot"
   }
 }

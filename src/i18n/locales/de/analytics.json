@@ -139,7 +139,12 @@
     "load5080": "50-80%",
     "load80100": "80-100%",
     "overCapacity": "Überkapazität",
-    "holidayClosure": "Feiertag/Schließung"
+    "holidayClosure": "Feiertag/Schließung",
+    "allocationDeleted": "Zuweisung für diesen Tag entfernt",
+    "allocationUpdated": "Zugewiesene Stunden erfolgreich aktualisiert",
+    "deleted": "Gelöscht",
+    "tenantRequired": "Mandantenkontext ist zum Planen von Arbeitsgängen erforderlich",
+    "updated": "Aktualisiert"
   },
   "analytics": {
     "jobsTitle": "Auftragsanalysen",

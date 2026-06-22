@@ -45,7 +45,21 @@
     "demoDataWipedDesc": "Alle Demodaten wurden erfolgreich gelöscht.",
     "wipeFailed": "Löschen fehlgeschlagen",
     "noActiveClockings": "Keine aktiven Zeiterfassungen",
-    "noActiveClockingsDescription": "Es gibt keine aktiven Zeiterfassungen zum Stoppen."
+    "noActiveClockingsDescription": "Es gibt keine aktiven Zeiterfassungen zum Stoppen.",
+    "startedAt": "Gestartet um",
+    "stopClockingTitle": "Zeiterfassung stoppen",
+    "stopClockingDescription": "Überprüfen Sie den aktiven Zeiteintrag und stoppen Sie die Erfassung bei Bedarf.",
+    "stopClocking": "Erfassung stoppen",
+    "clockingStopped": "Erfassung gestoppt",
+    "clockingStoppedDescription": "Die Zeiterfassung für {{operator}} bei {{operation}} wurde gestoppt.",
+    "stopFailed": "Stoppen der Erfassung fehlgeschlagen",
+    "stopAll": "Alle stoppen",
+    "stopAllClockings": "Alle Erfassungen stoppen",
+    "allClockingsStopped": "Alle Erfassungen gestoppt",
+    "allClockingsStoppedDescription": "{{count}} Zeiteinträge wurden gestoppt.",
+    "stopAllFailed": "Stoppen aller Erfassungen fehlgeschlagen",
+    "pastClosingTimeWarning": "Der Betriebsschluss ist überschritten",
+    "pastClosingTimeDescription": "Es gibt {{count}} aktive Zeiteinträge nach Betriebsschluss ({{time}}). Erwägen Sie, sie zu stoppen."
   },
   "settings": {
     "title": "Einstellungen",
@@ -75,12 +89,63 @@
       "successCreated": "Demodaten erfolgreich erstellt",
       "successCleared": "Demodaten erfolgreich gelöscht",
       "errorCreate": "Erstellen der Demodaten fehlgeschlagen",
-      "errorClear": "Löschen der Demodaten fehlgeschlagen"
+      "errorClear": "Löschen der Demodaten fehlgeschlagen",
+      "confirmClearing": "Wird gelöscht...",
+      "confirmButton": "Demodaten löschen"
     },
     "accountDeleted": "Konto erfolgreich gelöscht",
     "accountDeleteFailed": "Löschen des Kontos fehlgeschlagen",
     "tenantDeleted": "Mandant erfolgreich gelöscht",
-    "tenantDeleteFailed": "Löschen des Mandanten fehlgeschlagen"
+    "tenantDeleteFailed": "Löschen des Mandanten fehlgeschlagen",
+    "gdpr": {
+      "title": "Datenlöschung (DSGVO)",
+      "description": "Löschen Sie Ihr Konto oder die gesamten Organisationsdaten dauerhaft",
+      "deleteAccount": {
+        "title": "Mein Konto löschen",
+        "description": "Löschen Sie Ihr Benutzerkonto und alle zugehörigen personenbezogenen Daten dauerhaft.",
+        "warning": "Warnung",
+        "warningMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Ihr Konto, Ihre Zeiteinträge, Zuweisungen und Probleme werden dauerhaft gelöscht.",
+        "button": "Mein Konto löschen",
+        "confirmTitle": "Ihr Konto löschen?",
+        "confirmMessage": "Dadurch werden Ihr Konto und alle zugehörigen Daten dauerhaft gelöscht:",
+        "confirmItems": {
+          "profile": "Ihr Benutzerprofil",
+          "timeEntries": "Alle von Ihnen erstellten Zeiteinträge",
+          "assignments": "Alle Zuweisungen an Sie",
+          "issues": "Alle von Ihnen erstellten Probleme"
+        },
+        "confirmWarning": "Diese Aktion kann nicht rückgängig gemacht werden",
+        "confirmDescription": "Sie werden sofort abgemeldet und können Ihr Konto nicht wiederherstellen.",
+        "confirmButton": "Mein Konto löschen",
+        "deleting": "Wird gelöscht..."
+      },
+      "deleteTenant": {
+        "title": "Gesamte Organisation löschen",
+        "description": "Löschen Sie Ihre Organisation und ALLE Daten aller Benutzer dauerhaft.",
+        "warningTitle": "Kritische Warnung",
+        "warningMessage": "Dadurch werden ALLE Aufträge, Teile, Arbeitsgänge, Benutzer und Daten Ihrer gesamten Organisation gelöscht. Diese Aktion betrifft ALLE Benutzer Ihrer Organisation und kann NICHT rückgängig gemacht werden.",
+        "button": "Gesamte Organisation löschen",
+        "confirmTitle": "Gesamte Organisation löschen?",
+        "confirmMessage": "Dadurch werden Ihre Organisation und ALLE Daten dauerhaft gelöscht:",
+        "confirmItems": {
+          "users": "Alle Benutzerkonten und Profile",
+          "jobs": "Alle Aufträge, Teile und Arbeitsgänge",
+          "timeEntries": "Alle Zeiteinträge und Zuweisungen",
+          "issues": "Alle Probleme und Produktionsdaten",
+          "config": "Alle Zellen, Materialien und Ressourcen",
+          "api": "Alle API-Schlüssel und Webhooks",
+          "all": "Alles andere in Ihrer Organisation"
+        },
+        "confirmWarningTitle": "KRITISCH: Dies betrifft ALLE Benutzer",
+        "confirmWarningMessage": "Dadurch werden die Daten ALLER Benutzer Ihrer Organisation gelöscht. Alle verlieren den Zugriff. Diese Aktion ist DAUERHAFT und kann NICHT rückgängig gemacht werden.",
+        "confirmButton": "Organisation löschen",
+        "deleting": "Wird gelöscht..."
+      },
+      "exportFirst": "Vor dem Löschen können Sie Ihre Daten exportieren über die",
+      "dataExportLink": "Datenexport-Funktion",
+      "privacyPolicyLink": "Datenschutzerklärung",
+      "seePolicy": "Bei Fragen zur Datenlöschung lesen Sie unsere"
+    }
   },
   "users": {
     "title": "Benutzerverwaltung",
@@ -175,7 +240,10 @@
     "autoRefreshing": "auto-aktualisierung alle 10s",
     "noActivitiesFound": "Keine Aktivitäten gefunden",
     "tryAdjustingFilters": "Versuchen Sie, Ihre Filter oder Suchanfrage anzupassen",
-    "loadMore": "Mehr laden"
+    "loadMore": "Mehr laden",
+    "last": "Letzte",
+    "noActivities": "Keine Aktivitäten gefunden",
+    "tryAdjusting": "Versuchen Sie, Ihre Filter oder Suchanfrage anzupassen"
   },
   "exceptionInbox": {
     "title": "Ausnahmen-Posteingang",
@@ -256,7 +324,8 @@
     "viewDetails": "Details anzeigen",
     "weekCompleted": "Diese Woche abgeschlossen",
     "weekTime": "Wochenzeit",
-    "yesterday": "Gestern"
+    "yesterday": "Gestern",
+    "loading": "Aktivität wird geladen"
   },
   "myIssues": {
     "title": "Meine Probleme",
@@ -274,7 +343,12 @@
     "rejected": "Abgelehnt",
     "reportIssue": "Problem melden",
     "resolutionNotes": "Lösungsnotizen",
-    "reviewed": "Überprüft"
+    "reviewed": "Überprüft",
+    "highSeverity": "Hoher Schweregrad",
+    "lastReported": "Zuletzt gemeldet",
+    "loading": "Probleme werden geladen",
+    "openIssues": "Offene Probleme",
+    "resolvedIssues": "Gelöst"
   },
   "pricing": {
     "title": "Loslegen",
@@ -305,7 +379,8 @@
         "Vollständige Webhook-Unterstützung",
         "MCP Server inklusive",
         "Vollständige Datenkontrolle"
-      ]
+      ],
+      "consulting": "Einrichtungshilfe erhalten"
     },
     "license": {
       "title": "Lizenz (Apache 2.0)",
@@ -315,11 +390,40 @@
       "allowedItems": {
         "selfHost": "Selbst hosten oder kommerziell betreiben",
         "modify": "Forken, anpassen und Änderungen weitergeben",
-        "consulting": "Nutzung für Entwicklung, Tests, Bildung"
+        "consulting": "Nutzung für Entwicklung, Tests, Bildung",
+        "commercial": "Kommerziell in Ihrem Unternehmen nutzen"
       },
       "notAllowedItems": {
         "resell": "Weitergabe ohne Lizenztext und erforderliche Hinweise"
+      },
+      "note": "Bedingungen",
+      "noteItems": {
+        "attribution": "Lizenz- und Copyright-Hinweise beibehalten",
+        "patent": "Enthält eine Patentlizenz unter Apache 2.0"
       }
+    },
+    "hostedTrial": {
+      "description": "Testen Sie Eryxon Flow online mit einer kostenlosen gehosteten Testversion",
+      "features": [
+        "Von uns gehostet, keine Einrichtung nötig",
+        "Begrenzte Aufträge und Teile",
+        "Begrenzter Speicher",
+        "Nur zur Evaluation"
+      ],
+      "name": "Gehostete Testversion",
+      "note": "Nur für Evaluations- und Bildungszwecke",
+      "tryDemo": "Kostenlose Testversion starten"
+    },
+    "managedHosting": {
+      "cta": "Managed Hosting anfragen",
+      "description": "Wir hosten und warten Eryxon Flow für Sie",
+      "features": [
+        "Vollständig von uns verwaltet",
+        "Automatische Backups und Updates",
+        "Ihre eigene isolierte Umgebung",
+        "Vorrangiger Support"
+      ],
+      "name": "Managed Hosting"
     }
   },
   "myPlan": {
@@ -353,7 +457,25 @@
     },
     "viewGuide": "Self-Hosting Anleitung ansehen",
     "needHelp": "Hilfe benötigt?",
-    "helpDescription": "Sheet Metal Connect e.U. kann Ihnen bei der Einrichtung und Anpassung von Eryxon Flow helfen."
+    "helpDescription": "Sheet Metal Connect e.U. kann Ihnen bei der Einrichtung und Anpassung von Eryxon Flow helfen.",
+    "hostedTrial": "Gehostete Testversion",
+    "hostedTrialDescription": "Eine kostenlose Testversion von Eryxon Flow, von uns gehostet zur Evaluation",
+    "managedHosting": {
+      "benefit": {
+        "backups": "Automatische Backups und Updates",
+        "isolated": "Ihre eigene isolierte Umgebung",
+        "versions": "Immer auf der neuesten Version",
+        "whitelabel": "White-Label-Optionen verfügbar"
+      },
+      "cta": "Managed Hosting anfragen",
+      "description": "Wir betreiben und warten Eryxon Flow für Sie, damit Sie sich auf die Produktion konzentrieren können",
+      "title": "Managed Hosting"
+    },
+    "selfHostedCard": {
+      "consulting": "Einrichtungshilfe erhalten",
+      "description": "Betreiben Sie Eryxon Flow auf Ihrer eigenen Infrastruktur mit voller Kontrolle über Ihre Daten",
+      "title": "Self-Hosted"
+    }
   },
   "trialBanner": {
     "title": "Sie nutzen die kostenlose Testversion",
@@ -364,7 +486,8 @@
     "expired": "Ihre Testversion ist abgelaufen",
     "expiredDescription": "Ihr Testzeitraum ist beendet. Hosten Sie Eryxon Flow selbst, um Ihre Daten zu behalten und alle Funktionen weiter zu nutzen.",
     "upgradeCta": "Self-Hosting Anleitung ansehen",
-    "viewPlan": "Plan ansehen"
+    "viewPlan": "Plan ansehen",
+    "seePlans": "Tarife ansehen"
   },
   "featureFlags": {
     "title": "Feature-Flags",
@@ -446,9 +569,79 @@
       "noAdapter": "Kein Adapter ausgewählt",
       "connectionSuccess": "Verbindung erfolgreich",
       "connectionFailed": "Verbindung fehlgeschlagen"
+    },
+    "title": "Organisationseinstellungen",
+    "subtitle": "Verwalten Sie das Profil und die Einstellungen Ihrer Organisation",
+    "companyInformation": "Unternehmensinformationen",
+    "updateOrgDetails": "Aktualisieren Sie die Angaben Ihrer Organisation",
+    "organizationName": "Name der Organisation",
+    "companyName": "Firmenname",
+    "timezone": "Zeitzone",
+    "timezoneDescription": "Wird für Planung und Fälligkeitsdaten verwendet",
+    "billingEmail": "Rechnungs-E-Mail",
+    "saveChanges": "Änderungen speichern",
+    "settingsUpdated": "Organisationseinstellungen aktualisiert",
+    "factoryHours": {
+      "title": "Betriebszeiten",
+      "description": "Konfigurieren Sie Ihre Betriebszeiten und die automatische Zeiterfassung",
+      "openingTime": "Öffnungszeit",
+      "closingTime": "Schließzeit",
+      "autoStopTracking": "Zeiterfassung automatisch stoppen",
+      "autoStopDescription": "Alle aktiven Zeiteinträge bei Betriebsschluss automatisch stoppen",
+      "autoStopWarning": "Aktive Zeiteinträge werden täglich um {{time}} automatisch gestoppt"
     }
   },
   "stuckTimeEntries": {
     "stopped": "Zeiterfassung erfolgreich gestoppt"
+  },
+  "calendar": {
+    "capacity": "Kapazität",
+    "dayTypes": {
+      "closure": "Schließung",
+      "halfDay": "Halber Tag",
+      "holiday": "Feiertag",
+      "working": "Arbeitstag"
+    },
+    "deleteDialog": {
+      "description": "Möchten Sie diesen Kalendereintrag wirklich entfernen? Der Tag wird auf die Standardeinstellungen zurückgesetzt.",
+      "title": "Kalendereintrag löschen"
+    },
+    "description": "Verwalten Sie Feiertage, Schließungen und besondere Arbeitstage",
+    "editDescription": "Diesen Kalendereintrag bearbeiten",
+    "form": {
+      "capacity": "Kapazität",
+      "closed": "Geschlossen",
+      "closingTime": "Schließung",
+      "dayType": "Tagestyp",
+      "fullCapacity": "Voll",
+      "halfCapacity": "Halb",
+      "name": "Name / Beschreibung",
+      "namePlaceholder": "z.B. Weihnachten, Werkswartung",
+      "notes": "Notizen",
+      "notesPlaceholder": "Zusätzliche Notizen...",
+      "openingTime": "Öffnung",
+      "timeHint": "Leer lassen, um die Standard-Fabrikzeiten zu verwenden",
+      "timeOverride": "Zeit überschreiben"
+    },
+    "legend": "Legende",
+    "messages": {
+      "added": "Kalendereintrag hinzugefügt",
+      "deleteFailed": "Löschen fehlgeschlagen",
+      "deleted": "Kalendereintrag entfernt",
+      "loadFailed": "Laden des Kalenders fehlgeschlagen",
+      "saveFailed": "Speichern fehlgeschlagen",
+      "updated": "Kalender aktualisiert"
+    },
+    "specialDays": "Besondere Tage diesen Monat",
+    "specialDaysDescription": "Benutzerdefinierte Kalendereinträge für diesen Monat",
+    "title": "Fabrikkalender"
+  },
+  "pilotActivation": {
+    "description": "Schließen Sie diese Schritte ab, um Ihren ersten Bediener an die Arbeit zu bringen",
+    "progress": "{{completed}} von {{total}} erledigt",
+    "readyDescription": "Ihr Pilot läuft. Ein Bediener hat jetzt zugewiesene Arbeit.",
+    "readyTitle": "Sie sind startklar!",
+    "refresh": "Aktualisieren",
+    "title": "Aktivieren Sie Ihren Piloten"
   }
 }

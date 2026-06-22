@@ -50,7 +50,8 @@
     "showKey": "Sleutel weergeven",
     "hideKey": "Sleutel verbergen",
     "warningMessage": "Kopieer deze sleutel nu. U kunt deze later niet meer zien.",
-    "createdAt": "Aangemaakt op"
+    "createdAt": "Aangemaakt op",
+    "searchKeys": "Sleutels zoeken..."
   },
   "erpSync": {
     "title": "ERP-synchronisatie",
@@ -162,6 +163,8 @@
     "lastTriggered": "Laatst geactiveerd",
     "neverTriggered": "Nooit geactiveerd",
     "deleteConfirm": "Weet u zeker dat u deze webhook wilt verwijderen?",
+    "searchWebhooks": "Webhooks zoeken...",
+    "webhookUrl": "Webhook-URL",
     "eventTypes": {
       "jobCreated": "Opdracht aangemaakt",
       "jobUpdated": "Opdracht bijgewerkt",
@@ -260,6 +263,7 @@
   },
   "dataExport": {
     "title": "Gegevensexport",
+    "exportedEntities": "{{count}} entiteiten geëxporteerd",
     "chooseEntities": "Kies entiteiten",
     "chooseFormat": "Kies formaat",
     "csvDescription": "Kommagescheiden waardenformaat compatibel met spreadsheettoepassingen",

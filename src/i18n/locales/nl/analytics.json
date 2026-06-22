@@ -139,7 +139,12 @@
     "load5080": "50-80%",
     "load80100": "80-100%",
     "overCapacity": "Over capaciteit",
-    "holidayClosure": "Feestdag/Sluiting"
+    "holidayClosure": "Feestdag/Sluiting",
+    "allocationDeleted": "Toewijzing verwijderd voor deze dag",
+    "allocationUpdated": "Toegewezen uren bijgewerkt",
+    "deleted": "Verwijderd",
+    "tenantRequired": "Tenant-context is vereist om bewerkingen te plannen",
+    "updated": "Bijgewerkt"
   },
   "analytics": {
     "jobsTitle": "Orderanalyses",

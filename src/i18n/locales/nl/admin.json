@@ -296,7 +296,9 @@
       "successCreated": "Demonstratiedata succesvol aangemaakt",
       "successCleared": "Demonstratiedata succesvol verwijderd",
       "errorCreate": "Aanmaken demonstratiedata mislukt",
-      "errorClear": "Verwijderen demonstratiedata mislukt"
+      "errorClear": "Verwijderen demonstratiedata mislukt",
+      "confirmClearing": "Verwijderen...",
+      "confirmButton": "Demonstratiedata Verwijderen"
     },
     "accountDeleted": "Account succesvol verwijderd",
     "accountDeleteFailed": "Verwijderen van account mislukt",
@@ -445,7 +447,10 @@
     "autoRefreshing": "automatisch vernieuwen elke 10s",
     "noActivitiesFound": "Geen activiteiten gevonden",
     "tryAdjustingFilters": "Probeer uw filters of zoekopdracht aan te passen",
-    "loadMore": "Meer laden"
+    "loadMore": "Meer laden",
+    "last": "Laatste",
+    "noActivities": "Geen activiteiten gevonden",
+    "tryAdjusting": "Probeer uw filters of zoekopdracht aan te passen"
   },
   "exceptionInbox": {
     "title": "Uitzonderingen Inbox",
@@ -526,7 +531,8 @@
     "viewDetails": "Details bekijken",
     "weekCompleted": "Deze week voltooid",
     "weekTime": "Tijd deze week",
-    "yesterday": "Gisteren"
+    "yesterday": "Gisteren",
+    "loading": "Activiteit laden"
   },
   "myIssues": {
     "title": "Mijn problemen",
@@ -544,7 +550,12 @@
     "rejected": "Afgewezen",
     "reportIssue": "Probleem melden",
     "resolutionNotes": "Oplossingsnotities",
-    "reviewed": "Beoordeeld"
+    "reviewed": "Beoordeeld",
+    "highSeverity": "Hoge ernst",
+    "lastReported": "Laatst gemeld",
+    "loading": "Problemen laden",
+    "openIssues": "Open problemen",
+    "resolvedIssues": "Opgelost"
   },
   "pricing": {
     "title": "Aan de slag",
@@ -575,7 +586,8 @@
         "Volledige webhook ondersteuning",
         "MCP Server inbegrepen",
         "Volledige controle over gegevens"
-      ]
+      ],
+      "consulting": "Hulp bij installatie"
     },
     "license": {
       "title": "Licentie (Apache 2.0)",
@@ -585,11 +597,40 @@
       "allowedItems": {
         "selfHost": "Zelf hosten of commercieel gebruiken",
         "modify": "Fork, pas aan en distribueer uw wijzigingen",
-        "consulting": "Gebruik voor ontwikkeling, testen, educatie"
+        "consulting": "Gebruik voor ontwikkeling, testen, educatie",
+        "commercial": "Commercieel gebruiken in uw bedrijf"
       },
       "notAllowedItems": {
         "resell": "Distributie zonder de vereiste licentie en meldingen"
+      },
+      "note": "Voorwaarden",
+      "noteItems": {
+        "attribution": "Behoud de licentie- en auteursrechtvermeldingen",
+        "patent": "Bevat een octrooirecht onder Apache 2.0"
       }
+    },
+    "hostedTrial": {
+      "description": "Probeer Eryxon Flow online met een gratis gehoste proefversie",
+      "features": [
+        "Door ons gehost, geen installatie nodig",
+        "Beperkte opdrachten en onderdelen",
+        "Beperkte opslag",
+        "Alleen voor evaluatie"
+      ],
+      "name": "Gehoste proefversie",
+      "note": "Alleen voor evaluatie en educatieve doeleinden",
+      "tryDemo": "Start gratis proefversie"
+    },
+    "managedHosting": {
+      "cta": "Managed hosting aanvragen",
+      "description": "Wij hosten en onderhouden Eryxon Flow voor u",
+      "features": [
+        "Volledig door ons beheerd",
+        "Automatische back-ups en updates",
+        "Uw eigen geïsoleerde omgeving",
+        "Voorrangsondersteuning"
+      ],
+      "name": "Managed hosting"
     }
   },
   "myPlan": {
@@ -628,6 +669,24 @@
     "upgradeRequest": {
       "subject": "Upgrade Aanvraag: {{planName}}",
       "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"
+    },
+    "hostedTrial": "Gehoste proefversie",
+    "hostedTrialDescription": "Een gratis proefversie van Eryxon Flow, door ons gehost voor evaluatie",
+    "managedHosting": {
+      "benefit": {
+        "backups": "Automatische back-ups en updates",
+        "isolated": "Uw eigen geïsoleerde omgeving",
+        "versions": "Altijd op de nieuwste versie",
+        "whitelabel": "White-labelopties beschikbaar"
+      },
+      "cta": "Managed hosting aanvragen",
+      "description": "Wij draaien en onderhouden Eryxon Flow voor u, zodat u zich op de productie kunt richten",
+      "title": "Managed hosting"
+    },
+    "selfHostedCard": {
+      "consulting": "Hulp bij installatie",
+      "description": "Draai Eryxon Flow op uw eigen infrastructuur met volledige controle over uw gegevens",
+      "title": "Zelf gehost"
     }
   },
   "trialBanner": {
@@ -639,7 +698,8 @@
     "expired": "Uw proefperiode is verlopen",
     "expiredDescription": "Uw proefperiode is beëindigd. Host Eryxon Flow zelf om uw gegevens te behouden en alle functies te blijven gebruiken.",
     "upgradeCta": "Bekijk Self-Hosting Handleiding",
-    "viewPlan": "Bekijk Plan"
+    "viewPlan": "Bekijk Plan",
+    "seePlans": "Bekijk abonnementen"
   },
   "featureFlags": {
     "title": "Functievlaggen",
@@ -689,5 +749,55 @@
   },
   "stuckTimeEntries": {
     "stopped": "Tijdregistratie succesvol gestopt"
+  },
+  "calendar": {
+    "capacity": "capaciteit",
+    "dayTypes": {
+      "closure": "Sluiting",
+      "halfDay": "Halve dag",
+      "holiday": "Feestdag",
+      "working": "Werkdag"
+    },
+    "deleteDialog": {
+      "description": "Weet u zeker dat u deze kalenderinvoer wilt verwijderen? De dag valt terug op de standaardinstellingen.",
+      "title": "Kalenderinvoer verwijderen"
+    },
+    "description": "Beheer feestdagen, sluitingen en bijzondere werkdagen",
+    "editDescription": "Bewerk deze kalenderinvoer",
+    "form": {
+      "capacity": "Capaciteit",
+      "closed": "Gesloten",
+      "closingTime": "Sluiting",
+      "dayType": "Type dag",
+      "fullCapacity": "Volledig",
+      "halfCapacity": "Half",
+      "name": "Naam / Omschrijving",
+      "namePlaceholder": "bijv. Kerst, fabrieksonderhoud",
+      "notes": "Notities",
+      "notesPlaceholder": "Aanvullende notities...",
+      "openingTime": "Opening",
+      "timeHint": "Laat leeg om de standaard fabriekstijden te gebruiken",
+      "timeOverride": "Tijd aanpassen"
+    },
+    "legend": "Legenda",
+    "messages": {
+      "added": "Kalenderinvoer toegevoegd",
+      "deleteFailed": "Verwijderen mislukt",
+      "deleted": "Kalenderinvoer verwijderd",
+      "loadFailed": "Kalender laden mislukt",
+      "saveFailed": "Opslaan mislukt",
+      "updated": "Kalender bijgewerkt"
+    },
+    "specialDays": "Bijzondere dagen deze maand",
+    "specialDaysDescription": "Aangepaste kalenderinvoeren voor deze maand",
+    "title": "Fabriekskalender"
+  },
+  "pilotActivation": {
+    "description": "Voltooi deze stappen om uw eerste operator aan het werk te krijgen",
+    "progress": "{{completed}} van {{total}} voltooid",
+    "readyDescription": "Uw pilot draait. Een operator heeft nu toegewezen werk.",
+    "readyTitle": "U kunt van start!",
+    "refresh": "Vernieuwen",
+    "title": "Activeer uw pilot"
   }
 }

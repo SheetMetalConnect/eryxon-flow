@@ -31,7 +31,17 @@
     "noOperations": "Geen bewerkingen",
     "operations": "bewerkingen",
     "operation": "bewerking",
-    "failedToLoad": "Werkwachtrij laden mislukt"
+    "failedToLoad": "Werkwachtrij laden mislukt",
+    "active": "actief",
+    "activeOnly": "Alleen actief",
+    "empty": "Niets in je wachtrij op dit moment",
+    "emptyColumn": "Geen bewerkingen",
+    "loading": "Werkwachtrij laden",
+    "noCells": "Geen cellen ingesteld",
+    "noCellsDescription": "Voeg productiecellen toe in de beheerinstellingen om het kanbanbord te zien.",
+    "noMatches": "Geen bewerkingen komen overeen met je zoekopdracht",
+    "selectPrompt": "Tik op een bewerking voor details, een timer of een melding.",
+    "thisWeek": "Deze week"
   },
   "terminal": {
     "columns": {
@@ -189,7 +199,32 @@
         "setupRequired": "Productie is geblokkeerd totdat setup/voorbereiding voor deze bewerking is geregistreerd.",
         "setupDisabled": "Setup/voorbereidingsmodus is uitgeschakeld voor deze tenant."
       }
-    }
+    },
+    "allCells": "Alle cellen",
+    "backlog": {
+      "overdue": "Te laat",
+      "soon": "Binnenkort",
+      "today": "Vandaag"
+    },
+    "capacityBlocked": "Voltooien niet mogelijk: de volgende cel zit vol.",
+    "completeOperation": "Bewerking voltooien",
+    "detailsPanel": "Detailpaneel",
+    "empty": "Nog geen cellen ingesteld",
+    "loading": "Terminalgegevens laden...",
+    "noBufferJobs": "Geen opdrachten in buffer",
+    "noExpectedJobs": "Geen verwachte opdrachten",
+    "noJobSelected": "Geen opdracht geselecteerd",
+    "noJobSelectedDescription": "Selecteer een opdracht uit de lijst voor details en bediening.",
+    "noOperationsFound": "Geen routingstappen gevonden voor dit onderdeel.",
+    "onHold": "In de wacht",
+    "routing": "Routing",
+    "selectCell": "Cel selecteren",
+    "status": {
+      "longRunning": "lang actief",
+      "notClockedOn": "niet ingeklokt"
+    },
+    "stopBeforeComplete": "Pauzeer de actieve tijdregistratie voordat je de bewerking voltooit.",
+    "substeps": "substappen"
   },
   "sessionTracking": {
     "currentlyTracking": "Momenteel aan het bijhouden",
@@ -224,7 +259,19 @@
     "timeTrackingStopped": "Tijdregistratie gestopt",
     "timeTrackingPaused": "Tijdregistratie gepauzeerd",
     "timeTrackingResumed": "Tijdregistratie hervat",
-    "openOperationForIssue": "Open de bewerking om een probleem te melden"
+    "openOperationForIssue": "Open de bewerking om een probleem te melden",
+    "addReason": "Reden toevoegen",
+    "addScrapRework": "Afkeur of herbewerking toevoegen...",
+    "complete": "Voltooien",
+    "enterQuantity": "Voer minstens één aantal in",
+    "goodParts": "Goede onderdelen",
+    "notes": "Notities",
+    "notesPlaceholder": "Optionele notities...",
+    "rework": "Herbewerking",
+    "scrap": "Afkeur",
+    "selectReason": "Selecteer reden...",
+    "selectScrapReason": "Selecteer een reden voor elke afkeurregel",
+    "totalScrap": "Totaal afkeur"
   },
   "terminalLogin": {
     "welcome": "OPERATOR TERMINAL",
@@ -291,6 +338,39 @@
     "issue": "Probleem",
     "recordQty": "Registreer",
     "recordQuantity": "Registreer productie aantal"
+  },
+  "mobile": {
+    "badgePlaceholder": "Personeelsbadge",
+    "biometricReason": "Bevestig de operator om de werkwachtrij te ontgrendelen.",
+    "codePlaceholder": "Opdracht-, onderdeel- of batchcode",
+    "continue": "Doorgaan",
+    "enterManually": "Of handmatig invoeren",
+    "enterPin": "PIN invoeren",
+    "offline": "Je bent offline — wijzigingen worden niet opgeslagen",
+    "scan": "Scannen",
+    "scanFailed": "Scanner mislukt. Voer de code handmatig in.",
+    "scanHint": "Houd het apparaat stil en plaats de code in beeld.",
+    "scanNoResult": "Geen code herkend. Probeer opnieuw of voer handmatig in.",
+    "scanOpening": "Camera openen…",
+    "scanTitle": "Barcode of QR scannen",
+    "scannerUnavailable": "Live scannen werkt in de Eryxon iOS- en Android-app. Voer de code hieronder in.",
+    "signIn": "Inloggen op je terminal",
+    "signInBody": "Tik je personeelsbadge of typ deze in om je werkwachtrij te laden.",
+    "signedInAs": "Inloggen als",
+    "unlockFace": "Ontgrendelen met Face ID",
+    "unlockTouch": "Ontgrendelen met Touch ID",
+    "verifying": "Verifiëren"
+  },
+  "scanner": {
+    "available": "Richt de camera op een geprinte QR of barcode. Eryxon springt direct naar de bijbehorende bewerking.",
+    "fallback": "Camerascannen werkt in de native iOS- en Android-app. Typ hieronder een code om door te gaan.",
+    "findManual": "Bewerking zoeken",
+    "manualPlaceholder": "Opdracht-, onderdeel- of bewerkings-ID",
+    "notFound": "Geen bewerking gevonden voor: {{value}}",
+    "openCamera": "Camera openen",
+    "permissionDenied": "Schakel cameratoegang in bij je apparaatinstellingen om te scannen",
+    "title": "Scan een opdracht, onderdeel of bewerking",
+    "unavailable": "Camerascannen is alleen beschikbaar in de native iOS- en Android-app"
   },
   "substepToasts": {
     "failedToLoad": "Kan substappen niet laden",

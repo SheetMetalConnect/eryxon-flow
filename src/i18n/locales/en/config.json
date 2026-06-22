@@ -35,7 +35,15 @@
     "qualityControl": "Quality Control",
     "qc": "QC",
     "painting": "Painting",
-    "packaging": "Packaging"
+    "packaging": "Packaging",
+    "activeHelp": "Inactive stages are hidden from operators",
+    "createFirstStage": "Create your first stage",
+    "descriptionPlaceholder": "Describe what happens at this stage...",
+    "dragToReorder": "Drag to reorder",
+    "icon": "Icon",
+    "noStagesDescription": "Stages represent different steps in your manufacturing process. Create your first stage to start organizing your workflow.",
+    "selectIcon": "Select...",
+    "stageNamePlaceholder": "e.g., Cutting, Welding, Assembly"
   },
   "materials": {
     "title": "Material Configuration",
@@ -117,7 +125,8 @@
     "addFirstResource": "Add your first resource to get started",
     "available": "Available",
     "inUse": "In Use",
-    "maintenance": "Maintenance"
+    "maintenance": "Maintenance",
+    "noResourcesOfType": "No resources of type {{type}}"
   },
   "assignments": {
     "title": "Operator Assignments",

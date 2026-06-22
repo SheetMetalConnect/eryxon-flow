@@ -31,7 +31,17 @@
     "noOperations": "Keine Arbeitsgänge",
     "operations": "Arbeitsgänge",
     "operation": "Arbeitsgang",
-    "failedToLoad": "Arbeitswarteschlange konnte nicht geladen werden"
+    "failedToLoad": "Arbeitswarteschlange konnte nicht geladen werden",
+    "active": "aktiv",
+    "activeOnly": "Nur aktive",
+    "empty": "Derzeit nichts in Ihrer Warteschlange",
+    "emptyColumn": "Keine Arbeitsgänge",
+    "loading": "Arbeitswarteschlange wird geladen",
+    "noCells": "Keine Zellen konfiguriert",
+    "noCellsDescription": "Fügen Sie Fertigungszellen in den Admin-Einstellungen hinzu, um das Kanban-Board zu sehen.",
+    "noMatches": "Keine Arbeitsgänge passen zu Ihrer Suche",
+    "selectPrompt": "Tippen Sie auf einen Arbeitsgang für Details, Timer oder eine Meldung.",
+    "thisWeek": "Diese Woche"
   },
   "terminal": {
     "columns": {
@@ -189,7 +199,32 @@
         "setupRequired": "Produktion ist blockiert, bis Ruesten/Vorbereitung fuer diesen Arbeitsgang erfasst wurde.",
         "setupDisabled": "Der Ruest-/Vorbereitungsmodus ist fuer diesen Mandanten deaktiviert."
       }
-    }
+    },
+    "allCells": "Alle Zellen",
+    "backlog": {
+      "overdue": "Überfällig",
+      "soon": "Demnächst",
+      "today": "Heute"
+    },
+    "capacityBlocked": "Abschluss nicht möglich: Die nächste Zelle ist ausgelastet.",
+    "completeOperation": "Arbeitsgang abschließen",
+    "detailsPanel": "Detailbereich",
+    "empty": "Noch keine Zellen konfiguriert",
+    "loading": "Terminaldaten werden geladen...",
+    "noBufferJobs": "Keine Aufträge im Puffer",
+    "noExpectedJobs": "Keine erwarteten Aufträge",
+    "noJobSelected": "Kein Auftrag ausgewählt",
+    "noJobSelectedDescription": "Wählen Sie einen Auftrag aus der Liste für Details und Bedienung.",
+    "noOperationsFound": "Keine Routingschritte für dieses Teil gefunden.",
+    "onHold": "Pausiert",
+    "routing": "Routing",
+    "selectCell": "Zelle auswählen",
+    "status": {
+      "longRunning": "lange aktiv",
+      "notClockedOn": "nicht eingestempelt"
+    },
+    "stopBeforeComplete": "Pausieren Sie die aktive Zeiterfassung, bevor Sie den Arbeitsgang abschließen.",
+    "substeps": "Unterschritte"
   },
   "sessionTracking": {
     "currentlyTracking": "Aktuelle Zeiterfassung",
@@ -224,7 +259,19 @@
     "timeTrackingStopped": "Zeiterfassung gestoppt",
     "timeTrackingPaused": "Zeiterfassung pausiert",
     "timeTrackingResumed": "Zeiterfassung fortgesetzt",
-    "openOperationForIssue": "Öffnen Sie den Arbeitsgang, um ein Problem zu melden"
+    "openOperationForIssue": "Öffnen Sie den Arbeitsgang, um ein Problem zu melden",
+    "addReason": "Grund hinzufügen",
+    "addScrapRework": "Ausschuss oder Nacharbeit hinzufügen...",
+    "complete": "Abschließen",
+    "enterQuantity": "Geben Sie mindestens eine Menge ein",
+    "goodParts": "Gutteile",
+    "notes": "Notizen",
+    "notesPlaceholder": "Optionale Notizen...",
+    "rework": "Nacharbeit",
+    "scrap": "Ausschuss",
+    "selectReason": "Grund auswählen...",
+    "selectScrapReason": "Wählen Sie für jeden Ausschusseintrag einen Grund",
+    "totalScrap": "Ausschuss gesamt"
   },
   "terminalLogin": {
     "welcome": "BEDIENER-TERMINAL",
@@ -291,6 +338,39 @@
     "issue": "Problem",
     "recordQty": "Erfassen",
     "recordQuantity": "Produktionsmenge erfassen"
+  },
+  "mobile": {
+    "badgePlaceholder": "Mitarbeiterausweis",
+    "biometricReason": "Bestätigen Sie den Bediener, um die Arbeitswarteschlange freizugeben.",
+    "codePlaceholder": "Auftrags-, Teile- oder Batchcode",
+    "continue": "Weiter",
+    "enterManually": "Oder manuell eingeben",
+    "enterPin": "PIN eingeben",
+    "offline": "Sie sind offline — Änderungen werden nicht gespeichert",
+    "scan": "Scannen",
+    "scanFailed": "Scanner fehlgeschlagen. Geben Sie den Code manuell ein.",
+    "scanHint": "Halten Sie das Gerät ruhig und zentrieren Sie den Code im Bild.",
+    "scanNoResult": "Kein Code erkannt. Erneut versuchen oder manuell eingeben.",
+    "scanOpening": "Kamera wird geöffnet…",
+    "scanTitle": "Barcode oder QR scannen",
+    "scannerUnavailable": "Live-Scannen läuft in den Eryxon iOS- und Android-Apps. Geben Sie den Code unten ein.",
+    "signIn": "Am Terminal anmelden",
+    "signInBody": "Tippen Sie Ihren Mitarbeiterausweis oder geben Sie ihn ein, um Ihre Arbeitswarteschlange zu laden.",
+    "signedInAs": "Anmeldung als",
+    "unlockFace": "Mit Face ID entsperren",
+    "unlockTouch": "Mit Touch ID entsperren",
+    "verifying": "Wird überprüft"
+  },
+  "scanner": {
+    "available": "Richten Sie die Kamera auf einen gedruckten QR- oder Barcode. Eryxon springt direkt zum passenden Arbeitsgang.",
+    "fallback": "Kamerascannen läuft in den nativen iOS- und Android-Apps. Geben Sie unten einen Code ein, um fortzufahren.",
+    "findManual": "Arbeitsgang suchen",
+    "manualPlaceholder": "Auftrags-, Teile- oder Arbeitsgang-ID",
+    "notFound": "Kein Arbeitsgang gefunden für: {{value}}",
+    "openCamera": "Kamera öffnen",
+    "permissionDenied": "Aktivieren Sie den Kamerazugriff in den Geräteeinstellungen zum Scannen",
+    "title": "Auftrag, Teil oder Arbeitsgang scannen",
+    "unavailable": "Kamerascannen ist nur in den nativen iOS- und Android-Apps verfügbar"
   },
   "substepToasts": {
     "failedToLoad": "Unterschritte konnten nicht geladen werden",

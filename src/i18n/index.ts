@@ -53,9 +53,31 @@ import deAnalytics from './locales/de/analytics.json';
  * AI agents should edit individual namespace files rather than the monolithic translation.json
  */
 
-// Merge all namespaces into a single translation object for backward compatibility
+// Merge all namespaces into a single translation object for backward compatibility.
+// Deep merge (not Object.assign) so namespaces that share a top-level key — e.g.
+// `users` lives in both admin.json and config.json — union their sub-keys instead
+// of the later file clobbering the whole block (which dropped 68 users.* keys and
+// rendered them as raw keys on the admin Users page).
+const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
+
+const deepMerge = (
+  target: Record<string, unknown>,
+  source: Record<string, unknown>
+): Record<string, unknown> => {
+  for (const [key, value] of Object.entries(source)) {
+    if (isPlainObject(value)) {
+      const existing = target[key];
+      target[key] = deepMerge(isPlainObject(existing) ? existing : {}, value);
+    } else {
+      target[key] = value;
+    }
+  }
+  return target;
+};
+
 const mergeNamespaces = (...namespaces: Record<string, unknown>[]) =>
-  Object.assign({}, ...namespaces);
+  namespaces.reduce<Record<string, unknown>>((acc, ns) => deepMerge(acc, ns), {});
 
 const resources = {
   en: {

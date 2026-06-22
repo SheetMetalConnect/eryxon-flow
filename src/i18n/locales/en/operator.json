@@ -31,7 +31,17 @@
     "noOperations": "No operations",
     "operations": "operations",
     "operation": "operation",
-    "failedToLoad": "Failed to load work queue"
+    "failedToLoad": "Failed to load work queue",
+    "active": "active",
+    "activeOnly": "Active only",
+    "empty": "Nothing on your queue right now",
+    "emptyColumn": "No operations",
+    "loading": "Loading work queue",
+    "noCells": "No cells configured",
+    "noCellsDescription": "Add manufacturing cells in admin settings to see the kanban board.",
+    "noMatches": "No operations match your search",
+    "selectPrompt": "Tap an operation to see details, start a timer, or report an issue.",
+    "thisWeek": "This week"
   },
   "terminal": {
     "columns": {
@@ -189,7 +199,32 @@
         "setupRequired": "Production is blocked until setup/prep has been recorded for this operation.",
         "setupDisabled": "Setup/prep mode is disabled for this tenant."
       }
-    }
+    },
+    "allCells": "All Cells",
+    "backlog": {
+      "overdue": "Te laat",
+      "soon": "Binnenkort",
+      "today": "Vandaag"
+    },
+    "capacityBlocked": "Cannot complete because the next cell is at capacity.",
+    "completeOperation": "Complete operation",
+    "detailsPanel": "Details Panel",
+    "empty": "No cells configured yet",
+    "loading": "Loading Terminal Data...",
+    "noBufferJobs": "No jobs in buffer",
+    "noExpectedJobs": "No expected jobs",
+    "noJobSelected": "No Job Selected",
+    "noJobSelectedDescription": "Select a job from the list to view details and controls.",
+    "noOperationsFound": "No routing steps found for this part.",
+    "onHold": "On hold",
+    "routing": "Routing",
+    "selectCell": "Select Cell",
+    "status": {
+      "longRunning": "lang actief",
+      "notClockedOn": "niet ingeklokt"
+    },
+    "stopBeforeComplete": "Pause active timing before completing the operation.",
+    "substeps": "substeps"
   },
   "sessionTracking": {
     "currentlyTracking": "Currently Tracking",
@@ -224,7 +259,19 @@
     "timeTrackingStopped": "Time tracking stopped",
     "timeTrackingPaused": "Time tracking paused",
     "timeTrackingResumed": "Time tracking resumed",
-    "openOperationForIssue": "Open the operation to report an issue"
+    "openOperationForIssue": "Open the operation to report an issue",
+    "addReason": "Add reason",
+    "addScrapRework": "Add scrap or rework...",
+    "complete": "Complete",
+    "enterQuantity": "Enter at least one quantity",
+    "goodParts": "Good Parts",
+    "notes": "Notes",
+    "notesPlaceholder": "Optional notes...",
+    "rework": "Rework",
+    "scrap": "Scrap",
+    "selectReason": "Select reason...",
+    "selectScrapReason": "Select a reason for each scrap entry",
+    "totalScrap": "Total scrap"
   },
   "terminalLogin": {
     "welcome": "OPERATOR TERMINAL",
@@ -291,6 +338,39 @@
     "issue": "Issue",
     "recordQty": "Record Qty",
     "recordQuantity": "Record production quantity"
+  },
+  "mobile": {
+    "badgePlaceholder": "Employee badge",
+    "biometricReason": "Confirm operator to unlock the work queue.",
+    "codePlaceholder": "Job, part, or batch code",
+    "continue": "Continue",
+    "enterManually": "Or enter manually",
+    "enterPin": "Enter PIN",
+    "offline": "You're offline — changes won't save",
+    "scan": "Scan",
+    "scanFailed": "Scanner failed. Enter the code manually.",
+    "scanHint": "Hold the device steady and centre the code in view.",
+    "scanNoResult": "No code detected. Try again or enter it manually.",
+    "scanOpening": "Opening camera…",
+    "scanTitle": "Scan barcode or QR",
+    "scannerUnavailable": "Live scanning runs in the Eryxon iOS and Android apps. Enter the code below.",
+    "signIn": "Sign in to your terminal",
+    "signInBody": "Tap your employee badge or type it in to load your work queue.",
+    "signedInAs": "Signing in as",
+    "unlockFace": "Unlock with Face ID",
+    "unlockTouch": "Unlock with Touch ID",
+    "verifying": "Verifying"
+  },
+  "scanner": {
+    "available": "Point the camera at a printed QR or barcode. Eryxon will jump straight to the matching operation.",
+    "fallback": "Camera scanning runs in the native iOS and Android apps. Type a code below to continue.",
+    "findManual": "Find operation",
+    "manualPlaceholder": "Job, part, or operation ID",
+    "notFound": "No operation matched: {{value}}",
+    "openCamera": "Open camera",
+    "permissionDenied": "Enable camera access in your device settings to scan",
+    "title": "Scan a job, part, or operation",
+    "unavailable": "Camera scanning is only available in the native iOS and Android apps"
   },
   "substepToasts": {
     "failedToLoad": "Failed to load substeps",

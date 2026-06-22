@@ -35,7 +35,15 @@
     "qualityControl": "Qualitätssicherung",
     "qc": "QS",
     "painting": "Lackierung",
-    "packaging": "Verpackung"
+    "packaging": "Verpackung",
+    "activeHelp": "Inaktive Fertigungsstufen werden Bedienern nicht angezeigt",
+    "createFirstStage": "Erstellen Sie Ihre erste Fertigungsstufe",
+    "descriptionPlaceholder": "Beschreiben Sie, was in dieser Fertigungsstufe geschieht...",
+    "dragToReorder": "Zum Neuordnen ziehen",
+    "icon": "Symbol",
+    "noStagesDescription": "Fertigungsstufen stellen verschiedene Schritte in Ihrem Fertigungsprozess dar. Erstellen Sie Ihre erste Fertigungsstufe, um Ihren Workflow zu organisieren.",
+    "selectIcon": "Auswählen...",
+    "stageNamePlaceholder": "z.B. Schneiden, Schweißen, Montage"
   },
   "materials": {
     "title": "Material-Konfiguration",
@@ -117,7 +125,8 @@
     "addFirstResource": "Fügen Sie Ihre erste Ressource hinzu",
     "available": "Verfügbar",
     "inUse": "In Verwendung",
-    "maintenance": "Wartung"
+    "maintenance": "Wartung",
+    "noResourcesOfType": "Keine Ressourcen vom Typ {{type}}"
   },
   "assignments": {
     "title": "Bedienerzuweisungen",

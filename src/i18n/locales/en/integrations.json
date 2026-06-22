@@ -50,7 +50,8 @@
     "showKey": "Show Key",
     "hideKey": "Hide Key",
     "warningMessage": "Copy this key now. You won't be able to see it again.",
-    "createdAt": "Created At"
+    "createdAt": "Created At",
+    "searchKeys": "Search keys..."
   },
   "erpSync": {
     "title": "ERP Sync",
@@ -162,6 +163,8 @@
     "lastTriggered": "Last Triggered",
     "neverTriggered": "Never Triggered",
     "deleteConfirm": "Are you sure you want to delete this webhook?",
+    "searchWebhooks": "Search webhooks...",
+    "webhookUrl": "Webhook URL",
     "eventTypes": {
       "jobCreated": "Job Created",
       "jobUpdated": "Job Updated",
@@ -371,6 +374,7 @@
   },
   "dataExport": {
     "title": "Data Export",
+    "exportedEntities": "Exported {{count}} entities",
     "chooseEntities": "Choose Entities",
     "chooseFormat": "Choose Format",
     "csvDescription": "Comma-separated values format compatible with spreadsheet applications",
