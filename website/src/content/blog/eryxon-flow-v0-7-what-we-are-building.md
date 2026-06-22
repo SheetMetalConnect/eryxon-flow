@@ -1,7 +1,7 @@
 ---
 title: "Eryxon Flow v0.7: location-aware work, issue reporting, and operator modes"
-description: "The v0.7 release candidate tightens the shop-floor loop: part location context, more reliable issue reporting, manufacturing-aware work queues, and setup/production modes."
-pubDate: 2026-06-20
+description: "v0.7 tightens the shop-floor loop: parts that know where they go next, issue reports with cell context, manufacturing-aware work queues, and a terminal that tells setup apart from production."
+pubDate: 2026-06-22
 author: "Eryxon"
 authorRole: "Eryxon Flow"
 category: "Development"
@@ -18,36 +18,51 @@ relatedLinks:
     href: "/features/batch-management/"
 ---
 
-Eryxon Flow v0.7 is about removing ambiguity on the shop floor. A planner should know where a part is supposed to go next. An operator should know whether work is ready for setup or production. A quality issue should carry enough context to fix the problem without reconstructing the route afterward.
+A part moves through cutting, bending, welding, finishing, and assembly. The system should keep up
+with it the whole way. v0.7 is about that: less reconstructing what happened, more live context at
+the machine.
 
-The current release candidate focuses on four connected areas.
+Four areas, each built around one idea.
 
-## 1. Location-aware part tracking
+## Location-aware part tracking
 
-Issue reports can now carry current and intended next cell context. That matters when a part is physically moving through cutting, bending, welding, finishing, and assembly.
+A planner should be able to answer two questions about any part: where is it now, and where does it
+go next. v0.7 makes the route part of the data, not something you piece together from memory or a
+paper traveler.
 
-Instead of an issue being a loose note against an order, it can point back to where the part was and where it was expected to go. That makes follow-up clearer for both the operator and the planner.
+When a part is in the laser cell and headed for bending, the system holds both. A quality issue
+raised against it inherits that context instead of being a loose note pinned to an order. The next
+person to pick it up sees the route, not a question mark.
 
-## 2. More reliable issue reporting
+## Issue reporting that carries its context
 
-The issue form and attachment flow have been tightened. Operators get clearer feedback when attachments only partially succeed, and the backend keeps tenant-scoped location references intact.
+An issue is only useful if it says enough to act on. v0.7 ties each report to the cell the part was
+in and the cell it was meant to reach. So a rejected part tells you where the problem showed up and
+where it was going, and the planner can reroute or rework without chasing down the operator.
 
-A small database detail matters here: deleting a referenced cell must not null the tenant key on the issue. v0.7 keeps `tenant_id` intact and only clears the nullable cell reference.
+The reporting flow itself got steadier. Operators get clear feedback when an attachment only
+partly uploads, so nobody assumes a photo saved when it did not.
 
-## 3. Manufacturing-aware planning and work queues
+## Work queues that read like manufacturing
 
-The planning/work-queue path now carries more manufacturing context: material, thickness, resources, tooling, batches, and lifecycle events.
+A generic task list does not fit a sheet-metal shop. v0.7 carries the detail that actually decides
+what runs next: material and thickness, the resources and tooling a job needs, batches, and the
+lifecycle events that move a part along. Laser-nesting work can run as an automated batch, where one
+program drives the whole nest.
 
-That is the difference between a generic task list and a queue that actually fits how sheet-metal work moves through a factory.
+The result is a queue an operator can trust at a glance, because it speaks in the terms the floor
+already uses.
 
-## 4. Operator terminal work modes
+## Operator terminal work modes
 
-The operator terminal now distinguishes setup/prep from production work. Shared-terminal login and operator switching are part of the same flow, so one tablet can serve a real cell instead of one idealised user session.
+Setup is not production. Dialing in a tool, loading a program, and proving out the first part is
+different work from running the batch, and the terminal now treats it that way. Readiness is
+explicit: ready for setup, ready for production, or waiting on something.
 
-Readiness labels make the next action clearer: is this work ready for setup, ready for production, or waiting on something else?
+One terminal serves a whole cell. Operators log in to a shared tablet and switch between each other
+without logging the machine out and back in, so the screen matches how a cell actually runs a shift.
 
-## What is still separate
+## Try it
 
-This release candidate updates the app and the public v0.7 story. Final production release approval remains separate from the pull request.
-
-The goal is simple: less reconstruction after the fact, more live context at the machine, and a cleaner handoff between operator and planner.
+Want to see it on real data before committing to anything? Open the
+[hosted version](https://app.eryxon.eu) and walk a job through your own cells.
