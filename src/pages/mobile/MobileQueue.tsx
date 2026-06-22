@@ -277,7 +277,7 @@ export default function MobileQueue() {
               { id: "all", label: t("filters.all", "All") },
               { id: "mine", label: t("filters.mine", "Mine") },
               { id: "active", label: t("filters.active", "Active") },
-              { id: "rush", label: t("filters.rush", "Rush") },
+              { id: "rush", label: t("qrm.bulletCard") },
             ] as { id: Filter; label: string }[]
           ).map((tab) => (
             <button
@@ -465,7 +465,7 @@ function MobileQueueRow({
               </span>
               {isRush ? (
                 <span className="inline-flex items-center gap-0.5 rounded-full bg-red-500/15 px-1.5 py-px text-[10px] font-bold text-red-500">
-                  <Flame className="h-3 w-3" /> RUSH
+                  <Flame className="h-3 w-3" /> {t("qrm.bulletCard")}
                 </span>
               ) : null}
               {isMine && !isActive ? (

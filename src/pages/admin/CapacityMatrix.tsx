@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/tooltip";
 import { CapacityMatrixSkeleton, CellSkeleton } from "@/components/capacity/CapacityMatrixSkeleton";
 import { CellScheduleDialog } from "@/components/capacity/CellScheduleDialog";
+import { cellLoadHours, countingAllocations } from "@/lib/admin/capacityLoad";
 
 interface CalendarDay {
     date: string;
@@ -37,6 +38,7 @@ interface DayAllocation {
     operation?: {
         id: string;
         operation_name: string | null;
+        status: string | null;
         part?: {
             part_number: string;
             job?: {
@@ -202,6 +204,7 @@ export default function CapacityMatrix() {
                     operation:operations(
                         id,
                         operation_name,
+                        status,
                         part:parts(
                             part_number,
                             job:jobs(job_number, customer)
@@ -231,6 +234,8 @@ export default function CapacityMatrix() {
                     )
                 `)
                 .neq("status", "completed")
+                // Yellow Card (on_hold) releases capacity — exclude it from the grid.
+                .neq("status", "on_hold")
                 .not("planned_start", "is", null);
 
             if (error) throw error;
@@ -314,17 +319,11 @@ export default function CapacityMatrix() {
         const baseCapacity = cell.capacity_hours_per_day || 8;
         const capacity = baseCapacity * dayInfo.multiplier;
 
+        // Yellow Card (on_hold) releases capacity — excluded on both the allocation
+        // and the planned-operations fallback path by cellLoadHours.
         const allocations = getAllocationsForCellDate(cellId, date);
-        let totalHours = 0;
-
-        if (allocations.length > 0) {
-            totalHours = allocations.reduce((sum, a) => sum + (a.hours_allocated || 0), 0);
-        } else {
-            // Fallback: use operations with planned_start on this date
-            const opsOnDate = getOperationsForCellDate(cellId, date);
-            const totalMinutes = opsOnDate.reduce((sum, op) => sum + (op.estimated_time || 0), 0);
-            totalHours = totalMinutes / 60;
-        }
+        const opsOnDate = getOperationsForCellDate(cellId, date);
+        const totalHours = cellLoadHours(allocations, opsOnDate);
 
         const percent = capacity > 0 ? (totalHours / capacity) * 100 : 0;
 
@@ -457,7 +456,8 @@ export default function CapacityMatrix() {
                                             }
 
                                             const { hours, percent, capacity } = getCellLoad(cell.id, date, cell);
-                                            const allocations = getAllocationsForCellDate(cell.id, date);
+                                            // Yellow Card (on_hold) is parked — keep it out of the grid load view.
+                                            const allocations = countingAllocations(getAllocationsForCellDate(cell.id, date));
                                             const opsOnDate = getOperationsForCellDate(cell.id, date);
 
                                             return (

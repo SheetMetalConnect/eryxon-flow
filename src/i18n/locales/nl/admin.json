@@ -60,7 +60,12 @@
     "wipeFailed": "Wissen mislukt",
     "noActiveClockings": "Geen actieve klokkingen",
     "noActiveClockingsDescription": "Er zijn geen actieve tijdregistraties om te stoppen.",
-    "activeJobProgressCapped": "Gemiddelde en voltooiing gelden voor de {{shown}} meest urgente actieve orders."
+    "activeJobProgressCapped": "Gemiddelde en voltooiing gelden voor de {{shown}} meest urgente actieve orders.",
+    "attention": {
+      "title": "Vereist aandacht",
+      "overHours": "Boven geplande uren",
+      "minutesOver": "Minuten over"
+    }
   },
   "organizationSettings": {
     "title": "Organisatie-instellingen",

@@ -25,6 +25,7 @@ const loadMockData = () => import("@/lib/mockDataGenerator");
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
 import { logger } from "@/lib/logger";
 import { ActiveJobProgressCard } from "@/components/admin/ActiveJobProgressCard";
+import { DashboardAttentionCard } from "@/components/admin/DashboardAttentionCard";
 import {
   buildActiveJobProgressSummaries,
   type ActiveJobProgressJob,
@@ -589,6 +590,8 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <DashboardAttentionCard />
 
       <ActiveJobProgressCard jobs={activeJobProgress} totalCount={activeJobProgressTotal} />
 

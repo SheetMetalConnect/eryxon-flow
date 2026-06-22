@@ -33,7 +33,7 @@ export interface TerminalJob {
     // Part-specific fields
     drawingNo?: string | null;
     cncProgramName?: string | null;
-    isBulletCard?: boolean | null; // QRM: Rush/priority order flag
+    isBulletCard?: boolean | null; // QRM: Bullet Card (always-on-top priority) flag
     plannedStart?: string | null; // Scheduled start date of operation
     batchContext?: {
         batchId: string;

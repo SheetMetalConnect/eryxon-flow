@@ -60,7 +60,12 @@
     "wipeFailed": "Wipe Failed",
     "noActiveClockings": "No active clockings",
     "noActiveClockingsDescription": "There are no active time entries to stop.",
-    "activeJobProgressCapped": "Average and completion figures cover the {{shown}} most urgent active orders."
+    "activeJobProgressCapped": "Average and completion figures cover the {{shown}} most urgent active orders.",
+    "attention": {
+      "title": "Needs Attention",
+      "overHours": "Over planned hours",
+      "minutesOver": "Minutes over"
+    }
   },
   "organizationSettings": {
     "title": "Organization Settings",

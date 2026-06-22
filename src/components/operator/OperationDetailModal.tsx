@@ -345,13 +345,13 @@ export default function OperationDetailModal({
               onSaved={onUpdate}
             />
 
-            {/* Quick controls: Rush + Hold */}
+            {/* Quick controls: Bullet Card + Yellow Card */}
             <div className="flex items-center gap-2">
               <button
                 onClick={async () => {
                   const newVal = !operation.part.is_bullet_card;
                   await supabase.from("parts").update({ is_bullet_card: newVal }).eq("id", operation.part.id);
-                  toast.success(newVal ? t("operations.rushEnabled", "Rush ingeschakeld") : t("operations.rushDisabled", "Rush uitgeschakeld"));
+                  toast.success(newVal ? t("qrm.bulletCardApplied") : t("qrm.bulletCardRemoved"));
                   onUpdate();
                 }}
                 className={cn(
@@ -361,13 +361,13 @@ export default function OperationDetailModal({
                     : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
                 )}
               >
-                ⚡ Rush
+                ⚡ {t("qrm.bulletCard")}
               </button>
               <button
                 onClick={async () => {
                   const newStatus = operation.status === "on_hold" ? "not_started" : "on_hold";
                   await supabase.from("operations").update({ status: newStatus }).eq("id", operation.id);
-                  toast.success(newStatus === "on_hold" ? t("operations.onHold", "On hold gezet") : t("operations.resumed", "Hervat"));
+                  toast.success(newStatus === "on_hold" ? t("qrm.yellowCardApplied") : t("qrm.yellowCardResumed"));
                   onUpdate();
                 }}
                 className={cn(
@@ -377,7 +377,7 @@ export default function OperationDetailModal({
                     : "border-border bg-muted/30 text-muted-foreground hover:bg-muted/50",
                 )}
               >
-                {operation.status === "on_hold" ? "▶ Hervatten" : "⏸ On Hold"}
+                {operation.status === "on_hold" ? `▶ ${t("qrm.resume")}` : `⏸ ${t("qrm.yellowCard")}`}
               </button>
             </div>
 

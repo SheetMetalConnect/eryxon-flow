@@ -329,7 +329,7 @@ export default function MobileOperationDetail(
             <Banner
               tone="danger"
               icon={<Flame className="h-4 w-4" />}
-              title={t("operations.rushTitle", "Rush job")}
+              title={t("qrm.bulletCard")}
               body={t(
                 "operations.rushBody",
                 "Customer expedited. Prioritize this part above the rest of your queue.",

@@ -438,8 +438,6 @@
     "resumed": "Hervat",
     "routing": "Route",
     "rushBody": "Klant heeft versneld. Geef dit onderdeel voorrang op de rest van je wachtrij.",
-    "rushDisabled": "Spoed uitgeschakeld",
-    "rushEnabled": "Spoed ingeschakeld",
     "rushTitle": "Spoedopdracht",
     "searchPlaceholder": "Zoek op onderdeel, bewerking, operator...",
     "selectOperator": "Operator selecteren",
@@ -728,5 +726,16 @@
     "updateBatch": "Batch bijwerken",
     "noNestedBatches": "Nog geen geneste batches",
     "updateSuccess": "Batch succesvol bijgewerkt"
+  },
+  "qrm": {
+    "bulletCard": "Bullet Card",
+    "bulletCardApplied": "Bullet Card toegepast",
+    "bulletCardRemoved": "Bullet Card verwijderd",
+    "yellowCard": "Yellow Card",
+    "yellowCardApplied": "Yellow Card toegepast",
+    "yellowCardResumed": "Hervat van Yellow Card",
+    "resume": "Hervatten",
+    "plannedHours": "Geplande uren",
+    "bookedHours": "Geboekte uren"
   }
 }

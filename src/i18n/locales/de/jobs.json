@@ -436,8 +436,6 @@
     "resumed": "Fortgesetzt",
     "routing": "Route",
     "rushBody": "Vom Kunden beschleunigt. Priorisieren Sie dieses Teil vor dem Rest Ihrer Warteschlange.",
-    "rushDisabled": "Eilauftrag deaktiviert",
-    "rushEnabled": "Eilauftrag aktiviert",
     "rushTitle": "Eilauftrag",
     "searchPlaceholder": "Nach Teil, Arbeitsgang, Bediener suchen...",
     "selectOperator": "Bediener auswählen",
@@ -728,5 +726,16 @@
     "updateBatch": "Charge aktualisieren",
     "noNestedBatches": "Noch keine verschachtelten Chargen",
     "updateSuccess": "Charge erfolgreich aktualisiert"
+  },
+  "qrm": {
+    "bulletCard": "Bullet Card",
+    "bulletCardApplied": "Bullet Card angewendet",
+    "bulletCardRemoved": "Bullet Card entfernt",
+    "yellowCard": "Yellow Card",
+    "yellowCardApplied": "Yellow Card angewendet",
+    "yellowCardResumed": "Aus Yellow Card fortgesetzt",
+    "resume": "Fortsetzen",
+    "plannedHours": "Geplante Stunden",
+    "bookedHours": "Gebuchte Stunden"
   }
 }

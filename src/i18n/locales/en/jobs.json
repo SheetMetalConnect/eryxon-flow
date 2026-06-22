@@ -441,8 +441,6 @@
     "resumed": "Hervat",
     "routing": "Route",
     "rushBody": "Customer expedited. Prioritize this part above the rest of your queue.",
-    "rushDisabled": "Rush uitgeschakeld",
-    "rushEnabled": "Rush ingeschakeld",
     "rushTitle": "Rush job",
     "searchPlaceholder": "Search by part, operation, operator...",
     "selectOperator": "Select operator",
@@ -731,5 +729,16 @@
     "updateBatch": "Update Batch",
     "noNestedBatches": "No nested batches yet",
     "updateSuccess": "Batch updated successfully"
+  },
+  "qrm": {
+    "bulletCard": "Bullet Card",
+    "bulletCardApplied": "Bullet Card applied",
+    "bulletCardRemoved": "Bullet Card removed",
+    "yellowCard": "Yellow Card",
+    "yellowCardApplied": "Yellow Card applied",
+    "yellowCardResumed": "Resumed from Yellow Card",
+    "resume": "Resume",
+    "plannedHours": "Planned hours",
+    "bookedHours": "Booked hours"
   }
 }

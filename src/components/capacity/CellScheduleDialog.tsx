@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { countingAllocations, isParked } from "@/lib/admin/capacityLoad";
 
 interface Allocation {
   id: string;
@@ -44,6 +45,7 @@ interface Allocation {
   operation?: {
     id: string;
     operation_name: string | null;
+    status: string | null;
     part?: {
       part_number: string;
       job?: {
@@ -178,6 +180,11 @@ export function CellScheduleDialog({
 
   if (!cell || !date) return null;
 
+  // Yellow Card (on_hold) is parked: it releases capacity, so it does not count
+  // toward this cell's load. Show counting work and parked work separately.
+  const countingList = countingAllocations(allocations);
+  const parkedAllocations = allocations.filter((a) => isParked(a.operation?.status));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -254,11 +261,11 @@ export function CellScheduleDialog({
               <div className="flex items-center justify-between">
                 <h4 className="font-medium text-sm">Scheduled Operations</h4>
                 <span className="text-xs text-muted-foreground">
-                  {allocations.length} operation{allocations.length !== 1 ? "s" : ""}
+                  {countingList.length} operation{countingList.length !== 1 ? "s" : ""}
                 </span>
               </div>
 
-              {allocations.length === 0 ? (
+              {countingList.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">No operations scheduled for this day</p>
@@ -269,7 +276,7 @@ export function CellScheduleDialog({
               ) : (
                 <ScrollArea className="h-[280px] pr-4">
                   <div className="space-y-2">
-                    {allocations.map((allocation) => (
+                    {countingList.map((allocation) => (
                       <div
                         key={allocation.id}
                         className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border hover:border-primary/50 transition-colors"
@@ -358,6 +365,43 @@ export function CellScheduleDialog({
                 </ScrollArea>
               )}
             </div>
+
+            {/* Yellow Card (parked) — released capacity, does not count toward load */}
+            {parkedAllocations.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm text-amber-500">{t("qrm.yellowCard")}</h4>
+                  <span className="text-xs text-muted-foreground">
+                    {parkedAllocations.length}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {parkedAllocations.map((allocation) => (
+                    <div
+                      key={allocation.id}
+                      className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 opacity-80"
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs shrink-0">
+                            {allocation.operation?.part?.job?.job_number || "—"}
+                          </Badge>
+                          <span className="font-medium truncate">
+                            {allocation.operation?.operation_name || "Operation"}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1 truncate">
+                          {allocation.operation?.part?.part_number || "—"}
+                        </div>
+                      </div>
+                      <span className="ml-2 font-mono text-xs text-muted-foreground line-through">
+                        {allocation.hours_allocated}h
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </>
         )}
 

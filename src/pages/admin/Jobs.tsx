@@ -282,7 +282,7 @@ export default function Jobs() {
           <div className="flex items-center gap-1.5">
             <span className="font-semibold text-foreground">{row.getValue("job_number")}</span>
             {row.original.hasBullet && (
-              <span className="inline-flex items-center rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-500 uppercase tracking-wide">Rush</span>
+              <span className="inline-flex items-center rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold text-red-500 uppercase tracking-wide">{t("qrm.bulletCard")}</span>
             )}
           </div>
           <span className="text-xs text-muted-foreground truncate max-w-[120px]">
@@ -480,10 +480,10 @@ export default function Jobs() {
     },
     {
       id: "rush",
-      title: "Rush",
+      title: t("qrm.bulletCard"),
       options: [
-        { label: "Rush / Bullet Card", value: "rush" },
-        { label: "Normal", value: "normal" },
+        { label: t("qrm.bulletCard"), value: "rush" },
+        { label: t("parts.none"), value: "normal" },
       ],
     },
   ], [t]);

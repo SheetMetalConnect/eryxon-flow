@@ -299,7 +299,7 @@ export function OperatorStatusBar() {
             </span>
             {statusData.state === "rush" && (
               <span className="rounded bg-red-500/20 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-red-400">
-                Rush
+                {t("qrm.bulletCard")}
               </span>
             )}
             {statusData.state === "stale" && (
