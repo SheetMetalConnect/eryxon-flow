@@ -19,8 +19,14 @@ A **Yellow Card** puts work on hold (waiting on material, an answer, a tool, an 
 
 Take the card off and the work returns to normal.
 
-## Who applies them
+## How we apply this
 
-Operators work the queues and see the cards' effect. Admins and team-leaders apply and remove the cards — putting a part on top, or parking one — because that's a planning decision.
+A few decisions about how the cards work in day-to-day use.
+
+**Who applies them.** Team leaders (admins) apply and remove the cards — putting a part on top, or parking one is a planning call. The controls live in the admin panels and in the shared-terminal kanban, which is where team leaders work alongside the floor. Operators run the queues and see the cards' effect. This is the convention, not a hard lock: the app guides, it doesn't gate.
+
+**Taking a Yellow Card off.** Removing the card returns the operation to its normal place in the queue. It sorts by its sequence again, the same as before it was parked — it doesn't jump to the front or drop to the back. The hold simply ends and the work rejoins the flow where it belongs.
+
+**How many Bullet Cards.** One is ideal, two at most. That's planner guidance, not a cap the app enforces — the value of the card comes from being rare, and that's a judgement the planner keeps, not a rule the software imposes.
 
 > Note: parts of the operator UI still label the Bullet Card as "Rush". That wording is being corrected; the card itself is unchanged.
