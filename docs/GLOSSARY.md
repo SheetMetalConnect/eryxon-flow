@@ -22,6 +22,10 @@
 | **Work Queue** | The operator's view of their assigned operations, ordered by priority. |
 | **Time Entry** | A clock-in/clock-out record for an operator working on an operation. |
 | **Capacity Matrix** | Visual grid showing cell availability vs. scheduled work over time. |
+| **QRM** | Quick Response Manufacturing — a strategy that measures success in lead time. Shorter time through the shop is the single goal. |
+| **POLCA** | Paired-cell Overlapping Loops of Cards with Authorization — QRM's shop-floor card method. Work starts only when its release date has arrived and the next paired cell has capacity. |
+| **Bullet Card** | A POLCA expedite card (Rajan Suri, *The Practitioner's Guide to POLCA*). The carded job is the always-on-top priority: it becomes the next job at every cell and stays first until the card is removed. As guidance it bypasses the release date and the next-cell capacity gate, launching ahead of authorised work. Use sparingly: one ideal, two at most, a guideline not an enforced cap. Not a generic rush flag. Stored as `parts.is_bullet_card`. (Some operator UI still mislabels this as "Rush", a known bug.) |
+| **Yellow Card** | A QRM on-hold card on an operation. A yellow-carded operation leaves the capacity views and is excluded from the cell's max-per-cell WIP count, so parking it frees a WIP slot while it waits. Not a generic pause flag — the capacity and WIP exclusion is the point. Stored as `operations.status = 'on_hold'`. |
 
 ## Quality & Issues
 

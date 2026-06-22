@@ -58,6 +58,10 @@
           "slug": "features/qrm-flow"
         },
         {
+          "label": "QRM Cards: Bullet & Yellow",
+          "slug": "features/qrm-cards"
+        },
+        {
           "label": "Operator Terminal",
           "slug": "features/operator-terminal"
         },

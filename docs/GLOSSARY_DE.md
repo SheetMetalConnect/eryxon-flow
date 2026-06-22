@@ -22,10 +22,11 @@
 | **Arbeitswarteschlange (Work Queue)** | Die Ansicht des Werkers seiner zugewiesenen Arbeitsgänge, nach Priorität geordnet. |
 | **Zeiteintrag (Time Entry)** | Ein Ein-/Ausstempel-Datensatz eines Werkers, der an einem Arbeitsgang arbeitet. |
 | **Kapazitätsmatrix (Capacity Matrix)** | Visuelles Raster, das Zellenverfügbarkeit gegenüber geplanter Arbeit über die Zeit zeigt. |
-| **Bullet Card (Eilauftrag)** | Eilmarkierung auf einem Teil. Das Teil springt an die Spitze jeder Warteschlange. |
+| **Bullet Card** | Eine POLCA-Vorrangskarte (Rajan Suri, *The Practitioner's Guide to POLCA*). Der Auftrag mit der Karte hat dauerhaft Vorrang: Er wird an jeder Zelle zum nächsten Auftrag und bleibt an der Spitze, bis die Karte entfernt wird. Als Richtlinie umgeht er das Freigabedatum und die Kapazitätsprüfung der nächsten Zelle und startet vor autorisierter Arbeit. Sparsam einsetzen: einer ideal, höchstens zwei, eine Richtlinie und keine erzwungene Grenze. Keine allgemeine Eilmarkierung. Gespeichert als `parts.is_bullet_card`. (Manche Werker-Oberflächen zeigen dies noch als "Rush", ein bekannter Fehler.) |
+| **Yellow Card** | Eine QRM-Wartekarte an einem Arbeitsgang. Ein Arbeitsgang mit Yellow Card verschwindet aus den Kapazitätsansichten und wird in der Max-pro-Zelle-Zählung (POLCA-UB) nicht mitgezählt, sodass das Parken einen UB-Platz freigibt, solange der Arbeitsgang wartet. Keine allgemeine Pausemarkierung — der Ausschluss aus Kapazität und UB ist der Zweck. Gespeichert als `operations.status = 'on_hold'`. |
 | **UB (Umlaufbestand / WIP)** | Die Anzahl der Arbeitsgänge, die gleichzeitig in einer Zelle aktiv sind. Begrenzt durch UB-Grenzen. |
-| **POLCA** | Paired-cell Overlapping Loops of Cards with Authorization — Arbeitslastverwaltungssystem mit GO/PAUSE-Signalen. |
-| **QRM** | Quick Response Manufacturing — Methodik zur Verkürzung von Durchlaufzeiten. |
+| **POLCA** | Paired-cell Overlapping Loops of Cards with Authorization, die Karten-Methode von QRM für die Fertigung. Arbeit startet erst, wenn das Freigabedatum erreicht ist und die nächste gekoppelte Zelle Kapazität hat. |
+| **QRM** | Quick Response Manufacturing — Methodik zur Verkürzung von Durchlaufzeiten. Kürzere Zeit durch die Werkstatt ist das einzige Ziel. |
 
 ## Qualität & Problemmeldungen
 
