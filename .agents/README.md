@@ -120,6 +120,7 @@ opentraceai index .    # ~3 seconds, writes to .opentrace/index.db
 | [`docs/ROUTE_MAP.md`](../docs/ROUTE_MAP.md) | All 41 frontend routes with guards and lazy-loading |
 | [`docs/HOOK_MAP.md`](../docs/HOOK_MAP.md) | Hook → table → queryKey dependency map |
 | [`docs/CONVENTIONS.md`](../docs/CONVENTIONS.md) | Code patterns, naming, templates for new files |
+| [`docs/LOCATION_MODULE.md`](../docs/LOCATION_MODULE.md) | Location/placement module — drop-off slot grid, capacity, placement flow |
 | [`docs/GLOSSARY.md`](../docs/GLOSSARY.md) | MES domain vocabulary for AI agents |
 | [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md) | Common agent pitfalls and fixes |
 | [`docs/decisions/`](../docs/decisions/) | Architecture Decision Records (ADRs) — why things are the way they are |
