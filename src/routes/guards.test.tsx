@@ -55,8 +55,18 @@ describe("ProtectedRoute", () => {
     mockUseOperator.mockReturnValue({ activeOperator: null, isLoading: false });
   });
 
-  it("redirects shared-terminal admins back to PIN entry when no operator is verified", () => {
+  it("allows admins/shift-leaders into operator views for oversight without a PIN", () => {
+    // Operator views (terminal / kanban) are open to admins for oversight; the
+    // shared-terminal PIN requirement is enforced separately by RequireActiveOperator.
     mockUseProfile.mockReturnValue({ role: "admin" });
+
+    renderProtectedRoute();
+
+    expect(screen.getByText("operator screen")).toBeInTheDocument();
+  });
+
+  it("redirects a non-admin without a verified operator to PIN entry", () => {
+    mockUseProfile.mockReturnValue({ role: "viewer" });
 
     renderProtectedRoute();
 

@@ -56,7 +56,15 @@ export function ProtectedRoute({
     );
   }
 
-  if (operatorOnly && profile.role !== "operator" && !activeOperator) {
+  // UI-only check: operator views (terminal / kanban) are open to operators, to a
+  // PIN'd shop-floor operator, AND to admins/shift-leaders for oversight. Only an
+  // unauthenticated-as-operator non-admin is sent to the operator login.
+  if (
+    operatorOnly &&
+    profile.role !== "operator" &&
+    profile.role !== "admin" &&
+    !activeOperator
+  ) {
     return (
       <Navigate
         to={ROUTES.OPERATOR.LOGIN}
