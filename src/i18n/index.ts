@@ -50,7 +50,7 @@ import deAnalytics from './locales/de/analytics.json';
  * - integrations: API keys, webhooks, MQTT, data import/export
  * - analytics: QRM, quality, capacity metrics
  *
- * AI agents should edit individual namespace files rather than the monolithic translation.json
+ * Edit the individual namespace files above; they are deep-merged into `translation`.
  */
 
 // Merge all namespaces into a single translation object for backward compatibility.
