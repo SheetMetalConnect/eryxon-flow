@@ -96,17 +96,5 @@ BEGIN
   END IF;
 END $$;
 
--- 4. Occupancy view (free vs used per slot). security_invoker so tenant RLS applies.
-CREATE OR REPLACE VIEW public.storage_location_occupancy
-WITH (security_invoker = true) AS
-SELECT
-  l.id AS location_id,
-  l.tenant_id,
-  l.capacity,
-  COUNT(p.id) FILTER (WHERE p.removed_at IS NULL) AS occupied,
-  GREATEST(l.capacity - COUNT(p.id) FILTER (WHERE p.removed_at IS NULL), 0) AS available
-FROM public.storage_locations l
-LEFT JOIN public.part_placements p ON p.location_id = l.id
-GROUP BY l.id, l.tenant_id, l.capacity;
-
-GRANT SELECT ON public.storage_location_occupancy TO authenticated;
+-- Occupancy (free vs used per slot) is computed in the app from storage_locations
+-- + active part_placements (see src/lib/locations/placement.ts), so no DB view.

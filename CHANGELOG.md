@@ -2,6 +2,34 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.7.1] — 2026-06-22
+
+Same-day hotfixes after the v0.7.0 rollout surfaced issues against real,
+high-volume tenant data, plus the first slice of the location module.
+
+### Added
+
+- **Location module (foundation)** — configurable drop-off slot grid
+  (`storage_locations`, per-cell, with capacity) and part placement tracking
+  (`part_placements`), behind a per-tenant toggle (`location_tracking_enabled`).
+  When enabled, operators record where they put a part on completion. Off by default.
+
+### Fixed
+
+- **Operator terminal 100% down (400)** — the terminal loaded every visible
+  operation's batch links in a single PostgREST `.in(operation_id, […])` call; with
+  hundreds of operations the URL exceeded the server limit and returned 400, so the
+  view failed to load and operators could not clock on. The id lookups are now chunked.
+- **Issue queue 400** — `/admin/issues` embeds cells via `issues_current_cell_id_fkey`,
+  but v0.7.0 only created composite tenant-scoped FKs, so PostgREST could not resolve
+  the relationship. Added the simple single-column FKs the query expects (the composite
+  tenant-safe FKs remain).
+- **Admin dashboard did not scale** — the active-order progress card loaded every active
+  job with nested parts/operations. It now loads the 150 most urgent and shows the true
+  active count via a head-count.
+- **storage-manager edge function** — a CORS refactor left helper functions referencing
+  an out-of-scope `corsHeaders`; threaded the per-request headers through.
+
 ## [0.7.0] — 2026-06-22
 
 Four-core release: location-aware work, more reliable issue reporting, manufacturing-aware
