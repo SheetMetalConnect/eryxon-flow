@@ -3,6 +3,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { dispatchOperationStarted, dispatchOperationCompleted } from "../event-dispatch";
 import { logger } from '@/lib/logger';
 import { parseOperatorTerminalModeNote } from "@/features/operator-terminal/workModes";
+import { fetchInChunks } from "./chunked";
 
 interface OperationQueryResult {
   status: string;
@@ -298,56 +299,62 @@ async function fetchOperationsWithDetailsInternal(
   const batchContextsByOperation = new Map<string, OperationBatchContext>();
 
   if (operationIds.length > 0) {
-    const { data: modeHistory, error: modeHistoryError } = await supabase
-      .from("time_entries")
-      .select("operation_id, notes")
-      .eq("tenant_id", tenantId)
-      .in("operation_id", operationIds)
-      .like("notes", "operator-mode:%");
-
-    if (modeHistoryError) {
+    let modeHistory: OperationModeHistoryResult[];
+    try {
+      modeHistory = await fetchInChunks<OperationModeHistoryResult>(operationIds, (chunk) =>
+        supabase
+          .from("time_entries")
+          .select("operation_id, notes")
+          .eq("tenant_id", tenantId)
+          .in("operation_id", chunk)
+          .like("notes", "operator-mode:%"),
+      );
+    } catch (modeHistoryError) {
       logger.error("Database", "Error fetching operator mode history", modeHistoryError);
       throw modeHistoryError;
     }
 
-    for (const entry of (modeHistory ?? []) as OperationModeHistoryResult[]) {
+    for (const entry of modeHistory) {
       if (parseOperatorTerminalModeNote(entry.notes) === "setup") {
         setupHistoryByOperation.add(entry.operation_id);
       }
     }
 
-    const { data: batchLinks, error: batchLinksError } = await supabase
-      .from("batch_operations")
-      .select(`
-        batch_id,
-        operation_id,
-        sequence_in_batch,
-        batch:operation_batches!batch_operations_batch_id_fkey(
-          id,
-          batch_number,
-          batch_type,
-          status,
-          operations_count,
-          material,
-          nesting_metadata,
-          parent_batch:operation_batches!operation_batches_parent_batch_id_fkey(
-            id,
-            batch_number,
-            batch_type,
-            status
-          )
-        )
-      `)
-      .in("operation_id", operationIds)
-      .eq("tenant_id", tenantId);
-
-    if (batchLinksError) {
+    let batchLinks: BatchLinkResult[];
+    try {
+      batchLinks = await fetchInChunks<BatchLinkResult>(operationIds, (chunk) =>
+        supabase
+          .from("batch_operations")
+          .select(`
+            batch_id,
+            operation_id,
+            sequence_in_batch,
+            batch:operation_batches!batch_operations_batch_id_fkey(
+              id,
+              batch_number,
+              batch_type,
+              status,
+              operations_count,
+              material,
+              nesting_metadata,
+              parent_batch:operation_batches!operation_batches_parent_batch_id_fkey(
+                id,
+                batch_number,
+                batch_type,
+                status
+              )
+            )
+          `)
+          .in("operation_id", chunk)
+          .eq("tenant_id", tenantId),
+      );
+    } catch (batchLinksError) {
       logger.error("Database", "Error fetching batch links for operations", batchLinksError);
       throw batchLinksError;
     }
 
     const batchIds = Array.from(
-      new Set((batchLinks ?? []).map((link) => link.batch_id)),
+      new Set(batchLinks.map((link) => link.batch_id)),
     );
 
     const membersByBatchId = new Map<string, OperationBatchMember[]>();
@@ -402,7 +409,7 @@ async function fetchOperationsWithDetailsInternal(
       }
     }
 
-    for (const link of (batchLinks ?? []) as BatchLinkResult[]) {
+    for (const link of batchLinks) {
       const batch = Array.isArray(link.batch) ? link.batch[0] : link.batch;
       if (!batch) continue;
 
