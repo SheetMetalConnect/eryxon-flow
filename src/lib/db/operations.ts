@@ -461,6 +461,51 @@ export async function fetchOperationLookupDetails(tenantId: string): Promise<Ope
   return fetchOperationsWithDetailsInternal(tenantId, true);
 }
 
+export interface OperationPlanUpdate {
+  /** Planned time in MINUTES (operations.estimated_time). */
+  estimated_time?: number;
+  /** Planned start (ISO timestamp) or null to clear. */
+  planned_start?: string | null;
+  /** Planned end (ISO timestamp) or null to clear. */
+  planned_end?: string | null;
+}
+
+/**
+ * Correct an operation's plan after creation: planned time and the planned
+ * start/end window. `estimated_time` is normally only set at part-operation
+ * creation; this makes it editable from the admin operation detail.
+ *
+ * GUIDE, don't gate — this only writes the requested fields and never blocks.
+ */
+export async function updateOperationPlan(
+  operationId: string,
+  plan: OperationPlanUpdate,
+): Promise<void> {
+  const patch: Partial<Tables<"operations">> = {};
+
+  if (plan.estimated_time !== undefined) {
+    patch.estimated_time = Math.max(0, plan.estimated_time);
+  }
+  if (plan.planned_start !== undefined) {
+    patch.planned_start = plan.planned_start;
+  }
+  if (plan.planned_end !== undefined) {
+    patch.planned_end = plan.planned_end;
+  }
+
+  if (Object.keys(patch).length === 0) return;
+
+  const { error } = await supabase
+    .from("operations")
+    .update(patch)
+    .eq("id", operationId);
+
+  if (error) {
+    logger.error("Database", "Error updating operation plan", error);
+    throw error;
+  }
+}
+
 export async function startTimeTracking(
   operationId: string,
   operatorId: string,

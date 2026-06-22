@@ -101,6 +101,7 @@ export const QueryKeys = {
     workQueue: (cellId: string) => ["operations", "workQueue", cellId] as const,
     resources: (operationId: string) => ["operations", "resources", operationId] as const,
     production: (operationId: string) => ["operations", "production", operationId] as const,
+    bookedHours: (operationId: string) => ["operations", "bookedHours", operationId] as const,
     forBatch: (batchId: string) => ["operations", "forBatch", batchId] as const,
   },
 

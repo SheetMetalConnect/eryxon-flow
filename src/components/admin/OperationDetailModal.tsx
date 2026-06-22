@@ -19,7 +19,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
+import { useEffect, useState } from "react";
 import {
   Box,
   FileText,
@@ -35,7 +37,11 @@ import {
   Package,
   Settings2,
   Paperclip,
+  Zap,
+  TimerReset,
+  Cpu,
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
@@ -43,11 +49,28 @@ import { useProfile } from "@/hooks/useProfile";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { logger } from '@/lib/logger';
+import { useOperationBookedHours } from "@/hooks/useOperationBookedHours";
+import { useUpdateOperationPlan } from "@/hooks/useUpdateOperationPlan";
 
 interface OperationDetailModalProps {
   operationId: string;
   onClose: () => void;
   onUpdate: () => void;
+}
+
+/** ISO timestamp -> value for <input type="datetime-local"> (local time, no seconds). */
+function toDateTimeLocal(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Minutes -> "Hh Mmin" with minute precision, e.g. 90 -> "1.50 h (90 min)". */
+function formatHoursFromMinutes(minutes: number): string {
+  const hours = minutes / 60;
+  return `${hours.toFixed(2)} h · ${Math.round(minutes)} min`;
 }
 
 export default function OperationDetailModal({
@@ -76,6 +99,8 @@ export default function OperationDetailModal({
             material,
             quantity,
             file_paths,
+            cnc_program_name,
+            is_bullet_card,
             jobs (
               id,
               job_number,
@@ -177,6 +202,76 @@ export default function OperationDetailModal({
       });
     },
   });
+
+  const updateBulletCardMutation = useMutation({
+    mutationFn: async (isBulletCard: boolean) => {
+      if (!operation?.parts?.id) return;
+      const { error } = await supabase
+        .from("parts")
+        .update({ is_bullet_card: isBulletCard })
+        .eq("id", operation.parts.id);
+      if (error) throw error;
+    },
+    onSuccess: (_data, isBulletCard) => {
+      queryClient.invalidateQueries({ queryKey: QueryKeys.operations.detail(operationId) });
+      onUpdate();
+      toast.success(t("notifications.updated"), {
+        description: isBulletCard
+          ? t("qrm.bulletCardApplied")
+          : t("qrm.bulletCardRemoved"),
+      });
+    },
+    onError: (error: Error) => {
+      toast.error(t("notifications.error"), { description: error.message });
+    },
+  });
+
+  const updatePlanMutation = useUpdateOperationPlan(operationId);
+
+  const bookedHours = useOperationBookedHours(
+    operationId,
+    operation?.estimated_time ?? 0,
+  );
+
+  // Editable plan fields — seeded from the operation, then user-correctable.
+  const [planHours, setPlanHours] = useState("");
+  const [planStart, setPlanStart] = useState("");
+  const [planEnd, setPlanEnd] = useState("");
+  const [planDirty, setPlanDirty] = useState(false);
+
+  useEffect(() => {
+    if (!operation) return;
+    const minutes = operation.estimated_time ?? 0;
+    setPlanHours(minutes ? (minutes / 60).toFixed(2) : "");
+    setPlanStart(toDateTimeLocal(operation.planned_start));
+    setPlanEnd(toDateTimeLocal(operation.planned_end));
+    setPlanDirty(false);
+  }, [operation]);
+
+  const handleSavePlan = () => {
+    const hoursNum = parseFloat(planHours.replace(",", "."));
+    updatePlanMutation.mutate(
+      {
+        estimated_time:
+          planHours.trim() === "" || Number.isNaN(hoursNum)
+            ? 0
+            : Math.round(hoursNum * 60),
+        planned_start: planStart ? new Date(planStart).toISOString() : null,
+        planned_end: planEnd ? new Date(planEnd).toISOString() : null,
+      },
+      {
+        onSuccess: () => {
+          setPlanDirty(false);
+          toast.success(t("notifications.updated"), { description: t("qrm.planSaved") });
+        },
+        onError: (error: Error) => {
+          toast.error(t("notifications.error"), {
+            description: error.message || t("qrm.planSaveFailed"),
+          });
+        },
+      },
+    );
+  };
 
   const assignOperatorMutation = useMutation({
     mutationFn: async (operatorId: string | null) => {
@@ -366,9 +461,9 @@ export default function OperationDetailModal({
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 border">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("operations.estimatedTime", "Est. Time")}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("qrm.plannedHours")}</p>
                     <p className="mt-1 font-semibold text-sm">
-                      {operation?.estimated_time ? `${operation.estimated_time} min` : "-"}
+                      {operation?.estimated_time ? formatHoursFromMinutes(operation.estimated_time) : "-"}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 border">
@@ -396,6 +491,196 @@ export default function OperationDetailModal({
                       <p className="text-sm font-medium">{operation?.parts?.jobs?.customer}</p>
                       <p className="text-xs text-muted-foreground">{t("jobs.customer", "Customer")}</p>
                     </div>
+                  </div>
+                </div>
+
+                {/* PLANNED HOURS — estimated_time editable post-create, plus planned window */}
+                <div className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <h4 className="text-sm font-semibold">{t("qrm.plannedHours")}</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t("qrm.plannedHoursDesc")}</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="plan-hours" className="text-xs text-muted-foreground">
+                        {t("qrm.plannedHours")} ({t("qrm.hours")})
+                      </Label>
+                      <Input
+                        id="plan-hours"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={planHours}
+                        onChange={(e) => { setPlanHours(e.target.value); setPlanDirty(true); }}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="plan-start" className="text-xs text-muted-foreground">
+                        {t("qrm.plannedStart")}
+                      </Label>
+                      <Input
+                        id="plan-start"
+                        type="datetime-local"
+                        value={planStart}
+                        onChange={(e) => { setPlanStart(e.target.value); setPlanDirty(true); }}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="plan-end" className="text-xs text-muted-foreground">
+                        {t("qrm.plannedEnd")}
+                      </Label>
+                      <Input
+                        id="plan-end"
+                        type="datetime-local"
+                        value={planEnd}
+                        onChange={(e) => { setPlanEnd(e.target.value); setPlanDirty(true); }}
+                        className="mt-1"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      onClick={handleSavePlan}
+                      disabled={!planDirty || updatePlanMutation.isPending}
+                      className="gap-1.5"
+                    >
+                      <Save className="h-4 w-4" />
+                      {t("qrm.savePlan")}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* BOOKED HOURS — summed time_entries + drill-down + planned vs booked */}
+                <div className="border rounded-lg p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <TimerReset className="h-4 w-4 text-primary" />
+                      <h4 className="text-sm font-semibold">{t("qrm.bookedHours")}</h4>
+                    </div>
+                    {bookedHours.activeCount > 0 && (
+                      <Badge variant="outline" className="text-xs border-emerald-500 text-emerald-600">
+                        <Play className="h-3 w-3 mr-1" />
+                        {t("qrm.activeNow")} ({bookedHours.activeCount})
+                      </Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t("qrm.bookedHoursDesc")}</p>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="p-2 rounded-md bg-muted/40 border">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("qrm.plannedHours")}</p>
+                      <p className="mt-0.5 text-sm font-semibold">
+                        {formatHoursFromMinutes(bookedHours.plannedVsBooked.plannedMinutes)}
+                      </p>
+                    </div>
+                    <div className="p-2 rounded-md bg-muted/40 border">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("qrm.bookedHours")}</p>
+                      <p className="mt-0.5 text-sm font-semibold">
+                        {formatHoursFromMinutes(bookedHours.totalMinutes)}
+                      </p>
+                    </div>
+                    <div className={`p-2 rounded-md border ${bookedHours.plannedVsBooked.isOverScheduled ? "bg-amber-50 dark:bg-amber-950/30 border-amber-300 dark:border-amber-800" : "bg-muted/40"}`}>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t("qrm.variance")}</p>
+                      <p className={`mt-0.5 text-sm font-semibold ${bookedHours.plannedVsBooked.isOverScheduled ? "text-amber-700 dark:text-amber-300" : ""}`}>
+                        {bookedHours.plannedVsBooked.varianceMinutes > 0 ? "+" : ""}
+                        {bookedHours.plannedVsBooked.varianceMinutes} min
+                        {bookedHours.plannedVsBooked.isOverScheduled && (
+                          <span className="ml-1 text-[10px] font-normal">{t("qrm.overPlanned")}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+
+                  {bookedHours.entries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground italic">{t("qrm.noBookedHours")}</p>
+                  ) : (
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-muted-foreground">{t("qrm.bookedEntries")}</p>
+                      {bookedHours.entries.map((entry) => (
+                        <div
+                          key={entry.id}
+                          className="flex items-center justify-between gap-2 text-sm p-2 rounded-md bg-muted/20 border"
+                        >
+                          <div className="flex items-center gap-2 min-w-0">
+                            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                            <span className="truncate">{entry.operator_name || t("operations.unassigned")}</span>
+                            {entry.isActive && (
+                              <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" aria-hidden />
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0 text-xs text-muted-foreground">
+                            <span>
+                              {format(new Date(entry.start_time), "MMM dd HH:mm")}
+                              {" – "}
+                              {entry.end_time ? format(new Date(entry.end_time), "HH:mm") : t("qrm.activeNow")}
+                            </span>
+                            <span className="font-semibold text-foreground">{Math.round(entry.minutes)} min</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* NC CODE — read-only display of the part's cnc_program_name (edit on part detail) */}
+                <div className="border rounded-lg p-4 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Cpu className="h-4 w-4 text-primary" />
+                    <h4 className="text-sm font-semibold">{t("qrm.ncCode")}</h4>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t("qrm.ncCodeDesc")}</p>
+                  {operation?.parts?.cnc_program_name ? (
+                    <div className="flex items-center gap-4 p-3 border rounded-md bg-white">
+                      <QRCodeSVG value={operation.parts.cnc_program_name} size={64} level="M" includeMargin={false} />
+                      <p className="font-mono font-bold text-foreground break-all">
+                        {operation.parts.cnc_program_name}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">{t("qrm.noNcCode")}</p>
+                  )}
+                </div>
+
+                {/* QRM CARDS — canonical admin apply path for Bullet Card + Yellow Card */}
+                <div className="border rounded-lg p-4 space-y-3">
+                  <h4 className="text-sm font-semibold">{t("qrm.cardsSection")}</h4>
+
+                  <div className="flex items-center justify-between gap-2 p-3 border rounded-md bg-card">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Zap className={`h-4 w-4 shrink-0 ${operation?.parts?.is_bullet_card ? "text-destructive" : "text-muted-foreground"}`} />
+                      <div className="min-w-0">
+                        <Label htmlFor="qrm-bullet-card" className="cursor-pointer text-sm">{t("qrm.bulletCard")}</Label>
+                        <p className="text-xs text-muted-foreground">{t("qrm.bulletCardDesc")}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="qrm-bullet-card"
+                      checked={!!operation?.parts?.is_bullet_card}
+                      disabled={updateBulletCardMutation.isPending}
+                      onCheckedChange={(checked) => updateBulletCardMutation.mutate(checked)}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 p-3 border rounded-md bg-card">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <Pause className={`h-4 w-4 shrink-0 ${operation?.status === "on_hold" ? "text-amber-500" : "text-muted-foreground"}`} />
+                      <div className="min-w-0">
+                        <Label htmlFor="qrm-yellow-card" className="cursor-pointer text-sm">{t("qrm.yellowCard")}</Label>
+                        <p className="text-xs text-muted-foreground">{t("qrm.yellowCardDesc")}</p>
+                      </div>
+                    </div>
+                    <Switch
+                      id="qrm-yellow-card"
+                      checked={operation?.status === "on_hold"}
+                      disabled={operation?.status === "completed" || updateStatusMutation.isPending}
+                      onCheckedChange={(checked) =>
+                        updateStatusMutation.mutate(checked ? "on_hold" : "in_progress")
+                      }
+                    />
                   </div>
                 </div>
 
@@ -449,34 +734,13 @@ export default function OperationDetailModal({
                         </Button>
                       )}
                       {operation?.status === "in_progress" && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateStatusMutation.mutate("on_hold")}
-                            className="gap-1.5"
-                          >
-                            <Pause className="h-4 w-4" />
-                            {t("operations.hold", "Hold")}
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => updateStatusMutation.mutate("completed")}
-                            className="gap-1.5"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                            {t("operations.complete", "Complete")}
-                          </Button>
-                        </>
-                      )}
-                      {operation?.status === "on_hold" && (
                         <Button
                           size="sm"
-                          onClick={() => updateStatusMutation.mutate("in_progress")}
+                          onClick={() => updateStatusMutation.mutate("completed")}
                           className="gap-1.5"
                         >
-                          <Play className="h-4 w-4" />
-                          {t("operations.resume", "Resume")}
+                          <CheckCircle className="h-4 w-4" />
+                          {t("operations.complete", "Complete")}
                         </Button>
                       )}
                     </>
