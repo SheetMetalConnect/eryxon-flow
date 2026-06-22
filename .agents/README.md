@@ -57,6 +57,16 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 - RLS on every table — multi-tenant via `tenant_id`
 - Conventional commits: `feat:`, `fix:`, `deps:`, `docs:`
 
+## Code Quality Bar (required)
+
+High code quality is non-negotiable on this repo. Apply these on every change:
+
+- **Minimal, lazy-correct solutions.** Stdlib/native before dependencies, one line before fifty, delete before add. No speculative abstractions, no boilerplate "for later". Shortest correct diff wins. (Claude Code: `/ponytail:ponytail`.)
+- **De-slop before committing.** Strip AI slop from the diff: needless comments, defensive try/catch on trusted paths, `any` casts that hide type problems, deep nesting that should be early returns, anything inconsistent with the surrounding file. (Claude Code: `/deslop`.)
+- **Review before merging.** Read the diff for correctness bugs and simplification/reuse wins; fix findings. (Claude Code: `/code-review`, `/simplify`.)
+- **Root cause before fixes.** Don't patch symptoms; find why it breaks first. Test-first for features and bugfixes. Verify with real command output before claiming done.
+- **No hardcoded config in source** — no vendor domains, URLs, secrets, or env-specific values in this open-source code. Use env vars (e.g. `ALLOWED_ORIGIN`) and keep hosted vs self-hosted modes cleanly separated.
+
 ## Safety
 
 - Never commit `.env` or secrets
