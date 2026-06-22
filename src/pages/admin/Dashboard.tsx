@@ -125,6 +125,7 @@ export default function Dashboard() {
   const [activeJobProgress, setActiveJobProgress] = useState<
     ActiveJobProgressSummary[]
   >([]);
+  const [activeJobProgressTotal, setActiveJobProgressTotal] = useState(0);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [wiping, setWiping] = useState(false);
@@ -179,6 +180,7 @@ export default function Dashboard() {
         totalPartsResult,
         completedTodayResult,
         activeJobsResult,
+        activeJobsCountResult,
       ] = await Promise.all([
         supabase
           .from("operations")
@@ -235,7 +237,17 @@ export default function Dashboard() {
           `)
           .eq("tenant_id", profile.tenant_id)
           .in("status", ["not_started", "in_progress"])
-          .order("job_number"),
+          // Bounded: load the most urgent active jobs only. Loading every active
+          // job (with nested parts/operations) did not scale — a tenant with
+          // hundreds of orders pulled thousands of nested rows into the browser.
+          .order("due_date", { ascending: true, nullsFirst: false })
+          .order("job_number")
+          .limit(150),
+        supabase
+          .from("jobs")
+          .select("id", { count: "exact", head: true })
+          .eq("tenant_id", profile.tenant_id)
+          .in("status", ["not_started", "in_progress"]),
       ]);
 
       if (activeJobsResult.error) {
@@ -257,6 +269,7 @@ export default function Dashboard() {
           (activeJobsResult.data ?? []) as ActiveJobProgressJob[],
         ),
       );
+      setActiveJobProgressTotal(activeJobsCountResult.count ?? 0);
 
       setNeedsSetup((cellsHead.count || 0) === 0);
     } catch (error) {
@@ -577,7 +590,7 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <ActiveJobProgressCard jobs={activeJobProgress} />
+      <ActiveJobProgressCard jobs={activeJobProgress} totalCount={activeJobProgressTotal} />
 
       <QRMDashboard />
 

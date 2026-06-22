@@ -18,13 +18,18 @@ import {
 
 interface ActiveJobProgressCardProps {
   jobs: ActiveJobProgressSummary[];
+  /** True tenant-wide count of active jobs; `jobs` is capped to the most urgent. */
+  totalCount?: number;
 }
 
 export function ActiveJobProgressCard({
   jobs,
+  totalCount,
 }: ActiveJobProgressCardProps) {
   const { t } = useTranslation();
   const rollup = summarizeActiveJobProgress(jobs);
+  const activeCount = totalCount ?? rollup.activeJobsCount;
+  const isCapped = totalCount != null && totalCount > jobs.length;
 
   return (
     <Card className="glass-card">
@@ -40,7 +45,7 @@ export function ActiveJobProgressCard({
               {t("dashboard.activeJobsCount")}
             </p>
             <p className="text-3xl font-bold">
-              {rollup.activeJobsCount}
+              {activeCount}
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
@@ -60,6 +65,12 @@ export function ActiveJobProgressCard({
             </p>
           </div>
         </div>
+
+        {isCapped && (
+          <p className="pb-4 text-xs text-muted-foreground">
+            {t("dashboard.activeJobProgressCapped", { shown: jobs.length })}
+          </p>
+        )}
 
         {jobs.length === 0 ? (
           <div className="text-center py-12">

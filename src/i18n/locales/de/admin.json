@@ -59,7 +59,8 @@
     "allClockingsStoppedDescription": "{{count}} Zeiteinträge wurden gestoppt.",
     "stopAllFailed": "Stoppen aller Erfassungen fehlgeschlagen",
     "pastClosingTimeWarning": "Der Betriebsschluss ist überschritten",
-    "pastClosingTimeDescription": "Es gibt {{count}} aktive Zeiteinträge nach Betriebsschluss ({{time}}). Erwägen Sie, sie zu stoppen."
+    "pastClosingTimeDescription": "Es gibt {{count}} aktive Zeiteinträge nach Betriebsschluss ({{time}}). Erwägen Sie, sie zu stoppen.",
+    "activeJobProgressCapped": "Durchschnitt und Fertigstellung beziehen sich auf die {{shown}} dringendsten aktiven Aufträge."
   },
   "settings": {
     "title": "Einstellungen",

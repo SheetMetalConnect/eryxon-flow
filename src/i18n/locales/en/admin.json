@@ -59,7 +59,8 @@
     "demoDataWipedDesc": "All demo data has been cleared successfully.",
     "wipeFailed": "Wipe Failed",
     "noActiveClockings": "No active clockings",
-    "noActiveClockingsDescription": "There are no active time entries to stop."
+    "noActiveClockingsDescription": "There are no active time entries to stop.",
+    "activeJobProgressCapped": "Average and completion figures cover the {{shown}} most urgent active orders."
   },
   "organizationSettings": {
     "title": "Organization Settings",
