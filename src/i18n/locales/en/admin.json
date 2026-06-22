@@ -707,5 +707,43 @@
       "recorded": "Placement recorded",
       "failed": "Could not record placement"
     }
+  },
+  "timeTracking": {
+    "nav": "Time Tracking",
+    "title": "Time Tracking",
+    "description": "Booked hours from the shop floor — per operator and per order. Read-only reporting.",
+    "from": "From",
+    "to": "to",
+    "last7": "Last 7 days",
+    "last30": "Last 30 days",
+    "last90": "Last 90 days",
+    "loadError": "Could not load time-tracking data.",
+    "empty": "No booked time in this range.",
+    "overPlanned": "Over planned",
+    "unknownOperator": "Unknown operator",
+    "unknownOperation": "Unknown operation",
+    "unassignedJob": "No order",
+    "tabs": {
+      "operators": "Operator hours",
+      "jobs": "Hours per order"
+    },
+    "summary": {
+      "booked": "Booked hours",
+      "entries": "Time entries",
+      "operators": "Operators",
+      "jobs": "Orders",
+      "activeNow": "{{count}} time entry running now",
+      "activeNow_other": "{{count}} time entries running now"
+    },
+    "columns": {
+      "operator": "Operator",
+      "hoursWorked": "Hours worked",
+      "entries": "Entries",
+      "activeNow": "Active now",
+      "operation": "Operation",
+      "booked": "Booked",
+      "planned": "Planned",
+      "variance": "Variance"
+    }
   }
 }

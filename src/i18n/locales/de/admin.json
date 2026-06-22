@@ -707,5 +707,43 @@
       "recorded": "Ablage erfasst",
       "failed": "Ablage konnte nicht erfasst werden"
     }
+  },
+  "timeTracking": {
+    "nav": "Zeiterfassung",
+    "title": "Zeiterfassung",
+    "description": "Gebuchte Stunden aus der Fertigung — pro Mitarbeiter und pro Auftrag. Nur-Lese-Auswertung.",
+    "from": "Von",
+    "to": "bis",
+    "last7": "Letzte 7 Tage",
+    "last30": "Letzte 30 Tage",
+    "last90": "Letzte 90 Tage",
+    "loadError": "Zeiterfassungsdaten konnten nicht geladen werden.",
+    "empty": "Keine gebuchte Zeit in diesem Zeitraum.",
+    "overPlanned": "Über Plan",
+    "unknownOperator": "Unbekannter Mitarbeiter",
+    "unknownOperation": "Unbekannter Arbeitsgang",
+    "unassignedJob": "Kein Auftrag",
+    "tabs": {
+      "operators": "Stunden pro Mitarbeiter",
+      "jobs": "Stunden pro Auftrag"
+    },
+    "summary": {
+      "booked": "Gebuchte Stunden",
+      "entries": "Zeiteinträge",
+      "operators": "Mitarbeiter",
+      "jobs": "Aufträge",
+      "activeNow": "{{count}} Zeiteintrag läuft gerade",
+      "activeNow_other": "{{count}} Zeiteinträge laufen gerade"
+    },
+    "columns": {
+      "operator": "Mitarbeiter",
+      "hoursWorked": "Gearbeitete Stunden",
+      "entries": "Einträge",
+      "activeNow": "Jetzt aktiv",
+      "operation": "Arbeitsgang",
+      "booked": "Gebucht",
+      "planned": "Geplant",
+      "variance": "Abweichung"
+    }
   }
 }

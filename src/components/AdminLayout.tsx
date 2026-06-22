@@ -48,6 +48,7 @@ import {
   Building2,
   Boxes,
   MapPin,
+  Timer,
 } from "lucide-react";
 import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
 import { NavigationButtons } from "@/components/NavigationButtons";
@@ -146,6 +147,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/activity",
       label: t("navigation.activity"),
       icon: Clock,
+      exact: true,
+    },
+    {
+      path: "/admin/time-tracking",
+      label: t("timeTracking.nav"),
+      icon: Timer,
       exact: true,
     },
   ];

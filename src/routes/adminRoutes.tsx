@@ -22,6 +22,7 @@ const BatchCreate = lazy(() => import("@/pages/admin/BatchCreate"));
 const BatchDetail = lazy(() => import("@/pages/admin/BatchDetail"));
 const ActivityMonitor = lazy(() => import("@/pages/admin/ActivityMonitor").then(m => ({ default: m.ActivityMonitor })));
 const CapacityMatrix = lazy(() => import("@/pages/admin/CapacityMatrix"));
+const TimeTracking = lazy(() => import("@/pages/admin/TimeTracking"));
 const Operations = lazy(() => import("@/pages/admin/Operations").then(m => ({ default: m.Operations })));
 const Settings = lazy(() => import("@/pages/admin/Settings").then(m => ({ default: m.Settings })));
 const StepsTemplatesView = lazy(() => import("@/pages/admin/StepsTemplatesView"));
@@ -79,6 +80,7 @@ export function AdminRoutes() {
       <Route path="/admin/batches/:id/edit" element={<AdminRoute><BatchCreate /></AdminRoute>} />
       <Route path="/admin/activity" element={<AdminRoute><ActivityMonitor /></AdminRoute>} />
       <Route path="/admin/capacity" element={<AdminRoute><CapacityMatrix /></AdminRoute>} />
+      <Route path="/admin/time-tracking" element={<AdminRoute><TimeTracking /></AdminRoute>} />
       <Route path="/admin/operations" element={<AdminRoute><Operations /></AdminRoute>} />
       <Route path="/admin/settings" element={<AdminRoute><Settings /></AdminRoute>} />
       <Route path="/admin/config/steps-templates" element={<AdminRoute><StepsTemplatesView /></AdminRoute>} />

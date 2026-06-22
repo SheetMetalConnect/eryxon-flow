@@ -863,5 +863,43 @@
       "recorded": "Plaatsing vastgelegd",
       "failed": "Plaatsing kon niet worden vastgelegd"
     }
+  },
+  "timeTracking": {
+    "nav": "Tijdregistratie",
+    "title": "Tijdregistratie",
+    "description": "Geboekte uren vanaf de werkvloer — per medewerker en per order. Alleen-lezen overzicht.",
+    "from": "Van",
+    "to": "tot",
+    "last7": "Laatste 7 dagen",
+    "last30": "Laatste 30 dagen",
+    "last90": "Laatste 90 dagen",
+    "loadError": "Kon de tijdregistratiegegevens niet laden.",
+    "empty": "Geen geboekte tijd in deze periode.",
+    "overPlanned": "Boven planning",
+    "unknownOperator": "Onbekende medewerker",
+    "unknownOperation": "Onbekende bewerking",
+    "unassignedJob": "Geen order",
+    "tabs": {
+      "operators": "Uren per medewerker",
+      "jobs": "Uren per order"
+    },
+    "summary": {
+      "booked": "Geboekte uren",
+      "entries": "Tijdregistraties",
+      "operators": "Medewerkers",
+      "jobs": "Orders",
+      "activeNow": "{{count}} registratie nu actief",
+      "activeNow_other": "{{count}} registraties nu actief"
+    },
+    "columns": {
+      "operator": "Medewerker",
+      "hoursWorked": "Gewerkte uren",
+      "entries": "Registraties",
+      "activeNow": "Nu actief",
+      "operation": "Bewerking",
+      "booked": "Geboekt",
+      "planned": "Gepland",
+      "variance": "Verschil"
+    }
   }
 }
