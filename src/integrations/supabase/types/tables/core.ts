@@ -27,6 +27,7 @@ export type TenantsTable = {
     grace_period_ends_at: string | null
     id: string
     last_parts_reset_date: string | null
+    location_tracking_enabled: boolean | null
     max_jobs: number | null
     max_parts_per_month: number | null
     max_storage_gb: number | null
@@ -73,6 +74,7 @@ export type TenantsTable = {
     grace_period_ends_at?: string | null
     id?: string
     last_parts_reset_date?: string | null
+    location_tracking_enabled?: boolean | null
     max_jobs?: number | null
     max_parts_per_month?: number | null
     max_storage_gb?: number | null
@@ -119,6 +121,7 @@ export type TenantsTable = {
     grace_period_ends_at?: string | null
     id?: string
     last_parts_reset_date?: string | null
+    location_tracking_enabled?: boolean | null
     max_jobs?: number | null
     max_parts_per_month?: number | null
     max_storage_gb?: number | null

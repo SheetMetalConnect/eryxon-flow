@@ -47,6 +47,7 @@ import {
   Search,
   Building2,
   Boxes,
+  MapPin,
 } from "lucide-react";
 import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
 import { NavigationButtons } from "@/components/NavigationButtons";
@@ -206,6 +207,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/config/users",
       label: t("navigation.users"),
       icon: Users,
+      exact: true,
+    },
+    {
+      path: "/admin/config/locations",
+      label: t("locations.config.navTitle"),
+      icon: MapPin,
       exact: true,
     },
     {

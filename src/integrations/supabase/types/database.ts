@@ -70,6 +70,10 @@ import type {
   SubstepTemplatesTable,
   SubstepTemplateItemsTable,
 } from './tables/substeps'
+import type {
+  StorageLocationsTable,
+  PartPlacementsTable,
+} from './tables/locations'
 
 /**
  * Complete Database type for Supabase client
@@ -139,6 +143,10 @@ export type Database = {
       substeps: SubstepsTable
       substep_templates: SubstepTemplatesTable
       substep_template_items: SubstepTemplateItemsTable
+
+      // Location/placement domain
+      storage_locations: StorageLocationsTable
+      part_placements: PartPlacementsTable
     }
     Views: DatabaseViews
     Functions: DatabaseFunctions

@@ -644,5 +644,63 @@
     "readyTitle": "You're ready to go!",
     "refresh": "Refresh",
     "title": "Activate Your Pilot"
+  },
+  "locations": {
+    "tracking": {
+      "title": "Location tracking",
+      "description": "Let operators record where they physically place a part after finishing an operation, so the next person can find it.",
+      "enableLabel": "Enable location tracking",
+      "enableDescription": "When on, operators pick a drop-off slot after completing an operation.",
+      "updated": "Location tracking updated",
+      "updateFailed": "Could not update location tracking"
+    },
+    "config": {
+      "navTitle": "Locations",
+      "title": "Drop-off locations",
+      "description": "Configure the grid of drop-off slots and their capacity. Live occupancy shows what is full.",
+      "addSlot": "Add slot",
+      "editSlot": "Edit slot",
+      "totalSlots": "Slots",
+      "totalOccupied": "Parts placed",
+      "totalCapacity": "Total capacity",
+      "code": "Code",
+      "codePlaceholder": "e.g. A01",
+      "label": "Label",
+      "labelPlaceholder": "e.g. Rack A, shelf 1",
+      "cell": "Cell",
+      "noCell": "No cell",
+      "unknownCell": "Unknown cell",
+      "capacity": "Capacity",
+      "row": "Row",
+      "col": "Column",
+      "sortOrder": "Sort order",
+      "occupancy": "Occupancy",
+      "status": "Status",
+      "actions": "Actions",
+      "active": "Active",
+      "inactive": "Inactive",
+      "loading": "Loading...",
+      "empty": "No drop-off slots configured yet",
+      "save": "Save",
+      "cancel": "Cancel",
+      "created": "Slot created",
+      "updated": "Slot updated",
+      "deleted": "Slot deleted",
+      "saveFailed": "Could not save slot",
+      "deleteFailed": "Could not delete slot",
+      "deleteConfirm": "Delete slot \"{{code}}\"? This cannot be undone."
+    },
+    "placement": {
+      "title": "Where did you put it?",
+      "description": "Pick the slot where you placed the part so the next person can find it.",
+      "suggested": "Suggested",
+      "full": "Full",
+      "occupancy": "{{occupied}}/{{capacity}} used",
+      "noSlots": "No drop-off slots are configured. Ask an admin to set them up.",
+      "confirm": "Confirm placement",
+      "skip": "Skip",
+      "recorded": "Placement recorded",
+      "failed": "Could not record placement"
+    }
   }
 }

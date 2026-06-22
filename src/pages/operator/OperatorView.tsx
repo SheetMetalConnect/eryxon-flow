@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { GripVertical } from "lucide-react";
@@ -6,6 +6,10 @@ import { cn } from "@/lib/utils";
 import { useResizablePanel } from "@/hooks/useResizablePanel";
 import { useOperatorTerminal } from "@/hooks/useOperatorTerminal";
 import { useKeyboardWedgeScanner } from "@/hooks/useKeyboardWedgeScanner";
+import { useOperator } from "@/contexts/OperatorContext";
+import { useLocationTracking } from "@/hooks/locations/useLocationTracking";
+import { useRecordPlacement } from "@/hooks/locations/useRecordPlacement";
+import { PlacementPickerModal } from "@/components/locations/PlacementPickerModal";
 import { OperatorWorkQueue } from "@/components/operator/OperatorWorkQueue";
 import { OperatorDetailSidebar } from "@/components/operator/OperatorDetailSidebar";
 import { OperatorModeBanner } from "@/components/operator/OperatorModeBanner";
@@ -68,6 +72,49 @@ export default function OperatorView() {
     handleComplete,
     loadData,
   } = useOperatorTerminal();
+
+  const { activeOperator } = useOperator();
+  const { enabled: locationTrackingEnabled } = useLocationTracking();
+  const { recordPlacement, isRecording } = useRecordPlacement();
+
+  // When location tracking is on, completing an operation opens the placement
+  // picker for the part the operator just finished. With tracking off the
+  // complete flow is unchanged.
+  const [placementTarget, setPlacementTarget] = useState<{
+    partId: string;
+    operationId: string;
+    cellId: string | null;
+  } | null>(null);
+
+  const handleCompleteWithPlacement = useCallback(async () => {
+    const job = selectedJob;
+    await handleComplete();
+    if (locationTrackingEnabled && job) {
+      setPlacementTarget({
+        partId: job.partId,
+        operationId: job.operationId,
+        cellId: job.cellId ?? null,
+      });
+    }
+  }, [selectedJob, handleComplete, locationTrackingEnabled]);
+
+  const handleConfirmPlacement = useCallback(
+    (locationId: string) => {
+      if (!placementTarget) return;
+      recordPlacement(
+        {
+          partId: placementTarget.partId,
+          locationId,
+          operationId: placementTarget.operationId,
+          operatorId: activeOperator?.id ?? null,
+        },
+        {
+          onSuccess: () => setPlacementTarget(null),
+        },
+      );
+    },
+    [placementTarget, recordPlacement, activeOperator?.id],
+  );
 
   useKeyboardWedgeScanner({
     onScan: handleScannerToken,
@@ -210,7 +257,7 @@ export default function OperatorView() {
           selectedJob={selectedJob}
           onStart={handleStart}
           onPause={handlePause}
-          onComplete={handleComplete}
+          onComplete={handleCompleteWithPlacement}
           startActionLabel={startActionLabel}
           pauseActionLabel={pauseActionLabel}
           showCompleteAction={showCompleteAction}
@@ -224,6 +271,16 @@ export default function OperatorView() {
           onDataRefresh={() => void loadData()}
         />
       </div>
+
+      <PlacementPickerModal
+        open={placementTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setPlacementTarget(null);
+        }}
+        cellId={placementTarget?.cellId ?? null}
+        isRecording={isRecording}
+        onConfirm={handleConfirmPlacement}
+      />
     </div>
   );
 }

@@ -25,6 +25,7 @@ interface MockBuilder {
   lte: ReturnType<typeof vi.fn>;
   order: ReturnType<typeof vi.fn>;
   single: ReturnType<typeof vi.fn>;
+  limit: ReturnType<typeof vi.fn>;
   then: PromiseLike<unknown>["then"];
 }
 
@@ -41,6 +42,7 @@ function createBuilder(
     lte: vi.fn(),
     order: vi.fn(),
     single: vi.fn(),
+    limit: vi.fn(),
     then: undefined as unknown as PromiseLike<unknown>["then"],
   } as MockBuilder;
 
@@ -56,6 +58,7 @@ function createBuilder(
   builder.single.mockImplementation(() =>
     terminal === "single" ? Promise.resolve(result) : builder,
   );
+  builder.limit.mockReturnValue(builder);
   builder.then = (onFulfilled, onRejected) =>
     Promise.resolve(result).then(onFulfilled, onRejected);
 
@@ -139,7 +142,6 @@ describe("Dashboard", () => {
         ],
         error: null,
       },
-      "order",
     );
 
     const jobsCountBuilder = createBuilder({ count: 5, error: null });
@@ -168,7 +170,10 @@ describe("Dashboard", () => {
         if (jobsCallCount === 2) {
           return jobsCountBuilder;
         }
-        return activeJobsBuilderForTest;
+        if (jobsCallCount === 3) {
+          return activeJobsBuilderForTest;
+        }
+        return createBuilder({ count: 2, error: null });
       }
 
       if (table === "cells") {

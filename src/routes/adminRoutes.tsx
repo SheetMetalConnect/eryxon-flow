@@ -27,6 +27,7 @@ const Settings = lazy(() => import("@/pages/admin/Settings").then(m => ({ defaul
 const StepsTemplatesView = lazy(() => import("@/pages/admin/StepsTemplatesView"));
 
 const ConfigApiKeys = lazy(() => import("@/pages/admin/config/ApiKeys"));
+const ConfigLocations = lazy(() => import("@/pages/admin/config/Locations"));
 const ConfigMaterials = lazy(() => import("@/pages/admin/config/Materials"));
 const ConfigMcpKeys = lazy(() => import("@/pages/admin/config/McpKeys"));
 const ConfigMqttPublishers = lazy(() => import("@/pages/admin/config/MqttPublishers"));
@@ -57,6 +58,7 @@ export function AdminRoutes() {
       <Route path="/admin/config/users" element={<AdminRoute><ConfigUsers /></AdminRoute>} />
       <Route path="/admin/organization/settings" element={<AdminRoute><OrganizationSettings /></AdminRoute>} />
       <Route path="/admin/config/scrap-reasons" element={<AdminRoute><ConfigScrapReasons /></AdminRoute>} />
+      <Route path="/admin/config/locations" element={<AdminRoute><ConfigLocations /></AdminRoute>} />
       <Route path="/admin/issues" element={<AdminRoute><IssueQueue /></AdminRoute>} />
       <Route path="/admin/assignments" element={<AdminRoute><Assignments /></AdminRoute>} />
       <Route path="/admin/config/api-keys" element={<AdminRoute><ConfigApiKeys /></AdminRoute>} />

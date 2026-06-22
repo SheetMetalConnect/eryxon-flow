@@ -8,10 +8,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, Workflow, CheckCircle2, XCircle } from 'lucide-react';
+import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, Workflow, CheckCircle2, XCircle, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
+import { useLocationTracking } from '@/hooks/locations/useLocationTracking';
 import { logger } from '@/lib/logger';
 import type { PlanningAdapterType } from '@/lib/planning';
 import {
@@ -38,6 +39,11 @@ export default function OrganizationSettings() {
   const { t } = useTranslation();
   const profile = useProfile();
   const { tenant, refreshTenant } = useTenant();
+  const {
+    enabled: locationTrackingEnabled,
+    setEnabled: setLocationTrackingEnabled,
+    isUpdating: locationTrackingUpdating,
+  } = useLocationTracking();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -813,6 +819,36 @@ export default function OrganizationSettings() {
               </div>
             </>
           )}
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            <CardTitle>{t('locations.tracking.title')}</CardTitle>
+          </div>
+          <CardDescription>
+            {t('locations.tracking.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="location_tracking_enabled" className="text-base">
+                {t('locations.tracking.enableLabel')}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t('locations.tracking.enableDescription')}
+              </p>
+            </div>
+            <Switch
+              id="location_tracking_enabled"
+              checked={locationTrackingEnabled}
+              disabled={locationTrackingUpdating}
+              onCheckedChange={(checked) => setLocationTrackingEnabled(checked)}
+            />
+          </div>
         </CardContent>
       </Card>
 

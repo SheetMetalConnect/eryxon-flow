@@ -800,5 +800,63 @@
     "readyTitle": "U kunt van start!",
     "refresh": "Vernieuwen",
     "title": "Activeer uw pilot"
+  },
+  "locations": {
+    "tracking": {
+      "title": "Locatieregistratie",
+      "description": "Laat operators vastleggen waar ze een onderdeel fysiek neerleggen nadat ze een bewerking hebben afgerond, zodat de volgende persoon het terugvindt.",
+      "enableLabel": "Locatieregistratie inschakelen",
+      "enableDescription": "Indien aan kiest een operator een neerlegvak na het afronden van een bewerking.",
+      "updated": "Locatieregistratie bijgewerkt",
+      "updateFailed": "Locatieregistratie kon niet worden bijgewerkt"
+    },
+    "config": {
+      "navTitle": "Locaties",
+      "title": "Neerleglocaties",
+      "description": "Stel het raster van neerlegvakken en hun capaciteit in. De live bezetting laat zien wat vol is.",
+      "addSlot": "Vak toevoegen",
+      "editSlot": "Vak bewerken",
+      "totalSlots": "Vakken",
+      "totalOccupied": "Geplaatste onderdelen",
+      "totalCapacity": "Totale capaciteit",
+      "code": "Code",
+      "codePlaceholder": "bijv. A01",
+      "label": "Naam",
+      "labelPlaceholder": "bijv. Stelling A, plank 1",
+      "cell": "Cel",
+      "noCell": "Geen cel",
+      "unknownCell": "Onbekende cel",
+      "capacity": "Capaciteit",
+      "row": "Rij",
+      "col": "Kolom",
+      "sortOrder": "Volgorde",
+      "occupancy": "Bezetting",
+      "status": "Status",
+      "actions": "Acties",
+      "active": "Actief",
+      "inactive": "Inactief",
+      "loading": "Laden...",
+      "empty": "Er zijn nog geen neerlegvakken ingesteld",
+      "save": "Opslaan",
+      "cancel": "Annuleren",
+      "created": "Vak aangemaakt",
+      "updated": "Vak bijgewerkt",
+      "deleted": "Vak verwijderd",
+      "saveFailed": "Vak kon niet worden opgeslagen",
+      "deleteFailed": "Vak kon niet worden verwijderd",
+      "deleteConfirm": "Vak \"{{code}}\" verwijderen? Dit kan niet ongedaan worden gemaakt."
+    },
+    "placement": {
+      "title": "Waar heb je het neergelegd?",
+      "description": "Kies het vak waar je het onderdeel hebt neergelegd, zodat de volgende persoon het terugvindt.",
+      "suggested": "Voorgesteld",
+      "full": "Vol",
+      "occupancy": "{{occupied}}/{{capacity}} gebruikt",
+      "noSlots": "Er zijn geen neerlegvakken ingesteld. Vraag een beheerder om ze aan te maken.",
+      "confirm": "Plaatsing bevestigen",
+      "skip": "Overslaan",
+      "recorded": "Plaatsing vastgelegd",
+      "failed": "Plaatsing kon niet worden vastgelegd"
+    }
   }
 }

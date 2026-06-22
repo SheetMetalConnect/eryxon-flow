@@ -644,5 +644,63 @@
     "readyTitle": "Sie sind startklar!",
     "refresh": "Aktualisieren",
     "title": "Aktivieren Sie Ihren Piloten"
+  },
+  "locations": {
+    "tracking": {
+      "title": "Standortverfolgung",
+      "description": "Lassen Sie Bediener erfassen, wo sie ein Teil nach Abschluss eines Arbeitsgangs physisch ablegen, damit die nächste Person es findet.",
+      "enableLabel": "Standortverfolgung aktivieren",
+      "enableDescription": "Wenn aktiv, wählt ein Bediener nach Abschluss eines Arbeitsgangs einen Ablageplatz.",
+      "updated": "Standortverfolgung aktualisiert",
+      "updateFailed": "Standortverfolgung konnte nicht aktualisiert werden"
+    },
+    "config": {
+      "navTitle": "Standorte",
+      "title": "Ablageorte",
+      "description": "Konfigurieren Sie das Raster der Ablageplätze und deren Kapazität. Die Live-Belegung zeigt, was voll ist.",
+      "addSlot": "Platz hinzufügen",
+      "editSlot": "Platz bearbeiten",
+      "totalSlots": "Plätze",
+      "totalOccupied": "Abgelegte Teile",
+      "totalCapacity": "Gesamtkapazität",
+      "code": "Code",
+      "codePlaceholder": "z. B. A01",
+      "label": "Bezeichnung",
+      "labelPlaceholder": "z. B. Regal A, Fach 1",
+      "cell": "Zelle",
+      "noCell": "Keine Zelle",
+      "unknownCell": "Unbekannte Zelle",
+      "capacity": "Kapazität",
+      "row": "Reihe",
+      "col": "Spalte",
+      "sortOrder": "Sortierreihenfolge",
+      "occupancy": "Belegung",
+      "status": "Status",
+      "actions": "Aktionen",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "loading": "Wird geladen...",
+      "empty": "Es sind noch keine Ablageplätze konfiguriert",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "created": "Platz erstellt",
+      "updated": "Platz aktualisiert",
+      "deleted": "Platz gelöscht",
+      "saveFailed": "Platz konnte nicht gespeichert werden",
+      "deleteFailed": "Platz konnte nicht gelöscht werden",
+      "deleteConfirm": "Platz \"{{code}}\" löschen? Dies kann nicht rückgängig gemacht werden."
+    },
+    "placement": {
+      "title": "Wo haben Sie es abgelegt?",
+      "description": "Wählen Sie den Platz, an dem Sie das Teil abgelegt haben, damit die nächste Person es findet.",
+      "suggested": "Vorgeschlagen",
+      "full": "Voll",
+      "occupancy": "{{occupied}}/{{capacity}} belegt",
+      "noSlots": "Es sind keine Ablageplätze konfiguriert. Bitten Sie einen Administrator, sie einzurichten.",
+      "confirm": "Ablage bestätigen",
+      "skip": "Überspringen",
+      "recorded": "Ablage erfasst",
+      "failed": "Ablage konnte nicht erfasst werden"
+    }
   }
 }

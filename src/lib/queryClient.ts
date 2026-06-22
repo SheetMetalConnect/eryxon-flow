@@ -193,6 +193,13 @@ export const QueryKeys = {
     detail: (exceptionId: string) => ["exceptions", "detail", exceptionId] as const,
   },
 
+  // Location/placement module
+  locations: {
+    all: (tenantId: string, cellId?: string | null) =>
+      ["locations", "all", tenantId, cellId ?? null] as const,
+    tracking: (tenantId: string) => ["locations", "tracking", tenantId] as const,
+  },
+
   // Capacity
   capacity: {
     operations: (tenantId: string) => ["capacity", "operations", tenantId] as const,
