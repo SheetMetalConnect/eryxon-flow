@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
 import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
 import { sanitizeError } from "../_shared/security.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+import { buildCorsHeaders } from "../_shared/cors.ts";
 
 // Hash function using Web Crypto API (compatible with Edge Functions)
 async function hashApiKey(apiKey: string): Promise<string> {
@@ -38,6 +38,9 @@ async function authenticateAdmin(authHeader: string | null, supabase: any) {
 }
 
 serve(async (req) => {
+  // Reflect the caller's origin (hosted vs localhost/self-hosted) per request.
+  const corsHeaders = buildCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

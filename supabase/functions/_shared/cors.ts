@@ -1,30 +1,46 @@
 /**
- * CORS configuration for Supabase Edge Functions
+ * CORS for Supabase Edge Functions.
  *
- * Fails closed: if ALLOWED_ORIGIN is not set, only localhost origins are
- * permitted (safe for local dev). Production deployments MUST set the
- * ALLOWED_ORIGIN environment variable to their frontend domain.
+ * Reflects the request `Origin` when it is allowed, so one deployment serves
+ * both the hosted and self-hosted modes. Allowed production origins come from
+ * the `ALLOWED_ORIGIN` env var (comma-separated) — set it to your frontend
+ * domain(s) when deploying. Localhost is always allowed for local development.
  */
 
-function getAllowedOrigin(): string {
-  const explicit = Deno.env.get('ALLOWED_ORIGIN');
-  if (explicit) return explicit;
+const DEV_ORIGINS = ['http://localhost:5173', 'http://localhost:8080'];
 
-  // No env var set — allow localhost only (dev mode)
-  return 'http://localhost:5173';
+function allowedOrigins(): string[] {
+  const configured = (Deno.env.get('ALLOWED_ORIGIN') ?? '')
+    .split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  return Array.from(new Set([...configured, ...DEV_ORIGINS]));
 }
 
-export const corsHeaders: Record<string, string> = {
-  'Access-Control-Allow-Origin': getAllowedOrigin(),
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-request-id',
-  'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
-  // Allow browser clients to read the request id for client/edge correlation.
-  'Access-Control-Expose-Headers': 'x-request-id',
-};
+/** Echo the caller's origin if allowed; otherwise fall back to the first configured origin. */
+function resolveAllowOrigin(req?: Request): string {
+  const allowed = allowedOrigins();
+  const origin = req?.headers.get('Origin') ?? '';
+  return allowed.includes(origin) ? origin : allowed[0];
+}
+
+export function buildCorsHeaders(req?: Request): Record<string, string> {
+  return {
+    'Access-Control-Allow-Origin': resolveAllowOrigin(req),
+    'Access-Control-Allow-Headers':
+      'authorization, x-client-info, apikey, content-type, x-request-id',
+    'Access-Control-Allow-Methods': 'GET, POST, PATCH, DELETE, OPTIONS',
+    'Access-Control-Expose-Headers': 'x-request-id',
+    Vary: 'Origin',
+  };
+}
+
+/** Static headers for code paths without a Request. Prefer buildCorsHeaders(req). */
+export const corsHeaders: Record<string, string> = buildCorsHeaders();
 
 export function handleCors(req: Request): Response | null {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: buildCorsHeaders(req) });
   }
   return null;
 }

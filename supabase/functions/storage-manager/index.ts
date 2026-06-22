@@ -10,7 +10,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "@supabase/supabase-js";
-import { corsHeaders } from "@shared/cors.ts";
+import { buildCorsHeaders } from "@shared/cors.ts";
 
 interface RecalculateStorageRequest {
   action: 'recalculate';
@@ -32,6 +32,9 @@ interface TrackFileOperationRequest {
 type RequestBody = RecalculateStorageRequest | ValidateUploadRequest | TrackFileOperationRequest;
 
 serve(async (req) => {
+  // Reflect the caller's origin (hosted vs localhost/self-hosted) per request.
+  const corsHeaders = buildCorsHeaders(req);
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
