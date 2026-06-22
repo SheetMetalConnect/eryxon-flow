@@ -6,17 +6,36 @@
  * - POST /stop?id=xxx  - Stop a batch (distributes time, sets completed)
  * - POST /add-operations?id=xxx - Add operations to a batch
  *
- * Routed through `serveApi` (createApiHandler) like the other lifecycle
- * endpoints, so auth + tenant context, CORS, structured logging and error
- * mapping are handled by the wrapper. (Previously used a raw `Deno.serve`
- * handler that also had a duplicate `const error` declaration in the
- * add-operations block — a parse error that boot-failed the function. ERY/#912.)
- *
- * Authentication: API key in Authorization header ("Bearer ery_live_xxx").
+ * Authentication: API key in Authorization header
  */
 
-import { serveApi, errorResponse, successResponse } from "@shared/handler.ts";
-import { REQUEST_ID_HEADER } from "@shared/observability.ts";
+import { createClient } from "@supabase/supabase-js";
+import { authenticateAndSetContext } from "@shared/auth.ts";
+import { corsHeaders } from "@shared/cors.ts";
+import { handleOptions, handleError } from "@shared/validation/errorHandler.ts";
+import { dispatchEvent } from "@shared/events.ts";
+import {
+  BatchLifecycleBatch,
+  BatchLifecycleOperation,
+  BatchLifecycleRepository,
+  createBatchLifecycleService,
+} from "./service.ts";
+import {
+  AutomatedExceptionMonitorRepository,
+  MonitoredBatch,
+  createAutomatedExceptionMonitor,
+} from "./monitor.ts";
+
+function jsonResponse(data: object, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+function errorResponse(code: string, message: string, status = 400) {
+  return jsonResponse({ success: false, error: { code, message } }, status);
+}
 
 function normalizeOperationIds(value: unknown): { ids: string[]; error?: string } {
   if (!Array.isArray(value) || value.length === 0) {
@@ -83,259 +102,465 @@ async function validateOperationsUnassigned(
   return null;
 }
 
-async function triggerWebhook(
-  tenantId: string,
-  eventType: string,
-  data: object,
-  requestId: string,
-) {
-  try {
-    await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/webhook-dispatch`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        [REQUEST_ID_HEADER]: requestId,
-        Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY")}`,
-      },
-      body: JSON.stringify({ tenant_id: tenantId, event_type: eventType, data }),
-    });
-  } catch (error) {
-    console.error(`Failed to trigger ${eventType} webhook:`, error);
-  }
-}
+function createRepository(supabase: any): BatchLifecycleRepository {
+  return {
+    async getBatch(tenantId: string, batchId: string): Promise<BatchLifecycleBatch | null> {
+      const { data, error } = await supabase
+        .from("operation_batches")
+        .select("id, batch_number, batch_type, status, cell_id, production_mode")
+        .eq("id", batchId)
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
 
-serveApi(
-  async (req, ctx) => {
-    const { supabase, tenantId, url, requestId } = ctx;
-
-    const batchId = url.searchParams.get("id");
-    const action = url.pathname.split("/").pop(); // start, stop, add-operations
-
-    if (!batchId) {
-      return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)", 400);
-    }
-
-    const body = await req.json().catch(() => ({}));
-
-    // ── Fetch batch ────────────────────────────────────────────────
-    const { data: batch, error: batchErr } = await supabase
-      .from("operation_batches")
-      .select("id, batch_number, status, cell_id")
-      .eq("id", batchId)
-      .eq("tenant_id", tenantId)
-      .single();
-
-    if (batchErr || !batch) {
-      return errorResponse("NOT_FOUND", "Batch not found", 404);
-    }
-
-    // ── Route to action ────────────────────────────────────────────
-    if (action === "start") {
-      if (batch.status !== "draft" && batch.status !== "ready") {
-        return errorResponse("INVALID_STATE", `Cannot start batch in '${batch.status}' status`, 400);
+      if (error) {
+        throw new Error(`Failed to fetch batch: ${error.message}`);
       }
 
-      // Get batch operations (batch already tenant-verified above)
-      const { data: batchOps } = await supabase
+      if (!data) return null;
+
+      return {
+        id: data.id,
+        batchNumber: data.batch_number,
+        batchType: data.batch_type,
+        status: data.status,
+        cellId: data.cell_id,
+        productionMode: data.production_mode ?? "manual",
+      };
+    },
+
+    async listBatchOperations(tenantId: string, batchId: string): Promise<BatchLifecycleOperation[]> {
+      const { data, error } = await supabase
         .from("batch_operations")
-        .select("operation_id")
+        .select(`
+          operation_id,
+          operation:operations(
+            id,
+            operation_name,
+            estimated_time,
+            actual_time,
+            part:parts(
+              id,
+              part_number,
+              job:jobs(id, job_number, customer)
+            )
+          )
+        `)
         .eq("batch_id", batchId)
-        .eq("tenant_id", tenantId);
+        .eq("tenant_id", tenantId)
+        .order("sequence_in_batch", { ascending: true });
 
-      if (!batchOps || batchOps.length === 0) {
-        return errorResponse("VALIDATION_ERROR", "Cannot start batch with no operations", 400);
+      if (error) {
+        throw new Error(`Failed to fetch batch operations: ${error.message}`);
       }
 
-      const opIds = batchOps.map((bo: any) => bo.operation_id);
-      const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
-      if (operationError) return errorResponse("VALIDATION_ERROR", operationError, 400);
+      return (data ?? []).map((row: any) => ({
+        operationId: row.operation_id,
+        operationName: row.operation?.operation_name ?? null,
+        estimatedTime: row.operation?.estimated_time ?? null,
+        actualTime: row.operation?.actual_time ?? null,
+        partId: row.operation?.part?.id ?? null,
+        partNumber: row.operation?.part?.part_number ?? null,
+        jobId: row.operation?.part?.job?.id ?? null,
+        jobNumber: row.operation?.part?.job?.job_number ?? null,
+        customer: row.operation?.part?.job?.customer ?? null,
+      }));
+    },
 
-      const now = new Date().toISOString();
-      // operator_id — required for manual starts, optional for machine-reported
-      const operatorId = body.operator_id || null;
-
-      // Create time entries only if an operator is specified.
-      // Machine-reported starts skip time tracking (CAD/CAM integration).
-      if (operatorId) {
-        const timeEntries = opIds.map((opId: string) => ({
-          tenant_id: tenantId,
-          operation_id: opId,
-          operator_id: operatorId,
-          start_time: now,
-        }));
-
-        const { error: timeErr } = await supabase.from("time_entries").insert(timeEntries);
-        if (timeErr) return errorResponse("INSERT_ERROR", `Time entries: ${timeErr.message}`, 500);
+    async insertTimeEntries(tenantId: string, operatorId: string, operationIds: string[], startedAt: string): Promise<void> {
+      const rows = operationIds.map((operationId) => ({
+        tenant_id: tenantId,
+        operation_id: operationId,
+        operator_id: operatorId,
+        start_time: startedAt,
+      }));
+      const { error } = await supabase.from("time_entries").insert(rows);
+      if (error) {
+        throw new Error(`Time entries: ${error.message}`);
       }
+    },
 
-      // Update operations to in_progress
-      await supabase
+    async updateOperationsStarted(tenantId: string, operationIds: string[], startedAt: string): Promise<void> {
+      const { error } = await supabase
         .from("operations")
-        .update({ status: "in_progress", started_at: now })
-        .in("id", opIds)
+        .update({ status: "in_progress", started_at: startedAt })
+        .in("id", operationIds)
         .eq("tenant_id", tenantId)
         .eq("status", "not_started");
-
-      // Update batch
-      await supabase
-        .from("operation_batches")
-        .update({ status: "in_progress", started_at: now, started_by: operatorId })
-        .eq("id", batchId)
-        .eq("tenant_id", tenantId);
-
-      await triggerWebhook(tenantId, "batch.started", {
-        batch_id: batchId,
-        batch_number: batch.batch_number,
-        operations: opIds.length,
-        started_at: now,
-      }, requestId);
-
-      return successResponse({
-        batch_id: batchId,
-        status: "in_progress",
-        operations_started: opIds.length,
-        started_at: now,
-      });
-    }
-
-    if (action === "stop") {
-      if (batch.status !== "in_progress") {
-        return errorResponse("INVALID_STATE", `Cannot stop batch in '${batch.status}' status`, 400);
+      if (error) {
+        throw new Error(`Failed to start operations: ${error.message}`);
       }
+    },
 
-      // Get operations with estimated_time for weighted distribution
-      const { data: batchOps } = await supabase
-        .from("batch_operations")
-        .select("operation_id, operation:operations(id, estimated_time)")
-        .eq("batch_id", batchId)
-        .eq("tenant_id", tenantId);
-
-      if (!batchOps || batchOps.length === 0) {
-        return errorResponse("VALIDATION_ERROR", "No operations in batch", 400);
-      }
-
-      const opIds = batchOps.map((bo: any) => bo.operation_id);
-      const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
-      if (operationError) return errorResponse("VALIDATION_ERROR", operationError, 400);
-
-      // Find active time entries
-      const { data: activeEntries } = await supabase
+    async listActiveTimeEntries(tenantId: string, operationIds: string[]) {
+      const { data, error } = await supabase
         .from("time_entries")
         .select("id, operation_id, start_time")
-        .in("operation_id", opIds)
+        .in("operation_id", operationIds)
         .eq("tenant_id", tenantId)
         .is("end_time", null);
 
-      // Machine-reported stops may have no time entries (CAD/CAM integration)
-      const hasTimeEntries = activeEntries && activeEntries.length > 0;
-
-      const now = new Date();
-      const nowStr = now.toISOString();
-      let totalMinutes = 0;
-      let distributionMethod = "none";
-      const dist: { id: string; minutes: number }[] = [];
-
-      if (hasTimeEntries) {
-        const earliest = Math.min(...activeEntries!.map((e: any) => new Date(e.start_time).getTime()));
-        totalMinutes = Math.round((now.getTime() - earliest) / 60000);
-
-        // Weighted distribution by estimated_time (fallback: equal)
-        const ops = batchOps.map((bo: any) => ({
-          id: bo.operation_id,
-          est: bo.operation?.estimated_time ?? 0,
-        }));
-        const totalEst = ops.reduce((s: number, o: any) => s + (o.est || 0), 0);
-        const useWeighted = totalEst > 0 && ops.every((o: any) => o.est > 0);
-        distributionMethod = useWeighted ? "weighted" : "equal";
-
-        if (useWeighted) {
-          let allocated = 0;
-          ops.forEach((op: any, i: number) => {
-            const share = i === ops.length - 1
-              ? totalMinutes - allocated
-              : Math.round((op.est / totalEst) * totalMinutes);
-            dist.push({ id: op.id, minutes: share });
-            allocated += share;
-          });
-        } else {
-          const base = Math.floor(totalMinutes / ops.length);
-          const rem = totalMinutes - base * ops.length;
-          ops.forEach((op: any, i: number) => {
-            dist.push({ id: op.id, minutes: base + (i < rem ? 1 : 0) });
-          });
-        }
-
-        // Close time entries
-        for (const entry of activeEntries!) {
-          const alloc = dist.find((d) => d.id === entry.operation_id);
-          await supabase
-            .from("time_entries")
-            .update({ end_time: nowStr, duration_minutes: alloc?.minutes ?? 0 })
-            .eq("id", entry.id)
-            .eq("tenant_id", tenantId);
-        }
-
-        // Update operation actual_time
-        for (const alloc of dist) {
-          const { data: op } = await supabase
-            .from("operations")
-            .select("actual_time")
-            .eq("id", alloc.id)
-            .eq("tenant_id", tenantId)
-            .single();
-          await supabase
-            .from("operations")
-            .update({ actual_time: (op?.actual_time ?? 0) + alloc.minutes })
-            .eq("id", alloc.id)
-            .eq("tenant_id", tenantId);
-        }
+      if (error) {
+        throw new Error(`Failed to fetch active time entries: ${error.message}`);
       }
 
-      // Mark operations as completed regardless of time tracking
-      const opIds2 = batchOps.map((bo: any) => bo.operation_id);
-      await supabase
-        .from("operations")
-        .update({ status: "completed", completed_at: nowStr })
-        .in("id", opIds2)
-        .eq("tenant_id", tenantId);
+      return (data ?? []).map((entry: any) => ({
+        id: entry.id,
+        operationId: entry.operation_id,
+        startTime: entry.start_time,
+      }));
+    },
 
-      // Complete batch
-      const operatorId = body.operator_id || null;
-      await supabase
+    async closeTimeEntry(tenantId: string, entryId: string, endedAt: string, durationMinutes: number): Promise<void> {
+      const { error } = await supabase
+        .from("time_entries")
+        .update({ end_time: endedAt, duration_minutes: durationMinutes })
+        .eq("id", entryId)
+        .eq("tenant_id", tenantId);
+      if (error) {
+        throw new Error(`Failed to close time entry: ${error.message}`);
+      }
+    },
+
+    async getOperationActualTime(tenantId: string, operationId: string): Promise<number> {
+      const { data, error } = await supabase
+        .from("operations")
+        .select("actual_time")
+        .eq("id", operationId)
+        .eq("tenant_id", tenantId)
+        .single();
+      if (error) {
+        throw new Error(`Failed to read operation actual time: ${error.message}`);
+      }
+      return data?.actual_time ?? 0;
+    },
+
+    async updateOperationActualTime(tenantId: string, operationId: string, actualTime: number): Promise<void> {
+      const { error } = await supabase
+        .from("operations")
+        .update({ actual_time: actualTime })
+        .eq("id", operationId)
+        .eq("tenant_id", tenantId);
+      if (error) {
+        throw new Error(`Failed to update operation actual time: ${error.message}`);
+      }
+    },
+
+    async updateOperationsCompleted(tenantId: string, operationIds: string[], completedAt: string): Promise<void> {
+      const { error } = await supabase
+        .from("operations")
+        .update({ status: "completed", completed_at: completedAt })
+        .in("id", operationIds)
+        .eq("tenant_id", tenantId);
+      if (error) {
+        throw new Error(`Failed to complete operations: ${error.message}`);
+      }
+    },
+
+    async updateBatchStarted(tenantId: string, batchId: string, startedAt: string, startedBy: string | null): Promise<void> {
+      const { error } = await supabase
         .from("operation_batches")
-        .update({ status: "completed", completed_at: nowStr, completed_by: operatorId, actual_time: totalMinutes })
+        .update({ status: "in_progress", started_at: startedAt, started_by: startedBy })
         .eq("id", batchId)
         .eq("tenant_id", tenantId);
+      if (error) {
+        throw new Error(`Failed to update batch start: ${error.message}`);
+      }
+    },
 
-      await triggerWebhook(tenantId, "batch.completed", {
-        batch_id: batchId,
-        batch_number: batch.batch_number,
-        total_minutes: totalMinutes,
-        distribution: dist,
-      }, requestId);
+    async updateBatchCompleted(
+      tenantId: string,
+      batchId: string,
+      completedAt: string,
+      completedBy: string | null,
+      actualTime: number,
+    ): Promise<void> {
+      const { error } = await supabase
+        .from("operation_batches")
+        .update({
+          status: "completed",
+          completed_at: completedAt,
+          completed_by: completedBy,
+          actual_time: actualTime,
+        })
+        .eq("id", batchId)
+        .eq("tenant_id", tenantId);
+      if (error) {
+        throw new Error(`Failed to update batch completion: ${error.message}`);
+      }
+    },
+  };
+}
 
-      return successResponse({
-        batch_id: batchId,
-        status: "completed",
-        total_minutes: totalMinutes,
-        distribution_method: distributionMethod,
-        operations: dist,
+function createAutomatedMonitorRepository(
+  supabase: any,
+): AutomatedExceptionMonitorRepository {
+  return {
+    async listAutomatedBatches(
+      tenantId: string,
+      batchId?: string,
+    ): Promise<MonitoredBatch[]> {
+      let query = supabase
+        .from("operation_batches")
+        .select(`
+          id,
+          batch_number,
+          batch_type,
+          status,
+          production_mode,
+          started_at,
+          estimated_time,
+          batch_operations(
+            operation:operations(
+              id,
+              status,
+              operation_name,
+              estimated_time,
+              part:parts(
+                id,
+                part_number,
+                job:jobs(id, job_number, customer)
+              )
+            )
+          )
+        `)
+        .eq("tenant_id", tenantId)
+        .eq("production_mode", "automated")
+        .eq("batch_type", "laser_nesting")
+        .eq("status", "in_progress");
+
+      if (batchId) {
+        query = query.eq("id", batchId);
+      }
+
+      const { data, error } = await query;
+      if (error) {
+        throw new Error(`Failed to load automated batches: ${error.message}`);
+      }
+
+      return (data ?? []).map((row: any) => ({
+        id: row.id,
+        batchNumber: row.batch_number,
+        batchType: row.batch_type,
+        status: row.status,
+        productionMode: row.production_mode,
+        startedAt: row.started_at,
+        estimatedTime: row.estimated_time,
+        operations: (row.batch_operations ?? [])
+          .map((item: any) => item.operation)
+          .filter(Boolean)
+          .map((operation: any) => ({
+            operationId: operation.id,
+            operationName: operation.operation_name ?? null,
+            status: operation.status,
+            estimatedTime: operation.estimated_time ?? null,
+            partId: operation.part?.id ?? null,
+            partNumber: operation.part?.part_number ?? null,
+            jobId: operation.part?.job?.id ?? null,
+            jobNumber: operation.part?.job?.job_number ?? null,
+            customer: operation.part?.job?.customer ?? null,
+          })),
+      }));
+    },
+
+    async findBatchOperationExpectation(
+      tenantId: string,
+      batchId: string,
+      operationId: string,
+    ) {
+      const { data, error } = await supabase
+        .from("expectations")
+        .select("id, context, source")
+        .eq("tenant_id", tenantId)
+        .eq("entity_type", "operation")
+        .eq("entity_id", operationId)
+        .is("superseded_by", null)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (error) {
+        throw new Error(`Failed to load expectations: ${error.message}`);
+      }
+
+      const existing = (data ?? []).find((expectation: any) =>
+        expectation.source === "system" &&
+        expectation.context?.batch_id === batchId
+      );
+
+      return existing ? { id: existing.id } : null;
+    },
+
+    async createBatchOperationExpectation({
+      tenantId,
+      batch,
+      operation,
+      expectedAt,
+    }) {
+      const { data, error } = await supabase
+        .from("expectations")
+        .insert({
+          tenant_id: tenantId,
+          entity_type: "operation",
+          entity_id: operation.operationId,
+          expectation_type: "completion_time",
+          belief_statement:
+            `Automated laser batch ${batch.batchNumber} should complete operation ${operation.operationName ?? operation.operationId} without unattended drift`,
+          expected_value: {
+            batch_id: batch.id,
+            batch_number: batch.batchNumber,
+            expected_completion_at: expectedAt,
+            monitoring_source: "machine",
+          },
+          expected_at: expectedAt,
+          source: "system",
+          context: {
+            batch_id: batch.id,
+            batch_number: batch.batchNumber,
+            batch_type: batch.batchType,
+            production_mode: batch.productionMode,
+            monitoring_source: "machine",
+            owner_path: "/admin/exceptions",
+            owner_role: "planner",
+            operation_name: operation.operationName,
+            part_number: operation.partNumber,
+            job_number: operation.jobNumber,
+          },
+        })
+        .select("id")
+        .single();
+
+      if (error) {
+        throw new Error(`Failed to create expectation: ${error.message}`);
+      }
+
+      return { id: data.id };
+    },
+
+    async hasActiveException(tenantId: string, expectationId: string) {
+      const { data, error } = await supabase
+        .from("exceptions")
+        .select("id")
+        .eq("tenant_id", tenantId)
+        .eq("expectation_id", expectationId)
+        .in("status", ["open", "acknowledged"])
+        .limit(1);
+
+      if (error) {
+        throw new Error(`Failed to load exceptions: ${error.message}`);
+      }
+
+      return (data?.length ?? 0) > 0;
+    },
+
+    async createNonOccurrenceException({
+      tenantId,
+      expectationId,
+      batch,
+      operation,
+      expectedAt,
+      detectedAt,
+      overdueMinutes,
+    }) {
+      const { error } = await supabase.from("exceptions").insert({
+        tenant_id: tenantId,
+        expectation_id: expectationId,
+        exception_type: "non_occurrence",
+        status: "open",
+        actual_value: {
+          operation_status: operation.status,
+          monitored_at: detectedAt,
+        },
+        occurred_at: expectedAt,
+        deviation_amount: overdueMinutes,
+        deviation_unit: "minutes",
+        metadata: {
+          batch_id: batch.id,
+          batch_number: batch.batchNumber,
+          batch_type: batch.batchType,
+          production_mode: batch.productionMode,
+          monitoring_source: "machine",
+          owner_path: "/admin/exceptions",
+          owner_role: "planner",
+          operation_id: operation.operationId,
+          operation_name: operation.operationName,
+          part_id: operation.partId,
+          part_number: operation.partNumber,
+          job_id: operation.jobId,
+          job_number: operation.jobNumber,
+          customer: operation.customer,
+          recommended_action:
+            "Acknowledge the missed automated completion, inspect the laser cell, then resolve with root cause and corrective action.",
+        },
       });
+
+      if (error) {
+        throw new Error(`Failed to create exception: ${error.message}`);
+      }
+    },
+  };
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return handleOptions();
+
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL") ?? "",
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ""
+  );
+  const repository = createRepository(supabase);
+  const service = createBatchLifecycleService(repository, {
+    dispatch: (tenantId, event) =>
+      dispatchEvent(tenantId, event.eventType, event.data),
+  });
+  const monitor = createAutomatedExceptionMonitor(
+    createAutomatedMonitorRepository(supabase),
+  );
+
+  try {
+    const { tenantId } = await authenticateAndSetContext(req, supabase);
+
+    const url = new URL(req.url);
+    const batchId = url.searchParams.get("id");
+    const action = url.pathname.split("/").pop(); // start, stop, add-operations
+
+    const body = await req.json().catch(() => ({}));
+
+    // ── Route to action ────────────────────────────────────────────
+    if (action === "start") {
+      if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
+      const data = await service.startBatch(
+        tenantId,
+        batchId,
+        body.operator_id || null,
+      );
+      return jsonResponse({ success: true, data });
+    }
+
+    if (action === "stop") {
+      if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
+      const data = await service.stopBatch(
+        tenantId,
+        batchId,
+        body.operator_id || null,
+      );
+      return jsonResponse({ success: true, data });
     }
 
     if (action === "add-operations") {
+      if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
+      const batch = await repository.getBatch(tenantId, batchId);
+      if (!batch) return errorResponse("NOT_FOUND", "Batch not found", 404);
       if (batch.status !== "draft" && batch.status !== "ready") {
-        return errorResponse("INVALID_STATE", `Cannot modify operations in '${batch.status}' status`, 400);
+        return errorResponse("INVALID_STATE", `Cannot modify operations in '${batch.status}' status`);
       }
 
-      const { ids: opIds, error: idsError } = normalizeOperationIds(body.operation_ids);
-      if (idsError) return errorResponse("VALIDATION_ERROR", idsError, 400);
+      const { ids: opIds, error } = normalizeOperationIds(body.operation_ids);
+      if (error) return errorResponse("VALIDATION_ERROR", error);
 
       const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
-      if (operationError) return errorResponse("VALIDATION_ERROR", operationError, 400);
+      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
 
       const assignmentError = await validateOperationsUnassigned(supabase, tenantId, opIds);
-      if (assignmentError) return errorResponse("VALIDATION_ERROR", assignmentError, 400);
+      if (assignmentError) return errorResponse("VALIDATION_ERROR", assignmentError);
 
       const { data: existing } = await supabase
         .from("batch_operations")
@@ -354,13 +579,19 @@ serveApi(
         sequence_in_batch: startSeq + i,
       }));
 
-      const { error: insertError } = await supabase.from("batch_operations").insert(rows);
-      if (insertError) return errorResponse("INSERT_ERROR", insertError.message, 500);
+      const { error } = await supabase.from("batch_operations").insert(rows);
+      if (error) return errorResponse("INSERT_ERROR", error.message, 500);
 
-      return successResponse({ batch_id: batchId, operations_added: opIds.length });
+      return jsonResponse({ success: true, data: { batch_id: batchId, operations_added: opIds.length } });
+    }
+
+    if (action === "monitor") {
+      const data = await monitor.run(tenantId, batchId);
+      return jsonResponse({ success: true, data });
     }
 
     return errorResponse("NOT_FOUND", `Unknown action: ${action}`, 404);
-  },
-  { methods: ["POST", "OPTIONS"] },
-);
+  } catch (error) {
+    return handleError(error);
+  }
+});

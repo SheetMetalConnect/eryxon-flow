@@ -15,7 +15,7 @@ export function OperatorRoutes() {
       <Route
         path="/operator/work-queue"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute operatorOnly>
             <Layout>
               <LazyRoute>
                 <WorkQueue />
@@ -27,7 +27,7 @@ export function OperatorRoutes() {
       <Route
         path="/operator/my-activity"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute operatorOnly>
             <Layout>
               <LazyRoute>
                 <MyActivity />
@@ -39,7 +39,7 @@ export function OperatorRoutes() {
       <Route
         path="/operator/my-issues"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute operatorOnly>
             <Layout>
               <LazyRoute>
                 <MyIssues />
@@ -51,7 +51,7 @@ export function OperatorRoutes() {
       <Route
         path="/operator/view"
         element={
-          <ProtectedRoute>
+          <ProtectedRoute operatorOnly>
             <Layout>
               <LazyRoute>
                 <OperatorView />

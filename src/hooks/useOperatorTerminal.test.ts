@@ -18,38 +18,51 @@ vi.mock('@/hooks/useProfile', () => ({
   useProfile: (...args: any[]) => mockUseProfile(...args),
 }));
 
+const mockUseOperator = vi.fn(() => ({ activeOperator: null }));
 vi.mock('@/contexts/OperatorContext', () => ({
-  useOperator: () => ({ activeOperator: null }),
+  useOperator: (...args: any[]) => mockUseOperator(...args),
 }));
 
-const mockProcessCAD = vi.fn();
 vi.mock('@/hooks/useCADProcessing', () => ({
-  useCADProcessing: () => ({ processCAD: mockProcessCAD }),
+  useCADProcessing: () => ({ processCAD: vi.fn() }),
   isCADServiceEnabled: () => false,
 }));
 
-const mockFetchOperationsWithDetails = vi.fn().mockResolvedValue([]);
+const mockFetchOperationLookupDetails = vi.fn().mockResolvedValue([]);
 const mockStartTimeTracking = vi.fn().mockResolvedValue(undefined);
+const mockStartBatchTimeTracking = vi.fn().mockResolvedValue(undefined);
 const mockStopTimeTracking = vi.fn().mockResolvedValue(undefined);
+const mockStopBatchTimeTracking = vi.fn().mockResolvedValue(undefined);
 const mockCompleteOperation = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/lib/database', () => ({
-  fetchOperationsWithDetails: (...args: any[]) => mockFetchOperationsWithDetails(...args),
+  fetchOperationLookupDetails: (...args: any[]) => mockFetchOperationLookupDetails(...args),
   startTimeTracking: (...args: any[]) => mockStartTimeTracking(...args),
+  startBatchTimeTracking: (...args: any[]) => mockStartBatchTimeTracking(...args),
   stopTimeTracking: (...args: any[]) => mockStopTimeTracking(...args),
+  stopBatchTimeTracking: (...args: any[]) => mockStopBatchTimeTracking(...args),
   completeOperation: (...args: any[]) => mockCompleteOperation(...args),
 }));
 
 let cellsResponse: { data: any; error: any } = { data: [], error: null };
-const mockCreateSignedUrl = vi.fn(() => Promise.resolve({ data: null }));
+let tenantResponse: { data: any; error: any } = {
+  data: {
+    feature_flags: null,
+    factory_opening_time: '07:00:00',
+    factory_closing_time: '17:00:00',
+    timezone: 'UTC',
+  },
+  error: null,
+};
 
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
-    from: () => {
+    from: (table: string) => {
       const chain: any = {};
       chain.select = () => chain;
       chain.eq = () => chain;
-      chain.order = () => Promise.resolve(cellsResponse);
+      chain.order = () => Promise.resolve(table === 'cells' ? cellsResponse : tenantResponse);
+      chain.single = () => Promise.resolve(tenantResponse);
       return chain;
     },
     channel: () => {
@@ -61,7 +74,7 @@ vi.mock('@/integrations/supabase/client', () => ({
     removeChannel: () => {},
     storage: {
       from: () => ({
-        createSignedUrl: (...args: any[]) => mockCreateSignedUrl(...args),
+        createSignedUrl: () => Promise.resolve({ data: null }),
       }),
     },
   },
@@ -90,22 +103,6 @@ const localStorageMock = {
   key: vi.fn(),
 };
 Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock, writable: true });
-Object.defineProperty(globalThis, 'fetch', {
-  value: vi.fn(() =>
-    Promise.resolve({
-      blob: () => Promise.resolve(new Blob(['step'])),
-    }),
-  ),
-  writable: true,
-});
-Object.defineProperty(globalThis.URL, 'createObjectURL', {
-  value: vi.fn(() => 'blob:step-preview'),
-  writable: true,
-});
-Object.defineProperty(globalThis.URL, 'revokeObjectURL', {
-  value: vi.fn(),
-  writable: true,
-});
 
 import { useOperatorTerminal } from './useOperatorTerminal';
 import { toast } from 'sonner';
@@ -113,6 +110,7 @@ import { toast } from 'sonner';
 const makeBaseOp = (overrides: Record<string, any> = {}) => ({
   id: 'op-1',
   operation_name: 'Op',
+  operation_type: 'cutting',
   sequence: 1,
   estimated_time: 1,
   actual_time: 0,
@@ -137,24 +135,37 @@ const makeBaseOp = (overrides: Record<string, any> = {}) => ({
   },
   cell: { id: 'cell-1', name: 'Cell', color: null, sequence: 1 },
   active_time_entry: undefined,
+  operator_mode_summary: {
+    active_mode: null,
+    has_setup_history: false,
+  },
+  batch_context: null,
   ...overrides,
 });
 
 describe('useOperatorTerminal', () => {
   beforeEach(() => {
-    mockFetchOperationsWithDetails.mockReset().mockResolvedValue([]);
+    mockFetchOperationLookupDetails.mockReset().mockResolvedValue([]);
     mockStartTimeTracking.mockReset().mockResolvedValue(undefined);
+    mockStartBatchTimeTracking.mockReset().mockResolvedValue(undefined);
     mockStopTimeTracking.mockReset().mockResolvedValue(undefined);
+    mockStopBatchTimeTracking.mockReset().mockResolvedValue(undefined);
     mockCompleteOperation.mockReset().mockResolvedValue(undefined);
-    mockProcessCAD.mockReset();
-    mockCreateSignedUrl.mockReset().mockResolvedValue({ data: null });
-    vi.mocked(globalThis.fetch).mockReset().mockResolvedValue({
-      blob: () => Promise.resolve(new Blob(['step'])),
-    } as any);
     mockUseProfile.mockReturnValue(mockProfile as any);
+    mockUseOperator.mockReturnValue({ activeOperator: null });
     vi.mocked(toast.success).mockReset();
     vi.mocked(toast.error).mockReset();
     cellsResponse = { data: [], error: null };
+    tenantResponse = {
+      data: {
+        feature_flags: null,
+        factory_opening_time: '07:00:00',
+        factory_closing_time: '17:00:00',
+        timezone: 'UTC',
+      },
+      error: null,
+    };
+    localStorageMock.getItem.mockReturnValue(null);
   });
 
   it('starts in loading state', () => {
@@ -172,7 +183,7 @@ describe('useOperatorTerminal', () => {
     });
 
     expect(result.current.loading).toBe(false);
-    expect(mockFetchOperationsWithDetails).toHaveBeenCalledWith('tenant-1');
+    expect(mockFetchOperationLookupDetails).toHaveBeenCalledWith('tenant-1');
   });
 
   it('returns empty job lists when no operations loaded', async () => {
@@ -211,7 +222,7 @@ describe('useOperatorTerminal', () => {
       cell: { id: 'cell-1', name: 'Laser Cell', color: '#ff0000', sequence: 1 },
     });
 
-    mockFetchOperationsWithDetails.mockResolvedValue([mockOp]);
+    mockFetchOperationLookupDetails.mockResolvedValue([mockOp]);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -227,6 +238,7 @@ describe('useOperatorTerminal', () => {
     expect(job.material).toBe('Steel');
     expect(job.quantity).toBe(5);
     expect(job.currentOp).toBe('Laser Cut');
+    expect(job.operationType).toBe('cutting');
     expect(job.hasPdf).toBe(true);
     expect(job.hasModel).toBe(true);
     expect(job.status).toBe('in_buffer');
@@ -247,7 +259,7 @@ describe('useOperatorTerminal', () => {
       },
     });
 
-    mockFetchOperationsWithDetails.mockResolvedValue([mockOp]);
+    mockFetchOperationLookupDetails.mockResolvedValue([mockOp]);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -278,7 +290,7 @@ describe('useOperatorTerminal', () => {
     const op1 = makeBaseOp({ id: 'op-1', cell_id: 'cell-1', cell: { id: 'cell-1', name: 'C1', color: null, sequence: 1 }, part: { ...makeBaseOp().part, id: 'p1' } });
     const op2 = makeBaseOp({ id: 'op-2', cell_id: 'cell-2', cell: { id: 'cell-2', name: 'C2', color: null, sequence: 2 }, part: { ...makeBaseOp().part, id: 'p2' } });
 
-    mockFetchOperationsWithDetails.mockResolvedValue([op1, op2]);
+    mockFetchOperationLookupDetails.mockResolvedValue([op1, op2]);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -296,7 +308,7 @@ describe('useOperatorTerminal', () => {
   });
 
   it('handleStart calls startTimeTracking', async () => {
-    mockFetchOperationsWithDetails.mockResolvedValue([makeBaseOp()]);
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp()]);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -311,8 +323,210 @@ describe('useOperatorTerminal', () => {
       await result.current.handleStart();
     });
 
-    expect(mockStartTimeTracking).toHaveBeenCalledWith('op-1', 'user-1', 'tenant-1');
+    expect(mockStartTimeTracking).toHaveBeenCalledWith('op-1', 'user-1', 'tenant-1', undefined);
     expect(toast.success).toHaveBeenCalled();
+  });
+
+  it('blocks production start when setup is required but not yet recorded', async () => {
+    tenantResponse = {
+      data: {
+        feature_flags: {
+          operatorTerminalWorkModes: {
+            enabled: true,
+            enforceWorkingHours: false,
+            setupPrepEnabled: true,
+            setupRequired: true,
+          },
+        },
+        factory_opening_time: '07:00:00',
+        factory_closing_time: '17:00:00',
+        timezone: 'UTC',
+      },
+      error: null,
+    };
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp()]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    act(() => {
+      result.current.setSelectedTerminalMode('production');
+      result.current.setSelectedJobId('op-1');
+    });
+
+    await act(async () => {
+      await result.current.handleStart();
+    });
+
+    expect(mockStartTimeTracking).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith('terminal.workModes.errors.setupRequired');
+  });
+
+  it('passes a setup mode note when setup prep starts', async () => {
+    tenantResponse = {
+      data: {
+        feature_flags: {
+          operatorTerminalWorkModes: {
+            enabled: true,
+            enforceWorkingHours: false,
+            setupPrepEnabled: true,
+            setupRequired: true,
+          },
+        },
+        factory_opening_time: '07:00:00',
+        factory_closing_time: '17:00:00',
+        timezone: 'UTC',
+      },
+      error: null,
+    };
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp()]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    act(() => {
+      result.current.setSelectedTerminalMode('setup');
+      result.current.setSelectedJobId('op-1');
+    });
+
+    await act(async () => {
+      await result.current.handleStart();
+    });
+
+    expect(mockStartTimeTracking).toHaveBeenCalledWith(
+      'op-1',
+      'user-1',
+      'tenant-1',
+      'operator-mode:setup',
+    );
+  });
+
+  it('uses the active shared-terminal operator for persisted mode and time tracking', async () => {
+    mockUseOperator.mockReturnValue({
+      activeOperator: {
+        id: 'operator-2',
+        employee_id: 'EMP-002',
+        full_name: 'Shared Operator',
+        tenant_id: 'tenant-1',
+      },
+    });
+    tenantResponse = {
+      data: {
+        feature_flags: {
+          operatorTerminalWorkModes: {
+            enabled: true,
+            enforceWorkingHours: false,
+            setupPrepEnabled: true,
+            setupRequired: true,
+          },
+        },
+        factory_opening_time: '07:00:00',
+        factory_closing_time: '17:00:00',
+        timezone: 'UTC',
+      },
+      error: null,
+    };
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      makeBaseOp({
+        operator_mode_summary: {
+          active_mode: null,
+          has_setup_history: true,
+        },
+      }),
+    ]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    act(() => {
+      result.current.setSelectedTerminalMode('setup');
+      result.current.setSelectedJobId('op-1');
+    });
+
+    await act(async () => {
+      await result.current.handleStart();
+    });
+
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      'operator_terminal_mode:tenant-1:operator-2',
+      'setup',
+    );
+    expect(mockStartTimeTracking).toHaveBeenCalledWith(
+      'op-1',
+      'operator-2',
+      'tenant-1',
+      'operator-mode:setup',
+    );
+  });
+
+  it('restores terminal mode from operator-specific storage after an operator switch', async () => {
+    const activeOperatorState = {
+      activeOperator: {
+        id: 'operator-1',
+        employee_id: 'EMP-001',
+        full_name: 'Operator One',
+        tenant_id: 'tenant-1',
+      },
+    };
+    mockUseOperator.mockImplementation(() => activeOperatorState);
+    tenantResponse = {
+      data: {
+        feature_flags: {
+          operatorTerminalWorkModes: {
+            enabled: true,
+            enforceWorkingHours: false,
+            setupPrepEnabled: true,
+            setupRequired: true,
+          },
+        },
+        factory_opening_time: '07:00:00',
+        factory_closing_time: '17:00:00',
+        timezone: 'UTC',
+      },
+      error: null,
+    };
+    localStorageMock.getItem.mockImplementation((key: string) => {
+      if (key === 'operator_selected_cell') return null;
+      if (key === 'operator_terminal_mode:tenant-1:operator-1') return 'setup';
+      if (key === 'operator_terminal_mode:tenant-1:operator-2') return 'production';
+      return null;
+    });
+
+    const { result, rerender } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    await waitFor(() => {
+      expect(result.current.selectedTerminalMode).toBe('setup');
+    });
+
+    activeOperatorState.activeOperator = {
+      id: 'operator-2',
+      employee_id: 'EMP-002',
+      full_name: 'Operator Two',
+      tenant_id: 'tenant-1',
+    };
+
+    rerender();
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    await waitFor(() => {
+      expect(result.current.selectedTerminalMode).toBe('production');
+    });
   });
 
   it('handlePause calls stopTimeTracking', async () => {
@@ -326,7 +540,7 @@ describe('useOperatorTerminal', () => {
       },
     });
 
-    mockFetchOperationsWithDetails.mockResolvedValue([op]);
+    mockFetchOperationLookupDetails.mockResolvedValue([op]);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -345,7 +559,7 @@ describe('useOperatorTerminal', () => {
   });
 
   it('handleComplete calls completeOperation and clears selection', async () => {
-    mockFetchOperationsWithDetails.mockResolvedValue([makeBaseOp()]);
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp()]);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -376,7 +590,7 @@ describe('useOperatorTerminal', () => {
     });
 
     // loadData returns early when no tenant_id
-    expect(mockFetchOperationsWithDetails).not.toHaveBeenCalled();
+    expect(mockFetchOperationLookupDetails).not.toHaveBeenCalled();
   });
 
   it('splits not_started jobs into inBuffer (first 5) and expected (rest)', async () => {
@@ -384,7 +598,7 @@ describe('useOperatorTerminal', () => {
       makeBaseOp({ id: `op-${i}`, part: { ...makeBaseOp().part, id: `p-${i}` } }),
     );
 
-    mockFetchOperationsWithDetails.mockResolvedValue(ops);
+    mockFetchOperationLookupDetails.mockResolvedValue(ops);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -398,7 +612,7 @@ describe('useOperatorTerminal', () => {
   });
 
   it('shows error toast when startTimeTracking fails', async () => {
-    mockFetchOperationsWithDetails.mockResolvedValue([makeBaseOp()]);
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp()]);
     const { result } = renderHook(() => useOperatorTerminal());
 
     await act(async () => {
@@ -418,44 +632,34 @@ describe('useOperatorTerminal', () => {
     expect(toast.error).toHaveBeenCalledWith('Already clocked');
   });
 
-  it('reuses stored PMI metadata for the matching STEP path', async () => {
-    const storedPmi = {
-      version: '1.0',
-      dimensions: [
-        {
-          id: 'dim-1',
-          type: 'linear',
-          value: 12,
-          unit: 'mm',
-          text: '12',
-          position: { x: 1, y: 2, z: 3 },
-          leader_points: [],
-        },
+  it('exposes batch prompt details for multi-operation batches', async () => {
+    const batchContext = {
+      batch_id: 'batch-1',
+      batch_number: 'NEST-001',
+      batch_type: 'laser_nesting',
+      status: 'ready',
+      operations_count: 2,
+      material: 'Steel',
+      nesting_metadata: null,
+      sequence_in_batch: 1,
+      parent_batch: {
+        id: 'sheet-1',
+        batch_number: 'SHEET-01',
+        batch_type: 'general',
+        status: 'ready',
+      },
+      members: [
+        { operation_id: 'op-1', operation_name: 'Laser Cut', part_id: 'part-1', status: 'not_started', sequence_in_batch: 1 },
+        { operation_id: 'op-2', operation_name: 'Laser Cut', part_id: 'part-2', status: 'not_started', sequence_in_batch: 2 },
       ],
-      geometric_tolerances: [],
-      datums: [],
-      surface_finishes: [],
-      weld_symbols: [],
-      notes: [],
-      graphical_pmi: [],
     };
 
-    mockCreateSignedUrl.mockResolvedValue({
-      data: { signedUrl: 'https://example.com/bracket.step' },
-    });
-
-    mockFetchOperationsWithDetails.mockResolvedValue([
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      makeBaseOp({ batch_context: batchContext }),
       makeBaseOp({
-        part: {
-          ...makeBaseOp().part,
-          file_paths: ['tenant-1/parts/part-1/bracket.step'],
-          metadata: {
-            pmi: storedPmi,
-            cad_processing: {
-              source_path: 'tenant-1/parts/part-1/bracket.step',
-            },
-          },
-        },
+        id: 'op-2',
+        part: { ...makeBaseOp().part, id: 'part-2' },
+        batch_context: batchContext,
       }),
     ]);
 
@@ -469,10 +673,210 @@ describe('useOperatorTerminal', () => {
       result.current.setSelectedJobId('op-1');
     });
 
-    await waitFor(() => {
-      expect(result.current.pmiData).toEqual(storedPmi);
+    expect(result.current.selectedBatchPrompt).toMatchObject({
+      batchId: 'batch-1',
+      batchNumber: 'NEST-001',
+      parentBatchNumber: 'SHEET-01',
+      totalMembers: 2,
+      isBatchActionAvailable: true,
+      mode: null,
+    });
+  });
+
+  it('requires a batch-flow choice before start', async () => {
+    const batchContext = {
+      batch_id: 'batch-1',
+      batch_number: 'NEST-001',
+      batch_type: 'laser_nesting',
+      status: 'ready',
+      operations_count: 2,
+      material: 'Steel',
+      nesting_metadata: null,
+      sequence_in_batch: 1,
+      parent_batch: null,
+      members: [
+        { operation_id: 'op-1', operation_name: 'Laser Cut', part_id: 'part-1', status: 'not_started', sequence_in_batch: 1 },
+        { operation_id: 'op-2', operation_name: 'Laser Cut', part_id: 'part-2', status: 'not_started', sequence_in_batch: 2 },
+      ],
+    };
+
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp({ batch_context: batchContext })]);
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
     });
 
-    expect(mockProcessCAD).not.toHaveBeenCalled();
+    act(() => {
+      result.current.setSelectedJobId('op-1');
+    });
+
+    await act(async () => {
+      await result.current.handleStart();
+    });
+
+    expect(mockStartTimeTracking).not.toHaveBeenCalled();
+    expect(mockStartBatchTimeTracking).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith('terminal.batchFlow.chooseMode');
+  });
+
+  it('starts batch time tracking when full-batch mode is selected', async () => {
+    const batchContext = {
+      batch_id: 'batch-1',
+      batch_number: 'NEST-001',
+      batch_type: 'laser_nesting',
+      status: 'ready',
+      operations_count: 2,
+      material: 'Steel',
+      nesting_metadata: null,
+      sequence_in_batch: 1,
+      parent_batch: null,
+      members: [
+        { operation_id: 'op-1', operation_name: 'Laser Cut', part_id: 'part-1', status: 'not_started', sequence_in_batch: 1 },
+        { operation_id: 'op-2', operation_name: 'Laser Cut', part_id: 'part-2', status: 'not_started', sequence_in_batch: 2 },
+      ],
+    };
+
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp({ batch_context: batchContext })]);
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    act(() => {
+      result.current.setSelectedJobId('op-1');
+    });
+
+    act(() => {
+      result.current.selectBatchMode('batch');
+    });
+
+    await act(async () => {
+      await result.current.handleStart();
+    });
+
+    expect(mockStartBatchTimeTracking).toHaveBeenCalledWith('batch-1', 'user-1', 'tenant-1');
+    expect(mockStartTimeTracking).not.toHaveBeenCalled();
+  });
+
+  it('selects a matching operation from a scanned token', async () => {
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      makeBaseOp({
+        id: 'op-1',
+        sequence: 7,
+        operation_name: 'Laser Cut',
+        part: {
+          ...makeBaseOp().part,
+          part_number: 'PART-001',
+          drawing_no: 'DWG-100',
+          job: { id: 'job-1', job_number: 'JOB-100', customer: null, due_date: null, due_date_override: null },
+        },
+      }),
+    ]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    await act(async () => {
+      await result.current.handleScannerToken('job-100:part-001:7');
+    });
+
+    expect(result.current.selectedJobId).toBe('op-1');
+    expect(result.current.scanFeedback).toMatchObject({
+      kind: 'success',
+      operationId: 'op-1',
+    });
+  });
+
+  it('fails closed when a scan token matches multiple operations', async () => {
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      makeBaseOp({ id: 'op-1', part: { ...makeBaseOp().part, part_number: 'PART-001', id: 'part-1' } }),
+      makeBaseOp({ id: 'op-2', part: { ...makeBaseOp().part, part_number: 'PART-001', id: 'part-2' } }),
+    ]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    await act(async () => {
+      await result.current.handleScannerToken('PART-001');
+    });
+
+    expect(result.current.selectedJobId).toBeNull();
+    expect(result.current.scanFeedback).toMatchObject({
+      kind: 'error',
+      reason: 'duplicate_match',
+      matchCount: 2,
+    });
+  });
+
+  it('rejects completed operations during scan lookup', async () => {
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      makeBaseOp({
+        id: 'op-1',
+        status: 'completed',
+        part: {
+          ...makeBaseOp().part,
+          job: { id: 'job-1', job_number: 'JOB-100', customer: null, due_date: null, due_date_override: null },
+        },
+      }),
+    ]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    await act(async () => {
+      await result.current.handleScannerToken('JOB-100');
+    });
+
+    expect(result.current.selectedJobId).toBeNull();
+    expect(result.current.scanFeedback).toMatchObject({
+      kind: 'error',
+      reason: 'closed',
+    });
+  });
+
+  it('rejects operations already active by another operator', async () => {
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      makeBaseOp({
+        id: 'op-1',
+        active_time_entry: {
+          id: 'te-1',
+          operator_id: 'user-2',
+          start_time: '2026-03-28T08:00:00Z',
+          operator: { full_name: 'Other Operator' },
+        },
+        part: {
+          ...makeBaseOp().part,
+          job: { id: 'job-1', job_number: 'JOB-100', customer: null, due_date: null, due_date_override: null },
+        },
+      }),
+    ]);
+
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+
+    await act(async () => {
+      await result.current.handleScannerToken('JOB-100');
+    });
+
+    expect(result.current.selectedJobId).toBeNull();
+    expect(result.current.scanFeedback).toMatchObject({
+      kind: 'error',
+      reason: 'active_by_other_operator',
+      activeOperatorName: 'Other Operator',
+    });
   });
 });

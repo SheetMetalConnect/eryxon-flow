@@ -3,6 +3,8 @@ import { env } from "@/config/env";
 import { logger } from "@/lib/logger";
 
 export type WebhookEvent =
+  | 'batch.started'
+  | 'batch.completed'
   // Job lifecycle events
   | 'job.created'
   | 'job.updated'

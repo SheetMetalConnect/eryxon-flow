@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@/test/utils";
 import OperatorView from "./OperatorView";
 
-const mockFetchOperationsWithDetails = vi.fn();
+const mockFetchOperationLookupDetails = vi.fn();
 
 vi.mock("@/hooks/useProfile", () => ({
   useProfile: () => ({
@@ -33,8 +33,8 @@ vi.mock("@/hooks/useCADProcessing", () => ({
 }));
 
 vi.mock("@/lib/database", () => ({
-  fetchOperationsWithDetails: (...args: unknown[]) =>
-    mockFetchOperationsWithDetails(...args),
+  fetchOperationLookupDetails: (...args: unknown[]) =>
+    mockFetchOperationLookupDetails(...args),
   startTimeTracking: vi.fn(),
   stopTimeTracking: vi.fn(),
   completeOperation: vi.fn(),
@@ -60,19 +60,45 @@ const mockCells = [
   { id: "cell-2", name: "Brake", color: "#16a34a" },
 ];
 
-const createQueryBuilder = (data: unknown[]) => ({
-  select: vi.fn().mockReturnThis(),
-  eq: vi.fn().mockReturnThis(),
-  order: vi.fn().mockResolvedValue({ data, error: null }),
-});
+const tenantSettings = {
+  feature_flags: null,
+  factory_opening_time: "07:00:00",
+  factory_closing_time: "17:00:00",
+  timezone: "UTC",
+};
+
+const createQueryBuilder = (table: string, data: unknown[]) => {
+  const chain = {
+    select: vi.fn().mockReturnThis(),
+    eq: vi.fn().mockReturnThis(),
+    order: vi.fn(),
+    single: vi.fn(),
+  };
+
+  chain.order.mockImplementation(() =>
+    Promise.resolve({
+      data,
+      error: null,
+    }),
+  );
+
+  chain.single.mockImplementation(() =>
+    Promise.resolve({
+      data: table === "tenants" ? tenantSettings : null,
+      error: null,
+    }),
+  );
+
+  return chain;
+};
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: {
     from: vi.fn((table: string) => {
       if (table === "cells") {
-        return createQueryBuilder(mockCells);
+        return createQueryBuilder(table, mockCells);
       }
-      return createQueryBuilder([]);
+      return createQueryBuilder(table, []);
     }),
     channel: vi.fn(() => ({
       on: vi.fn().mockReturnThis(),
@@ -130,7 +156,7 @@ const createOperation = (
 
 describe("OperatorView", () => {
   beforeEach(() => {
-    mockFetchOperationsWithDetails.mockResolvedValue([
+    mockFetchOperationLookupDetails.mockResolvedValue([
       createOperation("1", "in_progress", 1),
       createOperation("2", "not_started", 2),
       createOperation("3", "not_started", 3),
@@ -140,20 +166,6 @@ describe("OperatorView", () => {
       createOperation("7", "not_started", 7),
     ]);
     window.localStorage.clear();
-  });
-
-  it("loads queue groups and lets the user select a work packet", async () => {
-    render(<OperatorView />);
-
-    await waitFor(() => {
-      expect(screen.getByText("JOB-1")).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByText("JOB-1"));
-
-    await waitFor(() => {
-      expect(screen.getByTestId("detail-panel")).toHaveTextContent("JOB-1::Op 1");
-    });
   });
 
   it("summarizes buffer and expected queue counts", async () => {
@@ -169,5 +181,28 @@ describe("OperatorView", () => {
     const expectedHeading = headings.find(h => h.textContent?.includes("expected"));
     expect(bufferHeading).toHaveTextContent("5");
     expect(expectedHeading).toHaveTextContent("1");
+  });
+
+  it("captures newline-terminated scanner input and selects the matching operation", async () => {
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      createOperation("op-1", "not_started", 1),
+    ]);
+
+    render(<OperatorView />);
+
+    await waitFor(() => {
+      expect(screen.getByText("JOB-1")).toBeInTheDocument();
+    });
+
+    for (const key of "JOB-1:PART-op-1:1") {
+      fireEvent.keyDown(window, { key });
+    }
+    fireEvent.keyDown(window, { key: "Enter" });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("detail-panel")).toHaveTextContent("JOB-1::Op 1");
+    });
+
+    expect(screen.getByRole("status")).toHaveTextContent("terminal.scanner.success");
   });
 });

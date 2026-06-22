@@ -1,8 +1,5 @@
-import { usePageTitle } from "@/hooks/usePageTitle";
-import { useEffect, useState, useMemo } from "react";
-import { ROUTES } from "@/routes";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ColumnDef } from "@tanstack/react-table";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
@@ -26,9 +23,13 @@ import { toast } from "sonner";
 import { seedDemoData } from "@/lib/seed";
 const loadMockData = () => import("@/lib/mockDataGenerator");
 import { QRMDashboard } from "@/components/qrm/QRMDashboard";
-import { PilotActivationCard } from "@/components/onboarding/PilotActivationCard";
-import { DataTable, DataTableColumnHeader } from "@/components/ui/data-table";
 import { logger } from "@/lib/logger";
+import { ActiveJobProgressCard } from "@/components/admin/ActiveJobProgressCard";
+import {
+  buildActiveJobProgressSummaries,
+  type ActiveJobProgressJob,
+  type ActiveJobProgressSummary,
+} from "@/lib/admin/activeJobProgress";
 import {
   Table,
   TableBody,
@@ -106,7 +107,6 @@ function StatCard({
 }
 
 export default function Dashboard() {
-  usePageTitle("navigation.dashboard");
   const { t } = useTranslation();
   const profile = useProfile();
   const navigate = useNavigate();
@@ -122,6 +122,9 @@ export default function Dashboard() {
     completedToday: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [activeJobProgress, setActiveJobProgress] = useState<
+    ActiveJobProgressSummary[]
+  >([]);
   const [needsSetup, setNeedsSetup] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [wiping, setWiping] = useState(false);
@@ -175,6 +178,7 @@ export default function Dashboard() {
         totalJobsResult,
         totalPartsResult,
         completedTodayResult,
+        activeJobsResult,
       ] = await Promise.all([
         supabase
           .from("operations")
@@ -214,7 +218,29 @@ export default function Dashboard() {
           .eq("tenant_id", profile.tenant_id)
           .eq("status", "completed")
           .gte("updated_at", startOfDay.toISOString()),
+        supabase
+          .from("jobs")
+          .select(`
+            id,
+            job_number,
+            customer,
+            status,
+            due_date,
+            due_date_override,
+            parts (
+              operations (
+                status
+              )
+            )
+          `)
+          .eq("tenant_id", profile.tenant_id)
+          .in("status", ["not_started", "in_progress"])
+          .order("job_number"),
       ]);
+
+      if (activeJobsResult.error) {
+        throw activeJobsResult.error;
+      }
 
       setStats({
         activeWorkers: activeData?.length || 0,
@@ -226,6 +252,11 @@ export default function Dashboard() {
         activeCells: cellsHead.count || 0,
         completedToday: completedTodayResult.count || 0,
       });
+      setActiveJobProgress(
+        buildActiveJobProgressSummaries(
+          (activeJobsResult.data ?? []) as ActiveJobProgressJob[],
+        ),
+      );
 
       setNeedsSetup((cellsHead.count || 0) === 0);
     } catch (error) {
@@ -276,7 +307,7 @@ export default function Dashboard() {
     if (!profile?.tenant_id) return;
 
     const channel = supabase
-      .channel("time-entries-admin")
+      .channel(`admin-dashboard-${profile.tenant_id}`)
       .on(
         "postgres_changes",
         {
@@ -289,84 +320,36 @@ export default function Dashboard() {
           loadData();
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "operations",
+          filter: `tenant_id=eq.${profile.tenant_id}`,
+        },
+        () => {
+          loadData();
+        },
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "jobs",
+          filter: `tenant_id=eq.${profile.tenant_id}`,
+        },
+        () => {
+          loadData();
+        },
+      )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
   };
-
-  const columns: ColumnDef<ActiveWork>[] = useMemo(
-    () => [
-      {
-        accessorKey: "operator.full_name",
-        id: "operator",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.operator")}
-          />
-        ),
-        cell: ({ row }) => (
-          <span className="font-medium">{row.original.operator.full_name}</span>
-        ),
-      },
-      {
-        accessorKey: "operation.operation_name",
-        id: "operation",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.operation")}
-          />
-        ),
-        cell: ({ row }) => row.original.operation.operation_name,
-      },
-      {
-        id: "job",
-        header: t("dashboard.job"),
-        cell: ({ row }) => (
-          <div>
-            <div>{row.original.operation.part.job.job_number}</div>
-            {row.original.operation.part.job.customer && (
-              <div className="text-xs text-muted-foreground">
-                {row.original.operation.part.job.customer}
-              </div>
-            )}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "operation.part.part_number",
-        id: "part",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title={t("dashboard.part")} />
-        ),
-        cell: ({ row }) => row.original.operation.part.part_number,
-      },
-      {
-        id: "cell",
-        header: t("dashboard.cell"),
-        cell: ({ row }) => (
-          <Badge className="bg-accent text-white">
-            {row.original.operation.cell.name}
-          </Badge>
-        ),
-      },
-      {
-        accessorKey: "start_time",
-        header: ({ column }) => (
-          <DataTableColumnHeader
-            column={column}
-            title={t("dashboard.elapsedTime")}
-          />
-        ),
-        cell: ({ row }) =>
-          formatDistanceToNow(new Date(row.getValue("start_time"))),
-      },
-    ],
-    [t],
-  );
 
   if (loading) {
     return (
@@ -526,15 +509,13 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <PilotActivationCard />
-
       <div className="grid gap-4 md:grid-cols-4" data-tour="dashboard-stats">
         <StatCard
           title={t("dashboard.activeWorkers")}
           value={stats.activeWorkers}
           description={t("dashboard.currentlyWorking")}
           icon={Users}
-          onClick={() => navigate(ROUTES.ADMIN.ACTIVITY)}
+          onClick={() => navigate("/admin/activity")}
         />
 
         <StatCard
@@ -542,7 +523,7 @@ export default function Dashboard() {
           value={stats.pendingIssues}
           description={t("dashboard.awaitingReview")}
           icon={AlertTriangle}
-          onClick={() => navigate(ROUTES.ADMIN.ISSUES)}
+          onClick={() => navigate("/admin/issues")}
         />
 
         <StatCard
@@ -550,7 +531,7 @@ export default function Dashboard() {
           value={stats.inProgressTasks}
           description={t("dashboard.activeTasks")}
           icon={Activity}
-          onClick={() => navigate(ROUTES.ADMIN.OPERATIONS)}
+          onClick={() => navigate("/admin/operations")}
         />
 
         <StatCard
@@ -558,7 +539,7 @@ export default function Dashboard() {
           value={stats.dueThisWeek}
           description={t("dashboard.jobsDue")}
           icon={Clock}
-          onClick={() => navigate(ROUTES.ADMIN.JOBS)}
+          onClick={() => navigate("/admin/jobs")}
         />
       </div>
 
@@ -595,6 +576,8 @@ export default function Dashboard() {
           </div>
         </CardContent>
       </Card>
+
+      <ActiveJobProgressCard jobs={activeJobProgress} />
 
       <QRMDashboard />
 

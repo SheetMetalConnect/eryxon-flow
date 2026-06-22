@@ -17,6 +17,8 @@ import { env } from "@/config/env";
  */
 
 export type EventType =
+  | 'batch.started'
+  | 'batch.completed'
   | 'job.created'
   | 'job.updated'
   | 'job.started'
@@ -43,13 +45,15 @@ export interface EventDefinition {
   id: EventType;
   label: string;
   description: string;
-  category: 'job' | 'part' | 'operation' | 'issue' | 'step' | 'production';
+  category: 'batch' | 'job' | 'part' | 'operation' | 'issue' | 'step' | 'production';
 }
 
 /**
  * Available events with metadata - shared across all integrations
  */
 export const AVAILABLE_EVENTS: EventDefinition[] = [
+  { id: 'batch.started', label: 'Batch Started', description: 'When a batch enters in_progress via operator or machine monitoring', category: 'batch' },
+  { id: 'batch.completed', label: 'Batch Completed', description: 'When a batch completes via operator or machine monitoring', category: 'batch' },
   { id: 'job.created', label: 'Job Created', description: 'When a new job is created via API', category: 'job' },
   { id: 'job.updated', label: 'Job Updated', description: 'When a job is modified', category: 'job' },
   { id: 'job.started', label: 'Job Started', description: 'When a job changes to in_progress', category: 'job' },

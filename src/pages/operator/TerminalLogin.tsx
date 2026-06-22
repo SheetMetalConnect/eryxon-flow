@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
 import { useSession } from "@/hooks/useSession";
@@ -31,10 +31,17 @@ import { logger } from "@/lib/logger";
 export default function TerminalLogin() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const profile = useProfile();
   const { user } = useSession();
   const { loading: authLoading } = useAuthActions();
-  const { activeOperator, verifyAndSwitchOperator, clearActiveOperator } = useOperator();
+  const {
+    activeOperator,
+    resumeOperator,
+    lockReason,
+    verifyAndSwitchOperator,
+    clearActiveOperator,
+  } = useOperator();
 
   const [employeeId, setEmployeeId] = useState("");
   const [pin, setPin] = useState("");
@@ -45,6 +52,7 @@ export default function TerminalLogin() {
   const [lockedUntil, setLockedUntil] = useState<Date | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [showKeypad, setShowKeypad] = useState(false);
+  const displayedOperator = activeOperator ?? resumeOperator;
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -98,24 +106,9 @@ export default function TerminalLogin() {
       const result = await verifyAndSwitchOperator(employeeId.trim(), pin);
 
       if (result.success) {
-        // Pilot-critical operator lifecycle event (ERY-51).
-        logger.info("Operator login", {
-          component: "TerminalLogin",
-          service: "client",
-          eventType: "operator.login",
-          entityType: "operator",
-          entityId: employeeId.trim(),
-        });
-        navigate(ROUTES.OPERATOR.WORK_QUEUE);
+        const from = (location.state as { from?: string })?.from;
+        navigate(from || ROUTES.OPERATOR.WORK_QUEUE);
       } else {
-        logger.warn("Operator login rejected", {
-          component: "TerminalLogin",
-          service: "client",
-          eventType: "operator.login",
-          failureReason: result.error_code || "operator_login_rejected",
-          entityType: "operator",
-          entityId: employeeId.trim(),
-        });
         setErrorCode(result.error_code || null);
         setError(result.error_message || t("terminalLogin.invalidCredentials"));
         setAttemptsRemaining(result.attempts_remaining ?? null);
@@ -123,12 +116,7 @@ export default function TerminalLogin() {
         setPin("");
       }
     } catch (err: unknown) {
-      logger.error("Login error", err, {
-        component: "TerminalLogin",
-        service: "client",
-        eventType: "operator.login",
-        failureReason: "operator_login_error",
-      });
+      logger.error("TerminalLogin", "Login error", err);
       setError(t("terminalLogin.unexpectedError"));
       setPin("");
     } finally {
@@ -146,7 +134,14 @@ export default function TerminalLogin() {
   };
 
   const handleContinueAsCurrentOperator = () => {
-    navigate(ROUTES.OPERATOR.WORK_QUEUE);
+    if (!displayedOperator) return;
+
+    setEmployeeId(displayedOperator.employee_id);
+    setShowKeypad(true);
+    setError(null);
+    setErrorCode(null);
+    setAttemptsRemaining(null);
+    setLockedUntil(null);
   };
 
   if (authLoading) {
@@ -240,7 +235,7 @@ export default function TerminalLogin() {
           <hr className="title-divider" />
 
           {/* Show current operator if already selected */}
-          {activeOperator && !showKeypad && (
+          {displayedOperator && !showKeypad && (
             <div className="mb-6 p-4 rounded-lg bg-primary/10 border border-primary/30">
               <div className="flex items-center gap-3 mb-3">
                 <div className="p-2 rounded-full bg-primary/20">
@@ -248,16 +243,26 @@ export default function TerminalLogin() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">{t("terminalLogin.currentOperator")}</p>
-                  <p className="font-bold">{activeOperator.full_name}</p>
-                  <p className="text-xs text-muted-foreground font-mono">{activeOperator.employee_id}</p>
+                  <p className="font-bold">{displayedOperator.full_name}</p>
+                  <p className="text-xs text-muted-foreground font-mono">{displayedOperator.employee_id}</p>
                 </div>
               </div>
+              {lockReason && (
+                <Alert className="mb-3 border-amber-500/40 bg-amber-500/10">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    {lockReason === "idle_timeout"
+                      ? t("terminalLogin.idleTimeoutLocked")
+                      : t("terminalLogin.sessionExpiredLocked")}
+                  </AlertDescription>
+                </Alert>
+              )}
               <div className="flex gap-2">
                 <Button
                   onClick={handleContinueAsCurrentOperator}
                   className="flex-1 cta-button"
                 >
-                  {t("terminalLogin.continueAs")} {activeOperator.full_name.split(' ')[0]}
+                  {t("terminalLogin.reverifyAs")} {displayedOperator.full_name.split(' ')[0]}
                 </Button>
                 <Button
                   variant="outline"
@@ -276,12 +281,14 @@ export default function TerminalLogin() {
               <div className="text-center mb-4">
                 <User className="h-12 w-12 mx-auto text-primary/60 mb-2" />
                 <h2 className="hero-title text-lg">
-                  {activeOperator
+                  {displayedOperator
                     ? t("terminalLogin.switchToAnother")
                     : t("terminalLogin.enterEmployeeId")}
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  {t("terminalLogin.employeeIdHint")}
+                  {displayedOperator
+                    ? t("terminalLogin.reverifyHint")
+                    : t("terminalLogin.employeeIdHint")}
                 </p>
               </div>
 

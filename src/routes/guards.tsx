@@ -12,14 +12,23 @@ import { buildReturnTo, resolveOperatorHomeTarget } from "./launchTargets";
 // SECURITY NOTE: This route protection is for UI convenience only.
 // Actual authorization is enforced server-side via RLS policies.
 // Attackers can bypass these checks, but they cannot access data without proper RLS permissions.
-export function ProtectedRoute({ children, adminOnly = false }: { children: React.ReactNode; adminOnly?: boolean }) {
+export function ProtectedRoute({
+  children,
+  adminOnly = false,
+  operatorOnly = false,
+}: {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+  operatorOnly?: boolean;
+}) {
   const profile = useProfile();
   const { user } = useSession();
   const { loading } = useAuthActions();
   const native = useNative();
   const location = useLocation();
+  const { activeOperator, isLoading: operatorLoading } = useOperator();
 
-  if (loading) {
+  if (loading || operatorLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -47,19 +56,21 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     );
   }
 
+  if (operatorOnly && profile.role !== "operator" && !activeOperator) {
+    return (
+      <Navigate
+        to={ROUTES.OPERATOR.LOGIN}
+        replace
+        state={{ from: buildReturnTo(location) }}
+      />
+    );
+  }
+
   return <>{children}</>;
 }
 
 type OperatorGateOutcome = "loading" | "redirect" | "allow";
 
-/**
- * Decide whether the mobile shell may render for the current operator session.
- * Pure so the gate is unit-testable without React.
- *
- * - `loading`  — the operator context is still hydrating from sessionStorage.
- * - `redirect` — no active operator/PIN session; bounce to the PIN login.
- * - `allow`    — a verified operator is active.
- */
 export function resolveOperatorGate({
   isLoading,
   hasActiveOperator,
@@ -72,20 +83,11 @@ export function resolveOperatorGate({
   return "allow";
 }
 
-/**
- * Operator-session gate for the `/m/*` mobile shell.
- *
- * `ProtectedRoute` only proves a Supabase account is signed in — on the shop
- * floor that is frequently a *shared* "Shopfloor" device account. Operator
- * actions (start/stop/complete/report-issue) must be attributed to a real
- * person, so this gate additionally requires a verified active-operator PIN
- * session before any mobile operator surface renders. Without it, the user is
- * sent to `/m/login` to badge in.
- *
- * Server-side RLS remains the real authorization boundary; this is the UI
- * enforcement that keeps a bare shared login from starting work.
- */
-export function RequireActiveOperator({ children }: { children: React.ReactNode }) {
+export function RequireActiveOperator({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { activeOperator, isLoading } = useOperator();
   const location = useLocation();
   const outcome = resolveOperatorGate({

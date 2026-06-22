@@ -3,6 +3,7 @@
 
 export {
   fetchOperationsWithDetails,
+  fetchOperationLookupDetails,
   startTimeTracking,
   completeOperation,
 } from './operations';

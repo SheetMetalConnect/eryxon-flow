@@ -1,12 +1,12 @@
 ---
-title: "Eryxon Flow v0.7: CAM, shift handoffs, and what we are building next"
-description: "Batch-aware CAM scanning, structured shift-handoff remarks, and hardened multi-tenant deployment. A look at the v0.7 development cycle."
-pubDate: 2026-05-28
+title: "Eryxon Flow v0.7: location-aware work, issue reporting, and operator modes"
+description: "The v0.7 release candidate tightens the shop-floor loop: part location context, more reliable issue reporting, manufacturing-aware work queues, and setup/production modes."
+pubDate: 2026-06-20
 author: "Eryxon"
 authorRole: "Eryxon Flow"
 category: "Development"
-tags: ["v0.7", "CAM", "batch", "roadmap"]
-featured: false
+tags: ["v0.7", "operator terminal", "issue reporting", "planning"]
+featured: true
 heroImage: "/social/blog/eryxon-flow-v0-7-what-we-are-building/og.svg"
 ctaIntent: "trial"
 relatedLinks:
@@ -18,30 +18,36 @@ relatedLinks:
     href: "/features/batch-management/"
 ---
 
-Eryxon Flow v0.6 shipped Apache 2.0 licensing, installable PWA support, and a redesigned premium website. v0.7 focuses on three areas that change how operators and planners interact with the system day to day.
+Eryxon Flow v0.7 is about removing ambiguity on the shop floor. A planner should know where a part is supposed to go next. An operator should know whether work is ready for setup or production. A quality issue should carry enough context to fix the problem without reconstructing the route afterward.
 
-## CAM batch connector
+The current release candidate focuses on four connected areas.
 
-The biggest friction point between CAM output and shop-floor execution is the nesting step. A CAM system produces a nest — parts laid out on a sheet — but the MES thinks in individual parts. The operator at the laser scans one barcode and the system needs to understand "this is sheet 3 of WO-4218, containing parts A through F."
+## 1. Location-aware part tracking
 
-v0.7 introduces batch-aware scanning in the operator terminal. Scan the nest sheet. The system maps it to the right job, parts, and quantities. No manual entry.
+Issue reports can now carry current and intended next cell context. That matters when a part is physically moving through cutting, bending, welding, finishing, and assembly.
 
-The CAM connector currently supports WiCAM output. Additional formats are planned.
+Instead of an issue being a loose note against an order, it can point back to where the part was and where it was expected to go. That makes follow-up clearer for both the operator and the planner.
 
-## Shift-handoff remarks
+## 2. More reliable issue reporting
 
-Operators change shifts. Information gets lost. "Watch the tolerance on part 887" becomes "looked fine to me" becomes a rework order on Wednesday.
+The issue form and attachment flow have been tightened. Operators get clearer feedback when attachments only partially succeed, and the backend keeps tenant-scoped location references intact.
 
-v0.7 adds a structured shift-handoff remarks field. The outgoing operator leaves notes per job or cell. The incoming operator sees them at the top of the queue — not on a Post-it behind the machine.
+A small database detail matters here: deleting a referenced cell must not null the tenant key on the issue. v0.7 keeps `tenant_id` intact and only clears the nullable cell reference.
 
-## Multi-tenant deployment hardening
+## 3. Manufacturing-aware planning and work queues
 
-Tenant-scoped storage policies and signed-URL authorization. Private buckets stay private. This matters for hosted and managed-on-prem deployments where data isolation is a requirement.
+The planning/work-queue path now carries more manufacturing context: material, thickness, resources, tooling, batches, and lifecycle events.
 
-## What is not in v0.7
+That is the difference between a generic task list and a queue that actually fits how sheet-metal work moves through a factory.
 
-No native iOS or Android apps in this cycle. The PWA — installable, offline-capable, tablet-native — is the current mobile strategy. Custom native packaging is on the roadmap for later.
+## 4. Operator terminal work modes
 
-## When
+The operator terminal now distinguishes setup/prep from production work. Shared-terminal login and operator switching are part of the same flow, so one tablet can serve a real cell instead of one idealised user session.
 
-v0.7 is in active development. The marketing website, blog, and documentation are the current operational priority. Follow the changelog for build-by-build updates.
+Readiness labels make the next action clearer: is this work ready for setup, ready for production, or waiting on something else?
+
+## What is still separate
+
+This release candidate updates the app and the public v0.7 story. Final production release approval remains separate from the pull request.
+
+The goal is simple: less reconstruction after the fact, more live context at the machine, and a cleaner handoff between operator and planner.

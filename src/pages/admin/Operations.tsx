@@ -151,7 +151,14 @@ export const Operations: React.FC = () => {
 
   const handleExport = () => {
     const csv = [
-      ["Operation", "Part", "Job", "Cell", "Assigned", "Status"].join(","),
+      [
+        t("common.operation"),
+        t("common.part"),
+        t("common.job"),
+        t("operations.cell"),
+        t("operations.assigned"),
+        t("common.status"),
+      ].join(","),
       ...operations.map((op) =>
         [
           op.operation_name,
@@ -213,7 +220,7 @@ export const Operations: React.FC = () => {
     {
       accessorKey: "operation_name",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Operation" />
+        <DataTableColumnHeader column={column} title={t("common.operation")} />
       ),
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
@@ -246,7 +253,7 @@ export const Operations: React.FC = () => {
     {
       accessorKey: "part_number",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Part" />
+        <DataTableColumnHeader column={column} title={t("common.part")} />
       ),
       cell: ({ row }) => (
         <span
@@ -260,7 +267,7 @@ export const Operations: React.FC = () => {
     {
       accessorKey: "job_number",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Job" />
+        <DataTableColumnHeader column={column} title={t("common.job")} />
       ),
       cell: ({ row }) => (
         <span
@@ -274,7 +281,7 @@ export const Operations: React.FC = () => {
     {
       accessorKey: "cell",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Cell" />
+        <DataTableColumnHeader column={column} title={t("operations.cell")} />
       ),
       cell: ({ row }) => {
         const op = row.original;
@@ -298,14 +305,14 @@ export const Operations: React.FC = () => {
     {
       accessorKey: "assigned_name",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Assigned" />
+        <DataTableColumnHeader column={column} title={t("operations.assigned")} />
       ),
       cell: ({ row }) => {
         const name = row.getValue("assigned_name") as string | null;
         return name ? (
           <span>{name}</span>
         ) : (
-          <span className="text-muted-foreground">Unassigned</span>
+          <span className="text-muted-foreground">{t("operations.unassigned")}</span>
         );
       },
       filterFn: (row, id, value) => {
@@ -318,7 +325,7 @@ export const Operations: React.FC = () => {
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Status" />
+        <DataTableColumnHeader column={column} title={t("common.status")} />
       ),
       cell: ({ row }) => getStatusBadge(row.getValue("status")),
       filterFn: (row, id, value) => {
@@ -342,10 +349,10 @@ export const Operations: React.FC = () => {
       id: "status",
       title: "Status",
       options: [
-        { label: "Not Started", value: "not_started" },
-        { label: "In Progress", value: "in_progress" },
-        { label: "Completed", value: "completed" },
-        { label: "On Hold", value: "on_hold" },
+        { label: t("operations.status.notStarted"), value: "not_started" },
+        { label: t("operations.status.inProgress"), value: "in_progress" },
+        { label: t("operations.status.completed"), value: "completed" },
+        { label: t("operations.status.onHold"), value: "on_hold" },
       ],
     },
     {
@@ -356,7 +363,7 @@ export const Operations: React.FC = () => {
         { label: "Unassigned", value: "unassigned" },
       ],
     },
-  ], [uniqueCells]);
+  ], [uniqueCells, t]);
 
   const { columnVisibility, isMobile } = useResponsiveColumns([
     { id: "operation_name", alwaysVisible: true },

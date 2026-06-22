@@ -35,7 +35,15 @@
     "qualityControl": "Kwaliteitscontrole",
     "qc": "KW",
     "painting": "Lakken",
-    "packaging": "Verpakking"
+    "packaging": "Verpakking",
+    "activeHelp": "Inactieve productiefasen zijn verborgen voor operators",
+    "createFirstStage": "Maak uw eerste productiefase aan",
+    "descriptionPlaceholder": "Beschrijf wat er in deze productiefase gebeurt...",
+    "dragToReorder": "Sleep om te herordenen",
+    "icon": "Pictogram",
+    "noStagesDescription": "Productiefasen vertegenwoordigen verschillende stappen in uw productieproces. Maak uw eerste productiefase aan om uw workflow te organiseren.",
+    "selectIcon": "Selecteren...",
+    "stageNamePlaceholder": "bijv. Snijden, Lassen, Montage"
   },
   "materials": {
     "title": "Materiaalconfiguratie",
@@ -117,7 +125,8 @@
     "addFirstResource": "Voeg uw eerste resource toe",
     "available": "Beschikbaar",
     "inUse": "In gebruik",
-    "maintenance": "Onderhoud"
+    "maintenance": "Onderhoud",
+    "noResourcesOfType": "Geen resources van type {{type}}"
   },
   "assignments": {
     "title": "Operatortoewijzingen",
@@ -155,6 +164,10 @@
     "material": "Materiaal",
     "noActiveAssignments": "Geen actieve toewijzingen",
     "noActiveOperators": "Geen actieve operators gevonden",
+    "noAvailableParts": "Geen beschikbare onderdelen gevonden",
+    "noJob": "Geen opdracht",
+    "none": "Geen",
+    "removeAssignment": "Toewijzing verwijderen",
     "noShopFloorOperators": "Geen werkvloer operators gevonden",
     "operations": "bewerkingen",
     "removed": "Toewijzing succesvol verwijderd",

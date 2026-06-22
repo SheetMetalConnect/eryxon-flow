@@ -362,6 +362,7 @@ export default function Jobs() {
                   e.stopPropagation();
                   handleViewFile(job.stepFiles[0]);
                 }}
+                aria-label={t("common.viewStepFile")}
                 title={`${job.stepFiles.length} STEP file(s)`}
               >
                 <Box className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
@@ -376,6 +377,7 @@ export default function Jobs() {
                   e.stopPropagation();
                   handleViewFile(job.pdfFiles[0]);
                 }}
+                aria-label={t("common.viewPdfFile")}
                 title={`${job.pdfFiles.length} PDF file(s)`}
               >
                 <FileText className="h-4 w-4 text-[hsl(var(--color-error))]" />
@@ -398,6 +400,7 @@ export default function Jobs() {
                 variant="ghost"
                 size="sm"
                 className="h-8 w-8 p-0"
+                aria-label={t("common.openMenu")}
                 onClick={(e) => e.stopPropagation()}
               >
                 <MoreHorizontal className="h-4 w-4" />

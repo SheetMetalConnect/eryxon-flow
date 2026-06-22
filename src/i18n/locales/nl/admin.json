@@ -17,13 +17,24 @@
     "activeTasks": "Actieve taken",
     "dueThisWeek": "Deze week verwacht",
     "jobsDue": "Opdrachten verwacht",
+    "activeJobProgress": "Voortgang actieve opdrachten",
+    "activeJobsCount": "Actieve opdrachten",
+    "averageCompletion": "Gemiddelde voortgang",
+    "jobsAtHundredPercent": "Opdrachten op 100%",
+    "noActiveJobProgress": "Er zijn momenteel geen actieve opdrachten met voortgang om te volgen",
     "activeWork": "Actieve werkzaamheden",
     "noActiveWork": "Geen actieve werkzaamheden op dit moment",
     "operator": "Operator",
     "operation": "Bewerking",
+    "operations": "Bewerkingen",
     "job": "Opdracht",
     "part": "Onderdeel",
     "cell": "Productiecel",
+    "status": "Status",
+    "completion": "Voortgang",
+    "completedOperations": "Voltooide bewerkingen",
+    "dueDate": "Vervaldatum",
+    "noDueDate": "Geen vervaldatum",
     "elapsedTime": "Verstreken tijd",
     "quickStats": "Snelle statistieken",
     "totalJobs": "Totaal opdrachten",
@@ -72,12 +83,27 @@
       "autoStopDescription": "Automatisch alle actieve tijdregistraties stoppen bij sluitingstijd",
       "autoStopWarning": "Actieve tijdregistraties worden automatisch gestopt om {{time}} elke dag"
     },
+    "operatorTerminalModes": {
+      "title": "Werkmodi operator-terminal",
+      "description": "Schakel werkuren-, setup/voorbereidings- en productiestatus per werkplaats in.",
+      "enabled": "Werkmodi voor operators inschakelen",
+      "enabledDescription": "Toon een aparte terminalstatus voor niet werken, setup/voorbereiding en productie.",
+      "enforceWorkingHours": "Werkuren afdwingen",
+      "enforceWorkingHoursDescription": "Blokkeer terminalstarts buiten de ingestelde fabrieksuren.",
+      "setupPrepEnabled": "Setup / voorbereiding inschakelen",
+      "setupPrepEnabledDescription": "Laat operators setup of machinevoorbereiding apart van productie registreren.",
+      "setupRequired": "Setup vereisen voor productie",
+      "setupRequiredDescription": "Blokkeer productiestart totdat setup/voorbereiding op de bewerking is vastgelegd."
+    },
     "planning": {
       "title": "Planning Integratie",
       "description": "Koppel een extern plannings-/schedulingsysteem om werkorders te synchroniseren",
       "adapter": "Planningssysteem",
       "adapterNone": "Geen (uitgeschakeld)",
       "connectionUrl": "Verbindings-URL",
+      "databaseName": "Databasenaam",
+      "databasePlaceholder": "odoo-prod",
+      "databaseHelp": "Verplicht voor Odoo. Vertrouw niet op het URL-pad om de database te selecteren.",
       "username": "Gebruikersnaam",
       "password": "Wachtwoord",
       "syncInterval": "Synchronisatie-interval",
@@ -421,7 +447,10 @@
     "autoRefreshing": "automatisch vernieuwen elke 10s",
     "noActivitiesFound": "Geen activiteiten gevonden",
     "tryAdjustingFilters": "Probeer uw filters of zoekopdracht aan te passen",
-    "loadMore": "Meer laden"
+    "loadMore": "Meer laden",
+    "last": "Laatste",
+    "noActivities": "Geen activiteiten gevonden",
+    "tryAdjusting": "Probeer uw filters of zoekopdracht aan te passen"
   },
   "exceptionInbox": {
     "title": "Uitzonderingen Inbox",
@@ -435,8 +464,14 @@
     "violatedBelief": "Geschonden Verwachting",
     "expected": "Verwacht",
     "actual": "Werkelijk",
+    "batch": "Batch",
+    "job": "Order",
+    "part": "Onderdeel",
+    "operation": "Bewerking",
     "deviation": "Afwijking",
     "neverOccurred": "Nooit gebeurd",
+    "ownerPath": "Eigenaarspad",
+    "recommendedAction": "Aanbevolen actie",
     "acknowledge": "Bevestigen",
     "resolve": "Oplossen",
     "dismiss": "Afwijzen",
@@ -496,7 +531,8 @@
     "viewDetails": "Details bekijken",
     "weekCompleted": "Deze week voltooid",
     "weekTime": "Tijd deze week",
-    "yesterday": "Gisteren"
+    "yesterday": "Gisteren",
+    "loading": "Activiteit laden"
   },
   "myIssues": {
     "title": "Mijn problemen",
@@ -514,88 +550,110 @@
     "rejected": "Afgewezen",
     "reportIssue": "Probleem melden",
     "resolutionNotes": "Oplossingsnotities",
-    "reviewed": "Beoordeeld"
+    "reviewed": "Beoordeeld",
+    "highSeverity": "Hoge ernst",
+    "lastReported": "Laatst gemeld",
+    "loading": "Problemen laden",
+    "openIssues": "Open problemen",
+    "resolvedIssues": "Opgelost"
   },
   "pricing": {
-    "title": "Abonnementen",
-    "subtitle": "Eryxon Flow is open source onder Apache 2.0. Begin met de gehoste proefversie, laat ons het draaien, of host zelf op uw eigen infrastructuur.",
+    "title": "Aan de slag",
+    "subtitle": "De MES voor metaalbewerking waar u graag mee werkt. Zelf hosten voor alle functies.",
     "contactUs": "Neem contact op",
-    "needHelp": "Hulp nodig bij zelf hosten of opzetten?",
-    "hostedTrial": {
-      "name": "Gehoste proef",
-      "description": "Draai Eryxon Flow 30 dagen op onze gehoste SaaS.",
-      "tryDemo": "Start proef",
-      "note": "Voor evaluatie. Tijdens de proef gelden limieten.",
+    "recommended": "Aanbevolen",
+    "needHelp": "Hulp nodig bij zelf hosten of aanpassen?",
+    "hostedDemo": {
+      "name": "Gehoste Demo",
+      "description": "Probeer het online met beperkt gebruik",
+      "tryDemo": "Probeer Live Demo",
+      "note": "Alleen voor evaluatie en educatieve doeleinden",
       "features": [
-        "Proefperiode van 30 dagen",
-        "100 opdrachten per maand",
-        "500 onderdelen per maand",
-        "2 GB opslag",
-        "100 API-verzoeken per dag"
-      ]
-    },
-    "managedHosting": {
-      "name": "Beheerde hosting",
-      "description": "Een eigen, geïsoleerde omgeving die wij voor u draaien.",
-      "cta": "Neem contact op",
-      "features": [
-        "Uw eigen database, volledig geïsoleerd",
-        "Back-ups en versiebeheer",
-        "Whitelabeling",
-        "Gedraaid en onderhouden door ons"
+        "Beperkte opdrachten en onderdelen",
+        "Beperkte opslag",
+        "Beperkte API-toegang",
+        "Alleen documentatie"
       ]
     },
     "selfHosted": {
-      "name": "Zelf gehost",
-      "description": "Volledig open source op uw eigen infrastructuur.",
-      "getStarted": "Self-hosting handleiding",
-      "consulting": "Hulp bij opzetten",
+      "name": "Zelf Gehost",
+      "description": "Alle functies op uw eigen infrastructuur",
+      "getStarted": "Bekijk Self-Hosting Handleiding",
       "features": [
-        "Open source, Apache 2.0",
         "Onbeperkte opdrachten en onderdelen",
         "Onbeperkte opslag",
         "Volledige API-toegang",
-        "Uw eigen infrastructuur"
-      ]
+        "Volledige webhook ondersteuning",
+        "MCP Server inbegrepen",
+        "Volledige controle over gegevens"
+      ],
+      "consulting": "Hulp bij installatie"
     },
     "license": {
       "title": "Licentie (Apache 2.0)",
-      "tldr": "Volledig open source. Gebruik het, pas het aan, host het zelf en gebruik het commercieel — geen beperkingen.",
-      "allowed": "U mag",
-      "note": "Goed om te weten",
+      "tldr": "Gebruik het, pas het aan, host het zelf en distribueer het opnieuw. Lever de licentie en meldingen mee bij distributie.",
+      "allowed": "Toegestaan",
+      "notAllowed": "Niet toegestaan",
       "allowedItems": {
-        "selfHost": "Zelf hosten voor uw eigen activiteiten, gratis",
-        "modify": "Fork en pas aan voor uw behoeften",
-        "commercial": "Commercieel gebruiken, inclusief hosten voor anderen",
-        "consulting": "Gebruik voor ontwikkeling, testen, educatie"
+        "selfHost": "Zelf hosten of commercieel gebruiken",
+        "modify": "Fork, pas aan en distribueer uw wijzigingen",
+        "consulting": "Gebruik voor ontwikkeling, testen, educatie",
+        "commercial": "Commercieel gebruiken in uw bedrijf"
       },
+      "notAllowedItems": {
+        "resell": "Distributie zonder de vereiste licentie en meldingen"
+      },
+      "note": "Voorwaarden",
       "noteItems": {
-        "attribution": "Behoud de licentie- en copyrightvermelding in kopieën",
-        "patent": "Bevat een expliciete patentlicentie"
+        "attribution": "Behoud de licentie- en auteursrechtvermeldingen",
+        "patent": "Bevat een octrooirecht onder Apache 2.0"
       }
+    },
+    "hostedTrial": {
+      "description": "Probeer Eryxon Flow online met een gratis gehoste proefversie",
+      "features": [
+        "Door ons gehost, geen installatie nodig",
+        "Beperkte opdrachten en onderdelen",
+        "Beperkte opslag",
+        "Alleen voor evaluatie"
+      ],
+      "name": "Gehoste proefversie",
+      "note": "Alleen voor evaluatie en educatieve doeleinden",
+      "tryDemo": "Start gratis proefversie"
+    },
+    "managedHosting": {
+      "cta": "Managed hosting aanvragen",
+      "description": "Wij hosten en onderhouden Eryxon Flow voor u",
+      "features": [
+        "Volledig door ons beheerd",
+        "Automatische back-ups en updates",
+        "Uw eigen geïsoleerde omgeving",
+        "Voorrangsondersteuning"
+      ],
+      "name": "Managed hosting"
     }
   },
   "myPlan": {
-    "title": "Mijn abonnement",
-    "subtitle": "Bekijk uw gebruik en de opties na de proef",
+    "title": "Mijn Plan",
+    "subtitle": "Bekijk uw gebruik en deployment opties",
     "contactUs": "Neem contact op",
     "activeJobs": "Actieve opdrachten",
     "admins": "Beheerders",
     "completedJobs": "Voltooide opdrachten",
     "operators": "Operators",
     "parts": "Onderdelen",
-    "partsLimitReached": "Prooflimiet bereikt. Bekijk uw abonnementsopties om door te gaan.",
+    "partsLimitReached": "Demo limiet bereikt. Host zelf voor onbeperkt gebruik.",
     "storage": "Opslag",
     "totalJobs": "Totaal opdrachten",
     "usageThisMonth": "Gebruik deze maand",
-    "apiRequests": "API-verzoeken",
+    "apiRequests": "API Verzoeken",
     "today": "vandaag",
     "requestsThisMonth": "verzoeken deze maand",
     "hostedDemo": "Gehoste Demo",
     "hostedDemoDescription": "Beperkt gebruik voor evaluatie en educatieve doeleinden",
-    "selfHosted": "Zelf gehost",
+    "selfHosted": "Zelf Gehost",
     "selfHostedDescription": "Alle functies, onbeperkt gebruik op uw infrastructuur",
-    "goSelfHosted": "Self-hosting handleiding",
+    "goSelfHosted": "Ga Zelf Hosten",
     "unlimitedWithSelfHost": "Onbeperkt met Zelf Hosten",
     "selfHostBenefits": "Host Eryxon Flow zelf voor onbeperkt gebruik en volledige controle over uw gegevens.",
     "benefit": {
@@ -604,43 +662,44 @@
       "fullApi": "Volledige API-toegang",
       "yourData": "Volledige controle over uw gegevens"
     },
-    "viewGuide": "Self-hosting handleiding",
-    "needHelp": "Hulp nodig?",
-    "helpDescription": "Sheet Metal Connect e.U. kan u helpen Eryxon Flow op te zetten en te draaien voor uw activiteiten.",
+    "viewGuide": "Bekijk Self-Hosting Handleiding",
+    "needHelp": "Hulp Nodig?",
+    "helpDescription": "Sheet Metal Connect e.U. kan u helpen bij het opzetten en aanpassen van Eryxon Flow voor uw activiteiten.",
     "users": "Gebruikers",
     "upgradeRequest": {
       "subject": "Upgrade Aanvraag: {{planName}}",
       "body": "Hallo,\n\nIk wil graag upgraden naar het {{planName}} abonnement.\n\nHuidig Abonnement: {{currentPlan}}\nTenant ID: {{tenantId}}\n\nBedankt!"
     },
-    "hostedTrial": "Gehoste proef",
-    "hostedTrialDescription": "Gehoste SaaS, 30 dagen proef met maandelijkse limieten",
+    "hostedTrial": "Gehoste proefversie",
+    "hostedTrialDescription": "Een gratis proefversie van Eryxon Flow, door ons gehost voor evaluatie",
     "managedHosting": {
-      "title": "Beheerde hosting",
-      "description": "Een eigen, geïsoleerde omgeving die wij voor u draaien — uw eigen database, back-ups en versiebeheer.",
-      "cta": "Neem contact op",
       "benefit": {
-        "isolated": "Uw eigen geïsoleerde database",
-        "backups": "Back-ups door ons geregeld",
-        "versions": "Versiebeheer",
-        "whitelabel": "Whitelabeling"
-      }
+        "backups": "Automatische back-ups en updates",
+        "isolated": "Uw eigen geïsoleerde omgeving",
+        "versions": "Altijd op de nieuwste versie",
+        "whitelabel": "White-labelopties beschikbaar"
+      },
+      "cta": "Managed hosting aanvragen",
+      "description": "Wij draaien en onderhouden Eryxon Flow voor u, zodat u zich op de productie kunt richten",
+      "title": "Managed hosting"
     },
     "selfHostedCard": {
-      "title": "Zelf gehost",
-      "description": "Volledig open source onder Apache 2.0. Draai het op uw eigen infrastructuur.",
-      "consulting": "Hulp bij opzetten"
+      "consulting": "Hulp bij installatie",
+      "description": "Draai Eryxon Flow op uw eigen infrastructuur met volledige controle over uw gegevens",
+      "title": "Zelf gehost"
     }
   },
   "trialBanner": {
-    "title": "U gebruikt de gehoste proefversie",
-    "titleWithDate": "Uw gehoste proefperiode eindigt op {{date}}",
-    "description": "Gegevens worden niet bewaard na de proef. Bekijk uw abonnementsopties om door te gaan.",
+    "title": "U gebruikt de gratis proefversie",
+    "titleWithDate": "Uw gratis proefperiode eindigt op {{date}}",
+    "description": "Bestanden en gegevens worden niet bewaard na de proefperiode. Host Eryxon Flow zelf voor onbeperkt gebruik en volledig eigenaarschap van uw gegevens.",
     "daysRemaining": "{{count}} dag resterend",
     "daysRemaining_plural": "{{count}} dagen resterend",
     "expired": "Uw proefperiode is verlopen",
-    "expiredDescription": "De proefperiode is beëindigd. Bekijk uw abonnementsopties om uw gegevens te behouden en door te gaan.",
-    "seePlans": "Bekijk opties",
-    "viewPlan": "Bekijk opties"
+    "expiredDescription": "Uw proefperiode is beëindigd. Host Eryxon Flow zelf om uw gegevens te behouden en alle functies te blijven gebruiken.",
+    "upgradeCta": "Bekijk Self-Hosting Handleiding",
+    "viewPlan": "Bekijk Plan",
+    "seePlans": "Bekijk abonnementen"
   },
   "featureFlags": {
     "title": "Functievlaggen",
@@ -691,21 +750,54 @@
   "stuckTimeEntries": {
     "stopped": "Tijdregistratie succesvol gestopt"
   },
+  "calendar": {
+    "capacity": "capaciteit",
+    "dayTypes": {
+      "closure": "Sluiting",
+      "halfDay": "Halve dag",
+      "holiday": "Feestdag",
+      "working": "Werkdag"
+    },
+    "deleteDialog": {
+      "description": "Weet u zeker dat u deze kalenderinvoer wilt verwijderen? De dag valt terug op de standaardinstellingen.",
+      "title": "Kalenderinvoer verwijderen"
+    },
+    "description": "Beheer feestdagen, sluitingen en bijzondere werkdagen",
+    "editDescription": "Bewerk deze kalenderinvoer",
+    "form": {
+      "capacity": "Capaciteit",
+      "closed": "Gesloten",
+      "closingTime": "Sluiting",
+      "dayType": "Type dag",
+      "fullCapacity": "Volledig",
+      "halfCapacity": "Half",
+      "name": "Naam / Omschrijving",
+      "namePlaceholder": "bijv. Kerst, fabrieksonderhoud",
+      "notes": "Notities",
+      "notesPlaceholder": "Aanvullende notities...",
+      "openingTime": "Opening",
+      "timeHint": "Laat leeg om de standaard fabriekstijden te gebruiken",
+      "timeOverride": "Tijd aanpassen"
+    },
+    "legend": "Legenda",
+    "messages": {
+      "added": "Kalenderinvoer toegevoegd",
+      "deleteFailed": "Verwijderen mislukt",
+      "deleted": "Kalenderinvoer verwijderd",
+      "loadFailed": "Kalender laden mislukt",
+      "saveFailed": "Opslaan mislukt",
+      "updated": "Kalender bijgewerkt"
+    },
+    "specialDays": "Bijzondere dagen deze maand",
+    "specialDaysDescription": "Aangepaste kalenderinvoeren voor deze maand",
+    "title": "Fabriekskalender"
+  },
   "pilotActivation": {
-    "title": "Activeer je pilot",
-    "description": "Ga van demodata naar een operator die toegewezen werk oppakt — in drie stappen.",
-    "progress": "{{completed}}/{{total}} klaar",
-    "step1Title": "Voeg een teamlid of operator toe",
-    "step1Desc": "Nodig een teamlid uit via e-mail, of maak een operator zonder e-mail aan met een pincode.",
-    "step1Cta": "Toevoegen",
-    "step2Title": "Wijs een bewerking toe",
-    "step2Desc": "Kies een onderdeel en wijs de bewerkingen toe aan een operator.",
-    "step2Cta": "Toewijzen",
-    "step3Title": "Operator pakt het werk op",
-    "step3Desc": "Deel de operator-login zodat het toegewezen werk in hun werklijst verschijnt.",
-    "step3Cta": "Login openen",
-    "refresh": "Status vernieuwen",
-    "readyTitle": "Pilot gereed 🎉",
-    "readyDescription": "Een operator heeft nu toegewezen werk — deze omgeving bereikte de pilot-mijlpaal."
+    "description": "Voltooi deze stappen om uw eerste operator aan het werk te krijgen",
+    "progress": "{{completed}} van {{total}} voltooid",
+    "readyDescription": "Uw pilot draait. Een operator heeft nu toegewezen werk.",
+    "readyTitle": "U kunt van start!",
+    "refresh": "Vernieuwen",
+    "title": "Activeer uw pilot"
   }
 }

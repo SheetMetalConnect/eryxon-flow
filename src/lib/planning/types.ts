@@ -93,6 +93,8 @@ export interface PlanningConfig {
   adapter: PlanningAdapterType;
   /** Base URL of the planning system (e.g. https://frepple.example.com) */
   baseUrl: string;
+  /** Explicit database/schema name when the adapter requires one (for example Odoo) */
+  databaseName?: string;
   /** Username for authentication */
   username?: string;
   /** Password for authentication */

@@ -3,6 +3,21 @@
 All agent instructions are in `.agents/` — shared equally across all AI coding tools.
 Sub-agents: `.agents/supabase-db.md`, `.agents/tech-stack.md`, `.agents/repo-ops.md`
 
+## Code quality — required for every change
+
+High code quality is non-negotiable. Use these skills as part of normal work, not as an afterthought:
+
+- **`/ponytail:ponytail`** (default working mode) — laziest solution that *works*: stdlib/native before dependencies, one line before fifty, delete before add, no speculative abstractions. Shortest correct diff wins.
+- **`/deslop`** — run on the diff **before every commit**. Strip AI slop: needless comments, defensive try/catch on trusted paths, `any` casts that paper over types, deep nesting that should be early returns, anything inconsistent with the surrounding file.
+- **`/code-review`** — run on the diff **before merging**; fix the findings (use `/code-review ultra` for branch-wide cloud review).
+- **`/simplify`** — quality-only pass for reuse/simplification/efficiency when not hunting bugs.
+- **Superpowers**: `systematic-debugging` (root cause before any fix), `test-driven-development` (test-first for features/bugfixes), `verification-before-completion` (run the command and show real output before claiming done), `requesting-code-review` before merge.
+
+Standing bar (enforced, not optional):
+- **No hardcoded config in this open-source code** — no vendor domains, URLs, secrets, or environment-specific values in source. Config comes from env vars (e.g. `ALLOWED_ORIGIN`); keep hosted and self-hosted modes cleanly separated.
+- **i18n for all UI text** (EN/NL/DE) — never hardcode user-facing strings.
+- **`npm run build` and `npm run test:run` green before commit.** Verify, don't assume.
+
 ## Claude-specific
 
 - Superpowers plugin enabled via `.claude/settings.json`

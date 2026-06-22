@@ -36,6 +36,12 @@ interface Issue {
   status: string;
   created_at: string;
   image_paths: string[] | null;
+  current_cell: {
+    name: string;
+  } | null;
+  intended_next_cell: {
+    name: string;
+  } | null;
   operation: {
     operation_name: string;
     part: {
@@ -74,6 +80,8 @@ export default function IssueQueue() {
       .select(
         `
         *,
+        current_cell:cells!issues_current_cell_id_fkey(name),
+        intended_next_cell:cells!issues_intended_next_cell_id_fkey(name),
         operation:operations!inner(
           operation_name,
           part:parts!inner(
@@ -434,6 +442,24 @@ export default function IssueQueue() {
                   </div>
                   <div className="text-sm">
                     {format(new Date(selectedIssue.created_at), "PPp")}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    {t("issues.currentLocation", "Current location")}
+                  </div>
+                  <div className="text-sm">
+                    {selectedIssue.current_cell?.name ||
+                      t("issues.noLocationCaptured", "Not captured")}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    {t("issues.intendedNextLocation", "Intended next location")}
+                  </div>
+                  <div className="text-sm">
+                    {selectedIssue.intended_next_cell?.name ||
+                      t("issues.noLocationCaptured", "Not captured")}
                   </div>
                 </div>
               </div>

@@ -340,7 +340,7 @@ export default function Parts() {
     },
     {
       id: "files",
-      header: "Files",
+      header: t("parts.files"),
       cell: ({ row }) => {
         const part = row.original;
         return (
@@ -354,6 +354,7 @@ export default function Parts() {
                   e.stopPropagation();
                   handleViewFile(part.stepFiles[0]);
                 }}
+                aria-label={t("common.viewStepFile")}
                 title={`${part.stepFiles.length} STEP file(s)`}
               >
                 <Box className="h-4 w-4 text-blue-600" />
@@ -368,6 +369,7 @@ export default function Parts() {
                   e.stopPropagation();
                   handleViewFile(part.pdfFiles[0]);
                 }}
+                aria-label={t("common.viewPdfFile")}
                 title={`${part.pdfFiles.length} PDF file(s)`}
               >
                 <FileText className="h-4 w-4 text-red-600" />

@@ -232,7 +232,7 @@ export default function Batches() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 space-y-4">
       <AdminPageHeader
         title={t("batches.title")}
         description={t("batches.description")}

@@ -1,8 +1,10 @@
 import '@testing-library/jest-dom';
 import { vi, beforeAll, afterEach, afterAll } from 'vitest';
 
+const windowRef = (globalThis.window ?? globalThis) as typeof globalThis & Window;
+
 // Mock window.matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(windowRef, 'matchMedia', {
   writable: true,
   value: vi.fn().mockImplementation((query) => ({
     matches: false,
@@ -36,7 +38,7 @@ class IntersectionObserverMock {
 global.IntersectionObserver = IntersectionObserverMock as unknown as typeof IntersectionObserver;
 
 // Default runtime env for modules that read Docker-style window.__ERYXON_ENV__.
-Object.defineProperty(window, '__ERYXON_ENV__', {
+Object.defineProperty(windowRef, '__ERYXON_ENV__', {
   writable: true,
   configurable: true,
   value: {
@@ -47,7 +49,7 @@ Object.defineProperty(window, '__ERYXON_ENV__', {
 });
 
 // Mock scrollTo
-window.scrollTo = vi.fn();
+windowRef.scrollTo = vi.fn();
 
 // Clean up after each test
 afterEach(() => {

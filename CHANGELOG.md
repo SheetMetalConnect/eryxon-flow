@@ -2,6 +2,37 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.7.0] — 2026-06-22
+
+Four-core release: location-aware work, more reliable issue reporting, manufacturing-aware
+work queues, and operator terminal work modes (setup vs production).
+
+### Added
+
+- **Location-aware issue reporting** — issues carry `current_cell_id` / `intended_next_cell_id`
+  (tenant-scoped FKs), so a quality issue records where the part was and where it was headed.
+- **Batch production mode** — `operation_batches.production_mode` (`manual` / `automated`,
+  automated constrained to laser-nesting batches).
+- **Resource–cell memberships** — `resource_cell_memberships` table for assigning resources to cells.
+- **Operator terminal work modes** — setup/prep vs production, shared-terminal login + operator switching.
+- **CNC program QR codes** — operators can scan the program name from the terminal detail panel.
+
+### Fixed
+
+- **i18n: namespace collision dropped 68 `users.*` keys** — the shallow `Object.assign` namespace
+  merge let `config.json`'s partial `users` block clobber `admin.json`'s full block, rendering raw
+  keys on the admin Users page. Switched to a deep merge and filled **408 missing keys** across
+  EN / NL / DE; raw-key blockers went from 92 to 0.
+- **CORS: API-key generation failed on the hosted frontend** — `api-key-generate` / `storage-manager`
+  returned a static `Access-Control-Allow-Origin` that fell back to `http://localhost:5173`. CORS now
+  reflects the request origin against an allowlist; production origins come from `ALLOWED_ORIGIN`
+  (no vendor domain hardcoded in source — hosted and self-hosted modes stay separated).
+- **Prod schema drift** — applied the v0.7 migrations the frontend already expected
+  (`tenants.pilot_ready_at`, `operation_batches.production_mode`, issue cell context,
+  `resource_cell_memberships`, hosted-trial reporting + demo-seed RPCs).
+- **Admin UX/a11y/i18n** — i18n the remaining hardcoded English on Operations / Assignments / Parts,
+  aria-labels on icon-only buttons, consistent page spacing and loading heights.
+
 ## [Unreleased] — v0.6 (in development)
 
 The v0.6 line is in development and **not yet tagged or released**. Mirrors the website release note

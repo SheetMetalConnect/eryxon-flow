@@ -50,7 +50,8 @@
     "showKey": "Schlüssel anzeigen",
     "hideKey": "Schlüssel verbergen",
     "warningMessage": "Kopieren Sie diesen Schlüssel jetzt. Sie können ihn später nicht mehr sehen.",
-    "createdAt": "Erstellt am"
+    "createdAt": "Erstellt am",
+    "searchKeys": "Schlüssel suchen..."
   },
   "erpSync": {
     "title": "ERP-Synchronisation",
@@ -162,6 +163,8 @@
     "lastTriggered": "Zuletzt ausgelöst",
     "neverTriggered": "Nie ausgelöst",
     "deleteConfirm": "Möchten Sie diesen Webhook wirklich löschen?",
+    "searchWebhooks": "Webhooks suchen...",
+    "webhookUrl": "Webhook-URL",
     "eventTypes": {
       "jobCreated": "Auftrag erstellt",
       "jobUpdated": "Auftrag aktualisiert",
@@ -260,6 +263,7 @@
   },
   "dataExport": {
     "title": "Datenexport",
+    "exportedEntities": "{{count}} Entitäten exportiert",
     "chooseEntities": "Entitäten auswählen",
     "chooseFormat": "Format auswählen",
     "csvDescription": "Komma-getrennte Werte-Format, kompatibel mit Tabellenkalkulationsanwendungen",

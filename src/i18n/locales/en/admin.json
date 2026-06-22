@@ -17,13 +17,24 @@
     "activeTasks": "Active tasks",
     "dueThisWeek": "Due This Week",
     "jobsDue": "Jobs due",
+    "activeJobProgress": "Active Job Progress",
+    "activeJobsCount": "Active jobs",
+    "averageCompletion": "Average completion",
+    "jobsAtHundredPercent": "Jobs at 100%",
+    "noActiveJobProgress": "No active jobs need progress tracking right now",
     "activeWork": "Active Work",
     "noActiveWork": "No active work at the moment",
     "operator": "Operator",
     "operation": "Operation",
+    "operations": "Operations",
     "job": "Job",
     "part": "Part",
     "cell": "Cell",
+    "status": "Status",
+    "completion": "Completion",
+    "completedOperations": "Completed operations",
+    "dueDate": "Due Date",
+    "noDueDate": "No due date",
     "elapsedTime": "Elapsed Time",
     "quickStats": "Quick Stats",
     "totalJobs": "Total Jobs",
@@ -72,12 +83,27 @@
       "autoStopDescription": "Automatically stop all active time entries at factory closing time",
       "autoStopWarning": "Active time entries will be automatically stopped at {{time}} each day"
     },
+    "operatorTerminalModes": {
+      "title": "Operator terminal work modes",
+      "description": "Enable working-hours, setup/prep, and production states per shop.",
+      "enabled": "Enable operator work modes",
+      "enabledDescription": "Show a distinct terminal state for not working, setup/prep, and production.",
+      "enforceWorkingHours": "Enforce working hours",
+      "enforceWorkingHoursDescription": "Block terminal starts outside the configured factory hours.",
+      "setupPrepEnabled": "Enable setup / prep mode",
+      "setupPrepEnabledDescription": "Allow operators to log setup or machine preparation separately from production.",
+      "setupRequired": "Require setup before production",
+      "setupRequiredDescription": "Block production start until setup/prep has been recorded on the operation."
+    },
     "planning": {
       "title": "Planning Integration",
       "description": "Connect an external planning/scheduling system to sync work orders",
       "adapter": "Planning System",
       "adapterNone": "None (disabled)",
       "connectionUrl": "Connection URL",
+      "databaseName": "Database Name",
+      "databasePlaceholder": "odoo-prod",
+      "databaseHelp": "Required for Odoo. Do not rely on the URL path to select the database.",
       "username": "Username",
       "password": "Password",
       "syncInterval": "Sync Interval",
@@ -270,7 +296,10 @@
     "autoRefreshing": "auto-refreshing every 10s",
     "noActivitiesFound": "No activities found",
     "tryAdjustingFilters": "Try adjusting your filters or search query",
-    "loadMore": "Load More"
+    "loadMore": "Load More",
+    "last": "Last",
+    "noActivities": "No activities found",
+    "tryAdjusting": "Try adjusting your filters or search query"
   },
   "exceptionInbox": {
     "title": "Exception Inbox",
@@ -291,8 +320,14 @@
     "violatedBelief": "Violated Belief",
     "expected": "Expected",
     "actual": "Actual",
+    "batch": "Batch",
+    "job": "Job",
+    "part": "Part",
+    "operation": "Operation",
     "deviation": "Deviation",
     "neverOccurred": "Never occurred",
+    "ownerPath": "Owner Path",
+    "recommendedAction": "Recommended Action",
     "acknowledge": "Acknowledge",
     "resolve": "Resolve",
     "dismiss": "Dismiss",
@@ -345,7 +380,8 @@
     "viewDetails": "View Details",
     "weekCompleted": "Completed This Week",
     "weekTime": "Week's Time",
-    "yesterday": "Yesterday"
+    "yesterday": "Yesterday",
+    "loading": "Loading activity"
   },
   "myIssues": {
     "title": "My Issues",
@@ -363,88 +399,110 @@
     "rejected": "Rejected",
     "reportIssue": "Report Issue",
     "resolutionNotes": "Resolution Notes",
-    "reviewed": "Reviewed"
+    "reviewed": "Reviewed",
+    "highSeverity": "High severity",
+    "lastReported": "Last reported",
+    "loading": "Loading issues",
+    "openIssues": "Open issues",
+    "resolvedIssues": "Resolved"
   },
   "pricing": {
-    "title": "Plans",
-    "subtitle": "Eryxon Flow is open source under Apache 2.0. Start on the hosted trial, let us run it for you, or self-host on your own infrastructure.",
-    "contactUs": "Get in touch",
-    "needHelp": "Need help with self-hosting or setup?",
-    "hostedTrial": {
-      "name": "Hosted trial",
-      "description": "Run Eryxon Flow on our hosted SaaS for 30 days.",
-      "tryDemo": "Start trial",
-      "note": "For evaluation. Limits apply during the trial.",
+    "title": "Get Started",
+    "subtitle": "The MES for metal fabrication you'll enjoy working with. Self-host for full features.",
+    "contactUs": "Contact Us",
+    "recommended": "Recommended",
+    "needHelp": "Need help with self-hosting or customization?",
+    "hostedDemo": {
+      "name": "Hosted Demo",
+      "description": "Try it online with limited usage",
+      "tryDemo": "Try Live Demo",
+      "note": "For evaluation and educational purposes only",
       "features": [
-        "30-day trial",
-        "100 jobs per month",
-        "500 parts per month",
-        "2 GB storage",
-        "100 API requests per day"
-      ]
-    },
-    "managedHosting": {
-      "name": "Managed hosting",
-      "description": "A dedicated, isolated instance we run for you.",
-      "cta": "Get in touch",
-      "features": [
-        "Your own database, fully isolated",
-        "Backups and version management",
-        "Whitelabeling",
-        "Run and maintained by us"
+        "Limited jobs and parts",
+        "Limited storage",
+        "Limited API access",
+        "Documentation only"
       ]
     },
     "selfHosted": {
-      "name": "Self-hosted",
-      "description": "Fully open source on your own infrastructure.",
-      "getStarted": "Self-hosting guide",
-      "consulting": "Get setup help",
+      "name": "Self-Hosted",
+      "description": "Full features on your own infrastructure",
+      "getStarted": "View Self-Hosting Guide",
       "features": [
-        "Open source, Apache 2.0",
         "Unlimited jobs and parts",
         "Unlimited storage",
         "Full API access",
-        "Your own infrastructure"
-      ]
+        "Full webhook support",
+        "MCP Server included",
+        "Complete data control"
+      ],
+      "consulting": "Get Setup Help"
     },
     "license": {
       "title": "License (Apache 2.0)",
-      "tldr": "Fully open source. Use it, modify it, self-host it, and use it commercially — no restrictions.",
-      "allowed": "You can",
-      "note": "Good to know",
+      "tldr": "Use it, modify it, self-host it, and redistribute it. Keep the license and notices with redistributed copies.",
+      "allowed": "Allowed",
+      "notAllowed": "Not Allowed",
       "allowedItems": {
-        "selfHost": "Self-host for your own operations, free",
-        "modify": "Fork and modify for your needs",
-        "commercial": "Use it commercially, including hosting it for others",
-        "consulting": "Use for development, testing, education"
+        "selfHost": "Self-host or run it commercially",
+        "modify": "Fork, modify, and redistribute your changes",
+        "consulting": "Use for development, testing, education",
+        "commercial": "Use it commercially in your business"
       },
+      "notAllowedItems": {
+        "resell": "Redistribute it without the required license and notices"
+      },
+      "note": "Conditions",
       "noteItems": {
-        "attribution": "Keep the license and copyright notice in copies",
-        "patent": "Includes an express patent grant"
+        "attribution": "Keep the license and copyright notices",
+        "patent": "Includes a patent grant under Apache 2.0"
       }
+    },
+    "hostedTrial": {
+      "description": "Try Eryxon Flow online with a free hosted trial",
+      "features": [
+        "Hosted by us, no setup needed",
+        "Limited jobs and parts",
+        "Limited storage",
+        "For evaluation only"
+      ],
+      "name": "Hosted Trial",
+      "note": "For evaluation and educational purposes only",
+      "tryDemo": "Start Free Trial"
+    },
+    "managedHosting": {
+      "cta": "Request Managed Hosting",
+      "description": "We host and maintain Eryxon Flow for you",
+      "features": [
+        "Fully managed by us",
+        "Automatic backups and updates",
+        "Your own isolated environment",
+        "Priority support"
+      ],
+      "name": "Managed Hosting"
     }
   },
   "myPlan": {
-    "title": "My plan",
-    "subtitle": "View your usage and the options beyond the trial",
-    "contactUs": "Get in touch",
-    "activeJobs": "Active jobs",
+    "title": "My Plan",
+    "subtitle": "View your usage and deployment options",
+    "contactUs": "Contact Us",
+    "activeJobs": "Active Jobs",
     "admins": "Admins",
-    "completedJobs": "Completed jobs",
+    "completedJobs": "Completed Jobs",
     "operators": "Operators",
     "parts": "Parts",
-    "partsLimitReached": "Trial limit reached. See your plan options to keep running.",
+    "partsLimitReached": "Demo limit reached. Self-host for unlimited usage.",
     "storage": "Storage",
-    "totalJobs": "Total jobs",
-    "usageThisMonth": "Usage this month",
-    "apiRequests": "API requests",
+    "totalJobs": "Total Jobs",
+    "usageThisMonth": "Usage This Month",
+    "apiRequests": "API Requests",
     "today": "today",
     "requestsThisMonth": "requests this month",
     "hostedDemo": "Hosted Demo",
     "hostedDemoDescription": "Limited usage for evaluation and educational purposes",
-    "selfHosted": "Self-hosted",
+    "selfHosted": "Self-Hosted",
     "selfHostedDescription": "Full features, unlimited usage on your infrastructure",
-    "goSelfHosted": "Self-hosting guide",
+    "goSelfHosted": "Go Self-Hosted",
     "unlimitedWithSelfHost": "Unlimited with Self-Host",
     "selfHostBenefits": "Self-host Eryxon Flow for unlimited usage and full control over your data.",
     "benefit": {
@@ -453,38 +511,39 @@
       "fullApi": "Full API access",
       "yourData": "Complete control over your data"
     },
-    "viewGuide": "Self-hosting guide",
-    "needHelp": "Need help?",
-    "helpDescription": "Sheet Metal Connect e.U. can help you set up and run Eryxon Flow for your operations.",
-    "hostedTrial": "Hosted trial",
-    "hostedTrialDescription": "Hosted SaaS, 30-day trial with monthly limits",
+    "viewGuide": "View Self-Hosting Guide",
+    "needHelp": "Need Help?",
+    "helpDescription": "Sheet Metal Connect e.U. can help you set up and customize Eryxon Flow for your operations.",
+    "hostedTrial": "Hosted Trial",
+    "hostedTrialDescription": "A free trial of Eryxon Flow, hosted by us for evaluation",
     "managedHosting": {
-      "title": "Managed hosting",
-      "description": "A dedicated, isolated instance we run for you — your own database, backups, and version management.",
-      "cta": "Get in touch",
       "benefit": {
-        "isolated": "Your own isolated database",
-        "backups": "Backups handled for you",
-        "versions": "Version management",
-        "whitelabel": "Whitelabeling"
-      }
+        "backups": "Automatic backups and updates",
+        "isolated": "Your own isolated environment",
+        "versions": "Always on the latest version",
+        "whitelabel": "White-label options available"
+      },
+      "cta": "Request Managed Hosting",
+      "description": "We run and maintain Eryxon Flow for you, so you can focus on production",
+      "title": "Managed Hosting"
     },
     "selfHostedCard": {
-      "title": "Self-hosted",
-      "description": "Fully open source under Apache 2.0. Run it on your own infrastructure.",
-      "consulting": "Get setup help"
+      "consulting": "Get Setup Help",
+      "description": "Run Eryxon Flow on your own infrastructure with full control over your data",
+      "title": "Self-Hosted"
     }
   },
   "trialBanner": {
-    "title": "You are on the hosted trial",
-    "titleWithDate": "Your hosted trial ends on {{date}}",
-    "description": "Data is not retained after the trial. See your plan options to keep running.",
+    "title": "You are on the free trial",
+    "titleWithDate": "Your free trial ends on {{date}}",
+    "description": "Files and data will not be retained after the trial period. Self-host Eryxon Flow for unlimited usage and full data ownership.",
     "daysRemaining": "{{count}} day remaining",
     "daysRemaining_plural": "{{count}} days remaining",
     "expired": "Your trial has expired",
-    "expiredDescription": "The trial period has ended. See your plan options to keep your data and continue.",
-    "seePlans": "See plans",
-    "viewPlan": "See plans"
+    "expiredDescription": "Your trial period has ended. Self-host Eryxon Flow to keep your data and continue using all features.",
+    "upgradeCta": "View Self-Hosting Guide",
+    "viewPlan": "View Plan",
+    "seePlans": "See Plans"
   },
   "featureFlags": {
     "title": "Feature Flags",
@@ -535,21 +594,54 @@
   "stuckTimeEntries": {
     "stopped": "Time entry stopped successfully"
   },
+  "calendar": {
+    "capacity": "capacity",
+    "dayTypes": {
+      "closure": "Closure",
+      "halfDay": "Half Day",
+      "holiday": "Holiday",
+      "working": "Working Day"
+    },
+    "deleteDialog": {
+      "description": "Are you sure you want to remove this calendar entry? The day will revert to default settings.",
+      "title": "Delete Calendar Entry"
+    },
+    "description": "Manage holidays, closures, and special working days",
+    "editDescription": "Edit this calendar entry",
+    "form": {
+      "capacity": "Capacity",
+      "closed": "Closed",
+      "closingTime": "Closing",
+      "dayType": "Day Type",
+      "fullCapacity": "Full",
+      "halfCapacity": "Half",
+      "name": "Name / Description",
+      "namePlaceholder": "e.g., Christmas, Factory Maintenance",
+      "notes": "Notes",
+      "notesPlaceholder": "Additional notes...",
+      "openingTime": "Opening",
+      "timeHint": "Leave empty to use default factory hours",
+      "timeOverride": "Time Override"
+    },
+    "legend": "Legend",
+    "messages": {
+      "added": "Calendar entry added",
+      "deleteFailed": "Failed to delete",
+      "deleted": "Calendar entry removed",
+      "loadFailed": "Failed to load calendar",
+      "saveFailed": "Failed to save",
+      "updated": "Calendar updated"
+    },
+    "specialDays": "Special Days This Month",
+    "specialDaysDescription": "Custom calendar entries for this month",
+    "title": "Factory Calendar"
+  },
   "pilotActivation": {
-    "title": "Activate your pilot",
-    "description": "Get from demo data to a real operator picking up assigned work — in three steps.",
-    "progress": "{{completed}}/{{total}} done",
-    "step1Title": "Add a teammate or operator",
-    "step1Desc": "Invite a teammate by email, or create a no-email shop-floor operator with a PIN.",
-    "step1Cta": "Add",
-    "step2Title": "Assign an operation",
-    "step2Desc": "Pick a part and assign its operations to an operator.",
-    "step2Cta": "Assign",
-    "step3Title": "Operator picks up the work",
-    "step3Desc": "Share the operator login so the assigned work shows up in their queue.",
-    "step3Cta": "Open login",
-    "refresh": "Refresh status",
-    "readyTitle": "Pilot ready 🎉",
-    "readyDescription": "An operator now has assigned work — this tenant reached the pilot-ready milestone."
+    "description": "Complete these steps to get your first operator working",
+    "progress": "{{completed}} of {{total}} done",
+    "readyDescription": "Your pilot is up and running. An operator now has assigned work.",
+    "readyTitle": "You're ready to go!",
+    "refresh": "Refresh",
+    "title": "Activate Your Pilot"
   }
 }

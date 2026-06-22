@@ -139,7 +139,12 @@
     "load5080": "50-80%",
     "load80100": "80-100%",
     "overCapacity": "Over Capacity",
-    "holidayClosure": "Holiday/Closure"
+    "holidayClosure": "Holiday/Closure",
+    "allocationDeleted": "Allocation removed from this day",
+    "allocationUpdated": "Allocation hours updated successfully",
+    "deleted": "Deleted",
+    "tenantRequired": "Tenant context is required to schedule operations",
+    "updated": "Updated"
   },
   "analytics": {
     "jobsTitle": "Jobs Analytics",

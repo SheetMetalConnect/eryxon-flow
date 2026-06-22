@@ -13,8 +13,12 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
 import { logger } from '@/lib/logger';
-import { toTimeInputValue } from '@/lib/time-utils';
 import type { PlanningAdapterType } from '@/lib/planning';
+import {
+  DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
+  getOperatorTerminalWorkModeSettings,
+  mergeOperatorTerminalWorkModeSettings,
+} from '@/features/operator-terminal/workModes';
 
 const TIMEZONES = [
   'UTC',
@@ -56,6 +60,7 @@ export default function OrganizationSettings() {
   const [planningConfig, setPlanningConfig] = useState({
     adapter: 'none' as PlanningAdapterType,
     baseUrl: '',
+    databaseName: '',
     username: '',
     password: '',
     syncIntervalMinutes: 15,
@@ -63,6 +68,9 @@ export default function OrganizationSettings() {
   const [testingConnection, setTestingConnection] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [savingPlanning, setSavingPlanning] = useState(false);
+  const [operatorTerminalModes, setOperatorTerminalModes] = useState(
+    DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
+  );
 
   const canUseWhitelabeling = tenant && (tenant.plan === 'premium' || tenant.plan === 'enterprise');
 
@@ -84,14 +92,20 @@ export default function OrganizationSettings() {
 
       if (error) throw error;
 
+      // Format time from database format (HH:MM:SS) to input format (HH:MM)
+      const formatTime = (time: string | null) => {
+        if (!time) return '';
+        return time.substring(0, 5);
+      };
+
       setFormData({
         name: data.name || '',
         company_name: data.company_name || '',
         abbreviation: data.abbreviation || '',
         timezone: data.timezone || 'UTC',
         billing_email: data.billing_email || '',
-        factory_opening_time: toTimeInputValue(data.factory_opening_time) || '07:00',
-        factory_closing_time: toTimeInputValue(data.factory_closing_time) || '17:00',
+        factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
+        factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
         auto_stop_tracking: data.auto_stop_tracking || false,
         whitelabel_enabled: data.whitelabel_enabled || false,
         whitelabel_logo_url: data.whitelabel_logo_url || '',
@@ -99,6 +113,7 @@ export default function OrganizationSettings() {
         whitelabel_primary_color: data.whitelabel_primary_color || '',
         whitelabel_favicon_url: data.whitelabel_favicon_url || '',
       });
+      setOperatorTerminalModes(getOperatorTerminalWorkModeSettings(data.feature_flags));
     } catch (error: unknown) {
       logger.error('OrganizationSettings', 'Error loading tenant details', error);
       toast.error(t("organizationSettings.failedToLoad"));
@@ -124,6 +139,10 @@ export default function OrganizationSettings() {
         factory_opening_time: formData.factory_opening_time + ':00',
         factory_closing_time: formData.factory_closing_time + ':00',
         auto_stop_tracking: formData.auto_stop_tracking,
+        feature_flags: mergeOperatorTerminalWorkModeSettings(
+          tenant?.feature_flags,
+          operatorTerminalModes,
+        ),
       };
 
       // Only include whitelabeling fields for premium/enterprise plans
@@ -162,6 +181,7 @@ export default function OrganizationSettings() {
         setPlanningConfig({
           adapter: (cfg.adapter as PlanningAdapterType) || 'none',
           baseUrl: (cfg.baseUrl as string) || '',
+          databaseName: (cfg.databaseName as string) || '',
           username: (cfg.username as string) || '',
           password: '',
           syncIntervalMinutes: (cfg.syncIntervalMinutes as number) || 15,
@@ -186,6 +206,7 @@ export default function OrganizationSettings() {
       const adapter = createPlanningAdapter({
         adapter: planningConfig.adapter,
         baseUrl: planningConfig.baseUrl,
+        databaseName: planningConfig.databaseName,
         username: planningConfig.username,
         password: planningConfig.password,
         syncIntervalMinutes: planningConfig.syncIntervalMinutes,
@@ -222,6 +243,7 @@ export default function OrganizationSettings() {
       const persistablePlanningConfig = {
         adapter: planningConfig.adapter,
         baseUrl: planningConfig.baseUrl,
+        databaseName: planningConfig.databaseName,
         username: planningConfig.username,
         syncIntervalMinutes: planningConfig.syncIntervalMinutes,
       };
@@ -406,6 +428,107 @@ export default function OrganizationSettings() {
                 </p>
               </div>
             )}
+
+            <div className="rounded-lg border p-4 space-y-4">
+              <div className="space-y-1">
+                <Label className="text-base">
+                  {t('organizationSettings.operatorTerminalModes.title')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('organizationSettings.operatorTerminalModes.description')}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="operator_terminal_modes_enabled" className="text-base">
+                    {t('organizationSettings.operatorTerminalModes.enabled')}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('organizationSettings.operatorTerminalModes.enabledDescription')}
+                  </p>
+                </div>
+                <Switch
+                  id="operator_terminal_modes_enabled"
+                  checked={operatorTerminalModes.enabled}
+                  onCheckedChange={(checked) => setOperatorTerminalModes({
+                    ...operatorTerminalModes,
+                    enabled: checked,
+                  })}
+                />
+              </div>
+
+              {operatorTerminalModes.enabled ? (
+                <>
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="operator_terminal_modes_working_hours" className="text-base">
+                        {t('organizationSettings.operatorTerminalModes.enforceWorkingHours')}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {t('organizationSettings.operatorTerminalModes.enforceWorkingHoursDescription')}
+                      </p>
+                    </div>
+                    <Switch
+                      id="operator_terminal_modes_working_hours"
+                      checked={operatorTerminalModes.enforceWorkingHours}
+                      onCheckedChange={(checked) => setOperatorTerminalModes({
+                        ...operatorTerminalModes,
+                        enforceWorkingHours: checked,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="operator_terminal_modes_setup" className="text-base">
+                        {t('organizationSettings.operatorTerminalModes.setupPrepEnabled')}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {t('organizationSettings.operatorTerminalModes.setupPrepEnabledDescription')}
+                      </p>
+                    </div>
+                    <Switch
+                      id="operator_terminal_modes_setup"
+                      checked={operatorTerminalModes.setupPrepEnabled}
+                      onCheckedChange={(checked) => setOperatorTerminalModes({
+                        ...operatorTerminalModes,
+                        setupPrepEnabled: checked,
+                        setupRequired: checked ? operatorTerminalModes.setupRequired : false,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="operator_terminal_modes_required" className="text-base">
+                        {t('organizationSettings.operatorTerminalModes.setupRequired')}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {t('organizationSettings.operatorTerminalModes.setupRequiredDescription')}
+                      </p>
+                    </div>
+                    <Switch
+                      id="operator_terminal_modes_required"
+                      checked={operatorTerminalModes.setupPrepEnabled && operatorTerminalModes.setupRequired}
+                      disabled={!operatorTerminalModes.setupPrepEnabled}
+                      onCheckedChange={(checked) => setOperatorTerminalModes({
+                        ...operatorTerminalModes,
+                        setupRequired: checked,
+                      })}
+                    />
+                  </div>
+                </>
+              ) : null}
+
+              <div className="flex justify-end">
+                <Button type="submit" disabled={saving} className="gap-2">
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <Save className="h-4 w-4" />
+                  {t('organizationSettings.saveChanges')}
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </form>
@@ -604,6 +727,21 @@ export default function OrganizationSettings() {
                   placeholder={planningConfig.adapter === 'frepple' ? 'https://frepple.example.com' : 'https://odoo.example.com'}
                 />
               </div>
+
+              {planningConfig.adapter === 'odoo' && (
+                <div className="space-y-2">
+                  <Label htmlFor="planning_database">{t('organizationSettings.planning.databaseName')}</Label>
+                  <Input
+                    id="planning_database"
+                    value={planningConfig.databaseName}
+                    onChange={(e) => setPlanningConfig({ ...planningConfig, databaseName: e.target.value })}
+                    placeholder={t('organizationSettings.planning.databasePlaceholder')}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {t('organizationSettings.planning.databaseHelp')}
+                  </p>
+                </div>
+              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">

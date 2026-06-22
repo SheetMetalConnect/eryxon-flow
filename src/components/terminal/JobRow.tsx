@@ -1,10 +1,11 @@
 import { Badge } from "@/components/ui/badge";
-import { FileText, Box, AlertTriangle, Clock, User, Zap } from "lucide-react";
+import { FileText, Box, AlertTriangle, Clock, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { TerminalJob } from "@/types/terminal";
 import { getDueUrgency, dueUrgencyTextClass } from "@/lib/due-date";
 import { TerminalCellInfo } from "./TerminalCellInfo";
+import { getTerminalStatusTone, TerminalEncodingBadges } from "./terminalEncoding";
 
 interface JobRowProps {
   job: TerminalJob;
@@ -29,30 +30,39 @@ const urgencyLabel: Record<string, string> = {
   soon: "⚡",
 };
 
+const readinessBadgeClassName: Record<string, string> = {
+  not_working: "border-slate-500/30 bg-slate-500/10 text-slate-600",
+  blocked_working_hours: "border-amber-500/30 bg-amber-500/10 text-amber-600",
+  blocked_setup: "border-orange-500/30 bg-orange-500/10 text-orange-600",
+  ready_for_setup: "border-sky-500/30 bg-sky-500/10 text-sky-600",
+  ready_for_production: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
+  in_setup: "border-sky-500/30 bg-sky-500/10 text-sky-600",
+  in_production: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
+};
+
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
   const { t } = useTranslation();
   const rawDueDate = typeof job.dueDate === "string" ? job.dueDate : null;
   const dueDate = rawDueDate ? new Date(rawDueDate) : null;
   const hasValidDueDate = dueDate !== null && Number.isFinite(dueDate.getTime());
   const dueUrgency = getDueUrgency(rawDueDate);
+  const statusTone = getTerminalStatusTone(job);
 
   return (
     <tr
       onClick={onClick}
       className={cn(
-        "h-10 cursor-pointer border-b border-border transition-colors hover:bg-accent/30",
+        "h-10 cursor-pointer border-b border-l-4 border-border transition-colors hover:bg-accent/30",
+        statusTone.stripeClassName,
         isSelected && "bg-accent/50 ring-1 ring-primary",
         variant === "process" && "bg-status-active/5",
         job.isCurrentUserClocked && "bg-primary/10 ring-1 ring-primary/50",
-        job.isBulletCard && "border-l-2 border-l-destructive bg-destructive/5",
+        job.isBulletCard && job.status !== "on_hold" && "bg-destructive/5",
       )}
     >
       {/* Job Number */}
       <td className="whitespace-nowrap px-2 py-1.5 text-sm font-medium text-foreground">
         <div className="flex items-center gap-2">
-          {job.isBulletCard ? (
-            <Zap className="h-3.5 w-3.5 shrink-0 text-destructive" />
-          ) : null}
           {job.isCurrentUserClocked ? (
             <Badge
               className="animate-pulse bg-primary px-1.5 py-0 text-[10px] font-bold text-primary-foreground"
@@ -83,14 +93,28 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
 
       {/* Operation */}
       <td className="px-2 py-1.5">
-        <Badge
-          className={cn(
-            "whitespace-nowrap px-2 py-0.5 text-xs font-semibold text-primary-foreground",
-            getOperationBadgeColor(job.currentOp),
-          )}
-        >
-          {job.currentOp}
-        </Badge>
+        <div className="space-y-1">
+          <Badge
+            className={cn(
+              "whitespace-nowrap px-2 py-0.5 text-xs font-semibold text-primary-foreground",
+              getOperationBadgeColor(job.currentOp),
+            )}
+          >
+            {job.currentOp}
+          </Badge>
+          {job.modeSummary ? (
+            <Badge
+              variant="outline"
+              className={cn(
+                "whitespace-nowrap px-2 py-0.5 text-[10px] font-medium",
+                readinessBadgeClassName[job.modeSummary.readiness],
+              )}
+            >
+              {t(`terminal.workModes.readiness.${job.modeSummary.readiness}`)}
+            </Badge>
+          ) : null}
+          <TerminalEncodingBadges job={job} t={t} compact />
+        </div>
       </td>
 
       {/* Cell — POLCA signal: current → next cell with GO/PAUSE */}

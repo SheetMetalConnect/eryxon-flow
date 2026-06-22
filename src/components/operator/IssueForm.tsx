@@ -14,6 +14,10 @@ import { Camera, AlertTriangle, Package } from "lucide-react";
 import { dispatchIssueCreated } from "@/lib/event-dispatch";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
+import {
+  deriveIssueLocationContext,
+  uploadIssueAttachments,
+} from "@/lib/issues/reporting";
 
 interface PrefilledData {
   affectedQuantity?: number;
@@ -33,6 +37,21 @@ interface IssueCategory {
   code: string;
   description: string;
   severity_default: "low" | "medium" | "high" | "critical";
+}
+
+interface OperationIssueContext {
+  sequence: number;
+  cell_id: string;
+  operation_name: string;
+  part: {
+    id: string;
+    part_number: string;
+    current_cell_id: string | null;
+    job: {
+      id: string;
+      job_number: string;
+    };
+  };
 }
 
 type IssueType = "general" | "ncr";
@@ -104,32 +123,16 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
     setLoading(true);
     try {
       const issueId = crypto.randomUUID();
-      const imagePaths: string[] = [];
-
-      if (files && files.length > 0) {
-        for (let i = 0; i < files.length; i++) {
-          const file = files[i];
-          const path = `${profile.tenant_id}/issues/${issueId}/${file.name}`;
-
-          const { error: uploadError } = await supabase.storage
-            .from("issues")
-            .upload(path, file);
-
-          if (uploadError) {
-            logger.error("IssueForm", "Image upload error", uploadError);
-            throw new Error(`Failed to upload image: ${uploadError.message}`);
-          }
-          imagePaths.push(path);
-        }
-      }
-
-      const { data: operationData } = await supabase
+      const { data: operationData, error: operationError } = await supabase
         .from("operations")
         .select(`
+          sequence,
+          cell_id,
           operation_name,
           part:parts!inner(
             id,
             part_number,
+            current_cell_id,
             job:jobs!inner(
               id,
               job_number
@@ -138,6 +141,27 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         `)
         .eq("id", operationId)
         .single();
+
+      if (operationError) throw operationError;
+
+      const typedOperation = operationData as OperationIssueContext | null;
+      if (!typedOperation) {
+        throw new Error(t("issues.failedToReportIssue", "Failed to report issue"));
+      }
+
+      const { data: nextOperations } = await supabase
+        .from("operations")
+        .select("cell_id, sequence, status")
+        .eq("part_id", typedOperation.part.id)
+        .gt("sequence", typedOperation.sequence)
+        .order("sequence", { ascending: true });
+
+      const { currentCellId, intendedNextCellId } = deriveIssueLocationContext({
+        operationCellId: typedOperation.cell_id,
+        partCurrentCellId: typedOperation.part.current_cell_id,
+        operationSequence: typedOperation.sequence,
+        nextOperations: nextOperations || [],
+      });
 
       const selectedCategory = categories.find(c => c.id === selectedCategoryId);
       const fullDescription = selectedCategory
@@ -152,40 +176,72 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         created_by: operatorId,
         description: fullDescription,
         severity,
-        image_paths: imagePaths.length > 0 ? imagePaths : null,
         issue_type: issueType,
         ncr_category: issueType === "ncr" && ncrCategory ? ncrCategory : null,
         affected_quantity: affectedQuantity !== "" ? affectedQuantity : null,
+        current_cell_id: currentCellId,
+        intended_next_cell_id: intendedNextCellId,
       });
 
       if (error) throw error;
 
-      if (operationData) {
-        const operation = operationData as {
-          operation_name: string;
-          part: { id: string; part_number: string; job: { id: string; job_number: string } };
-        };
-        dispatchIssueCreated(profile.tenant_id, {
-          issue_id: issueId,
-          operation_id: operationId,
-          operation_name: operation.operation_name,
-          part_id: operation.part.id,
-          part_number: operation.part.part_number,
-          job_id: operation.part.job.id,
-          job_number: operation.part.job.job_number,
-          created_by: operatorId,
-          operator_name: operatorName,
-          severity,
-          description: fullDescription,
-          created_at: createdAt,
-        }).then(result => {
-          if (!result.success) {
-            logger.error("IssueForm", "Failed to dispatch issue.created event", result.errors);
-          }
+      const attachmentResult = await uploadIssueAttachments({
+        storage: supabase.storage,
+        tenantId: profile.tenant_id,
+        issueId,
+        files,
+      });
+
+      let attachmentsPersisted = attachmentResult.uploadedPaths.length === 0;
+
+      if (attachmentResult.uploadedPaths.length > 0) {
+        const { error: updateError } = await supabase
+          .from("issues")
+          .update({ image_paths: attachmentResult.uploadedPaths })
+          .eq("id", issueId)
+          .eq("tenant_id", profile.tenant_id);
+
+        if (updateError) {
+          attachmentsPersisted = false;
+          logger.error("IssueForm", "Failed to persist uploaded issue attachments", updateError);
+        }
+      }
+
+      if (attachmentResult.failedFiles.length > 0) {
+        logger.warn("IssueForm", "Some issue attachments failed to upload", {
+          issueId,
+          failedFiles: attachmentResult.failedFiles,
         });
       }
 
+      dispatchIssueCreated(profile.tenant_id, {
+        issue_id: issueId,
+        operation_id: operationId,
+        operation_name: typedOperation.operation_name,
+        part_id: typedOperation.part.id,
+        part_number: typedOperation.part.part_number,
+        job_id: typedOperation.part.job.id,
+        job_number: typedOperation.part.job.job_number,
+        created_by: operatorId,
+        operator_name: operatorName,
+        severity,
+        description: fullDescription,
+        created_at: createdAt,
+      }).then(result => {
+        if (!result.success) {
+          logger.error("IssueForm", "Failed to dispatch issue.created event", result.errors);
+        }
+      });
+
       toast.success(t("issues.issueReported", "Issue reported"));
+      if (attachmentResult.failedFiles.length > 0 || !attachmentsPersisted) {
+        toast.warning(
+          t(
+            "issues.issueReportedPhotosPending",
+            "Issue saved. Photos could not be attached this time.",
+          ),
+        );
+      }
       resetForm();
       onOpenChange(false);
       onSuccess();

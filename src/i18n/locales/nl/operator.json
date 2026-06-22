@@ -31,7 +31,17 @@
     "noOperations": "Geen bewerkingen",
     "operations": "bewerkingen",
     "operation": "bewerking",
-    "failedToLoad": "Werkwachtrij laden mislukt"
+    "failedToLoad": "Werkwachtrij laden mislukt",
+    "active": "actief",
+    "activeOnly": "Alleen actief",
+    "empty": "Niets in je wachtrij op dit moment",
+    "emptyColumn": "Geen bewerkingen",
+    "loading": "Werkwachtrij laden",
+    "noCells": "Geen cellen ingesteld",
+    "noCellsDescription": "Voeg productiecellen toe in de beheerinstellingen om het kanbanbord te zien.",
+    "noMatches": "Geen bewerkingen komen overeen met je zoekopdracht",
+    "selectPrompt": "Tik op een bewerking voor details, een timer of een melding.",
+    "thisWeek": "Deze week"
   },
   "terminal": {
     "columns": {
@@ -42,8 +52,38 @@
       "material": "Materiaal",
       "quantity": "Aantal",
       "hours": "Uren",
+      "plannedStart": "Start",
       "dueDate": "Vervaldatum",
-      "files": "Bestanden"
+      "files": "Bestanden",
+      "backlogStatus": "Status"
+    },
+    "encoding": {
+      "status": {
+        "active": "Actief",
+        "pending": "Wachtend",
+        "expected": "Verwacht",
+        "done": "Gereed",
+        "blocked": "Geblokkeerd"
+      },
+      "type": {
+        "scan": "Scan",
+        "cut": "Snij",
+        "bend": "Zet",
+        "weld": "Las",
+        "assembly": "Montage",
+        "qc": "KW"
+      },
+      "priority": {
+        "rush": "Spoed"
+      }
+    },
+    "instructions": {
+      "title": "Celinstructies",
+      "stepHighlights": "Stapdetails",
+      "viewSteps": "Bekijk stappen",
+      "fallbackHint": "Gebruik de routingstappen als terugval voor de operatorinstructie.",
+      "missingTitle": "Instructies ontbreken",
+      "missingBody": "Er zijn nog geen operatorinstructies aan deze cel gekoppeld. Controleer de routingstappen voordat je begint."
     },
     "inProcess": "In bewerking",
     "inBuffer": "In buffer",
@@ -91,7 +131,100 @@
       "unknown": "Onbekend",
       "finalStep": "Laatste stap",
       "cannotProceed": "Kan niet doorgaan - volgende cel op capaciteit"
-    }
+    },
+    "batchFlow": {
+      "title": "Batch {{batchNumber}} gedetecteerd",
+      "description": "Deze bewerking hoort bij batch {{batchNumber}}. Kies of je alleen deze bewerking uitvoert of de volledige batch verwerkt.",
+      "descriptionWithSheet": "Deze bewerking hoort bij batch {{batchNumber}} op plaat {{sheetNumber}}. Kies of je alleen deze bewerking uitvoert of de volledige batch verwerkt.",
+      "members": "{{count}} items",
+      "ready": "{{count}} gereed",
+      "completed": "{{count}} voltooid",
+      "active": "{{count}} actief",
+      "singleAction": "Alleen deze bewerking scannen",
+      "batchAction": "Volledige batch scannen",
+      "batchRunning": "Batchflow actief",
+      "chooseMode": "Kies eerst enkele bewerking of volledige batch voordat je start.",
+      "startBatch": "Batch starten",
+      "stopBatch": "Batch stoppen",
+      "batchStarted": "Batchflow gestart voor {{count}} bewerkingen",
+      "batchStopped": "Batchflow gestopt voor {{count}} bewerkingen",
+      "unavailable": {
+        "closed": "Deze batch is al afgesloten, daarom is volledig batchscannen niet beschikbaar.",
+        "partial": "Sommige batchleden zijn al gestart of voltooid. Volledig batchscannen is uitgeschakeld om deelbatch-conflicten te voorkomen.",
+        "active_elsewhere": "Een andere operator is al actief op een deel van deze batch. Rond dat werk eerst af of stop het voordat je de volledige batch uitvoert.",
+        "completed_members": "Sommige batchleden zijn al voltooid. Ga verder met een enkele bewerking."
+      }
+    },
+    "scanner": {
+      "success": "{{token}} gescand en {{operation}} geselecteerd.",
+      "errors": {
+        "no_match": "{{token}} gescand, maar er is geen overeenkomende bewerking beschikbaar in deze tenant.",
+        "duplicate_match": "{{token}} gescand, maar het komt overeen met {{count}} bewerkingen. Gebruik een specifiekere token.",
+        "closed": "{{token}} gescand, maar {{operation}} is al gesloten of voltooid.",
+        "active_by_other_operator": "{{token}} gescand, maar {{operation}} is al actief voor {{operator}}."
+      }
+    },
+    "workModes": {
+      "title": "Operatorstatus",
+      "description": "Houd setup/voorbereiding apart van productie en laat zien wat nu kan starten.",
+      "workingHoursActive": "Werkuren actief",
+      "outsideWorkingHours": "Buiten werkuren",
+      "modes": {
+        "notWorking": "Niet aan het werk",
+        "setup": "Setup / voorbereiding",
+        "production": "Productie"
+      },
+      "actions": {
+        "startSetup": "Start setup",
+        "startProduction": "Start productie"
+      },
+      "summary": {
+        "readyForSetup": "{{count}} klaar voor setup",
+        "readyForProduction": "{{count}} klaar voor productie",
+        "blockedSetup": "{{count}} geblokkeerd door setup",
+        "blockedWorkingHours": "{{count}} geblokkeerd door werkuren"
+      },
+      "readiness": {
+        "not_working": "Niet aan het werk",
+        "blocked_working_hours": "Geblokkeerd door werkuren",
+        "blocked_setup": "Eerst setup vereist",
+        "ready_for_setup": "Klaar voor setup",
+        "ready_for_production": "Klaar voor productie",
+        "in_setup": "Nu voorbereiden",
+        "in_production": "Nu produceren"
+      },
+      "errors": {
+        "selectMode": "Kies setup/voorbereiding of productie voordat je werk start.",
+        "outsideWorkingHours": "Deze tenant staat terminalwerk alleen toe binnen de ingestelde werkuren.",
+        "setupRequired": "Productie is geblokkeerd totdat setup/voorbereiding voor deze bewerking is geregistreerd.",
+        "setupDisabled": "Setup/voorbereidingsmodus is uitgeschakeld voor deze tenant."
+      }
+    },
+    "allCells": "Alle cellen",
+    "backlog": {
+      "overdue": "Te laat",
+      "soon": "Binnenkort",
+      "today": "Vandaag"
+    },
+    "capacityBlocked": "Voltooien niet mogelijk: de volgende cel zit vol.",
+    "completeOperation": "Bewerking voltooien",
+    "detailsPanel": "Detailpaneel",
+    "empty": "Nog geen cellen ingesteld",
+    "loading": "Terminalgegevens laden...",
+    "noBufferJobs": "Geen opdrachten in buffer",
+    "noExpectedJobs": "Geen verwachte opdrachten",
+    "noJobSelected": "Geen opdracht geselecteerd",
+    "noJobSelectedDescription": "Selecteer een opdracht uit de lijst voor details en bediening.",
+    "noOperationsFound": "Geen routingstappen gevonden voor dit onderdeel.",
+    "onHold": "In de wacht",
+    "routing": "Routing",
+    "selectCell": "Cel selecteren",
+    "status": {
+      "longRunning": "lang actief",
+      "notClockedOn": "niet ingeklokt"
+    },
+    "stopBeforeComplete": "Pauzeer de actieve tijdregistratie voordat je de bewerking voltooit.",
+    "substeps": "substappen"
   },
   "sessionTracking": {
     "currentlyTracking": "Momenteel aan het bijhouden",
@@ -126,7 +259,19 @@
     "timeTrackingStopped": "Tijdregistratie gestopt",
     "timeTrackingPaused": "Tijdregistratie gepauzeerd",
     "timeTrackingResumed": "Tijdregistratie hervat",
-    "openOperationForIssue": "Open de bewerking om een probleem te melden"
+    "openOperationForIssue": "Open de bewerking om een probleem te melden",
+    "addReason": "Reden toevoegen",
+    "addScrapRework": "Afkeur of herbewerking toevoegen...",
+    "complete": "Voltooien",
+    "enterQuantity": "Voer minstens één aantal in",
+    "goodParts": "Goede onderdelen",
+    "notes": "Notities",
+    "notesPlaceholder": "Optionele notities...",
+    "rework": "Herbewerking",
+    "scrap": "Afkeur",
+    "selectReason": "Selecteer reden...",
+    "selectScrapReason": "Selecteer een reden voor elke afkeurregel",
+    "totalScrap": "Totaal afkeur"
   },
   "terminalLogin": {
     "welcome": "OPERATOR TERMINAL",
@@ -153,9 +298,12 @@
     "authRequiredDesc": "Log in met je terminal account om toegang te krijgen tot de werkvloer.",
     "goToLogin": "Ga naar Login",
     "currentOperator": "Huidige Operator",
-    "continueAs": "Doorgaan als",
+    "reverifyAs": "Opnieuw verifiëren als",
     "switchOperator": "Operator Wisselen",
     "switchToAnother": "Wissel naar Andere Operator",
+    "reverifyHint": "Voer opnieuw de PIN van de huidige operator in om dit gedeelde apparaat te ontgrendelen",
+    "idleTimeoutLocked": "Deze gedeelde terminal is vergrendeld na inactiviteit. Voer de operator-PIN opnieuw in om verder te gaan.",
+    "sessionExpiredLocked": "Deze gedeelde terminal vereist opnieuw operatorverificatie voordat werk kan doorgaan.",
     "accountLocked": "Account Tijdelijk Geblokkeerd",
     "tryAgainIn": "Probeer opnieuw over {{minutes}} minuut/minuten",
     "attemptsRemaining": "{{count}} poging(en) resterend"
@@ -190,6 +338,39 @@
     "issue": "Probleem",
     "recordQty": "Registreer",
     "recordQuantity": "Registreer productie aantal"
+  },
+  "mobile": {
+    "badgePlaceholder": "Personeelsbadge",
+    "biometricReason": "Bevestig de operator om de werkwachtrij te ontgrendelen.",
+    "codePlaceholder": "Opdracht-, onderdeel- of batchcode",
+    "continue": "Doorgaan",
+    "enterManually": "Of handmatig invoeren",
+    "enterPin": "PIN invoeren",
+    "offline": "Je bent offline — wijzigingen worden niet opgeslagen",
+    "scan": "Scannen",
+    "scanFailed": "Scanner mislukt. Voer de code handmatig in.",
+    "scanHint": "Houd het apparaat stil en plaats de code in beeld.",
+    "scanNoResult": "Geen code herkend. Probeer opnieuw of voer handmatig in.",
+    "scanOpening": "Camera openen…",
+    "scanTitle": "Barcode of QR scannen",
+    "scannerUnavailable": "Live scannen werkt in de Eryxon iOS- en Android-app. Voer de code hieronder in.",
+    "signIn": "Inloggen op je terminal",
+    "signInBody": "Tik je personeelsbadge of typ deze in om je werkwachtrij te laden.",
+    "signedInAs": "Inloggen als",
+    "unlockFace": "Ontgrendelen met Face ID",
+    "unlockTouch": "Ontgrendelen met Touch ID",
+    "verifying": "Verifiëren"
+  },
+  "scanner": {
+    "available": "Richt de camera op een geprinte QR of barcode. Eryxon springt direct naar de bijbehorende bewerking.",
+    "fallback": "Camerascannen werkt in de native iOS- en Android-app. Typ hieronder een code om door te gaan.",
+    "findManual": "Bewerking zoeken",
+    "manualPlaceholder": "Opdracht-, onderdeel- of bewerkings-ID",
+    "notFound": "Geen bewerking gevonden voor: {{value}}",
+    "openCamera": "Camera openen",
+    "permissionDenied": "Schakel cameratoegang in bij je apparaatinstellingen om te scannen",
+    "title": "Scan een opdracht, onderdeel of bewerking",
+    "unavailable": "Camerascannen is alleen beschikbaar in de native iOS- en Android-app"
   },
   "substepToasts": {
     "failedToLoad": "Kan substappen niet laden",

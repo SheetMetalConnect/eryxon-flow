@@ -5,8 +5,10 @@ import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useResizablePanel } from "@/hooks/useResizablePanel";
 import { useOperatorTerminal } from "@/hooks/useOperatorTerminal";
+import { useKeyboardWedgeScanner } from "@/hooks/useKeyboardWedgeScanner";
 import { OperatorWorkQueue } from "@/components/operator/OperatorWorkQueue";
 import { OperatorDetailSidebar } from "@/components/operator/OperatorDetailSidebar";
+import { OperatorModeBanner } from "@/components/operator/OperatorModeBanner";
 import {
   Select,
   SelectContent,
@@ -34,6 +36,11 @@ export default function OperatorView() {
   const {
     loading,
     cells,
+    workModeSettings,
+    currentTerminalMode,
+    setSelectedTerminalMode,
+    workingHoursActive,
+    terminalModeCounts,
     selectedCellId,
     handleCellChange,
     filteredJobs,
@@ -44,15 +51,41 @@ export default function OperatorView() {
     setSelectedJobId,
     selectedJob,
     selectedPartOperations,
+    selectedBatchPrompt,
+    selectBatchMode,
+    startActionLabel,
+    pauseActionLabel,
+    showCompleteAction,
     pdfUrl,
     stepUrl,
     pmiData,
     geometryData,
+    scanFeedback,
+    setScanFeedback,
+    handleScannerToken,
     handleStart,
     handlePause,
     handleComplete,
     loadData,
   } = useOperatorTerminal();
+
+  useKeyboardWedgeScanner({
+    onScan: handleScannerToken,
+  });
+
+  const scanFeedbackMessage = scanFeedback
+    ? scanFeedback.kind === "success"
+      ? t("terminal.scanner.success", {
+          token: scanFeedback.token,
+          operation: scanFeedback.operationLabel,
+        })
+      : t(`terminal.scanner.errors.${scanFeedback.reason}`, {
+          token: scanFeedback.token,
+          operation: scanFeedback.operationLabel,
+          count: scanFeedback.matchCount,
+          operator: scanFeedback.activeOperatorName,
+        })
+    : null;
 
   return (
     <div
@@ -106,6 +139,37 @@ export default function OperatorView() {
         className="flex flex-col border-r border-border transition-all duration-200"
         style={{ width: collapsed ? "100%" : `${leftPanelWidth}%` }}
       >
+        {scanFeedbackMessage ? (
+          <div className="border-b border-border bg-muted/40 px-4 py-3">
+            <div
+              role={scanFeedback.kind === "error" ? "alert" : "status"}
+              className={cn(
+                "rounded-md border px-3 py-2 text-sm",
+                scanFeedback.kind === "error"
+                  ? "border-destructive/30 bg-destructive/10 text-destructive"
+                  : "border-primary/30 bg-primary/10 text-primary",
+              )}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <p>{scanFeedbackMessage}</p>
+                <button
+                  type="button"
+                  className="text-xs font-medium uppercase tracking-wide opacity-70 transition-opacity hover:opacity-100"
+                  onClick={() => setScanFeedback(null)}
+                >
+                  {t("common.dismiss", "Dismiss")}
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+        <OperatorModeBanner
+          settings={workModeSettings}
+          currentMode={currentTerminalMode}
+          workingHoursActive={workingHoursActive}
+          counts={terminalModeCounts}
+          onModeChange={setSelectedTerminalMode}
+        />
         <OperatorWorkQueue
           inProcessJobs={inProcessJobs}
           inBufferJobs={inBufferJobs}
@@ -147,6 +211,11 @@ export default function OperatorView() {
           onStart={handleStart}
           onPause={handlePause}
           onComplete={handleComplete}
+          startActionLabel={startActionLabel}
+          pauseActionLabel={pauseActionLabel}
+          showCompleteAction={showCompleteAction}
+          batchPrompt={selectedBatchPrompt}
+          onSelectBatchMode={selectBatchMode}
           stepUrl={stepUrl}
           pdfUrl={pdfUrl}
           pmiData={pmiData}
