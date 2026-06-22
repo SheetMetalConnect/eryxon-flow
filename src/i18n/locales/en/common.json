@@ -86,6 +86,9 @@
     "submit": "Go",
     "unknown": "Unknown",
     "viewStep": "View 3D",
+    "viewStepFile": "View STEP file",
+    "viewPdfFile": "View PDF file",
+    "openMenu": "Open menu",
     "workspace": "Workspace",
     "table": {
       "selectAll": "Select all",

@@ -86,6 +86,9 @@
     "submit": "Ga",
     "unknown": "Onbekend",
     "viewStep": "3D bekijken",
+    "viewStepFile": "STEP-bestand bekijken",
+    "viewPdfFile": "PDF-bestand bekijken",
+    "openMenu": "Menu openen",
     "workspace": "Werkruimte",
     "table": {
       "selectAll": "Alles selecteren",

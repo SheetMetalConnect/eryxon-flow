@@ -32,7 +32,7 @@ export default function BatchDetail() {
 
   if (batchLoading || opsLoading) {
     return (
-      <div className="flex items-center justify-center h-64 text-muted-foreground">
+      <div className="flex items-center justify-center h-96 text-muted-foreground">
         <Clock className="mr-2 h-5 w-5 animate-spin" />
         {t("common.loading")}
       </div>

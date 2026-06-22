@@ -455,6 +455,7 @@ export default function Assignments() {
             variant="ghost"
             size="sm"
             className="h-8 w-8 p-0"
+            aria-label={t("assignments.removeAssignment")}
           >
             <X className="h-3.5 w-3.5" />
           </Button>
@@ -513,7 +514,7 @@ export default function Assignments() {
               <SelectContent>
                 {parts.length === 0 ? (
                   <div className="p-2 text-sm text-muted-foreground text-center">
-                    No available parts found
+                    {t("assignments.noAvailableParts")}
                   </div>
                 ) : (
                   parts.map((part) => (
@@ -521,7 +522,7 @@ export default function Assignments() {
                       <div className="flex flex-col">
                         <span className="font-medium">{part.part_number}</span>
                         <span className="text-xs text-muted-foreground">
-                          {part.job?.job_number || "No Job"} • {part._operationCount} ops
+                          {part.job?.job_number || t("assignments.noJob")} • {part._operationCount} ops
                         </span>
                       </div>
                     </SelectItem>
@@ -533,7 +534,7 @@ export default function Assignments() {
               <div className="p-3 border rounded-lg bg-muted/10 space-y-1">
                 <div className="text-sm font-medium">{selectedPartData.part_number}</div>
                 <div className="text-xs text-muted-foreground">
-                  Job: {selectedPartData.job?.job_number || "None"}
+                  Job: {selectedPartData.job?.job_number || t("assignments.none")}
                 </div>
                 <div className="text-xs text-muted-foreground">
                   Material: {selectedPartData.material}

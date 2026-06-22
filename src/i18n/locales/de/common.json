@@ -86,6 +86,9 @@
     "submit": "Los",
     "unknown": "Unbekannt",
     "viewStep": "3D anzeigen",
+    "viewStepFile": "STEP-Datei anzeigen",
+    "viewPdfFile": "PDF-Datei anzeigen",
+    "openMenu": "Menü öffnen",
     "workspace": "Arbeitsbereich",
     "table": {
       "selectAll": "Alle auswählen",
