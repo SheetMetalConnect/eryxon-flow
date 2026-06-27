@@ -37,6 +37,10 @@
           "slug": "guides/concepts"
         },
         {
+          "label": "Production Flow",
+          "slug": "guides/production-flow"
+        },
+        {
           "label": "Operator Manual",
           "slug": "guides/operator-manual"
         },
