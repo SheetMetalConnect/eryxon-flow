@@ -18,6 +18,23 @@ Standing bar (enforced, not optional):
 - **i18n for all UI text** (EN/NL/DE) — never hardcode user-facing strings.
 - **`npm run build` and `npm run test:run` green before commit.** Verify, don't assume.
 
+## Documentation belongs on the website — not in `docs/`
+
+There is **no product documentation in the repo `docs/` folder.** Everything that
+explains how the app *works or operates* — for operators, admins, self-hosters, or
+evaluators — lives in `website/` (Astro/Starlight: `docs/` guides + features, blog,
+release-notes). The `docs/` folder at the repo root is **only** for contributor/coding
+internals that have no place on a public site: ADRs, code conventions, the DB schema
+diagram, route/hook maps, the design-system tooling.
+
+Rules:
+- **Never** write a feature explanation, user/admin/operator flow, setup/operations guide,
+  troubleshooting, glossary, or "how X works" page into repo `docs/`. It goes on the website.
+- If you **find** such a page in `docs/`, that is a bug: move and rewrite it into the
+  website, update links, and delete the source. Do not leave it.
+- A repo `docs/` file is allowed only if it would be out of place on a public docs site
+  (an ADR, a coding convention, build internals). When in doubt, it belongs on the website.
+
 ## Claude-specific
 
 - Superpowers plugin enabled via `.claude/settings.json`
