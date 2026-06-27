@@ -29,7 +29,8 @@ Occupancy (used vs free) is computed in the app from `storage_locations` + activ
 1. Admin enables the toggle and configures slots at `/admin/config/locations`.
 2. Operator completes an operation. If tracking is on, a grid picker opens
    ("Waar heb je het neergelegd?"), pre-selecting a suggested open slot (most free,
-   scoped to the cell). With tracking off, completion is unchanged.
+   scoped to the cell). With tracking off the picker is never mounted, so the
+   terminal makes no location queries at all and completion is unchanged.
 3. Confirming records a `part_placements` row; the previous active placement for
    that part is closed first.
 
