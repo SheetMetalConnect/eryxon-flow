@@ -82,8 +82,8 @@
       "stepHighlights": "Stapdetails",
       "viewSteps": "Bekijk stappen",
       "fallbackHint": "Gebruik de routingstappen als terugval voor de operatorinstructie.",
-      "missingTitle": "Instructies ontbreken",
-      "missingBody": "Er zijn nog geen operatorinstructies aan deze cel gekoppeld. Controleer de routingstappen voordat je begint."
+      "missingTitle": "Instructies optioneel",
+      "missingBody": "Geen operatorinstructies voor deze cel — volg de routingstappen."
     },
     "inProcess": "In bewerking",
     "inBuffer": "In buffer",

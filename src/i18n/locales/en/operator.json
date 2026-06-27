@@ -82,8 +82,8 @@
       "stepHighlights": "Step highlights",
       "viewSteps": "View steps",
       "fallbackHint": "Use routing steps as the fallback operator guide.",
-      "missingTitle": "Instructions missing",
-      "missingBody": "No operator instructions are attached to this cell yet. Review routing steps before you start."
+      "missingTitle": "Instructions optional",
+      "missingBody": "No operator instructions for this cell — follow the routing steps."
     },
     "inProcess": "In Process",
     "inBuffer": "In Buffer",

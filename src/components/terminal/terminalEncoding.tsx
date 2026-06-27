@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Clock3, PauseCircle, PlayCircle, ShieldCheck, Zap } from "lucide-react";
+import { Clock3, Info, PauseCircle, PlayCircle, ShieldCheck, Zap } from "lucide-react";
 import type { TFunction } from "i18next";
 import type { TerminalJob } from "@/types/terminal";
 
@@ -59,6 +59,8 @@ const operationTypeToneByKey: Record<string, string> = {
   welding: "border-[hsl(var(--stage-welding))]/30 bg-[hsl(var(--stage-welding))]/10 text-[hsl(var(--stage-welding))]",
   weld: "border-[hsl(var(--stage-welding))]/30 bg-[hsl(var(--stage-welding))]/10 text-[hsl(var(--stage-welding))]",
   assembly: "border-[hsl(var(--stage-assembly))]/30 bg-[hsl(var(--stage-assembly))]/10 text-[hsl(var(--stage-assembly))]",
+  finishing: "border-[hsl(var(--stage-finishing))]/30 bg-[hsl(var(--stage-finishing))]/10 text-[hsl(var(--stage-finishing))]",
+  finish: "border-[hsl(var(--stage-finishing))]/30 bg-[hsl(var(--stage-finishing))]/10 text-[hsl(var(--stage-finishing))]",
   qc: "border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]",
   inspection: "border-[hsl(var(--warning))]/30 bg-[hsl(var(--warning))]/10 text-[hsl(var(--warning))]",
 };
@@ -72,22 +74,43 @@ const operationTypeLabelByKey: Record<string, { key: string; fallback: string }>
   welding: { key: "terminal.encoding.type.weld", fallback: "Weld" },
   weld: { key: "terminal.encoding.type.weld", fallback: "Weld" },
   assembly: { key: "terminal.encoding.type.assembly", fallback: "Assembly" },
+  finishing: { key: "terminal.encoding.type.finishing", fallback: "Finishing" },
+  finish: { key: "terminal.encoding.type.finishing", fallback: "Finishing" },
   qc: { key: "terminal.encoding.type.qc", fallback: "QC" },
   inspection: { key: "terminal.encoding.type.qc", fallback: "QC" },
 };
 
-function normalizeOperationType(job: Pick<TerminalJob, "operationType" | "currentOp" | "batchContext">) {
-  const direct = String(job.operationType || "").trim().toLowerCase();
+function classifyOperationText(value: string | null | undefined) {
+  const text = String(value || "").trim().toLowerCase();
+  if (!text) return null;
+
+  if (text.includes("scan")) return "scan";
+  if (text.includes("laser") || text.includes("cut") || text.includes("snij")) return "cutting";
+  if (text.includes("bend") || text.includes("kant") || text.includes("zet")) return "bending";
+  if (text.includes("weld") || text.includes("las")) return "welding";
+  if (text.includes("finish") || text.includes("afwerk") || text.includes("nabewerk")) return "finishing";
+  if (text.includes("inspect") || text.includes("qc") || text.includes("quality") || text.includes("controle")) return "inspection";
+  if (text.includes("assembly") || text.includes("assembl") || text.includes("montage")) return "assembly";
+
+  return null;
+}
+
+function normalizeOperationType(job: Pick<TerminalJob, "operationType" | "currentOp" | "batchContext" | "cellName">) {
+  // The instruction card is explicitly a *cell* instruction card. Prefer the
+  // selected cell's manufacturing stage when it is recognizable; otherwise an
+  // Afwerking cell with a missing/unknown operation type falls through to the
+  // old hard-coded "Assembly" default, which makes the warning look wrong.
+  const cellType = classifyOperationText(job.cellName);
+  if (cellType) return cellType;
+
+  const direct = classifyOperationText(job.operationType);
   if (direct) return direct;
 
-  const name = String(job.currentOp || "").toLowerCase();
-  if (name.includes("scan")) return "scan";
-  if (name.includes("laser") || name.includes("cut")) return "cutting";
-  if (name.includes("bend") || name.includes("kant")) return "bending";
-  if (name.includes("weld") || name.includes("las")) return "welding";
-  if (name.includes("inspect") || name.includes("qc") || name.includes("quality")) return "inspection";
+  const nameType = classifyOperationText(job.currentOp);
+  if (nameType) return nameType;
+
   if (job.batchContext?.batchType?.includes("nest")) return "scan";
-  return "assembly";
+  return "operation";
 }
 
 export function getTerminalStatusTone(job: Pick<TerminalJob, "status" | "isCurrentUserClocked">) {
@@ -102,12 +125,12 @@ export function getTerminalStatusTone(job: Pick<TerminalJob, "status" | "isCurre
   return statusToneByJobStatus[job.status];
 }
 
-export function getTerminalOperationType(job: Pick<TerminalJob, "operationType" | "currentOp" | "batchContext">) {
+export function getTerminalOperationType(job: Pick<TerminalJob, "operationType" | "currentOp" | "batchContext" | "cellName">) {
   const key = normalizeOperationType(job);
   return {
     key,
     chipClassName: operationTypeToneByKey[key] || "border-border bg-muted/50 text-muted-foreground",
-    label: operationTypeLabelByKey[key] || { key: "terminal.encoding.type.assembly", fallback: key },
+    label: operationTypeLabelByKey[key] || { key: "terminal.encoding.type.operation", fallback: "Operation" },
   };
 }
 
@@ -174,15 +197,15 @@ export function TerminalInstructionFallback({
   return (
     <div
       className={cn(
-        "flex min-h-10 items-start gap-2 rounded-lg border border-[hsl(var(--alert-warning-border))] bg-[hsl(var(--alert-warning-bg))] px-3 py-2 text-xs text-foreground",
+        "flex min-h-10 items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground",
         className,
       )}
     >
-      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--warning))]" />
+      <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       <div className="space-y-0.5">
-        <div className="font-semibold">{t("terminal.instructions.missingTitle", "Instructions missing")}</div>
+        <div className="font-semibold">{t("terminal.instructions.missingTitle", "Instructions optional")}</div>
         <div className="text-muted-foreground">
-          {t("terminal.instructions.missingBody", "No operator instructions are attached to this cell yet. Review routing steps before you start.")}
+          {t("terminal.instructions.missingBody", "No operator instructions for this cell — follow the routing steps.")}
         </div>
       </div>
     </div>

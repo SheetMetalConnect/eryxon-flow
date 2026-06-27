@@ -327,7 +327,7 @@ async function fetchOperationsWithDetailsInternal(
             batch_id,
             operation_id,
             sequence_in_batch,
-            batch:operation_batches!batch_operations_batch_id_fkey(
+            batch:operation_batches!batch_id(
               id,
               batch_number,
               batch_type,
@@ -335,7 +335,7 @@ async function fetchOperationsWithDetailsInternal(
               operations_count,
               material,
               nesting_metadata,
-              parent_batch:operation_batches!operation_batches_parent_batch_id_fkey(
+              parent_batch:operation_batches!parent_batch_id(
                 id,
                 batch_number,
                 batch_type,
@@ -363,7 +363,7 @@ async function fetchOperationsWithDetailsInternal(
               batch_id,
               operation_id,
               sequence_in_batch,
-              operation:operations!batch_operations_operation_id_fkey(
+              operation:operations!operation_id(
                 id,
                 status,
                 operation_name,

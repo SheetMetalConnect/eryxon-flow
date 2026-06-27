@@ -2,6 +2,31 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.7.2] — 2026-06-27
+
+Hotfixes for faults that only surfaced against real, high-volume floors after
+the v0.7.1 rollout.
+
+### Fixed
+
+- **Operator terminal went blank under data faults** — the terminal builds
+  batch context for every job in the queue. When one of those lookups failed
+  (an oversized batch query at scale, a half-migrated batch table), the whole
+  load was abandoned and the queue came up empty, so operators could not clock
+  on. Batch context loading is now non-fatal: a failed lookup leaves the job
+  list intact and only drops batch grouping. The last unchunked batch-members
+  query is chunked too.
+- **Admins forced through the operator login on mobile** — opening the app on a
+  phone redirected admins to the operator badge-and-PIN screen even when already
+  signed in. Admins now reach the mobile floor view for oversight without
+  badging in, and are never recorded as the operator doing the work.
+
+### Changed
+
+- **Location tracking stays inert when disabled** — the off-by-default location
+  module no longer queries drop-off slots on every terminal load when tracking
+  is turned off.
+
 ## [0.7.1] — 2026-06-22
 
 Same-day hotfixes after the v0.7.0 rollout surfaced issues against real,

@@ -111,21 +111,35 @@ opentraceai index .    # ~3 seconds, writes to .opentrace/index.db
 - `find-usages` — caller/reference lookups
 - `explain-service` — top-down service walkthroughs
 
-## Documentation Index
+## Documentation policy — product docs live on the website
+
+There is **no product documentation in the repo `docs/` folder.** Anything explaining how
+the app *works or operates* (operator/admin/self-hoster/evaluator facing — feature
+behaviour, flows, setup, operations, troubleshooting, glossary) belongs in `website/`
+(Astro/Starlight guides + features, blog, release-notes). Website docs must be **proven
+against the code** (accurate to what actually ships) and **carry a diagram** where a flow
+or structure is involved (Mermaid). **No duplicate pages** — one canonical home per topic.
+
+The repo `docs/` folder is **only** for contributor/coding internals that would be out of
+place on a public site: ADRs, code conventions, DB schema diagram, route/hook maps, the
+design-system tooling. If you find a "how the app works" page in `docs/`, move and rewrite
+it onto the website, fix links, and delete the source.
+
+## Documentation Index (contributor/coding internals only)
 
 | Document | Purpose |
 |----------|---------|
 | [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) | System architecture with Mermaid dependency graphs |
-| [`docs/API_CATALOG.md`](../docs/API_CATALOG.md) | All 24 API endpoints — tables, methods, CRUD config |
-| [`docs/ROUTE_MAP.md`](../docs/ROUTE_MAP.md) | All 41 frontend routes with guards and lazy-loading |
+| [`docs/ROUTE_MAP.md`](../docs/ROUTE_MAP.md) | All frontend routes with guards and lazy-loading |
 | [`docs/HOOK_MAP.md`](../docs/HOOK_MAP.md) | Hook → table → queryKey dependency map |
 | [`docs/CONVENTIONS.md`](../docs/CONVENTIONS.md) | Code patterns, naming, templates for new files |
-| [`docs/LOCATION_MODULE.md`](../docs/LOCATION_MODULE.md) | Location/placement module — drop-off slot grid, capacity, placement flow |
-| [`docs/GLOSSARY.md`](../docs/GLOSSARY.md) | MES domain vocabulary for AI agents |
-| [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md) | Common agent pitfalls and fixes |
+| [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md) | Common AI-agent coding pitfalls and fixes |
 | [`docs/decisions/`](../docs/decisions/) | Architecture Decision Records (ADRs) — why things are the way they are |
 | [`docs/DATABASE_DIAGRAM.dbml`](../docs/DATABASE_DIAGRAM.dbml) | Full database schema (dbdiagram.io compatible) |
 | [`docs/dependency-graph.json`](../docs/dependency-graph.json) | Frontend import map (regenerate: `npm run deps:graph`) |
+
+Product behaviour (operator/admin flows, features, location, batch, self-hosting,
+troubleshooting, glossary) → **the website**, not this table.
 
 ## Sub-Agents
 

@@ -70,6 +70,10 @@
           "slug": "features/batch-management"
         },
         {
+          "label": "Location Tracking",
+          "slug": "features/location-tracking"
+        },
+        {
           "label": "Scheduling & Capacity",
           "slug": "features/scheduling"
         },

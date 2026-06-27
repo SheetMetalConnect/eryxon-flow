@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { GripVertical } from "lucide-react";
+import { ChevronLeft, GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useResizablePanel } from "@/hooks/useResizablePanel";
 import { useOperatorTerminal } from "@/hooks/useOperatorTerminal";
 import { useKeyboardWedgeScanner } from "@/hooks/useKeyboardWedgeScanner";
@@ -134,11 +135,18 @@ export default function OperatorView() {
         })
     : null;
 
+  // On phones the desktop split-pane is unreadable. Show one pane at a time:
+  // the queue full-width, and the selected job's detail full-width with a Back.
+  const isMobile = useIsMobile();
+  const showQueue = !isMobile || !selectedJob;
+  const showDetail = !isMobile || Boolean(selectedJob);
+
   return (
     <div
       ref={containerRef}
       className={cn(
-        "relative flex h-[calc(100vh-160px)] w-full overflow-hidden bg-background font-sans text-foreground",
+        "relative flex w-full bg-background font-sans text-foreground md:h-[calc(100vh-160px)] md:overflow-hidden",
+        !isMobile && "h-[calc(100vh-160px)] overflow-hidden",
         isDragging && "cursor-col-resize select-none",
       )}
     >
@@ -181,10 +189,11 @@ export default function OperatorView() {
         </div>
       ) : null}
 
-      {/* Left panel */}
+      {/* Left panel (queue) */}
+      {showQueue ? (
       <div
         className="flex flex-col border-r border-border transition-all duration-200"
-        style={{ width: collapsed ? "100%" : `${leftPanelWidth}%` }}
+        style={{ width: isMobile ? "100%" : collapsed ? "100%" : `${leftPanelWidth}%` }}
       >
         {scanFeedbackMessage ? (
           <div className="border-b border-border bg-muted/40 px-4 py-3">
@@ -225,9 +234,10 @@ export default function OperatorView() {
           onSelectJob={setSelectedJobId}
         />
       </div>
+      ) : null}
 
-      {/* Resizable divider */}
-      {!collapsed ? (
+      {/* Resizable divider (desktop only) */}
+      {!collapsed && !isMobile ? (
         <div
           className={cn(
             "group relative z-20 flex w-1 cursor-col-resize items-center justify-center bg-border transition-colors hover:bg-primary/50",
@@ -241,18 +251,29 @@ export default function OperatorView() {
         </div>
       ) : null}
 
-      {/* Right panel */}
+      {/* Right panel (detail) */}
+      {showDetail ? (
       <div
         className={cn(
           "z-10 flex flex-col border-l border-border bg-card/95 shadow-2xl backdrop-blur-md transition-all duration-200",
-          collapsed ? "w-10" : "",
+          !isMobile && collapsed ? "w-10" : "",
         )}
         style={{
-          width: collapsed ? "40px" : `${100 - leftPanelWidth}%`,
+          width: isMobile ? "100%" : collapsed ? "40px" : `${100 - leftPanelWidth}%`,
         }}
       >
+        {isMobile ? (
+          <button
+            type="button"
+            onClick={() => setSelectedJobId(null)}
+            className="flex items-center gap-1 border-b border-border px-4 py-3 text-sm font-medium text-primary"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            {t("common.back", "Back")}
+          </button>
+        ) : null}
         <OperatorDetailSidebar
-          collapsed={collapsed}
+          collapsed={!isMobile && collapsed}
           onToggleCollapse={() => setCollapsed(!collapsed)}
           selectedJob={selectedJob}
           onStart={handleStart}
@@ -271,6 +292,7 @@ export default function OperatorView() {
           onDataRefresh={() => void loadData()}
         />
       </div>
+      ) : null}
 
       {/* Only mount the placement picker when location tracking is on. The module
           is off by default, and the modal eagerly queries storage_locations /
