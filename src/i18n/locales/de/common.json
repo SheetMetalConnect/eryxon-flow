@@ -248,6 +248,7 @@
     "updateDescription": "Neu laden, um das Update anzuwenden.",
     "reload": "Neu laden",
     "later": "Später",
+    "updating": "Aktualisierung auf die neueste Version…",
     "offlineReady": "Eryxon Flow ist bereit für die Offline-Nutzung"
   }
 }
