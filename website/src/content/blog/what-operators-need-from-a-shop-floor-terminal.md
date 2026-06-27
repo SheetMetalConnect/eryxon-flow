@@ -14,6 +14,8 @@ relatedLinks:
     href: "/features/operator-terminal/"
   - label: "Getting started overview"
     href: "/getting-started/introduction/overview/"
+  - label: "Release notes"
+    href: "/release-notes/"
 ---
 
 For shop owners, production leads, and foremen evaluating operator software, the real question is not whether a terminal looks modern. The real question is whether an operator can walk up to the screen, see what to do next, understand whether downstream capacity is ready, and open the part details without leaving the workstation.
@@ -66,6 +68,9 @@ That signal answers two production questions directly on the queue card:
 
 If the next cell shows **GO**, the operator knows that finishing the work will keep flow moving. If it shows **PAUSE**, the operator can pick a different item first instead of feeding a bottleneck.
 
+![Location tab in the Operator Terminal showing where the part goes and which cell takes it next.](../../assets/operator-terminal-location-desktop.png)
+*The Location tab keeps "where does this go next" on the same screen as the work (demo data shown).*
+
 That is the kind of signal operators actually need from a terminal. It translates scheduling intent into an immediate shop-floor choice. Eryxon Flow's public introduction also frames the broader system around stage-based flow, real-time visibility, and QRM-style work organization rather than accountant-centric screens or static paperwork.
 
 For foremen, this is also one of the easiest behaviors to coach. Watch the GO items first. Avoid filling downstream staging areas with work that cannot move.
@@ -93,6 +98,9 @@ The current detail panel in Eryxon Flow addresses that by opening the part conte
 - A **3D Viewer** to inspect the part geometry
 - A **PDF Viewer** for drawings, work instructions, or customer specifications
 - The **routing** view to show completed and remaining production steps
+
+![Operator Terminal detail panel open on a workstation, with the Steps tab showing instructions and routing.](../../assets/operator-terminal-detail-desktop.png)
+*The detail panel opens the drawing, geometry, and routing from the active job card — no second screen (demo data shown).*
 
 This matches the broader product description in the introduction page, which highlights STEP viewing, PDF access, and stage-based work visibility for operators.
 

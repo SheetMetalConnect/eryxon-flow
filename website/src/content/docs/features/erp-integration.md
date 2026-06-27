@@ -45,7 +45,7 @@ Best for: Initial data migration, periodic bulk updates, manual imports.
 
 Navigate to **Admin → Data Import** in the web UI.
 
-### 3. Planning Adapters (v0.5)
+### 3. Planning Adapters
 
 Best for: Pulling work orders and resources from a dedicated planning system without writing custom REST sync code.
 

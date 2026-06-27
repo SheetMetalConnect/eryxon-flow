@@ -2,6 +2,22 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.8.1] — 2026-06-27
+
+### Changed
+
+- **Bullet Card priority chip no longer says "Rush"** — the operator terminal
+  labelled the Bullet Card with a generic "Rush" badge, but the product has no
+  separate rush flag: the Bullet Card *is* the priority signal. The chip now
+  reads "Bullet" (EN/NL/DE), matching the card's name everywhere else.
+
+### Removed
+
+- **Stale duplicate "Articles" in the docs sidebar** — two articles ("the road
+  to v0.7", the Apache 2.0 move) lived in the docs sidebar as copies of blog
+  posts. Articles live on the blog; the docs copies are gone and their URLs
+  redirect to the blog.
+
 ## [0.8.0] — 2026-06-27
 
 A focused redesign of the operator terminal's detail panel, plus a finished

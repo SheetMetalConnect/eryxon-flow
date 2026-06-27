@@ -2,6 +2,7 @@
   "main": [
     {
       "label": "Getting Started",
+      "collapsed": true,
       "items": [
         {
           "label": "[rocket] Introduction",
@@ -24,13 +25,14 @@
           "slug": "roadmap"
         },
         {
-          "label": "[seti:changelog] Changelog",
-          "slug": "guides/changelog"
+          "label": "[seti:changelog] Release Notes",
+          "link": "/release-notes/"
         }
       ]
     },
     {
       "label": "User Guides",
+      "collapsed": true,
       "items": [
         {
           "label": "Core Concepts",
@@ -60,6 +62,7 @@
     },
     {
       "label": "Features",
+      "collapsed": true,
       "items": [
         {
           "label": "QRM & Flow Control",
@@ -109,6 +112,7 @@
     },
     {
       "label": "Architecture",
+      "collapsed": true,
       "items": [
         {
           "label": "App Architecture",
@@ -126,6 +130,7 @@
     },
     {
       "label": "Design System",
+      "collapsed": true,
       "items": [
         {
           "label": "Design Principles",
@@ -143,6 +148,7 @@
     },
     {
       "label": "API & Integration",
+      "collapsed": true,
       "items": [
         {
           "label": "API Examples",
@@ -167,13 +173,8 @@
       ]
     },
     {
-      "label": "Articles",
-      "autogenerate": {
-        "directory": "articles"
-      }
-    },
-    {
       "label": "Help",
+      "collapsed": true,
       "items": [
         {
           "label": "[support] FAQ",

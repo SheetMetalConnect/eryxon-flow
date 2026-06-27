@@ -1,6 +1,6 @@
 ---
 title: Eryxon Flow - MES for Job Shops
-description: Manufacturing Execution System for Job Shops. Open source (Apache 2.0), self-hostable, API-first. v0.6 installs as a desktop PWA; native Android and iOS apps are in development on the public roadmap.
+description: Manufacturing Execution System for Job Shops. Open source (Apache 2.0), self-hostable, API-first. Installs as a desktop PWA; native Android and iOS apps are in development on the public roadmap.
 template: splash
 hero:
   title: |
@@ -43,7 +43,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 </Grid>
 </Section>
 
-<Section title="Built for <span class='text-primary'>Production</span>" description="Real-time operator terminals, multi-tenant workflows, and ERP integration out of the box.">
+<Section title="Built for the <span class='text-primary'>shop floor</span>" description="Real-time operator terminals, high-mix workflows, and ERP integration out of the box — so jobs move and nothing falls through the cracks.">
 
 <Grid columns={3}>
   <Card title="Real-time Tracking" icon="seti:clock" iconColor="#38bdf8">
@@ -94,6 +94,63 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
       imageAlt="Eryxon Flow operator terminal with 3D STEP viewer and part details"
     />
   </HeroTabs>
+</Section>
+
+<Section
+  title="See the operator terminal <span class='text-primary'>in action</span>"
+  description="The shop floor screen your operators work from — Steps, Location, and Batch in one touch-friendly panel, on the workstation or in their hand."
+>
+<Grid columns={2}>
+  <ListCard title="Steps tab — workstation" icon="seti:clock">
+    Operators see their operation, log time, and report issues without leaving the part.
+
+    ![Operator terminal Steps tab on a desktop workstation](../../assets/operator-terminal-detail-desktop.png)
+
+    <LinkButton href="/features/operator-terminal/" variant="text" className="mt-6 mb-8 ml-4">Operator terminal</LinkButton>
+  </ListCard>
+
+  <ListCard title="Same panel — on a phone" icon="seti:mobile">
+    Fully responsive. The same live job data on any browser device on the floor.
+
+    ![Operator terminal detail panel on a phone](../../assets/operator-terminal-detail-mobile.png)
+
+    <LinkButton href="/features/operator-terminal/" variant="text" className="mt-6 mb-8 ml-4">Operator terminal</LinkButton>
+  </ListCard>
+</Grid>
+
+<Grid columns={2}>
+  <ListCard title="Location tab — where the part goes next" icon="seti:plan">
+    Confirm drop-off and the next cell so parts never stall between stages.
+
+    ![Location tab showing drop-off and the next cell](../../assets/operator-terminal-location-desktop.png)
+
+    <LinkButton href="/features/location-tracking/" variant="text" className="mt-6 mb-8 ml-4">Location tracking</LinkButton>
+  </ListCard>
+
+  <ListCard title="Batch tab — split and merge work" icon="seti:db">
+    Track partial quantities through production with full batch traceability.
+
+    ![Batch tab in the operator terminal](../../assets/operator-terminal-batch-desktop.png)
+
+    <LinkButton href="/features/batch-management/" variant="text" className="mt-6 mb-8 ml-4">Batch management</LinkButton>
+  </ListCard>
+</Grid>
+
+<div class="flex flex-wrap justify-center gap-4 mt-8">
+  <LinkButton href="/features/qrm-flow/" variant="minimal">QRM flow</LinkButton>
+  <LinkButton href="/features/3d-viewer/" variant="minimal">3D viewer</LinkButton>
+  <LinkButton href="/architecture/connectivity-rest-api/" variant="minimal">REST API</LinkButton>
+</div>
+</Section>
+
+<Section>
+  <div class="p-8 rounded-2xl text-center" style="background: var(--ery-surface-subtle); border: 1px solid var(--ery-border);">
+    <h3 class="text-2xl font-bold mb-3">Ship fast, in the open</h3>
+    <p class="mb-6 max-w-2xl mx-auto" style="color: var(--ery-text-muted);">
+      Eryxon Flow moves quickly. The release notes are the single source of truth for everything that has shipped — new features, fixes, and breaking changes.
+    </p>
+    <LinkButton href="/release-notes/" variant="primary" ctaId="home_release_notes" ctaSurface="homepage_release" ctaKind="docs">Read the Release Notes</LinkButton>
+  </div>
 </Section>
 
 <Section title="Key <span class='text-primary'>Capabilities</span>" description="What sets Eryxon Flow apart from generic MES tools.">
@@ -171,7 +228,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
 
 <div class="text-center mt-8">
   <p class="text-sm" style="color: var(--ery-text-muted);">
-    Today, the v0.6 web app at <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> works on every browser-capable device and installs as a desktop PWA. Native apps are in development on the <a href="/roadmap/" class="text-primary hover:underline">roadmap</a> and will share the same backend and API.
+    Today, the web app at <a href="https://app.eryxon.eu" class="text-primary hover:underline">app.eryxon.eu</a> works on every browser-capable device and installs as a desktop PWA. Native apps are in development on the <a href="/roadmap/" class="text-primary hover:underline">roadmap</a> and will share the same backend and API.
   </p>
 </div>
 </Section>
@@ -200,7 +257,7 @@ import ThemeDemo from "~/components/ThemeDemo.astro";
       - [Deployment](/guides/deployment/)
       - [Self-Hosting](/guides/self-hosting/)
       - [Roadmap](/roadmap/)
-      - [Changelog](/guides/changelog/)
+      - [Release Notes](/release-notes/)
     </ListCard>
 
     <ListCard title="User Guides" icon="open-book" number="3">

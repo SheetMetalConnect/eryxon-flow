@@ -180,7 +180,7 @@ export function TerminalEncodingBadges({
           )}
         >
           <Zap className="mr-1 h-3 w-3" />
-          {t("terminal.encoding.priority.rush", "Rush")}
+          {t("terminal.encoding.priority.bullet", "Bullet")}
         </Badge>
       ) : null}
     </div>

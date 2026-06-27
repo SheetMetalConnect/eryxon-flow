@@ -5,6 +5,8 @@ description: Touch-friendly workstation view showing what to work on, with live 
 
 The Operator Terminal is the screen operators see at their workstation. It runs on tablets and large touchscreens on the shop floor. Everything is designed for touch — large tap targets, no tiny buttons, no keyboard needed.
 
+The tabbed detail panel below arrived in the [v0.8.0 release](/release-notes/v0-8-0/); the priority chip wording was refined in [v0.8.1](/release-notes/v0-8-1/). All shipped changes live in the [release notes](/release-notes/).
+
 ## Selecting Your Cell
 
 When you open the terminal, pick your cell (workstation) from the cell selector at the top. This filters everything to show only work assigned to your cell. If you work at multiple cells, switch between them with one tap.
