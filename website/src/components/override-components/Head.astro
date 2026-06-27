@@ -179,3 +179,23 @@ const supportedLangs = localeEntries.map(([key, val]) => ({
   });
 })();
 </script>
+
+<!-- Render Mermaid diagrams (remark turns ```mermaid into pre.mermaid). Mermaid
+     is imported only on pages that actually contain a diagram. -->
+<script>
+  let initialised = false;
+  const renderMermaid = async () => {
+    const blocks = document.querySelectorAll("pre.mermaid:not([data-processed])");
+    if (blocks.length === 0) return;
+    const { default: mermaid } = await import("mermaid");
+    const dark = document.documentElement.dataset.theme === "dark";
+    if (!initialised) {
+      mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "neutral" });
+      initialised = true;
+    }
+    await mermaid.run({ nodes: blocks });
+  };
+  if (document.readyState !== "loading") void renderMermaid();
+  else document.addEventListener("DOMContentLoaded", () => void renderMermaid());
+  document.addEventListener("astro:page-load", () => void renderMermaid());
+</script>

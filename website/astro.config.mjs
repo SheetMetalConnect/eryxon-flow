@@ -7,6 +7,7 @@ import config from "./src/config/config.json";
 import social from "./src/config/social.json";
 import locals from "./src/config/locals.json";
 import sidebar from "./src/config/sidebar.json";
+import { remarkMermaid } from "./src/lib/remark-mermaid.mjs";
 
 import { fileURLToPath } from "url";
 
@@ -19,6 +20,9 @@ export const locales = locals
 // https://astro.build/config
 export default defineConfig({
   site: site.url,
+  markdown: {
+    remarkPlugins: [remarkMermaid],
+  },
   redirects: {
     "/articles": "/blog",
     "/articles/why-eryxon-flow-moved-to-apache-2-0/": "/blog/why-eryxon-flow-is-now-apache-2-0/",
