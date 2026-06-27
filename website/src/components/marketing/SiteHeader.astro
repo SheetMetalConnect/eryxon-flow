@@ -23,9 +23,9 @@ interface Props {
 const { locale = "en", active = null } = Astro.props;
 
 const labels: Record<Locale, Record<string, string>> = {
-  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Start free trial" },
-  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Gratis uitproberen" },
-  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Changelog", roadmap: "Roadmap", cta: "Kostenlos testen" },
+  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Release Notes", roadmap: "Roadmap", cta: "Start free trial", menu: "Menu" },
+  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Releasenotes", roadmap: "Roadmap", cta: "Gratis uitproberen", menu: "Menu" },
+  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Release Notes", roadmap: "Roadmap", cta: "Kostenlos testen", menu: "Menü" },
 };
 const t = labels[locale];
 
@@ -65,7 +65,7 @@ const langLinks = SUPPORTED_LOCALES.map((l) => ({
     }
   </ul>
 
-  <div class="ery-langswitch" role="group" aria-label="Language">
+  <div class="ery-langswitch ery-nav__desktop" role="group" aria-label="Language">
     {
       langLinks.map((l) => (
         <a
@@ -80,10 +80,69 @@ const langLinks = SUPPORTED_LOCALES.map((l) => ({
     }
   </div>
 
-  <CtaButton href="https://app.eryxon.eu" ctaId="nav_primary_hosted" surface="site_header" kind="hosted_app" variant="primary" locale={locale} external>
-    {t.cta}
-  </CtaButton>
+  <div class="ery-nav__desktop">
+    <CtaButton href="https://app.eryxon.eu" ctaId="nav_primary_hosted" surface="site_header" kind="hosted_app" variant="primary" locale={locale} external>
+      {t.cta}
+    </CtaButton>
+  </div>
+
+  <button
+    type="button"
+    class="ery-nav__toggle"
+    aria-expanded="false"
+    aria-controls="ery-mobile-menu"
+    aria-label={t.menu}
+  >
+    <span class="ery-nav__bars" aria-hidden="true"></span>
+  </button>
+
+  <div id="ery-mobile-menu" class="ery-nav__mobile" hidden>
+  <ul class="ery-nav__mobile-list">
+    {
+      links.map((link) => (
+        <li>
+          <a href={link.href} class="ery-nav__mobile-link" aria-current={active === link.key ? "page" : undefined}>
+            {link.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+  <div class="ery-nav__mobile-foot">
+    <div class="ery-langswitch" role="group" aria-label="Language">
+      {
+        langLinks.map((l) => (
+          <a href={l.href} class="ery-langswitch__opt" aria-current={l.current ? "true" : undefined} hreflang={l.lang}>
+            {l.lang.toUpperCase()}
+          </a>
+        ))
+      }
+    </div>
+    <CtaButton href="https://app.eryxon.eu" ctaId="nav_primary_hosted_mobile" surface="site_header" kind="hosted_app" variant="primary" locale={locale} external>
+      {t.cta}
+    </CtaButton>
+  </div>
+  </div>
 </nav>
+
+<script>
+  const toggle = document.querySelector(".ery-nav__toggle");
+  const menu = document.getElementById("ery-mobile-menu");
+  if (toggle && menu) {
+    toggle.addEventListener("click", () => {
+      const open = toggle.getAttribute("aria-expanded") === "true";
+      toggle.setAttribute("aria-expanded", String(!open));
+      menu.hidden = open;
+    });
+    // Close when a link is tapped or the viewport grows back to desktop.
+    menu.addEventListener("click", (e) => {
+      if ((e.target as HTMLElement).closest("a")) {
+        toggle.setAttribute("aria-expanded", "false");
+        menu.hidden = true;
+      }
+    });
+  }
+</script>
 
 <style>
   .ery-nav {
@@ -135,10 +194,103 @@ const langLinks = SUPPORTED_LOCALES.map((l) => ({
     background: var(--ery-brand);
   }
 
-  /* On narrow screens the secondary links collapse; the language switcher + CTA stay. */
+  .ery-nav {
+    position: relative;
+  }
+
+  /* Hamburger toggle — hidden on desktop, shown on mobile. */
+  .ery-nav__toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-sm);
+    cursor: pointer;
+    color: var(--ery-text);
+  }
+  .ery-nav__bars,
+  .ery-nav__bars::before,
+  .ery-nav__bars::after {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    border-radius: 2px;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+  }
+  .ery-nav__bars {
+    position: relative;
+  }
+  .ery-nav__bars::before,
+  .ery-nav__bars::after {
+    content: "";
+    position: absolute;
+    left: 0;
+  }
+  .ery-nav__bars::before { top: -6px; }
+  .ery-nav__bars::after { top: 6px; }
+  .ery-nav__toggle[aria-expanded="true"] .ery-nav__bars { background: transparent; }
+  .ery-nav__toggle[aria-expanded="true"] .ery-nav__bars::before { transform: translateY(6px) rotate(45deg); }
+  .ery-nav__toggle[aria-expanded="true"] .ery-nav__bars::after { transform: translateY(-6px) rotate(-45deg); }
+
+  /* Mobile dropdown panel. */
+  .ery-nav__mobile {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    min-width: min(280px, calc(100vw - 32px));
+    display: flex;
+    flex-direction: column;
+    gap: var(--ery-space-3);
+    padding: var(--ery-space-4);
+    background: var(--ery-surface);
+    border: 1px solid var(--ery-border);
+    border-radius: var(--ery-radius-md, 12px);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+    z-index: 60;
+  }
+  .ery-nav__mobile[hidden] { display: none; }
+  .ery-nav__mobile-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .ery-nav__mobile-link {
+    display: block;
+    padding: 10px 12px;
+    border-radius: var(--ery-radius-sm);
+    color: var(--ery-text);
+    font-size: var(--ery-text-sm);
+    font-weight: 500;
+  }
+  .ery-nav__mobile-link:hover,
+  .ery-nav__mobile-link[aria-current="page"] {
+    background: var(--ery-surface-subtle);
+  }
+  .ery-nav__mobile-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--ery-space-3);
+    padding-top: var(--ery-space-3);
+    border-top: 1px solid var(--ery-border);
+  }
+
+  /* On narrow screens the desktop nav collapses behind the hamburger. */
   @media (max-width: 760px) {
-    .ery-nav__list {
+    .ery-nav__list,
+    .ery-nav__desktop {
       display: none;
+    }
+    .ery-nav__toggle {
+      display: inline-flex;
     }
   }
 </style>

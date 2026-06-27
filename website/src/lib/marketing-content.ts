@@ -100,7 +100,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "Everything a high-mix, low-volume shop needs.",
       lead: "No add-on store, no per-seat extras, no surprise modules. The full MES from day one — tablet to planner to API.",
       items: [
-        { title: "Touch-friendly operator terminals", body: "Kanban work queues organised by production cell. 56px touch targets. Glanceable status, due-date urgency, and elapsed timing from one metre away." },
+        { title: "Touch-friendly operator terminals", body: "Kanban work queues organised by production cell. Large touch targets, glanceable status, due-date urgency, and elapsed timing readable from a metre away." },
         { title: "Job & part tracking", body: "Full production visibility through cutting, bending, welding, assembly, finishing. Routing visualisation across cells, WIP limits, and a capacity overview." },
         { title: "3D STEP viewer", body: "Browser-based CAD, no software install. Measurement, exploded views, embedded inside the operator detail modal." },
         { title: "REST API & webhooks", body: "Filtering, pagination, search, and webhook dispatch for every lifecycle event. Built for ERP-to-MES sync, not just point-and-click." },
@@ -113,7 +113,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "From ERP push to planner dashboard in three steps.",
       steps: [
         { n: "01", h: "Import your jobs", b: "Push from your ERP via the REST API, drop in a CSV, or use a planning adapter. Eryxon Flow normalises parts, operations, and routing so the floor sees one shape regardless of upstream system.", tag: "REST · CSV · webhooks" },
-        { n: "02", h: "Operators work the queue", b: "Each cell sees its own tablet. Tap an operation to open it, start the timer, mark good and scrap quantities, raise issues. Real-time updates push back to the planner without a refresh.", tag: "Tablet · 56px touch targets · realtime" },
+        { n: "02", h: "Operators work the queue", b: "Each cell sees its own tablet. Tap an operation to open it, start the timer, mark good and scrap quantities, raise issues. Real-time updates push back to the planner without a refresh.", tag: "Tablet · large touch targets · realtime" },
         { n: "03", h: "Planners watch capacity", b: "A dashboard with WIP limits per cell, due-date heat, and an issue queue. Capacity over 100% is flagged — no surprise overruns on Friday at 16:55.", tag: "Capacity · WIP limits · issue queue" },
       ],
     },
@@ -194,7 +194,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "Van order in het ERP naar de planning, in drie stappen.",
       steps: [
         { n: "01", h: "Zet je orders erin", b: "Via de REST API vanuit je ERP, met een CSV, of via een planningskoppeling. Eryxon Flow trekt onderdelen, bewerkingen en routes recht, zodat de vloer altijd dezelfde opbouw ziet, wat er bovenstrooms ook staat.", tag: "REST · CSV · webhooks" },
-        { n: "02", h: "De vloer werkt de wachtrij af", b: "Elke cel heeft zijn eigen tablet. Tik op een bewerking, start de timer, vul goed- en afkeuraantallen in, meld een probleem. De planner ziet het meteen, zonder de pagina te verversen.", tag: "Tablet · knoppen van 56px · live" },
+        { n: "02", h: "De vloer werkt de wachtrij af", b: "Elke cel heeft zijn eigen tablet. Tik op een bewerking, start de timer, vul goed- en afkeuraantallen in, meld een probleem. De planner ziet het meteen, zonder de pagina te verversen.", tag: "Tablet · grote knoppen · live" },
         { n: "03", h: "De planner houdt de capaciteit in de gaten", b: "Eén scherm met de WIP-limiet per cel, welke orders krap zitten en een lijst met meldingen. Zit een cel boven de 100 procent, dan zie je dat. Geen verrassing meer op vrijdag om vijf voor vijf.", tag: "Capaciteit · WIP-limieten · meldingen" },
       ],
     },
@@ -275,7 +275,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "Vom Auftrag im ERP bis zur Planung, in drei Schritten.",
       steps: [
         { n: "01", h: "Aufträge einspielen", b: "Über die REST-API aus deinem ERP, per CSV oder über eine Planungsanbindung. Eryxon Flow zieht Teile, Arbeitsgänge und Routen gerade, sodass die Werkstatt immer denselben Aufbau sieht, egal was vorgelagert steht.", tag: "REST · CSV · Webhooks" },
-        { n: "02", h: "Die Werkstatt arbeitet die Liste ab", b: "Jede Zelle hat ihr eigenes Tablet. Arbeitsgang antippen, Timer starten, Gut- und Ausschussmengen erfassen, Probleme melden. Der Planer sieht es sofort, ohne die Seite neu zu laden.", tag: "Tablet · 56px-Schaltflächen · live" },
+        { n: "02", h: "Die Werkstatt arbeitet die Liste ab", b: "Jede Zelle hat ihr eigenes Tablet. Arbeitsgang antippen, Timer starten, Gut- und Ausschussmengen erfassen, Probleme melden. Der Planer sieht es sofort, ohne die Seite neu zu laden.", tag: "Tablet · große Schaltflächen · live" },
         { n: "03", h: "Der Planer behält die Kapazität im Blick", b: "Ein Bildschirm mit dem WIP-Limit je Zelle, welche Aufträge knapp sind und einer Meldungsliste. Liegt eine Zelle über 100 Prozent, siehst du das. Keine Überraschung mehr am Freitag um kurz vor Feierabend.", tag: "Kapazität · WIP-Limits · Meldungen" },
       ],
     },

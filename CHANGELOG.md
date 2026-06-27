@@ -2,6 +2,25 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.8.2] — 2026-06-27
+
+### Fixed
+
+- **Website: release notes were out of order** — same-day releases (v0.7.2,
+  v0.8.0, v0.8.1 all shipped 2026-06-27) sorted only by date, so they rendered
+  in the wrong order. The page now sorts newest-first by semantic version.
+- **Website: no navigation menu on mobile** — the shared marketing header hid
+  every nav link below 760px with no replacement, leaving phones with no way to
+  navigate the site. Added a proper hamburger dropdown (Documentation, Blog,
+  Release Notes, Roadmap, language switch, CTA).
+
+### Changed
+
+- **Website: homepage copy** — removed pixel/jargon wording ("56px touch
+  targets") from the landing page across EN/NL/DE, and renamed the nav item
+  "Changelog" to "Release Notes" to match the page. Deleted orphaned, shadowed
+  `docs/index.mdx` files that never rendered (the homepage is `pages/index.astro`).
+
 ## [0.8.1] — 2026-06-27
 
 ### Changed
