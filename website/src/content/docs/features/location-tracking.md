@@ -24,10 +24,14 @@ A slot can be a rack position, a floor zone, a trolley — whatever your floor a
 ## Operator flow
 
 1. The operator finishes an operation and taps complete.
-2. A slot picker opens, pre-selecting the most open slot near that cell.
+2. A slot picker opens, pre-selecting the most open slot near the **cell the part heads to next**, and naming that cell so the part lands in the right lane.
 3. The operator confirms (or picks a different slot). Full slots are marked so nothing gets double-stacked.
 
 That is the whole interaction — one tap on the slot, one to confirm. A part is only ever in one place: recording a new slot clears the old one automatically.
+
+The same view lives in the operator terminal's **Location** tab, so an operator can check or change where a part is at any time — not only at completion. It shows the current slot (or "not placed yet") and where the part is heading next.
+
+![Location tab in the operator terminal, showing the part is heading to the next cell](../../../assets/operator-terminal-location-desktop.png)
 
 ## What you get
 

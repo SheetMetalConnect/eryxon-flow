@@ -1,7 +1,7 @@
 {
   "name": "eryxon-flow",
   "private": true,
-  "version": "0.7.2",
+  "version": "0.8.0",
   "license": "Apache-2.0",
   "type": "module",
   "scripts": {
@@ -35,7 +35,8 @@
     "android:assemble:debug": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug",
     "android:assemble:release": "npm run build && npx cap sync android && cd android && ./gradlew assembleRelease",
     "android:bundle:release": "npm run build && npx cap sync android && cd android && ./gradlew bundleRelease",
-    "android:clean": "cd android && ./gradlew clean"
+    "android:clean": "cd android && ./gradlew clean",
+    "screenshots:terminal": "node scripts/screenshots/capture-terminal.mjs"
   },
   "dependencies": {
     "@capacitor-mlkit/barcode-scanning": "^7.5.0",

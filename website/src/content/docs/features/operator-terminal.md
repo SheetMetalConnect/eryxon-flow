@@ -66,13 +66,38 @@ The state updates automatically. When you start an operation, it switches to Act
 
 ## Detail Panel
 
-Tap any operation to open the detail panel on the right side of the screen. This gives you everything you need without leaving the terminal:
+Tap any operation to open the detail panel. It is built around one idea: a calm header that tells you *what* you are holding, then everything else tucked behind tabs so the screen never feels cluttered. The panel fills the right side on a workstation and the whole screen on a phone.
 
-- **3D Viewer** — rotate and inspect the part in 3D
-- **PDF Viewer** — open technical drawings, work instructions, or customer specs
-- **Routing** — see the full production route with completed and remaining steps highlighted
+![Operator terminal detail panel on a desktop workstation, showing the Steps tab](../../../assets/operator-terminal-detail-desktop.png)
 
-Close the panel by tapping outside it or pressing the X.
+At the top, the **header** shows the job number, the part, the cell you are at, and a few status chips — whether the operation is active, what kind of work it is (cut, weld, finishing…), and a rush flag if it jumps the queue. Each fact appears once; nothing is repeated.
+
+Below the header, four tabs hold the detail:
+
+- **Steps** — the work instructions for this cell (optional — if there are none, the routing is your guide), followed by the full production route with completed and remaining steps highlighted. Your current step is called out.
+- **Batch** — when the part runs as part of a nest or batch, this shows the batch number, type, status, and how many operations move together. Hidden when the part is not batched. See [Batch & nesting](/features/batch-management/).
+- **Location** — where the part physically is and where it is heading next. Shown only when location tracking is on. See [Location tracking](/features/location-tracking/).
+- **Info** — required tools and resources, assembly dependencies, and the CNC program QR code.
+
+![Info tab in the operator terminal, showing the CNC program QR code](../../../assets/operator-terminal-info-desktop.png)
+
+When the part has a 3D model or a drawing, **3D** and **PDF** tabs appear too — they load only when you open them, so the panel stays fast. Tap **Expand** for a full-screen view.
+
+The **action bar** is pinned to the bottom in thumb reach: **Start / Pause**, **Report production**, **Complete**, and **Report issue**.
+
+### On a phone
+
+The same panel reflows to a single column on a phone — full-width tabs, stacked actions, large tap targets — so the floor view is just as usable on a handheld as on a wall-mounted terminal.
+
+![Operator terminal detail panel on a phone](../../../assets/operator-terminal-detail-mobile.png)
+
+Close the panel by tapping outside it, pressing the X, or — on a phone — using Back.
+
+### Light and dark
+
+The terminal follows the device theme, so a workstation in a bright hall and a tablet in a dim cell are both easy to read.
+
+![Operator terminal detail panel in dark mode](../../../assets/operator-terminal-detail-desktop-dark.png)
 
 ## Tips for Daily Use
 
