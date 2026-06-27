@@ -2,22 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render } from "@testing-library/react";
 import { PwaUpdatePrompt } from "./PwaUpdatePrompt";
 
-interface ToastOptions {
-  duration: number;
-  action: { label: string; onClick: () => void };
-  cancel: { label: string; onClick: () => void };
-}
-
 const mocks = vi.hoisted(() => ({
   isNativeApp: vi.fn(() => false),
   useRegisterSW: vi.fn(),
-  toast: Object.assign(
-    vi.fn<(message: string, options: ToastOptions) => string>(() => "toast-id"),
-    {
-      success: vi.fn(),
-      dismiss: vi.fn(),
-    },
-  ),
+  toast: Object.assign(vi.fn(() => "toast-id"), {
+    success: vi.fn(),
+    loading: vi.fn(),
+    dismiss: vi.fn(),
+  }),
 }));
 
 vi.mock("@/native", () => ({ isNativeApp: mocks.isNativeApp }));
@@ -70,37 +62,20 @@ describe("PwaUpdatePrompt", () => {
     expect(setOfflineReady).toHaveBeenCalledWith(false);
   });
 
-  it("shows a persistent update toast whose action activates the new SW", () => {
+  it("auto-applies the update and shows an updating toast when a new version is ready", () => {
     const { updateServiceWorker } = mockRegisterSW({ needRefresh: true });
     render(<PwaUpdatePrompt />);
 
-    expect(mocks.toast).toHaveBeenCalledTimes(1);
-    const [message, options] = mocks.toast.mock.calls[0];
-    expect(message).toBe("pwa.updateAvailable");
-    // Infinity duration: the prompt must survive until the operator decides.
-    expect(options.duration).toBe(Infinity);
-
-    options.action.onClick();
-    // `true` posts SKIP_WAITING so the waiting SW activates and reloads.
+    // No manual tap: `true` posts SKIP_WAITING so the waiting SW activates and reloads.
     expect(updateServiceWorker).toHaveBeenCalledWith(true);
+    expect(mocks.toast.loading).toHaveBeenCalledWith("pwa.updating", expect.anything());
   });
 
-  it("lets the operator defer the update without activating it", () => {
-    const { setNeedRefresh, updateServiceWorker } = mockRegisterSW({
-      needRefresh: true,
-    });
+  it("does not toast or update when there is nothing to announce", () => {
+    const { updateServiceWorker } = mockRegisterSW();
     render(<PwaUpdatePrompt />);
-
-    const [, options] = mocks.toast.mock.calls[0];
-    options.cancel.onClick();
-    expect(setNeedRefresh).toHaveBeenCalledWith(false);
-    expect(updateServiceWorker).not.toHaveBeenCalled();
-  });
-
-  it("does not toast when there is nothing to announce", () => {
-    mockRegisterSW();
-    render(<PwaUpdatePrompt />);
-    expect(mocks.toast).not.toHaveBeenCalled();
+    expect(mocks.toast.loading).not.toHaveBeenCalled();
     expect(mocks.toast.success).not.toHaveBeenCalled();
+    expect(updateServiceWorker).not.toHaveBeenCalled();
   });
 });

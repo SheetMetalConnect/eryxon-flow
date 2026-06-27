@@ -248,6 +248,7 @@
     "updateDescription": "Herlaad om de update toe te passen.",
     "reload": "Herladen",
     "later": "Later",
+    "updating": "Bezig met bijwerken naar de nieuwste versie…",
     "offlineReady": "Eryxon Flow is klaar om offline te werken"
   }
 }

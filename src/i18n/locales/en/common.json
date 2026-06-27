@@ -248,6 +248,7 @@
     "updateDescription": "Reload to apply the update.",
     "reload": "Reload",
     "later": "Later",
+    "updating": "Updating to the latest version…",
     "offlineReady": "Eryxon Flow is ready to work offline"
   }
 }

@@ -23,13 +23,24 @@ export function PwaUpdatePrompt(): null {
   return <PwaUpdatePromptInner />;
 }
 
+// How often to ask the browser to check for a newer service worker. Shop-floor
+// terminals stay open for hours, so without a poll they'd never see an update.
+const UPDATE_CHECK_INTERVAL_MS = 20 * 60 * 1000;
+
 function PwaUpdatePromptInner(): null {
   const { t } = useTranslation("common");
   const {
     offlineReady: [offlineReady, setOfflineReady],
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [needRefresh],
     updateServiceWorker,
-  } = useRegisterSW();
+  } = useRegisterSW({
+    onRegisteredSW(_swUrl, registration) {
+      if (!registration) return;
+      setInterval(() => {
+        void registration.update();
+      }, UPDATE_CHECK_INTERVAL_MS);
+    },
+  });
 
   useEffect(() => {
     if (offlineReady) {
@@ -38,26 +49,13 @@ function PwaUpdatePromptInner(): null {
     }
   }, [offlineReady, setOfflineReady, t]);
 
+  // Auto-apply updates: when a new version is ready, activate it and reload so
+  // the UI is always current — no manual "Reload" tap, no stale cached bundle.
   useEffect(() => {
     if (!needRefresh) return;
-    const id = toast(t("pwa.updateAvailable"), {
-      description: t("pwa.updateDescription"),
-      duration: Infinity,
-      action: {
-        label: t("pwa.reload"),
-        onClick: () => {
-          void updateServiceWorker(true);
-        },
-      },
-      cancel: {
-        label: t("pwa.later"),
-        onClick: () => setNeedRefresh(false),
-      },
-    });
-    return () => {
-      toast.dismiss(id);
-    };
-  }, [needRefresh, setNeedRefresh, updateServiceWorker, t]);
+    toast.loading(t("pwa.updating"), { id: "pwa-update", duration: Infinity });
+    void updateServiceWorker(true);
+  }, [needRefresh, updateServiceWorker, t]);
 
   return null;
 }
