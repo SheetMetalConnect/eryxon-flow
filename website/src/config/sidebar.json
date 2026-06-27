@@ -37,6 +37,14 @@
           "slug": "guides/concepts"
         },
         {
+          "label": "Production Flow",
+          "slug": "guides/production-flow"
+        },
+        {
+          "label": "Glossary",
+          "slug": "guides/glossary"
+        },
+        {
           "label": "Operator Manual",
           "slug": "guides/operator-manual"
         },
@@ -72,6 +80,10 @@
         {
           "label": "Location Tracking",
           "slug": "features/location-tracking"
+        },
+        {
+          "label": "Notifications",
+          "slug": "features/notifications"
         },
         {
           "label": "Scheduling & Capacity",

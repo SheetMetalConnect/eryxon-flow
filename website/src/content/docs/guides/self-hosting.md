@@ -437,6 +437,27 @@ docker compose up -d
 
 ---
 
+## Backups and recovery
+
+When you self-host, your data lives on your infrastructure — so backups are yours to own. Two things hold the application's state:
+
+- **The database** — every job, part, operation, time entry, issue, and setting.
+- **Storage** — uploaded drawings, 3D models, and images.
+
+Back up both together so a restore is consistent. With a Supabase stack that means a regular database dump plus a copy of the storage volume; most teams run this nightly and keep a copy off-box (another server or object storage).
+
+A backup you've never restored is a hope, not a backup. The repository ships a **restore drill** (`scripts/restore-drill.sh`) that takes a fresh backup, restores it into a throwaway database and temp directory, and checks parity — row counts per entity and file counts with sample checksums — without ever touching your live data. Run it periodically so you know recovery actually works before you need it.
+
+```mermaid
+flowchart LR
+  DB[("Database")] --> BK["Nightly backup<br/>db dump + storage copy"]
+  ST[("Storage")] --> BK
+  BK --> OFF["Off-box copy"]
+  BK -. periodic .-> DR["Restore drill →<br/>throwaway target →<br/>verify parity"]
+```
+
+---
+
 ## Security Checklist
 
 - [ ] `.env` file is in `.gitignore` (never commit)

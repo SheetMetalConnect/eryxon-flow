@@ -12,8 +12,8 @@ about getting each surface into operators' hands.
 
 > **Common prerequisites:** Node.js 20+, a Supabase project (hosted or
 > self-hosted via `supabase start`), and a clean clone of this repo.
-> [`SELF_HOSTING.md`](SELF_HOSTING.md) covers the local Supabase stack
-> and the LAN networking knobs.
+> The [Self-hosting guide](https://eryxon.eu/guides/self-hosting/) on the website
+> covers the Supabase stack and deployment.
 
 ## Self-host install paths at a glance
 

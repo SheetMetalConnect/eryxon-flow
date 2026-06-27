@@ -190,7 +190,9 @@ opentraceai stats                # View what's indexed
 
 Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <question>`. Agents: `@opentrace`, `@code-explorer`, `@dependency-analyzer`, `@find-usages`, `@explain-service`.
 
-**Developer docs** (in `docs/`): [Architecture](docs/ARCHITECTURE.md) | [API Catalog](docs/API_CATALOG.md) | [Routes](docs/ROUTE_MAP.md) | [Hooks](docs/HOOK_MAP.md) | [Conventions](docs/CONVENTIONS.md) | [Glossary](docs/GLOSSARY.md) | [Troubleshooting](docs/TROUBLESHOOTING.md) | [ADRs](docs/decisions/) | [MCP Setup](docs/AI_AGENT_SETUP.md)
+**Product docs** (how the app works — operator/admin flows, features, glossary, self-hosting) live on the website: <https://eryxon.eu/guides/concepts/>.
+
+**Developer docs** (in `docs/`): [Architecture](docs/ARCHITECTURE.md) | [API Catalog](docs/API_CATALOG.md) | [Routes](docs/ROUTE_MAP.md) | [Hooks](docs/HOOK_MAP.md) | [Conventions](docs/CONVENTIONS.md) | [Troubleshooting](docs/TROUBLESHOOTING.md) | [ADRs](docs/decisions/) | [MCP Setup](docs/AI_AGENT_SETUP.md)
 
 ## License
 
