@@ -92,7 +92,7 @@ Volg in realtime wie er aanwezig is en waaraan zij werken. Geen gegis, geen vert
 
 ## Integratie-Eerste Architectuur
 
-**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via 24 REST-API-endpoints (Beta). Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks (Beta) of MQTT (Beta) — de MQTT-client krijgt in v0.5 retry, circuit breaker en dead-letter logging. De MCP-server (Live) maakt AI/automatisering-integratie mogelijk met stdio voor lokale clients en Streamable HTTP voor vertrouwde zelfgehoste deployments.
+**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via 24 REST-API-endpoints (Beta). Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks (Beta) of MQTT (Beta) — de MQTT-client krijgt retry, circuit breaker en dead-letter logging. De MCP-server (Live) maakt AI/automatisering-integratie mogelijk met stdio voor lokale clients en Streamable HTTP voor vertrouwde zelfgehoste deployments.
 
 ### Bestandsafhandeling
 Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden rechtstreeks naar Supabase Storage en verwijs vervolgens naar het bestandspad bij het maken van orders of onderdelen. Grote bestanden (typisch 5-50MB) worden rechtstreeks naar de storage geüpload—geen timeouts, geen API-knelpunten.
@@ -101,7 +101,7 @@ Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden 
 Voeg JSON-payloads toe aan orders, onderdelen en taken voor uw specifieke behoeften—gereedschapsvereisten, malnummers, machine-instellingen, materiaalspecificaties, alles wat uw werkplaats moet bijhouden.
 
 ### ERP- & Planning-Integraties
-Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. Of bouw uw eigen integratie met onze GitHub starter kits met voorbeeldcode en documentatie. v0.5 levert ook pluggable planning-adapters in **Beta**-status voor **FrePPLe** en **Odoo MRP**.
+Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. Of bouw uw eigen integratie met onze GitHub starter kits met voorbeeldcode en documentatie. Eryxon Flow levert ook pluggable planning-adapters in **Beta**-status voor **FrePPLe** en **Odoo MRP**.
 
 ### Assemblage Volgen
 Onderdelen kunnen ouder-kind relaties hebben. Visuele groepering toont assemblages met geneste componenten. Niet-blokkerende afhankelijkheidswaarschuwingen herinneren operators eraan wanneer onderdelen voltooid moeten zijn voordat assemblage-taken worden gestart—maar ze kunnen dit overschrijven indien nodig.

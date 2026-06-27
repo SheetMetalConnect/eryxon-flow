@@ -5,6 +5,8 @@ description: Group parts for efficient cutting, share setups, and track material
 
 In sheet metal production, a single laser program often cuts parts from multiple jobs on the same sheet. Without batch management, planners track nesting layouts in spreadsheets, operators guess which parts belong together, and time registration falls apart because setup time gets charged to the wrong job.
 
+Recent changes to this area are in the [release notes](/release-notes/).
+
 Eryxon Flow treats batches as first-class objects. You group operations into a batch, assign material, attach the nesting layout, and run the entire batch as one unit. Setup time and cutting time get distributed across all parts automatically.
 
 ## Why batches matter

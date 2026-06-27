@@ -74,7 +74,7 @@
         "qc": "QC"
       },
       "priority": {
-        "rush": "Rush"
+        "bullet": "Bullet"
       }
     },
     "instructions": {
@@ -93,7 +93,6 @@
     "you": "YOU",
     "other": "Other",
     "youAreClockedOn": "You are currently clocked on this operation",
-    "bulletCard": "Rush Order - Bullet Card",
     "resources": {
       "title": "Required Resources",
       "noResources": "No resources required",

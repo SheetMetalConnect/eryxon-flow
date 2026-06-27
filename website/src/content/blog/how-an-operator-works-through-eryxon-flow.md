@@ -12,6 +12,8 @@ relatedLinks:
     href: "/guides/operator-manual/"
   - label: "Operator terminal"
     href: "/features/operator-terminal/"
+  - label: "Release notes"
+    href: "/release-notes/"
 ---
 
 An operator should walk up to a screen, see what to do next, do it, and record what happened. Nothing else should get in the way. Here is the whole path through Eryxon Flow from the floor.
@@ -30,6 +32,9 @@ Either way the operator reads the card — job, part, quantity, hours remaining,
 
 With a job selected, the detail panel carries everything needed at the machine: the drawing, the 3D model, dimensions and tolerances pulled from the model, the CNC program name, and the routing that shows where the part came from and where it goes next. The program name can be scanned from the panel, so the right file loads without retyping.
 
+![Operator Terminal detail panel on a workstation, Steps tab showing instructions and routing for the selected job.](../../assets/operator-terminal-detail-desktop.png)
+*Drawing, 3D model, and routing open from the active job — the operator never leaves the workstation (demo data shown).*
+
 ## Clock on
 
 The operator picks a mode — setup or production — and starts. That opens a time entry against the operation and the operator who is signed in. Pause stops the clock; complete closes the operation and clears it from the queue. Batches that run as one nest start and stop together under a single timer.
@@ -45,5 +50,8 @@ If the floor uses drop-off location tracking, completing an operation asks where
 ## Look back
 
 **My Activity** shows the operator their own time entries and completed work. **My Issues** shows the reports they raised. Both stay scoped to the person, so the view is theirs, not the whole floor's.
+
+![The same Operator Terminal detail panel on a phone, sized for one-handed use.](../../assets/operator-terminal-detail-mobile.png)
+*The same panel on a phone, for one-handed use away from the workstation (demo data shown).*
 
 That is the loop: sign in, find the job, open the part, clock on, report, repeat. It runs on a tablet at the cell or a phone in a pocket, self-hosted or on the [hosted version](https://app.eryxon.eu).

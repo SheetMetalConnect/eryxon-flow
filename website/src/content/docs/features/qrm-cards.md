@@ -28,5 +28,3 @@ A few decisions about how the cards work in day-to-day use.
 **Taking a Yellow Card off.** Removing the card returns the operation to its normal place in the queue. It sorts by its sequence again, the same as before it was parked — it doesn't jump to the front or drop to the back. The hold simply ends and the work rejoins the flow where it belongs.
 
 **How many Bullet Cards.** One is ideal, two at most. That's planner guidance, not a cap the app enforces — the value of the card comes from being rare, and that's a judgement the planner keeps, not a rule the software imposes.
-
-> Note: parts of the operator UI still label the Bullet Card as "Rush". That wording is being corrected; the card itself is unchanged.

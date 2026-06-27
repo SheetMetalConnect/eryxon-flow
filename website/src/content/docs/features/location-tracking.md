@@ -5,6 +5,8 @@ description: Record where a finished part is physically put down, so the next ce
 
 Location tracking answers one question on the floor: "where did you put it?" — once, at the machine, instead of reconstructing it later. It is off by default and turns on per shop.
 
+Recent changes to this area are in the [release notes](/release-notes/).
+
 ## When to use it
 
 A part finishes at one cell and waits for the next. On a busy floor, finding that part again costs time. Location tracking records the drop-off slot at the moment the operator reports the work done, so the next person walks straight to it and the planner can see what space is left.

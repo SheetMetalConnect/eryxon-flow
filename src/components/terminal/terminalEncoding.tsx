@@ -146,7 +146,7 @@ export function TerminalEncodingBadges({
   const statusTone = getTerminalStatusTone(job);
   const StatusIcon = statusTone.icon;
   const operationType = getTerminalOperationType(job);
-  const rushIsSubdued = job.status === "on_hold";
+  const bulletIsSubdued = job.status === "on_hold";
 
   return (
     <div className={cn("flex flex-wrap items-center gap-1.5", compact && "gap-1")}>
@@ -174,13 +174,13 @@ export function TerminalEncodingBadges({
           variant="outline"
           className={cn(
             "min-h-6 rounded-full px-2 py-0 text-[10px] font-semibold uppercase tracking-wide",
-            rushIsSubdued
+            bulletIsSubdued
               ? "border-red-500/30 bg-transparent text-red-500"
               : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
           )}
         >
           <Zap className="mr-1 h-3 w-3" />
-          {t("terminal.encoding.priority.rush", "Rush")}
+          {t("terminal.encoding.priority.bullet", "Bullet")}
         </Badge>
       ) : null}
     </div>

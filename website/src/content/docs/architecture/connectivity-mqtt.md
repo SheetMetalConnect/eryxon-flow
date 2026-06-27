@@ -53,9 +53,9 @@ Result:
 }
 ```
 
-### Reliability (v0.5)
+### Reliability
 
-The MQTT client wrapper in `src/lib/mqtt-client.ts` was hardened in v0.5 for shop-floor reliability:
+The MQTT client wrapper in `src/lib/mqtt-client.ts` is hardened for shop-floor reliability:
 
 - **Exponential backoff retry** — 3 attempts with increasing delay before giving up on a publish
 - **Per-attempt timeout** — each publish attempt has its own deadline so a stuck broker can't wedge the worker

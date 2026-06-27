@@ -5,6 +5,8 @@ description: Touch-friendly workstation view showing what to work on, with live 
 
 The Operator Terminal is the screen operators see at their workstation. It runs on tablets and large touchscreens on the shop floor. Everything is designed for touch — large tap targets, no tiny buttons, no keyboard needed.
 
+The tabbed detail panel below arrived in the [v0.8.0 release](/release-notes/v0-8-0/); the priority chip wording was refined in [v0.8.1](/release-notes/v0-8-1/). All shipped changes live in the [release notes](/release-notes/).
+
 ## Selecting Your Cell
 
 When you open the terminal, pick your cell (workstation) from the cell selector at the top. This filters everything to show only work assigned to your cell. If you work at multiple cells, switch between them with one tap.
@@ -70,9 +72,9 @@ Tap any operation to open the detail panel. It is built around one idea: a calm 
 
 ![Operator terminal detail panel on a desktop workstation, showing the Steps tab](../../../assets/operator-terminal-detail-desktop.png)
 
-At the top, the **header** shows the job number, the part, the cell you are at, and a few status chips — whether the operation is active, what kind of work it is (cut, weld, finishing…), and a rush flag if it jumps the queue. Each fact appears once; nothing is repeated.
+At the top, the **header** shows the job number, the part, the cell you are at, and a few status chips — whether the operation is active, what kind of work it is (cut, weld, finishing…), and a **Bullet** chip if it carries a [Bullet Card](/features/qrm-cards/) and jumps the queue. Each fact appears once; nothing is repeated.
 
-Below the header, four tabs hold the detail:
+Below the header, tabs hold the detail (only the ones with something to show appear):
 
 - **Steps** — the work instructions for this cell (optional — if there are none, the routing is your guide), followed by the full production route with completed and remaining steps highlighted. Your current step is called out.
 - **Batch** — when the part runs as part of a nest or batch, this shows the batch number, type, status, and how many operations move together. Hidden when the part is not batched. See [Batch & nesting](/features/batch-management/).

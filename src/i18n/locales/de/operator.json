@@ -74,7 +74,7 @@
         "qc": "QS"
       },
       "priority": {
-        "rush": "Eil"
+        "bullet": "Bullet"
       }
     },
     "instructions": {
@@ -93,7 +93,6 @@
     "you": "SIE",
     "other": "Andere",
     "youAreClockedOn": "Sie sind derzeit bei diesem Arbeitsgang eingestempelt",
-    "bulletCard": "Eilauftrag - Bullet Card",
     "resources": {
       "title": "Erforderliche Betriebsmittel",
       "noResources": "Keine Betriebsmittel erforderlich",

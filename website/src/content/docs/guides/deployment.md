@@ -98,7 +98,7 @@ docker run -p 80:80 eryxon-flow
 
 ### Option D: Docker Compose + Optional Caddy HTTPS
 
-`v0.6` uses a single `docker-compose.yml` as the current self-hosted Docker path. If you want HTTPS, enable the optional `caddy` service that already ships in that file and edit the included `Caddyfile` for either a public hostname or a LAN-only rollout.
+Self-hosting uses a single `docker-compose.yml` as the Docker path. If you want HTTPS, enable the optional `caddy` service that already ships in that file and edit the included `Caddyfile` for either a public hostname or a LAN-only rollout.
 
 ```bash
 # In docker-compose.yml: uncomment the optional `caddy` service and the

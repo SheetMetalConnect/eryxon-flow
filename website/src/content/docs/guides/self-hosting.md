@@ -207,7 +207,7 @@ docker run -d -p 80:80 --name eryxon-flow eryxon-flow
 
 ### Docker Compose (Recommended)
 
-The repository ships with a ready-to-use `docker-compose.yml`. In the current `v0.6` repo, this is the single self-hosted Docker entry point and it already reads `.env` through `env_file`.
+The repository ships with a ready-to-use `docker-compose.yml`. This is the single self-hosted Docker entry point and it already reads `.env` through `env_file`.
 
 ```bash
 docker compose up -d
@@ -247,7 +247,7 @@ docker compose up -d --build
 
 ### Docker Compose with SSL (Production)
 
-The repo no longer uses a separate `docker-compose.prod.yml`. For HTTPS in the current `v0.6` line, stay on the shipped `docker-compose.yml` and enable the optional Caddy service that is already commented into that file:
+The repo no longer uses a separate `docker-compose.prod.yml`. For HTTPS, stay on the shipped `docker-compose.yml` and enable the optional Caddy service that is already commented into that file:
 
 1. Uncomment the `caddy` service and the `volumes:` block in `docker-compose.yml`
 2. Change the `eryxon-flow` service from `ports: ["80:80"]` to `expose: ["80"]`

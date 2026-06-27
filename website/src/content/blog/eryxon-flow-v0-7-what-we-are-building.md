@@ -12,8 +12,8 @@ ctaIntent: "trial"
 relatedLinks:
   - label: "Roadmap"
     href: "/roadmap/"
-  - label: "Changelog"
-    href: "/guides/changelog/"
+  - label: "Release Notes"
+    href: "/release-notes/"
   - label: "Batch Management"
     href: "/features/batch-management/"
 ---
