@@ -1,10 +1,11 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 // The guards module pulls in auth hooks at import time; stub them so this
 // test stays focused on the operator gate and never touches Supabase.
-vi.mock("@/hooks/useProfile", () => ({ useProfile: (): null => null }));
+const useProfileMock = vi.fn();
+vi.mock("@/hooks/useProfile", () => ({ useProfile: () => useProfileMock() }));
 vi.mock("@/hooks/useSession", () => ({
   useSession: (): { user: null } => ({ user: null }),
 }));
@@ -22,19 +23,25 @@ import { RequireActiveOperator, resolveOperatorGate } from "./guards";
 describe("resolveOperatorGate", () => {
   it("waits while the operator context is hydrating", () => {
     expect(
-      resolveOperatorGate({ isLoading: true, hasActiveOperator: false }),
+      resolveOperatorGate({ isLoading: true, hasActiveOperator: false, isAdmin: false }),
     ).toBe("loading");
   });
 
   it("redirects a shared account with no active operator", () => {
     expect(
-      resolveOperatorGate({ isLoading: false, hasActiveOperator: false }),
+      resolveOperatorGate({ isLoading: false, hasActiveOperator: false, isAdmin: false }),
     ).toBe("redirect");
   });
 
   it("allows a verified active operator through", () => {
     expect(
-      resolveOperatorGate({ isLoading: false, hasActiveOperator: true }),
+      resolveOperatorGate({ isLoading: false, hasActiveOperator: true, isAdmin: false }),
+    ).toBe("allow");
+  });
+
+  it("allows an admin through for oversight without a PIN'd operator", () => {
+    expect(
+      resolveOperatorGate({ isLoading: false, hasActiveOperator: false, isAdmin: true }),
     ).toBe("allow");
   });
 });
@@ -58,11 +65,25 @@ function renderGate() {
 }
 
 describe("RequireActiveOperator", () => {
+  beforeEach(() => {
+    // Default: a non-admin shared account (no PIN'd operator).
+    useProfileMock.mockReturnValue(null);
+  });
+
   it("redirects to the PIN login when no operator is signed in", () => {
     useOperatorMock.mockReturnValue({ activeOperator: null, isLoading: false });
     renderGate();
     expect(screen.getByText("PIN login")).toBeInTheDocument();
     expect(screen.queryByText("Operator queue")).toBeNull();
+  });
+
+  it("lets an admin into the mobile shell without forcing the PIN login", () => {
+    // Admins get oversight access without badging in as a shop-floor operator.
+    useProfileMock.mockReturnValue({ role: "admin" });
+    useOperatorMock.mockReturnValue({ activeOperator: null, isLoading: false });
+    renderGate();
+    expect(screen.getByText("Operator queue")).toBeInTheDocument();
+    expect(screen.queryByText("PIN login")).toBeNull();
   });
 
   it("renders the operator surface when an operator is active", () => {

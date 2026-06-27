@@ -82,11 +82,18 @@ type OperatorGateOutcome = "loading" | "redirect" | "allow";
 export function resolveOperatorGate({
   isLoading,
   hasActiveOperator,
+  isAdmin,
 }: {
   isLoading: boolean;
   hasActiveOperator: boolean;
+  isAdmin: boolean;
 }): OperatorGateOutcome {
   if (isLoading) return "loading";
+  // Admins/shift-leaders get oversight access to the mobile shell WITHOUT badging
+  // in as a shop-floor operator — same as the desktop terminal (ProtectedRoute).
+  // They are never recorded as an operator: mobile write actions guard on
+  // activeOperator?.id, which stays null for an admin who didn't PIN in.
+  if (isAdmin) return "allow";
   if (!hasActiveOperator) return "redirect";
   return "allow";
 }
@@ -96,11 +103,13 @@ export function RequireActiveOperator({
 }: {
   children: React.ReactNode;
 }) {
+  const profile = useProfile();
   const { activeOperator, isLoading } = useOperator();
   const location = useLocation();
   const outcome = resolveOperatorGate({
     isLoading,
     hasActiveOperator: Boolean(activeOperator),
+    isAdmin: profile?.role === "admin",
   });
 
   if (outcome === "loading") {
