@@ -1,0 +1,40 @@
+---
+title: Location Tracking
+description: Record where a finished part is physically put down, so the next cell and the planner know where it is and where there is still space.
+---
+
+Location tracking answers one question on the floor: "where did you put it?" — once, at the machine, instead of reconstructing it later. It is off by default and turns on per shop.
+
+## When to use it
+
+A part finishes at one cell and waits for the next. On a busy floor, finding that part again costs time. Location tracking records the drop-off slot at the moment the operator reports the work done, so the next person walks straight to it and the planner can see what space is left.
+
+If your floor does not move parts between buffers, leave it off. When off, the terminal does not touch any of it.
+
+## Admin setup
+
+Turn it on in **Organization Settings → Location tracking**. Then lay out your physical drop-off slots at **Configuration → Locations**:
+
+- Give each slot a **code** (for example `A01`) and an optional label.
+- Tie a slot to a **cell** so suggestions stay close to where the work is.
+- Set a **capacity** — how many parts the slot holds.
+
+A slot can be a rack position, a floor zone, a trolley — whatever your floor already uses.
+
+## Operator flow
+
+1. The operator finishes an operation and taps complete.
+2. A slot picker opens, pre-selecting the most open slot near that cell.
+3. The operator confirms (or picks a different slot). Full slots are marked so nothing gets double-stacked.
+
+That is the whole interaction — one tap on the slot, one to confirm. A part is only ever in one place: recording a new slot clears the old one automatically.
+
+## What you get
+
+- **Occupancy at a glance** — free versus full per slot, computed live from what is currently placed.
+- **One place per part** — the system never shows a part in two locations.
+- **Attribution** — the placement records who put it there, the same way time entries record who did the work.
+
+## Planned
+
+Capacity by part size, a visual map of the layout, and API access for automated placement are on the roadmap, not yet shipped.
