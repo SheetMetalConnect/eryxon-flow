@@ -9,6 +9,19 @@ The 3D STEP viewer lets you view CAD models directly in the browser. Upload a ST
 
 ![3D STEP Viewer with measurements](../../../assets/viewer-3d.png)
 
+## How it works
+
+The viewer is **browser-first**: by default it parses and renders the STEP file in the operator's browser, so a basic self-hosted install needs no extra CAD infrastructure. When a deployment chooses to run the optional CAD service, the viewer prefers server-processed geometry and can show PMI (the GD&T annotations baked into the model); without it, you still get full geometry and measurement.
+
+```mermaid
+flowchart LR
+  STEP["STEP file on a part"] --> Q{"CAD service enabled?"}
+  Q -->|No| BR["Browser viewer<br/>geometry + measurements"]
+  Q -->|Yes| SV["Server: tessellation + PMI"] --> BR2["Browser viewer<br/>geometry + PMI overlays"]
+```
+
+That split is deliberate: lightweight viewing for everyone, richer inspection for shops that want it — including bringing your own CAD backend.
+
 ## Features
 
 - View `.step` and `.stp` files in the browser
