@@ -102,6 +102,8 @@ const operations: OperationWithDetails[] = routing.map(
     cell: { id: cellId, name: cellName, color, sequence },
     part,
   }),
+  // Safe: DEV-only harness mirroring mockDataGenerator.ts; DetailPanel only
+  // reads the fields provided here, so the partial shape never hits a gap.
 ) as unknown as OperationWithDetails[];
 
 export default function TerminalScreenshot() {

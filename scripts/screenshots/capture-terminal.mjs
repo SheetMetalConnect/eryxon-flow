@@ -24,6 +24,7 @@ try {
 const BASE_URL = process.env.BASE_URL || "http://127.0.0.1:8080";
 const TARGET = `${BASE_URL}/__screenshot/terminal`;
 const OUT = new URL("../../website/src/assets/", import.meta.url).pathname;
+require("node:fs").mkdirSync(OUT, { recursive: true });
 
 // Some sandboxes ship Chromium at a fixed path; fall back to it if Playwright's
 // own resolution fails.
@@ -52,29 +53,32 @@ const shots = [
 ];
 
 const browser = await launch();
-for (const { name, w, h, tab, theme = "light" } of shots) {
-  const ctx = await browser.newContext({
-    viewport: { width: w, height: h },
-    deviceScaleFactor: 2,
-    colorScheme: theme,
-  });
-  // Pin the app theme before first paint so dark shots are reliable.
-  await ctx.addInitScript((t) => {
-    localStorage.setItem("eryxon-theme-mode", t);
-  }, theme);
-  const page = await ctx.newPage();
-  await page.goto(TARGET, { waitUntil: "networkidle" });
-  await page.waitForSelector('[data-testid="screenshot-panel"]', { timeout: 15000 });
-  await page.waitForTimeout(1200);
-  if (tab) {
-    await page.getByRole("tab", { name: tab }).click();
-    await page.waitForTimeout(800);
+try {
+  for (const { name, w, h, tab, theme = "light" } of shots) {
+    const ctx = await browser.newContext({
+      viewport: { width: w, height: h },
+      deviceScaleFactor: 2,
+      colorScheme: theme,
+    });
+    // Pin the app theme before first paint so dark shots are reliable.
+    await ctx.addInitScript((t) => {
+      localStorage.setItem("eryxon-theme-mode", t);
+    }, theme);
+    const page = await ctx.newPage();
+    await page.goto(TARGET, { waitUntil: "networkidle" });
+    await page.waitForSelector('[data-testid="screenshot-panel"]', { timeout: 15000 });
+    await page.waitForTimeout(1200);
+    if (tab) {
+      await page.getByRole("tab", { name: tab }).click();
+      await page.waitForTimeout(800);
+    }
+    await page
+      .locator('[data-testid="screenshot-panel"]')
+      .screenshot({ path: `${OUT}${name}.png` });
+    console.log("wrote", name);
+    await ctx.close();
   }
-  await page
-    .locator('[data-testid="screenshot-panel"]')
-    .screenshot({ path: `${OUT}${name}.png` });
-  console.log("wrote", name);
-  await ctx.close();
+} finally {
+  await browser.close();
 }
-await browser.close();
 console.log("done");
