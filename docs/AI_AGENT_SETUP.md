@@ -72,7 +72,6 @@ Agents should consult these docs for context:
 | `docs/ROUTE_MAP.md` | Adding or modifying frontend routes |
 | `docs/HOOK_MAP.md` | Understanding data flow and real-time subscriptions |
 | `docs/CONVENTIONS.md` | Creating new files (naming, patterns, templates) |
-| `docs/GLOSSARY.md` | Understanding manufacturing domain terms |
 | `docs/TROUBLESHOOTING.md` | Debugging common issues |
 | `docs/decisions/` | Understanding why architectural choices were made |
 | `docs/DATABASE_DIAGRAM.dbml` | Working with database schema |
