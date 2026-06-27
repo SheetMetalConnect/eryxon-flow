@@ -299,9 +299,13 @@ async function fetchOperationsWithDetailsInternal(
   const batchContextsByOperation = new Map<string, OperationBatchContext>();
 
   if (operationIds.length > 0) {
-    let modeHistory: OperationModeHistoryResult[];
+    // Operator-mode history and batch context enrich each operation, but they must
+    // never block the terminal. If any of these queries fail (a half-migrated batch
+    // table, an oversized `.in()`, a missing FK embed) we log and load operations
+    // WITHOUT batch context rather than blanking the whole view — operators can
+    // still see and clock on their work.
     try {
-      modeHistory = await fetchInChunks<OperationModeHistoryResult>(operationIds, (chunk) =>
+      const modeHistory = await fetchInChunks<OperationModeHistoryResult>(operationIds, (chunk) =>
         supabase
           .from("time_entries")
           .select("operation_id, notes")
@@ -309,20 +313,14 @@ async function fetchOperationsWithDetailsInternal(
           .in("operation_id", chunk)
           .like("notes", "operator-mode:%"),
       );
-    } catch (modeHistoryError) {
-      logger.error("Database", "Error fetching operator mode history", modeHistoryError);
-      throw modeHistoryError;
-    }
 
-    for (const entry of modeHistory) {
-      if (parseOperatorTerminalModeNote(entry.notes) === "setup") {
-        setupHistoryByOperation.add(entry.operation_id);
+      for (const entry of modeHistory) {
+        if (parseOperatorTerminalModeNote(entry.notes) === "setup") {
+          setupHistoryByOperation.add(entry.operation_id);
+        }
       }
-    }
 
-    let batchLinks: BatchLinkResult[];
-    try {
-      batchLinks = await fetchInChunks<BatchLinkResult>(operationIds, (chunk) =>
+      const batchLinks = await fetchInChunks<BatchLinkResult>(operationIds, (chunk) =>
         supabase
           .from("batch_operations")
           .select(`
@@ -348,94 +346,98 @@ async function fetchOperationsWithDetailsInternal(
           .in("operation_id", chunk)
           .eq("tenant_id", tenantId),
       );
-    } catch (batchLinksError) {
-      logger.error("Database", "Error fetching batch links for operations", batchLinksError);
-      throw batchLinksError;
-    }
 
-    const batchIds = Array.from(
-      new Set(batchLinks.map((link) => link.batch_id)),
-    );
+      const batchIds = Array.from(
+        new Set(batchLinks.map((link) => link.batch_id)),
+      );
 
-    const membersByBatchId = new Map<string, OperationBatchMember[]>();
+      const membersByBatchId = new Map<string, OperationBatchMember[]>();
 
-    if (batchIds.length > 0) {
-      const { data: batchMembers, error: batchMembersError } = await supabase
-        .from("batch_operations")
-        .select(`
-          batch_id,
-          operation_id,
-          sequence_in_batch,
-          operation:operations!batch_operations_operation_id_fkey(
-            id,
-            status,
-            operation_name,
-            part_id
-          )
-        `)
-        .in("batch_id", batchIds)
-        .eq("tenant_id", tenantId)
-        .order("sequence_in_batch", { ascending: true });
+      if (batchIds.length > 0) {
+        // Chunk by batch_id too — a tenant can accumulate enough batches to blow
+        // the PostgREST URL limit on a single `.in()`.
+        const batchMembers = await fetchInChunks<BatchMemberResult>(batchIds, (chunk) =>
+          supabase
+            .from("batch_operations")
+            .select(`
+              batch_id,
+              operation_id,
+              sequence_in_batch,
+              operation:operations!batch_operations_operation_id_fkey(
+                id,
+                status,
+                operation_name,
+                part_id
+              )
+            `)
+            .in("batch_id", chunk)
+            .eq("tenant_id", tenantId)
+            .order("sequence_in_batch", { ascending: true }),
+        );
 
-      if (batchMembersError) {
-        logger.error("Database", "Error fetching batch members for operations", batchMembersError);
-        throw batchMembersError;
+        for (const member of batchMembers) {
+          const operation = Array.isArray(member.operation)
+            ? member.operation[0]
+            : member.operation;
+
+          if (!operation) continue;
+
+          const safeEntry = activeEntriesByOperation.get(member.operation_id);
+          const existingMembers = membersByBatchId.get(member.batch_id) ?? [];
+          existingMembers.push({
+            operation_id: member.operation_id,
+            operation_name: operation.operation_name,
+            part_id: operation.part_id,
+            status: operation.status,
+            sequence_in_batch: member.sequence_in_batch,
+            active_time_entry: safeEntry
+              ? {
+                  operator_id: safeEntry.operator_id,
+                  operator_name: safeEntry.operator.full_name,
+                  notes: safeEntry.notes ?? null,
+                }
+              : undefined,
+          });
+          membersByBatchId.set(member.batch_id, existingMembers);
+        }
       }
 
-      for (const member of (batchMembers ?? []) as BatchMemberResult[]) {
-        const operation = Array.isArray(member.operation)
-          ? member.operation[0]
-          : member.operation;
+      for (const link of batchLinks) {
+        const batch = Array.isArray(link.batch) ? link.batch[0] : link.batch;
+        if (!batch) continue;
 
-        if (!operation) continue;
+        const parentBatch = Array.isArray(batch.parent_batch)
+          ? batch.parent_batch[0]
+          : batch.parent_batch;
 
-        const safeEntry = activeEntriesByOperation.get(member.operation_id);
-        const existingMembers = membersByBatchId.get(member.batch_id) ?? [];
-        existingMembers.push({
-          operation_id: member.operation_id,
-          operation_name: operation.operation_name,
-          part_id: operation.part_id,
-          status: operation.status,
-          sequence_in_batch: member.sequence_in_batch,
-          active_time_entry: safeEntry
+        batchContextsByOperation.set(link.operation_id, {
+          batch_id: batch.id,
+          batch_number: batch.batch_number,
+          batch_type: batch.batch_type,
+          status: batch.status,
+          operations_count: batch.operations_count,
+          material: batch.material,
+          nesting_metadata: batch.nesting_metadata,
+          sequence_in_batch: link.sequence_in_batch,
+          parent_batch: parentBatch
             ? {
-                operator_id: safeEntry.operator_id,
-                operator_name: safeEntry.operator.full_name,
-                notes: safeEntry.notes ?? null,
+                id: parentBatch.id,
+                batch_number: parentBatch.batch_number,
+                batch_type: parentBatch.batch_type,
+                status: parentBatch.status,
               }
-            : undefined,
+            : null,
+          members: membersByBatchId.get(batch.id) ?? [],
         });
-        membersByBatchId.set(member.batch_id, existingMembers);
       }
-    }
-
-    for (const link of batchLinks) {
-      const batch = Array.isArray(link.batch) ? link.batch[0] : link.batch;
-      if (!batch) continue;
-
-      const parentBatch = Array.isArray(batch.parent_batch)
-        ? batch.parent_batch[0]
-        : batch.parent_batch;
-
-      batchContextsByOperation.set(link.operation_id, {
-        batch_id: batch.id,
-        batch_number: batch.batch_number,
-        batch_type: batch.batch_type,
-        status: batch.status,
-        operations_count: batch.operations_count,
-        material: batch.material,
-        nesting_metadata: batch.nesting_metadata,
-        sequence_in_batch: link.sequence_in_batch,
-        parent_batch: parentBatch
-          ? {
-              id: parentBatch.id,
-              batch_number: parentBatch.batch_number,
-              batch_type: parentBatch.batch_type,
-              status: parentBatch.status,
-            }
-          : null,
-        members: membersByBatchId.get(batch.id) ?? [],
-      });
+    } catch (enrichmentError) {
+      logger.error(
+        "Database",
+        "Operation batch/mode enrichment failed; loading operations without batch context",
+        enrichmentError,
+      );
+      setupHistoryByOperation.clear();
+      batchContextsByOperation.clear();
     }
   }
 
