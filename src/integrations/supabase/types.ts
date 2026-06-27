@@ -3252,6 +3252,93 @@ export type Database = {
           },
         ]
       }
+      storage_locations: {
+        Row: {
+          id: string
+          tenant_id: string
+          cell_id: string | null
+          code: string
+          label: string | null
+          row_index: number | null
+          col_index: number | null
+          capacity: number
+          sort_order: number
+          active: boolean
+          metadata: Json
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          cell_id?: string | null
+          code: string
+          label?: string | null
+          row_index?: number | null
+          col_index?: number | null
+          capacity?: number
+          sort_order?: number
+          active?: boolean
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          cell_id?: string | null
+          code?: string
+          label?: string | null
+          row_index?: number | null
+          col_index?: number | null
+          capacity?: number
+          sort_order?: number
+          active?: boolean
+          metadata?: Json
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      part_placements: {
+        Row: {
+          id: string
+          tenant_id: string
+          part_id: string
+          location_id: string
+          operation_id: string | null
+          placed_by: string | null
+          placed_by_operator_id: string | null
+          placed_at: string
+          removed_at: string | null
+          metadata: Json
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          part_id: string
+          location_id: string
+          operation_id?: string | null
+          placed_by?: string | null
+          placed_by_operator_id?: string | null
+          placed_at?: string
+          removed_at?: string | null
+          metadata?: Json
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          part_id?: string
+          location_id?: string
+          operation_id?: string | null
+          placed_by?: string | null
+          placed_by_operator_id?: string | null
+          placed_at?: string
+          removed_at?: string | null
+          metadata?: Json
+        }
+        Relationships: []
+      }
       tenants: {
         Row: {
           abbreviation: string | null
@@ -3277,6 +3364,7 @@ export type Database = {
           grace_period_ends_at: string | null
           id: string
           last_parts_reset_date: string | null
+          location_tracking_enabled: boolean
           max_jobs: number | null
           max_parts_per_month: number | null
           max_storage_gb: number | null
@@ -3330,6 +3418,7 @@ export type Database = {
           grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
+          location_tracking_enabled?: boolean
           max_jobs?: number | null
           max_parts_per_month?: number | null
           max_storage_gb?: number | null
@@ -3383,6 +3472,7 @@ export type Database = {
           grace_period_ends_at?: string | null
           id?: string
           last_parts_reset_date?: string | null
+          location_tracking_enabled?: boolean
           max_jobs?: number | null
           max_parts_per_month?: number | null
           max_storage_gb?: number | null

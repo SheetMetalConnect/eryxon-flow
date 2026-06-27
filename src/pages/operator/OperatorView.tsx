@@ -272,15 +272,21 @@ export default function OperatorView() {
         />
       </div>
 
-      <PlacementPickerModal
-        open={placementTarget !== null}
-        onOpenChange={(open) => {
-          if (!open) setPlacementTarget(null);
-        }}
-        cellId={placementTarget?.cellId ?? null}
-        isRecording={isRecording}
-        onConfirm={handleConfirmPlacement}
-      />
+      {/* Only mount the placement picker when location tracking is on. The module
+          is off by default, and the modal eagerly queries storage_locations /
+          part_placements on mount — keep it out of the tree so a terminal with
+          tracking disabled never touches the location queries. */}
+      {locationTrackingEnabled ? (
+        <PlacementPickerModal
+          open={placementTarget !== null}
+          onOpenChange={(open) => {
+            if (!open) setPlacementTarget(null);
+          }}
+          cellId={placementTarget?.cellId ?? null}
+          isRecording={isRecording}
+          onConfirm={handleConfirmPlacement}
+        />
+      ) : null}
     </div>
   );
 }
