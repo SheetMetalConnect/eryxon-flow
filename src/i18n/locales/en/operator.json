@@ -218,7 +218,20 @@
     "noOperationsFound": "No routing steps found for this part.",
     "onHold": "On hold",
     "routing": "Routing",
+    "tabs": {
+      "steps": "Steps",
+      "batch": "Batch",
+      "location": "Location",
+      "info": "Info"
+    },
     "selectCell": "Select Cell",
+    "batchPanel": {
+      "intro": "This operation runs as part of a batch — it moves through production together with the other parts on it.",
+      "type": "Type",
+      "status": "Status",
+      "parent": "Parent batch",
+      "operations": "Operations"
+    },
     "status": {
       "longRunning": "lang actief",
       "notClockedOn": "niet ingeklokt"

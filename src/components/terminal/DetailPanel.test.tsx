@@ -147,7 +147,7 @@ describe("DetailPanel", () => {
     });
   });
 
-  it("expands routing steps from the instruction card", async () => {
+  it("expands routing substeps from the Steps tab", async () => {
     substepRows.splice(0, substepRows.length, {
       id: "sub-1",
       operation_id: "op-1",
@@ -159,13 +159,15 @@ describe("DetailPanel", () => {
 
     render(<DetailPanel job={baseJob} operations={operations as any} />);
 
+    // The routing operation is visible in the default Steps tab; its substeps
+    // stay collapsed until the operator taps the operation row.
     await waitFor(() => {
-      expect(screen.getByText(/terminal\.instructions\.viewSteps/)).toBeInTheDocument();
+      expect(screen.getByText("Laser cutting")).toBeInTheDocument();
     });
 
     expect(screen.queryByText("Clamp fixture")).not.toBeInTheDocument();
 
-    fireEvent.click(screen.getByText(/terminal\.instructions\.viewSteps/));
+    fireEvent.click(screen.getByText("Laser cutting"));
 
     await waitFor(() => {
       expect(screen.getByText("Clamp fixture")).toBeInTheDocument();

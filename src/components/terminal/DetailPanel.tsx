@@ -15,12 +15,15 @@ import {
   CheckCircle2,
   Clock3,
   Circle,
+  Info,
   Maximize2,
   X,
   ChevronDown,
   ChevronRight,
   PackageCheck,
   Layers3,
+  Boxes,
+  MapPin,
 } from "lucide-react";
 import { CncProgramQrCode } from "./CncProgramQrCode";
 import { STEPViewer } from "@/components/STEPViewerLazy";
@@ -32,7 +35,6 @@ import { OperationWithDetails } from "@/lib/database";
 import { cn } from "@/lib/utils";
 import IssueForm from "@/components/operator/IssueForm";
 import ProductionQuantityModal from "@/components/operator/ProductionQuantityModal";
-import { JobFlowProgress } from "./JobFlowProgress";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,10 +42,11 @@ import { IconDisplay } from "@/components/ui/icon-picker";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 import {
-  getTerminalOperationType,
   TerminalEncodingBadges,
   TerminalInstructionFallback,
 } from "./terminalEncoding";
+import { OperationBatchTab } from "./OperationBatchTab";
+import { OperationLocationTab } from "./OperationLocationTab";
 
 interface Substep {
   id: string;
@@ -69,9 +72,11 @@ interface DetailPanelProps {
   serverGeometry?: GeometryData | null;
   operations?: OperationWithDetails[];
   onDataRefresh?: () => void;
+  /** When true, surface the Location tab (drop-off placement) in the panel. */
+  locationTrackingEnabled?: boolean;
 }
 
-type ViewerTab = "3d" | "pdf" | "ops";
+type ViewerTab = "3d" | "pdf" | "steps" | "batch" | "location" | "info";
 
 export function DetailPanel({
   job,
@@ -87,6 +92,7 @@ export function DetailPanel({
   serverGeometry,
   operations = [],
   onDataRefresh,
+  locationTrackingEnabled = false,
 }: DetailPanelProps) {
   const { t } = useTranslation();
   const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
@@ -105,7 +111,7 @@ export function DetailPanel({
     new Set(),
   );
   const profile = useProfile();
-  const defaultTab: ViewerTab = job.hasModel ? "3d" : job.hasPdf ? "pdf" : "ops";
+  const defaultTab: ViewerTab = job.hasModel ? "3d" : job.hasPdf ? "pdf" : "steps";
   const [activeTab, setActiveTab] = useState<ViewerTab>(defaultTab);
 
   useEffect(() => {
@@ -193,42 +199,6 @@ export function DetailPanel({
     return nextCellMetrics.current_wip >= nextCellMetrics.wip_limit;
   }, [nextOperation, nextCellMetrics]);
 
-  const statusBadge = useMemo(() => {
-    if (job.isCurrentUserClocked) {
-      return {
-        label: t("terminal.inProcess"),
-        className:
-          "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-      };
-    }
-
-    switch (job.status) {
-      case "in_progress":
-        return {
-          label: t("terminal.inProcess"),
-          className:
-            "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-        };
-      case "in_buffer":
-        return {
-          label: t("terminal.inBuffer"),
-          className:
-            "border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-400",
-        };
-      case "on_hold":
-        return {
-          label: t("terminal.onHold", "On hold"),
-          className:
-            "border-orange-500/30 bg-orange-500/10 text-orange-600 dark:text-orange-400",
-        };
-      default:
-        return {
-          label: t("terminal.expected"),
-          className: "border-border bg-muted text-foreground",
-        };
-    }
-  }, [job.isCurrentUserClocked, job.status, t]);
-
   const showCompleteAction =
     showCompleteActionOverride ??
     (job.status === "in_progress" || job.isCurrentUserClocked);
@@ -250,13 +220,9 @@ export function DetailPanel({
   const currentOperationInstructionSteps = currentOperationSubsteps.filter((substep) =>
     Boolean(substep.notes?.trim()),
   );
-  const instructionPreview = job.notes?.trim() || currentOperationInstructionSteps[0]?.notes?.trim() || null;
-  const hasInstructionFallback = !instructionPreview && currentOperationInstructionSteps.length === 0;
-  const operationType = getTerminalOperationType(job);
-  const viewSteps = () => {
-    setActiveTab("ops");
-    setExpandedOperations((prev) => new Set(prev).add(job.operationId));
-  };
+  const instructionPreview = job.notes?.trim() || null;
+  const hasInstructions =
+    Boolean(instructionPreview) || currentOperationInstructionSteps.length > 0;
 
   const renderOperations = () => {
     if (operations.length === 0) {
@@ -385,145 +351,57 @@ export function DetailPanel({
     );
   };
 
+  const nextCellName = nextOperation?.cell?.name ?? null;
+  const nextCellId = nextOperation?.cell_id ?? null;
+  const tabs = (
+    [
+      job.hasModel && { value: "3d", label: "3D", icon: Box },
+      job.hasPdf && { value: "pdf", label: "PDF", icon: FileText },
+      { value: "steps", label: t("terminal.tabs.steps", "Steps"), icon: Layers3 },
+      job.batchContext && {
+        value: "batch",
+        label: t("terminal.tabs.batch", "Batch"),
+        icon: Boxes,
+      },
+      locationTrackingEnabled && {
+        value: "location",
+        label: t("terminal.tabs.location", "Location"),
+        icon: MapPin,
+      },
+      { value: "info", label: t("terminal.tabs.info", "Info"), icon: Info },
+    ] as Array<{ value: ViewerTab; label: string; icon: typeof Box } | false>
+  ).filter(Boolean) as Array<{ value: ViewerTab; label: string; icon: typeof Box }>;
+
   return (
     <div className="flex h-full flex-col overflow-hidden bg-card text-card-foreground">
-      {/* ── Minimal header: just identity + status (table already shows the rest) ── */}
-      <div className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <h2 className="truncate font-mono text-sm font-semibold text-foreground">
+      {/* ── Identity strip: one calm row, status/type/rush via the shared badges only ── */}
+      <div className="shrink-0 space-y-2 border-b border-border px-4 py-3">
+        <div className="min-w-0">
+          <h2 className="truncate font-mono text-base font-semibold text-foreground">
             {String(job.jobCode ?? "")}
           </h2>
-          <span className="truncate text-sm text-muted-foreground">
+          <p className="truncate text-sm text-muted-foreground">
             {String(job.description ?? "")}
-          </span>
+          </p>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground">
+            <span
+              className="inline-flex h-2.5 w-2.5 rounded-full border border-white/20"
+              style={{ backgroundColor: job.cellColor || undefined }}
+            />
+            {job.cellName || t("terminal.columns.cell")}
+          </span>
+          <TerminalEncodingBadges job={job} t={t} />
           {job.modeSummary ? (
             <Badge variant="outline" className="rounded-full text-[10px]">
               {t(`terminal.workModes.readiness.${job.modeSummary.readiness}`)}
             </Badge>
           ) : null}
-          <Badge
-            variant="outline"
-            className={cn("shrink-0 rounded-full text-[10px]", statusBadge.className)}
-          >
-            {statusBadge.label}
-          </Badge>
         </div>
       </div>
 
-      <div className="shrink-0 border-b border-border px-3 py-2">
-        <div className="rounded-xl border border-border bg-muted/20 p-3">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="space-y-1">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                {t("terminal.instructions.title", "Cell instructions")}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-                <span>{job.cellName || t("terminal.columns.cell")}</span>
-                <span
-                  className="inline-flex h-2.5 w-2.5 rounded-full border border-white/20"
-                  style={{ backgroundColor: job.cellColor || undefined }}
-                />
-              </div>
-            </div>
-            <TerminalEncodingBadges job={job} t={t} />
-          </div>
-
-          <div className="mt-3 space-y-2">
-            {instructionPreview ? (
-              <div className="rounded-lg border border-border bg-background/70 px-3 py-2 text-sm leading-5 text-foreground">
-                {instructionPreview}
-              </div>
-            ) : (
-              <TerminalInstructionFallback t={t} />
-            )}
-
-            {currentOperationInstructionSteps.length > 0 ? (
-              <div className="rounded-lg border border-border/70 bg-background/40 px-3 py-2">
-                <div className="mb-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  {t("terminal.instructions.stepHighlights", "Step highlights")}
-                </div>
-                <div className="space-y-1">
-                  {currentOperationInstructionSteps.slice(0, 2).map((substep) => (
-                    <div key={substep.id} className="text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">{substep.name}:</span>{" "}
-                      {substep.notes}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge
-                variant="outline"
-                className={cn(
-                  "rounded-full px-2 py-0 text-[10px] uppercase tracking-wide",
-                  operationType.chipClassName,
-                )}
-              >
-                {t(operationType.label.key, operationType.label.fallback)}
-              </Badge>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={viewSteps}
-                className="min-h-9 rounded-full px-3 text-xs"
-              >
-                {t("terminal.instructions.viewSteps", "View steps")}
-              </Button>
-              {hasInstructionFallback ? (
-                <span className="text-xs text-muted-foreground">
-                  {t("terminal.instructions.fallbackHint", "Use routing steps as the fallback operator guide.")}
-                </span>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Routing progress (compact) ── */}
-      {job.jobId ? (
-        <div className="shrink-0 border-b border-border px-3 py-2">
-          <JobFlowProgress
-            jobId={job.jobId}
-            currentCellId={job.cellId}
-            nextCellName={nextOperation?.cell?.name}
-            nextCellMetrics={nextCellMetrics}
-          />
-        </div>
-      ) : null}
-
-      {/* ── Resources + Dependencies (inline, compact) ── */}
-      <div className="shrink-0 border-b border-border px-3 py-2">
-        <div className="grid gap-2 lg:grid-cols-2">
-          <OperationResources operationId={job.operationId} />
-          <AssemblyDependencies partId={job.partId} />
-        </div>
-      </div>
-
-      {/* ── CNC Program QR (compact inline) ── */}
-      {job.cncProgramName ? (
-        <div className="shrink-0 border-b border-border px-3 py-2">
-          <div className="flex items-center gap-2">
-            <div className="rounded border border-border bg-white p-1">
-              <CncProgramQrCode programName={job.cncProgramName} size={40} />
-            </div>
-            <div className="min-w-0">
-              <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                {t("parts.cncProgramName")}
-              </div>
-              <div className="truncate font-mono text-sm font-semibold text-foreground">
-                {job.cncProgramName}
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {/* ── 3D / PDF / Routing viewer — takes all remaining space ── */}
+      {/* ── Everything reference lives behind tabs and fills the screen ── */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <Tabs
           key={`${job.id}-${defaultTab}`}
@@ -531,35 +409,28 @@ export function DetailPanel({
           onValueChange={(value) => setActiveTab(value as ViewerTab)}
           className="flex h-full flex-col"
         >
-          <div className="shrink-0 border-b border-border px-3 py-2">
-            <TabsList className="grid h-auto w-full grid-cols-3 gap-1 rounded-lg bg-muted/30 p-0.5">
-              <TabsTrigger
-                value="3d"
-                disabled={!job.hasModel}
-                className="min-h-8 rounded-md text-xs data-[state=active]:bg-background"
-              >
-                <Box className="mr-1.5 h-3.5 w-3.5" />
-                3D
-              </TabsTrigger>
-              <TabsTrigger
-                value="pdf"
-                disabled={!job.hasPdf}
-                className="min-h-8 rounded-md text-xs data-[state=active]:bg-background"
-              >
-                <FileText className="mr-1.5 h-3.5 w-3.5" />
-                PDF
-              </TabsTrigger>
-              <TabsTrigger
-                value="ops"
-                className="min-h-8 rounded-md text-xs data-[state=active]:bg-background"
-              >
-                <Layers3 className="mr-1.5 h-3.5 w-3.5" />
-                {t("terminal.routing", "Routing")}
-              </TabsTrigger>
+          <div className="shrink-0 px-4 pt-3">
+            <TabsList
+              className="grid h-auto w-full gap-1 rounded-lg bg-muted/30 p-0.5"
+              style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
+            >
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="min-h-9 rounded-md text-xs data-[state=active]:bg-background"
+                  >
+                    <Icon className="mr-1.5 h-3.5 w-3.5" />
+                    {tab.label}
+                  </TabsTrigger>
+                );
+              })}
             </TabsList>
           </div>
 
-          <div className="min-h-0 flex-1 overflow-hidden p-3">
+          <div className="min-h-0 flex-1 overflow-hidden p-4">
             {job.hasModel ? (
               <TabsContent
                 value="3d"
@@ -602,8 +473,77 @@ export function DetailPanel({
               </TabsContent>
             ) : null}
 
-            <TabsContent value="ops" className="m-0 h-full overflow-auto">
-              {renderOperations()}
+            {/* Steps: instructions for this cell, then the full routing ── flat, no nested boxes */}
+            <TabsContent value="steps" className="m-0 h-full space-y-5 overflow-auto">
+              <div className="space-y-2">
+                {hasInstructions ? (
+                  <>
+                    {instructionPreview ? (
+                      <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+                        {instructionPreview}
+                      </p>
+                    ) : null}
+                    {currentOperationInstructionSteps.map((substep) => (
+                      <p key={substep.id} className="text-sm leading-6 text-muted-foreground">
+                        <span className="font-medium text-foreground">{substep.name}:</span>{" "}
+                        {substep.notes}
+                      </p>
+                    ))}
+                  </>
+                ) : (
+                  <TerminalInstructionFallback t={t} />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  {t("terminal.routing", "Routing")}
+                </div>
+                {renderOperations()}
+              </div>
+            </TabsContent>
+
+            {job.batchContext ? (
+              <TabsContent value="batch" className="m-0 h-full overflow-auto">
+                <OperationBatchTab batch={job.batchContext} />
+              </TabsContent>
+            ) : null}
+
+            {locationTrackingEnabled ? (
+              <TabsContent value="location" className="m-0 h-full overflow-auto">
+                {activeTab === "location" ? (
+                  <OperationLocationTab
+                    partId={job.partId}
+                    operationId={job.operationId}
+                    nextCellId={nextCellId}
+                    nextCellName={nextCellName}
+                  />
+                ) : null}
+              </TabsContent>
+            ) : null}
+
+            {/* Info: resources + dependencies + CNC, the operator reference desk */}
+            <TabsContent value="info" className="m-0 h-full space-y-4 overflow-auto">
+              <div className="grid gap-3 lg:grid-cols-2">
+                <OperationResources operationId={job.operationId} />
+                <AssemblyDependencies partId={job.partId} />
+              </div>
+
+              {job.cncProgramName ? (
+                <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/20 p-3">
+                  <div className="rounded border border-border bg-white p-1">
+                    <CncProgramQrCode programName={job.cncProgramName} size={48} />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      {t("parts.cncProgramName")}
+                    </div>
+                    <div className="truncate font-mono text-sm font-semibold text-foreground">
+                      {job.cncProgramName}
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </TabsContent>
           </div>
         </Tabs>
@@ -611,7 +551,7 @@ export function DetailPanel({
 
       {/* ── Warnings ── */}
       {job.warnings?.length ? (
-        <div className="shrink-0 border-t border-border bg-amber-500/10 px-3 py-2 text-xs text-amber-600 dark:text-amber-400">
+        <div className="shrink-0 border-t border-border bg-amber-500/10 px-4 py-2 text-xs text-amber-600 dark:text-amber-400">
           <div className="flex items-center gap-1.5">
             <AlertTriangle className="h-3.5 w-3.5" />
             {job.warnings.join(", ")}

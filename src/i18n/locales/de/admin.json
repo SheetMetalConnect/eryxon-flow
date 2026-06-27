@@ -705,7 +705,15 @@
       "confirm": "Ablage bestätigen",
       "skip": "Überspringen",
       "recorded": "Ablage erfasst",
-      "failed": "Ablage konnte nicht erfasst werden"
+      "failed": "Ablage konnte nicht erfasst werden",
+      "nextCell": "Unterwegs zu"
+    },
+    "panel": {
+      "currentlyAt": "Aktueller Ort",
+      "notPlaced": "Noch nicht abgelegt",
+      "notPlacedHint": "Erfassen Sie, wo Sie dieses Teil abgelegt haben, damit der nächste Bediener es findet.",
+      "record": "Ort erfassen",
+      "move": "In anderen Platz verschieben"
     }
   },
   "timeTracking": {

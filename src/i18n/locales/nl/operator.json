@@ -218,7 +218,20 @@
     "noOperationsFound": "Geen routingstappen gevonden voor dit onderdeel.",
     "onHold": "In de wacht",
     "routing": "Routing",
+    "tabs": {
+      "steps": "Stappen",
+      "batch": "Batch",
+      "location": "Locatie",
+      "info": "Info"
+    },
     "selectCell": "Cel selecteren",
+    "batchPanel": {
+      "intro": "Deze bewerking loopt als onderdeel van een batch — hij gaat samen met de andere onderdelen door productie.",
+      "type": "Type",
+      "status": "Status",
+      "parent": "Bovenliggende batch",
+      "operations": "Bewerkingen"
+    },
     "status": {
       "longRunning": "lang actief",
       "notClockedOn": "niet ingeklokt"

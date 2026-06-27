@@ -705,7 +705,15 @@
       "confirm": "Confirm placement",
       "skip": "Skip",
       "recorded": "Placement recorded",
-      "failed": "Could not record placement"
+      "failed": "Could not record placement",
+      "nextCell": "Heading to"
+    },
+    "panel": {
+      "currentlyAt": "Currently at",
+      "notPlaced": "Not placed yet",
+      "notPlacedHint": "Record where you put this part so the next operator can find it.",
+      "record": "Record location",
+      "move": "Move to another slot"
     }
   },
   "timeTracking": {

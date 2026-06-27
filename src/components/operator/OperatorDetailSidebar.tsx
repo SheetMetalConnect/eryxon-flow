@@ -26,6 +26,7 @@ interface OperatorDetailSidebarProps {
   serverGeometry: GeometryData | null;
   operations: OperationWithDetails[];
   onDataRefresh: () => void;
+  locationTrackingEnabled?: boolean;
 }
 
 export function OperatorDetailSidebar({
@@ -46,6 +47,7 @@ export function OperatorDetailSidebar({
   serverGeometry,
   operations,
   onDataRefresh,
+  locationTrackingEnabled = false,
 }: OperatorDetailSidebarProps) {
   const { t } = useTranslation();
 
@@ -95,6 +97,7 @@ export function OperatorDetailSidebar({
             serverGeometry={serverGeometry}
             operations={operations}
             onDataRefresh={onDataRefresh}
+            locationTrackingEnabled={locationTrackingEnabled}
           />
         </div>
       ) : (

@@ -218,7 +218,20 @@
     "noOperationsFound": "Keine Routingschritte für dieses Teil gefunden.",
     "onHold": "Pausiert",
     "routing": "Routing",
+    "tabs": {
+      "steps": "Schritte",
+      "batch": "Batch",
+      "location": "Standort",
+      "info": "Info"
+    },
     "selectCell": "Zelle auswählen",
+    "batchPanel": {
+      "intro": "Dieser Arbeitsgang läuft als Teil eines Batches — er durchläuft die Produktion zusammen mit den anderen Teilen darin.",
+      "type": "Typ",
+      "status": "Status",
+      "parent": "Übergeordneter Batch",
+      "operations": "Arbeitsgänge"
+    },
     "status": {
       "longRunning": "lange aktiv",
       "notClockedOn": "nicht eingestempelt"
