@@ -37,6 +37,11 @@ const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
 const TerminalLogin = lazy(() => import("./pages/operator/TerminalLogin"));
 const OnboardingWizard = lazy(() => import("./components/onboarding").then(m => ({ default: m.OnboardingWizard })));
 const NotFound = lazy(() => import("./pages/NotFound"));
+// DEV-only docs-screenshot harness. Guarded so the branch (and its chunk) is
+// tree-shaken out of production builds.
+const TerminalScreenshot = import.meta.env.DEV
+  ? lazy(() => import("./pages/dev/TerminalScreenshot"))
+  : null;
 
 function AppRoutes() {
   const profile = useProfile();
@@ -97,6 +102,13 @@ function AppRoutes() {
       {OperatorRoutes()}
       {AdminRoutes()}
       {CommonRoutes()}
+
+      {import.meta.env.DEV && TerminalScreenshot ? (
+        <Route
+          path="/__screenshot/terminal"
+          element={<LazyRoute><TerminalScreenshot /></LazyRoute>}
+        />
+      ) : null}
 
       <Route path="*" element={<LazyRoute><NotFound /></LazyRoute>} />
     </Routes>

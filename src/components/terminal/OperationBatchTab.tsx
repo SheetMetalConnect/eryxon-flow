@@ -13,9 +13,13 @@ export function OperationBatchTab({ batch }: { batch: BatchContext }) {
   const { t } = useTranslation();
   const isNest = batch.batchType?.toLowerCase().includes("nest");
 
+  const status = batch.status
+    ? batch.status.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())
+    : "";
+
   const rows: Array<{ label: string; value: string }> = [
     { label: t("terminal.batchPanel.type", "Type"), value: isNest ? "Nest" : "Batch" },
-    { label: t("terminal.batchPanel.status", "Status"), value: batch.status },
+    { label: t("terminal.batchPanel.status", "Status"), value: status },
     {
       label: t("terminal.batchPanel.operations", "Operations"),
       value: String(batch.operationsCount),

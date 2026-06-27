@@ -96,3 +96,7 @@ A typical integration flow with nesting software:
 Batched operations appear grouped in the operator's work queue. Instead of seeing 12 individual cutting operations, the operator sees one batch with all parts listed. They start the batch once, run the program, and stop it when done. The system handles time distribution behind the scenes.
 
 This removes the most common complaint from laser operators: having to start and stop timers for each individual part on a shared nest.
+
+When a part belongs to a batch, the operator terminal's detail panel shows a **Batch** tab — the batch number, whether it is a nest or a plain batch, its status, and how many operations move through production together. It is there when it matters and hidden when the part is not batched.
+
+![Batch tab in the operator terminal detail panel](../../../assets/operator-terminal-batch-desktop.png)

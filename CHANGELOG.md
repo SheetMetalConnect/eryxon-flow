@@ -2,6 +2,31 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.8.0] — 2026-06-27
+
+A focused redesign of the operator terminal's detail panel, plus a finished
+drop-off flow for location tracking.
+
+### Changed
+
+- **Operator detail panel rebuilt around tabs** — the panel used to stack many
+  bordered sections, which squeezed the drawing into a sliver and repeated the
+  same facts (status, operation type, the routing) more than once. It now leads
+  with one calm header and moves everything else behind tabs that fill the
+  screen: **Steps** (instructions + routing), **3D** / **PDF** (loaded only when
+  opened), **Batch**, **Location**, and **Info** (resources, dependencies, CNC).
+  Tabs appear only when they have something to show. The same panel reflows to a
+  single column on a phone.
+
+### Added
+
+- **Location tab with next-cell drop-off** — the terminal now has a Location tab
+  showing where a part currently is and letting an operator record or move it at
+  any time, not just at completion. Both the tab and the completion slot picker
+  name the **next cell** the part is heading to and suggest a slot near it.
+- **Batch tab** — parts that run as part of a nest or batch show a Batch tab with
+  the batch number, type, status, and operation count.
+
 ## [0.7.2] — 2026-06-27
 
 Hotfixes for faults that only surfaced against real, high-volume floors after
