@@ -74,6 +74,10 @@
           "slug": "features/location-tracking"
         },
         {
+          "label": "Notifications",
+          "slug": "features/notifications"
+        },
+        {
           "label": "Scheduling & Capacity",
           "slug": "features/scheduling"
         },
