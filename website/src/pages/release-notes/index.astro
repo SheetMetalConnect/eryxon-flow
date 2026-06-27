@@ -14,9 +14,19 @@
 import { getCollection } from "astro:content";
 import EditorialLayout from "@/layouts/EditorialLayout.astro";
 
-const releases = (await getCollection("releaseNotes", ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.date.getTime() - a.data.date.getTime()
-);
+// Newest-first by semantic version (date alone ties same-day releases like
+// v0.7.2 / v0.8.0 / v0.8.1, which then render out of order). Version leads;
+// date only breaks an exact-version tie.
+const versionKey = (v: string) => v.replace(/^v/, "").split(".").map(Number);
+const releases = (await getCollection("releaseNotes", ({ data }) => !data.draft)).sort((a, b) => {
+  const av = versionKey(a.data.version);
+  const bv = versionKey(b.data.version);
+  for (let i = 0; i < 3; i++) {
+    const diff = (bv[i] ?? 0) - (av[i] ?? 0);
+    if (diff !== 0) return diff;
+  }
+  return b.data.date.getTime() - a.data.date.getTime();
+});
 const dateFmt = new Intl.DateTimeFormat("en", { dateStyle: "long" });
 const badgeLabel = { stable: "Stable", preview: "Preview", beta: "Beta" } as const;
 const tagLabel = { added: "Added", fixed: "Fixed", changed: "Changed", removed: "Removed" } as const;
