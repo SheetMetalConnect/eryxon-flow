@@ -861,7 +861,15 @@
       "confirm": "Plaatsing bevestigen",
       "skip": "Overslaan",
       "recorded": "Plaatsing vastgelegd",
-      "failed": "Plaatsing kon niet worden vastgelegd"
+      "failed": "Plaatsing kon niet worden vastgelegd",
+      "nextCell": "Op weg naar"
+    },
+    "panel": {
+      "currentlyAt": "Huidige locatie",
+      "notPlaced": "Nog niet neergelegd",
+      "notPlacedHint": "Leg vast waar je dit onderdeel hebt neergelegd zodat de volgende operator het terugvindt.",
+      "record": "Locatie vastleggen",
+      "move": "Naar ander vak verplaatsen"
     }
   },
   "timeTracking": {

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Loader2, MapPin, PackageCheck } from 'lucide-react'
+import { ArrowRight, Loader2, MapPin, PackageCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useStorageLocations } from '@/hooks/locations/useStorageLocations'
 import { suggestLocation, type LocationOccupancy } from '@/lib/locations/placement'
@@ -17,8 +17,10 @@ import { suggestLocation, type LocationOccupancy } from '@/lib/locations/placeme
 interface PlacementPickerModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  /** Cell the operation belongs to — scopes the suggestion to nearby slots. */
+  /** Cell to scope the slot suggestion to — the cell the part is heading to. */
   cellId?: string | null
+  /** Name of the next cell, shown so the operator drops it in the right lane. */
+  nextCellName?: string | null
   isRecording?: boolean
   onConfirm: (locationId: string) => void
 }
@@ -32,6 +34,7 @@ export function PlacementPickerModal({
   open,
   onOpenChange,
   cellId,
+  nextCellName,
   isRecording = false,
   onConfirm,
 }: PlacementPickerModalProps) {
@@ -124,6 +127,15 @@ export function PlacementPickerModal({
             {t('locations.placement.title')}
           </DialogTitle>
           <DialogDescription>{t('locations.placement.description')}</DialogDescription>
+          {nextCellName ? (
+            <div className="mt-1 flex items-center gap-1.5 text-sm">
+              <ArrowRight className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                {t('locations.placement.nextCell', 'Heading to')}
+              </span>
+              <span className="font-semibold text-foreground">{nextCellName}</span>
+            </div>
+          ) : null}
         </DialogHeader>
 
         <div className="max-h-[55vh] overflow-y-auto py-2">

@@ -85,19 +85,31 @@ export default function OperatorView() {
     partId: string;
     operationId: string;
     cellId: string | null;
+    nextCellName: string | null;
   } | null>(null);
 
   const handleCompleteWithPlacement = useCallback(async () => {
     const job = selectedJob;
     await handleComplete();
     if (locationTrackingEnabled && job) {
+      // The drop-off slot belongs to the cell the part heads to next, so the
+      // next operator finds it — scope the picker to that cell, not this one.
+      const sorted = [...selectedPartOperations].sort(
+        (a, b) => a.sequence - b.sequence,
+      );
+      const currentIndex = sorted.findIndex((op) => op.id === job.operationId);
+      const nextOp =
+        currentIndex >= 0 && currentIndex < sorted.length - 1
+          ? sorted[currentIndex + 1]
+          : null;
       setPlacementTarget({
         partId: job.partId,
         operationId: job.operationId,
-        cellId: job.cellId ?? null,
+        cellId: nextOp?.cell_id ?? job.cellId ?? null,
+        nextCellName: nextOp?.cell?.name ?? null,
       });
     }
-  }, [selectedJob, handleComplete, locationTrackingEnabled]);
+  }, [selectedJob, selectedPartOperations, handleComplete, locationTrackingEnabled]);
 
   const handleConfirmPlacement = useCallback(
     (locationId: string) => {
@@ -290,6 +302,7 @@ export default function OperatorView() {
           serverGeometry={geometryData}
           operations={selectedPartOperations}
           onDataRefresh={() => void loadData()}
+          locationTrackingEnabled={locationTrackingEnabled}
         />
       </div>
       ) : null}
@@ -305,6 +318,7 @@ export default function OperatorView() {
             if (!open) setPlacementTarget(null);
           }}
           cellId={placementTarget?.cellId ?? null}
+          nextCellName={placementTarget?.nextCellName ?? null}
           isRecording={isRecording}
           onConfirm={handleConfirmPlacement}
         />
