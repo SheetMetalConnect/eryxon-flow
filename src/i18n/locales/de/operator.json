@@ -82,8 +82,8 @@
       "stepHighlights": "Schritthinweise",
       "viewSteps": "Schritte ansehen",
       "fallbackHint": "Verwenden Sie die Routingschritte als Ersatz für die Bedienanweisung.",
-      "missingTitle": "Anweisungen fehlen",
-      "missingBody": "Für diese Zelle sind noch keine Bedienanweisungen hinterlegt. Prüfen Sie die Routingschritte, bevor Sie beginnen."
+      "missingTitle": "Anweisungen optional",
+      "missingBody": "Keine Bedienanweisungen für diese Zelle — folgen Sie den Routingschritten."
     },
     "inProcess": "In Bearbeitung",
     "inBuffer": "Im Puffer",

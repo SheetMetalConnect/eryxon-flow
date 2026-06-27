@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AlertTriangle, Clock3, PauseCircle, PlayCircle, ShieldCheck, Zap } from "lucide-react";
+import { Clock3, Info, PauseCircle, PlayCircle, ShieldCheck, Zap } from "lucide-react";
 import type { TFunction } from "i18next";
 import type { TerminalJob } from "@/types/terminal";
 
@@ -197,15 +197,15 @@ export function TerminalInstructionFallback({
   return (
     <div
       className={cn(
-        "flex min-h-10 items-start gap-2 rounded-lg border border-[hsl(var(--alert-warning-border))] bg-[hsl(var(--alert-warning-bg))] px-3 py-2 text-xs text-foreground",
+        "flex min-h-10 items-start gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground",
         className,
       )}
     >
-      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(var(--warning))]" />
+      <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       <div className="space-y-0.5">
-        <div className="font-semibold">{t("terminal.instructions.missingTitle", "Instructions missing")}</div>
+        <div className="font-semibold">{t("terminal.instructions.missingTitle", "Instructions optional")}</div>
         <div className="text-muted-foreground">
-          {t("terminal.instructions.missingBody", "No operator instructions are attached to this cell yet. Review routing steps before you start.")}
+          {t("terminal.instructions.missingBody", "No operator instructions for this cell — follow the routing steps.")}
         </div>
       </div>
     </div>
