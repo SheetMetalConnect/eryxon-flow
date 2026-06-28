@@ -2,6 +2,38 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.9.0] — 2026-06-28
+
+### Added
+
+- **Booked vs budget in the operator panel** — the detail panel shows time
+  booked so far against the operation's budget, with an over/under chip and a
+  progress bar, plus the operators who worked the job (live dot for anyone
+  running now). Display only — it guides, it does not gate.
+- **Step-by-step checklist** surfaced in the Steps tab while the operator is
+  clocked on.
+
+### Changed
+
+- **Time reads in real units** — operation time is stored in minutes but the
+  terminal labelled it with an `h` (a 90-minute job read "90h"). One shared
+  `formatDuration` helper now renders `45m` / `1h 20m` / `2h` across the
+  operator views; two duplicate inline formatters were folded into it.
+- **Complete while clocked on** — Complete no longer blocks on a running timer;
+  it stops the operator's own timer first ("Stop & complete"). Still blocked
+  only by another operator's timer or a full next cell.
+- **Calmer operator panel** — removed duplicate operation-type and
+  work-readiness pills; instruction note now sits under a clear label.
+- **Location tracking on by default** — the placement/drop-off prompt shipped
+  opt-in and was invisible to most shops; now opt-out, switchable per tenant.
+
+### Fixed
+
+- **Time-tracking correctness** — duplicate clock-entries were stored in seconds
+  instead of minutes (60x inflation) and never added to `actual_time`; the live
+  booked figure ignored pauses and dropped on clock-off. All fixed.
+- **Selection checkboxes invisible on dark theme** in the Operations workspace.
+
 ## [0.8.2] — 2026-06-27
 
 ### Fixed
