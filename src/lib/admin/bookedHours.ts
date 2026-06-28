@@ -13,17 +13,25 @@ export interface BookedTimeEntry {
   duration: number | null; // minutes, set on clock-off
   start_time: string;
   end_time: string | null;
+  /**
+   * Paused time (seconds) for a still-running entry. The stored `duration`
+   * already excludes pauses on clock-off, so the live elapsed calc must
+   * subtract them too — otherwise the booked figure drops when the operator
+   * stops. Ignored once `duration` is set.
+   */
+  pausedSeconds?: number;
 }
 
 const MS_PER_MIN = 60_000;
 
-/** Minutes booked for one entry: stored duration, else end-start, else live elapsed. */
+/** Minutes booked for one entry: stored duration, else live elapsed minus pauses. */
 export function entryMinutes(e: BookedTimeEntry, now: number): number {
   if (e.duration != null) return Math.max(0, e.duration);
   const start = Date.parse(e.start_time);
   if (Number.isNaN(start)) return 0;
   const end = e.end_time ? Date.parse(e.end_time) : now;
-  return Math.max(0, (end - start) / MS_PER_MIN);
+  const pausedMs = (e.pausedSeconds ?? 0) * 1000;
+  return Math.max(0, (end - start - pausedMs) / MS_PER_MIN);
 }
 
 /** Total booked minutes across entries (active entries counted live against `now`). */

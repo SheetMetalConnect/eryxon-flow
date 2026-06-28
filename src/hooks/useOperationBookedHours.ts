@@ -90,6 +90,33 @@ export function useOperationBookedHours(
       // Capture one `now` for the whole snapshot — fetch is impure already,
       // so live-elapsed for active entries is anchored here, not at render.
       const now = Date.now();
+
+      // For still-running entries, pull their pauses so the live elapsed
+      // subtracts paused time — matching what clock-off stores, so the figure
+      // doesn't drop the moment the operator stops.
+      const activeIds = ((rows ?? []) as TimeEntryRow[])
+        .filter((row) => row.end_time === null)
+        .map((row) => row.id);
+      const pausedSecondsByEntry = new Map<string, number>();
+      if (activeIds.length > 0) {
+        const { data: pauseRows } = await supabase
+          .from("time_entry_pauses")
+          .select("time_entry_id, paused_at, resumed_at, duration")
+          .in("time_entry_id", activeIds);
+        for (const pause of pauseRows ?? []) {
+          const seconds =
+            pause.duration != null
+              ? pause.duration
+              : pause.resumed_at == null
+                ? Math.max(0, (now - Date.parse(pause.paused_at)) / 1000)
+                : 0;
+          pausedSecondsByEntry.set(
+            pause.time_entry_id,
+            (pausedSecondsByEntry.get(pause.time_entry_id) ?? 0) + seconds,
+          );
+        }
+      }
+
       const baseEntries: BookedTimeEntry[] = [];
       const entries = ((rows ?? []) as TimeEntryRow[]).map((row) => {
         const operator = Array.isArray(row.operator) ? row.operator[0] : row.operator;
@@ -98,6 +125,7 @@ export function useOperationBookedHours(
           duration: row.duration,
           start_time: row.start_time,
           end_time: row.end_time,
+          pausedSeconds: pausedSecondsByEntry.get(row.id) ?? 0,
         };
         baseEntries.push(entry);
         return {

@@ -22,6 +22,13 @@ describe('entryMinutes', () => {
   it('counts an active entry as live elapsed against now', () => {
     expect(entryMinutes(e({ start_time: '2026-06-22T11:00:00.000Z' }), NOW)).toBe(60);
   });
+  it('subtracts paused seconds from a live active entry', () => {
+    // 60 min elapsed, 15 min (900s) paused → 45 min booked live.
+    expect(entryMinutes(e({ pausedSeconds: 900 }), NOW)).toBe(45);
+  });
+  it('ignores pausedSeconds once a stored duration exists', () => {
+    expect(entryMinutes(e({ duration: 50, pausedSeconds: 900 }), NOW)).toBe(50);
+  });
 });
 
 describe('bookedMinutes / bookedByOperation', () => {

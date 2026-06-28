@@ -4,22 +4,27 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import { bookedMinutes, type BookedTimeEntry } from '@/lib/admin/bookedHours';
 
-// Rows the mocked supabase query resolves with.
+// Rows the mocked supabase queries resolve with, per table.
 let timeEntryRows: Array<Record<string, unknown>> = [];
+let pauseRows: Array<Record<string, unknown>> = [];
 
-// Chainable supabase mock: from().select().eq().order() resolves to { data, error }.
-const createChain = () => {
+// Chainable supabase mock: from(table).select().eq().order()/.in() resolves to
+// { data, error }, routing by table so the pauses lookup is independent.
+const createChain = (table: string) => {
   const chain: Record<string, unknown> = {};
-  for (const m of ['select', 'eq', 'order']) {
+  for (const m of ['select', 'eq', 'order', 'in']) {
     chain[m] = vi.fn(() => chain);
   }
   (chain as { then: unknown }).then = (resolve: (v: unknown) => unknown) =>
-    Promise.resolve({ data: timeEntryRows, error: null }).then(resolve);
+    Promise.resolve({
+      data: table === 'time_entry_pauses' ? pauseRows : timeEntryRows,
+      error: null,
+    }).then(resolve);
   return chain;
 };
 
 vi.mock('@/integrations/supabase/client', () => ({
-  supabase: { from: vi.fn(() => createChain()) },
+  supabase: { from: vi.fn((table: string) => createChain(table)) },
 }));
 
 vi.mock('@/lib/logger', () => ({
@@ -45,6 +50,7 @@ describe('useOperationBookedHours', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     timeEntryRows = [];
+    pauseRows = [];
     nowSpy = vi.spyOn(Date, 'now').mockReturnValue(NOW);
   });
 
@@ -97,6 +103,25 @@ describe('useOperationBookedHours', () => {
     expect(result.current.totalMinutes).toBe(60);
     expect(result.current.activeCount).toBe(1);
     expect(result.current.entries[0].isActive).toBe(true);
+  });
+
+  it('subtracts an active entry’s pauses from its live booked time', async () => {
+    timeEntryRows = [
+      { id: 't1', operation_id: 'op-1', operator_id: 'u1', duration: null, start_time: '2026-06-22T11:00:00.000Z', end_time: null, operator: { full_name: 'Alice' } },
+    ];
+    // 15 min (900s) of closed pause within the 60-min live window → 45 min.
+    pauseRows = [
+      { time_entry_id: 't1', paused_at: '2026-06-22T11:10:00.000Z', resumed_at: '2026-06-22T11:25:00.000Z', duration: 900 },
+    ];
+
+    const { result } = renderHook(() => useOperationBookedHours('op-1', 30), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => expect(result.current.entries).toHaveLength(1));
+
+    expect(result.current.totalMinutes).toBe(45);
+    expect(result.current.activeCount).toBe(1);
   });
 
   it('flags over-planned via plannedVsBooked without gating', async () => {
