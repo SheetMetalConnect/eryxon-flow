@@ -42,10 +42,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { IconDisplay } from "@/components/ui/icon-picker";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
-import {
-  TerminalEncodingBadges,
-  TerminalInstructionFallback,
-} from "./terminalEncoding";
+import { TerminalInstructionFallback } from "./terminalEncoding";
 import { OperationBatchTab } from "./OperationBatchTab";
 import { OperationLocationTab } from "./OperationLocationTab";
 import { OperationTimeSummary } from "./OperationTimeSummary";
@@ -407,7 +404,6 @@ export function DetailPanel({
             />
             {job.cellName || t("terminal.columns.cell")}
           </span>
-          <TerminalEncodingBadges job={job} t={t} />
         </div>
       </div>
 

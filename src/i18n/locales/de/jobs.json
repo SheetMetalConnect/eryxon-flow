@@ -485,6 +485,8 @@
     "createIssue": "Problem melden",
     "critical": "Kritisch",
     "describeIssue": "Beschreiben Sie das Problem...",
+    "standstill": "Steht die Arbeit still?",
+    "standstillDesc": "Stellt diesen Arbeitsgang unter eine Gelbe Karte, bis das Problem gelöst ist.",
     "description": "Beschreibung",
     "editIssue": "Problem bearbeiten",
     "deleteIssue": "Problem löschen",

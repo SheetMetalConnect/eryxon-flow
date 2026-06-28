@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Camera, AlertTriangle, Package } from "lucide-react";
@@ -72,6 +73,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
   const [issueType, setIssueType] = useState<IssueType>("general");
   const [ncrCategory, setNcrCategory] = useState<NcrCategory | "">("");
   const [affectedQuantity, setAffectedQuantity] = useState<number | "">("");
+  const [standstill, setStandstill] = useState(false);
 
   const isShortfall = prefilledData?.isShortfall ?? false;
 
@@ -181,6 +183,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         affected_quantity: affectedQuantity !== "" ? affectedQuantity : null,
         current_cell_id: currentCellId,
         intended_next_cell_id: intendedNextCellId,
+        // Parks the operation under a Yellow Card via the issues trigger.
+        causes_standstill: standstill,
       });
 
       if (error) throw error;
@@ -260,6 +264,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
     setIssueType("general");
     setNcrCategory("");
     setAffectedQuantity("");
+    setStandstill(false);
   };
 
   const handleClose = () => {
@@ -385,6 +390,18 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
               className="mt-1"
               required
             />
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+            <div className="space-y-0.5 pr-3">
+              <Label htmlFor="standstill" className="text-sm font-medium text-foreground">
+                {t("issues.standstill", "Is the work at a standstill?")}
+              </Label>
+              <p className="text-xs text-muted-foreground">
+                {t("issues.standstillDesc", "Parks this operation under a Yellow Card until the issue is resolved.")}
+              </p>
+            </div>
+            <Switch id="standstill" checked={standstill} onCheckedChange={setStandstill} />
           </div>
 
           <div>

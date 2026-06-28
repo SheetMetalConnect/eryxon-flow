@@ -492,7 +492,8 @@ export function useOperatorTerminal() {
   }, [allJobs, selectedCellId]);
 
   const inProcessJobs = filteredJobs.filter(
-    (job) => job.status === "in_progress",
+    // Parked Yellow Card (on_hold) operations stay visible at the cell, not lost.
+    (job) => job.status === "in_progress" || job.status === "on_hold",
   );
   const notStartedJobs = filteredJobs.filter(
     (job) => job.status === "in_buffer" || job.status === "expected",

@@ -1,6 +1,5 @@
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Clock3, Info, PauseCircle, PlayCircle, ShieldCheck, Zap } from "lucide-react";
+import { Clock3, Info, PauseCircle, PlayCircle, ShieldCheck } from "lucide-react";
 import type { TFunction } from "i18next";
 import type { TerminalJob } from "@/types/terminal";
 
@@ -132,39 +131,6 @@ export function getTerminalOperationType(job: Pick<TerminalJob, "operationType" 
     chipClassName: operationTypeToneByKey[key] || "border-border bg-muted/50 text-muted-foreground",
     label: operationTypeLabelByKey[key] || { key: "terminal.encoding.type.operation", fallback: "Operation" },
   };
-}
-
-export function TerminalEncodingBadges({
-  job,
-  t,
-  compact = false,
-}: {
-  job: TerminalJob;
-  t: TFunction;
-  compact?: boolean;
-}) {
-  // Status (active/waiting/expected) is already carried by the section the row
-  // sits in and the coloured left border — a status pill here is pure
-  // duplication. Only the Bullet Card, the one priority signal, gets a chip.
-  if (!job.isBulletCard) return null;
-  const bulletIsSubdued = job.status === "on_hold";
-
-  return (
-    <div className={cn("flex flex-wrap items-center gap-1.5", compact && "gap-1")}>
-      <Badge
-        variant="outline"
-        className={cn(
-          "min-h-6 rounded-full px-2 py-0 text-[10px] font-semibold uppercase tracking-wide",
-          bulletIsSubdued
-            ? "border-red-500/30 bg-transparent text-red-500"
-            : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
-        )}
-      >
-        <Zap className="mr-1 h-3 w-3" />
-        {t("terminal.encoding.priority.bullet", "Bullet")}
-      </Badge>
-    </div>
-  );
 }
 
 export function TerminalInstructionFallback({
