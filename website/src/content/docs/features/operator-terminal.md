@@ -5,7 +5,7 @@ description: Touch-friendly workstation view showing what to work on, with live 
 
 The Operator Terminal is the screen operators see at their workstation. It runs on tablets and large touchscreens on the shop floor. Everything is designed for touch — large tap targets, no tiny buttons, no keyboard needed.
 
-The tabbed detail panel below arrived in the [v0.8.0 release](/release-notes/v0-8-0/); the priority chip wording was refined in [v0.8.1](/release-notes/v0-8-1/). All shipped changes live in the [release notes](/release-notes/).
+The tabbed detail panel below arrived in the [v0.8.0 release](/release-notes/v0-8-0/); [v0.9.0](/release-notes/v0-9-0/) added time booked-vs-budget, the operators who worked the job, and a one-tap Complete, and made every time read in plain units. All shipped changes live in the [release notes](/release-notes/).
 
 ## Selecting Your Cell
 
@@ -27,7 +27,7 @@ What is next. These parts have physically arrived at your cell and are ready to 
 
 What is on its way. These operations are planned for your cell but the parts have not arrived yet. Use this to see what is coming later today or tomorrow.
 
-Each section shows **totals** at the bottom: total estimated hours and total pieces. This gives you a quick sense of how much work is ahead.
+Each section shows **totals** at the bottom: total time and total pieces. Time reads in plain units — `45m`, `1h 20m`, `2h` — never minutes mislabelled as hours.
 
 ## POLCA Cell Signal
 
@@ -51,9 +51,9 @@ The backlog column tells you how urgent each operation is:
 
 Combined with the POLCA signal, this helps you decide what to pick up next: overdue GO items first, then today's GO items, then the rest.
 
-## Rush Orders
+## Bullet Cards
 
-Rush orders stand out with a red border and always sort to the top of each section. If you see red, that job jumps the queue. Rush orders override normal POLCA priority — work on them even if the next cell shows PAUSE.
+A [Bullet Card](/features/qrm-cards/) is the one priority signal in Eryxon Flow. Operations carrying one stand out with a red border and always sort to the top of each section. If you see red, that job jumps the queue — work it even if the next cell shows PAUSE.
 
 ## Status Bar
 
@@ -62,9 +62,9 @@ The bar at the bottom of the screen shows your current state:
 - **Your name** — confirms who is logged in
 - **Current operation** — what you are working on
 - **Live timer** — how long you have been on this operation
-- **Operator state** — Active, Idle, or Rush
+- **Operator state** — Active or Idle
 
-The state updates automatically. When you start an operation, it switches to Active. When nothing is in process, it shows Idle. When you are working a rush order, it shows Rush.
+The state updates automatically. When you start an operation, it switches to Active. When nothing is in process, it shows Idle.
 
 ## Detail Panel
 
@@ -72,11 +72,11 @@ Tap any operation to open the detail panel. It is built around one idea: a calm 
 
 ![Operator terminal detail panel on a desktop workstation, showing the Steps tab](../../../assets/operator-terminal-detail-desktop.png)
 
-At the top, the **header** shows the job number, the part, the cell you are at, and a few status chips — whether the operation is active, what kind of work it is (cut, weld, finishing…), and a **Bullet** chip if it carries a [Bullet Card](/features/qrm-cards/) and jumps the queue. Each fact appears once; nothing is repeated.
+At the top, the **header** shows the job number, the part, the cell you are at, and two chips: whether the operation is **active**, and a **Bullet** chip if it carries a [Bullet Card](/features/qrm-cards/) and jumps the queue. Each fact appears once; nothing is repeated.
 
 Below the header, tabs hold the detail (only the ones with something to show appear):
 
-- **Steps** — the work instructions for this cell (optional — if there are none, the routing is your guide), followed by the full production route with completed and remaining steps highlighted. Your current step is called out.
+- **Steps** — opens with **time booked vs budget** for this operation (an over/under chip and a progress bar) and the **operators who worked on it**, with a live dot for anyone running the clock now. Below that, the **instruction** for this cell under a clear label, a **step-by-step checklist** that appears while you are clocked on, and the full production route with completed and remaining steps highlighted. Your current step is called out. Times read in plain units (`1h 12m`, not `72h`).
 - **Batch** — when the part runs as part of a nest or batch, this shows the batch number, type, status, and how many operations move together. Hidden when the part is not batched. See [Batch & nesting](/features/batch-management/).
 - **Location** — where the part physically is and where it is heading next. Shown only when location tracking is on. See [Location tracking](/features/location-tracking/).
 - **Info** — required tools and resources, assembly dependencies, and the CNC program QR code.
@@ -85,7 +85,7 @@ Below the header, tabs hold the detail (only the ones with something to show app
 
 When the part has a 3D model or a drawing, **3D** and **PDF** tabs appear too — they load only when you open them, so the panel stays fast. Tap **Expand** for a full-screen view.
 
-The **action bar** is pinned to the bottom in thumb reach: **Start / Pause**, **Report production**, **Complete**, and **Report issue**.
+The **action bar** is pinned to the bottom in thumb reach: **Start / Pause**, **Report production**, **Complete**, and **Report issue**. You don't have to stop the clock before finishing — while you are clocked on, **Complete** reads **Stop & complete** and does both in one tap.
 
 ### On a phone
 
@@ -107,4 +107,4 @@ The terminal follows the device theme, so a workstation in a bright hall and a t
 - Watch the POLCA signals. Working on GO items keeps the whole shop moving.
 - If everything shows PAUSE, flag your foreman — it usually means a downstream bottleneck.
 - Use the detail panel to double-check dimensions or instructions before starting a cut.
-- Rush orders (red border) always come first, regardless of other signals.
+- Bullet Cards (red border) always come first, regardless of other signals.
