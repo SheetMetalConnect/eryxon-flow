@@ -20,6 +20,8 @@ interface Props {
 const { locale = "en" } = Astro.props;
 const c = pricingCopy(locale);
 const selfHostHref = localizePath("/guides/self-hosting/", locale);
+// Hosted plans + support arrive at v1; until then the "learn more" path is the publisher's site.
+const learnMoreHref = "https://www.vanenkhuizen.com/";
 
 const check =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -36,10 +38,10 @@ const featureItem = (f: PlanFeature) => f;
 
 <!-- Plan grid — kit .svc-plans, 3 tiers -->
 <section class="ery-container svc-plans" aria-label="Plans">
-  <!-- Tier 1 — Hosted trial (free, 30 days, usage limits) -->
-  <article class="svc-plan">
+  <!-- Tier 1 — Hosted demo (free, 30 days, usage limits) — the recommended starting point -->
+  <article class="svc-plan is-featured">
     <div class="svc-plan-head">
-      <span class="svc-plan-dot svc-plan-dot--neutral"></span>
+      <span class="svc-plan-dot"></span>
       <span>{c.plans.trial.head}</span>
     </div>
     <h2 class="svc-plan-name">{c.plans.trial.name}</h2>
@@ -56,11 +58,11 @@ const featureItem = (f: PlanFeature) => f;
     </CtaButton>
   </article>
 
-  <!-- Tier 2 — Managed hosting (by request, dedicated isolated instance, featured) -->
-  <article class="svc-plan is-featured">
+  <!-- Tier 2 — Hosted & support (paid; arrives at v1, "learn more" links to the publisher's site) -->
+  <article class="svc-plan">
     <span class="svc-plan-flag">{c.plans.managed.flag}</span>
     <div class="svc-plan-head">
-      <span class="svc-plan-dot"></span>
+      <span class="svc-plan-dot svc-plan-dot--neutral"></span>
       <span>{c.plans.managed.head}</span>
     </div>
     <h2 class="svc-plan-name">{c.plans.managed.name}</h2>
@@ -72,7 +74,9 @@ const featureItem = (f: PlanFeature) => f;
         <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
       ))}
     </ul>
-    <RolloutInquiry label={c.plans.managed.cta} locale={locale} />
+    <CtaButton href={learnMoreHref} ctaId="pricing_hosted_learnmore" surface="pricing_plans" kind="external_site" variant="secondary" locale={locale} external>
+      {c.plans.managed.cta}
+    </CtaButton>
   </article>
 
   <!-- Tier 3 — Self-hosted (Apache 2.0, unlimited, DIY) -->
