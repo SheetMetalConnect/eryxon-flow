@@ -2,6 +2,25 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.8.4] — 2026-06-29
+
+### Fixed
+
+- **Finishing a job no longer fails** — the part-completion notification
+  trigger referenced a `name` column that does not exist on `parts` (the field
+  is `part_number`), so marking an operation complete raised an error and the
+  request failed. The trigger now uses `part_number`.
+- **Priority Bullet Cards always sort to the top** of their section, with
+  clearer card styling, and the empty instruction box no longer renders when an
+  operation has no instruction.
+
+### Changed
+
+- **Database migrations apply automatically on deploy** — merged schema changes
+  now run against the database as part of the deploy rather than waiting on a
+  separate manual step, so the app and its schema stay in lockstep. Self-hosters
+  get pending migrations applied on each deploy.
+
 ## [0.8.3] — 2026-06-28
 
 ### Added
@@ -184,11 +203,12 @@ work queues, and operator terminal work modes (setup vs production).
 - **Admin UX/a11y/i18n** — i18n the remaining hardcoded English on Operations / Assignments / Parts,
   aria-labels on icon-only buttons, consistent page spacing and loading heights.
 
-## [Unreleased] — v0.6 (in development)
+## [0.6.0] — 2026-06-14
 
-The v0.6 line is in development and **not yet tagged or released**. Mirrors the website release note
-`v0.6`. The installable PWA and the touch-first operator preview are usable in preview builds. The
-native iOS and Android apps are still in development and have not been released.
+The v0.6 line: relicensed to Apache 2.0 (fully open source), FOSS-first marketing surfaces, the
+stable installable PWA, and performance/reliability work across the operator queues. The
+installable PWA and the touch-first operator preview ship here; the native iOS and Android apps
+are still in development and have not been released (see the Unreleased section below).
 
 ### Changed
 
@@ -391,6 +411,27 @@ native iOS and Android apps are still in development and have not been released.
 - Upload whitelist: added STEP, DXF, Excel content types
 - Per-function `deno.json` for proper `@shared/` resolution
 - Database migrations: added lifecycle columns, missing FK constraints, `expired` enum value
+
+## [0.4.0] - 2026-03-28
+
+### Added
+
+- **Operator status bar** with industrial stripe patterns across the work states, and consistent row heights.
+- **POLCA cell signal in the terminal** — current→next cell with a GO/PAUSE capacity indicator.
+- **Work queue totals, rush/hold controls, and routing** surfaced in the operator detail panel.
+- **Rush jobs surfaced** — sorted first in the Jobs and Parts tables, with a rush filter and rush badges.
+- **Batch API (initial)** — `api-batches` (CRUD) and `api-batch-lifecycle` (start/stop/add-operations) edge functions.
+
+### Changed
+
+- **Unified branding to "Eryxon Flow"** — renamed every "Eryxon MES" reference and replaced the sidebar logo with the Eryxon Flow brand mark.
+- Removed the ALPHA banner and trimmed stray version references.
+
+### Fixed
+
+- **Flow column rebuilt** — routing hooks use FK hints and a single query and unwrap PostgREST array responses, so the Jobs Flow column renders reliably (closes the BatchCreate React #185 crash path).
+- **Batch API hardening** — disabled soft-delete and required `operator_id` on lifecycle actions.
+- Restored timing controls and the cell selector for admins, removed a duplicate timer, and corrected light-mode colors.
 
 ## [0.3.3] - 2026-03-09
 
