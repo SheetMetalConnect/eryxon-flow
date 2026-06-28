@@ -47,8 +47,9 @@ describe("JobRow", () => {
       </table>,
     );
 
-    expect(screen.getByText(/terminal\.encoding\.status\.blocked/)).toBeInTheDocument();
+    // Status lives in the section + left border, not a pill. Only Bullet shows.
     expect(screen.getByText(/terminal\.encoding\.priority\.bullet/)).toBeInTheDocument();
+    expect(screen.queryByText(/terminal\.encoding\.status\./)).not.toBeInTheDocument();
     expect(screen.getByRole("row")).toHaveClass("border-l-[hsl(var(--status-blocked))]");
   });
 });

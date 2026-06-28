@@ -143,8 +143,10 @@ export function TerminalEncodingBadges({
   t: TFunction;
   compact?: boolean;
 }) {
-  const statusTone = getTerminalStatusTone(job);
-  const StatusIcon = statusTone.icon;
+  // Status (active/waiting/expected) is already carried by the section the row
+  // sits in and the coloured left border — a status pill here is pure
+  // duplication. Only the Bullet Card, the one priority signal, gets a chip.
+  if (!job.isBulletCard) return null;
   const bulletIsSubdued = job.status === "on_hold";
 
   return (
@@ -153,26 +155,14 @@ export function TerminalEncodingBadges({
         variant="outline"
         className={cn(
           "min-h-6 rounded-full px-2 py-0 text-[10px] font-semibold uppercase tracking-wide",
-          statusTone.chipClassName,
+          bulletIsSubdued
+            ? "border-red-500/30 bg-transparent text-red-500"
+            : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
         )}
       >
-        <StatusIcon className="mr-1 h-3 w-3" />
-        {t(statusTone.labelKey, statusTone.fallbackLabel)}
+        <Zap className="mr-1 h-3 w-3" />
+        {t("terminal.encoding.priority.bullet", "Bullet")}
       </Badge>
-      {job.isBulletCard ? (
-        <Badge
-          variant="outline"
-          className={cn(
-            "min-h-6 rounded-full px-2 py-0 text-[10px] font-semibold uppercase tracking-wide",
-            bulletIsSubdued
-              ? "border-red-500/30 bg-transparent text-red-500"
-              : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400",
-          )}
-        >
-          <Zap className="mr-1 h-3 w-3" />
-          {t("terminal.encoding.priority.bullet", "Bullet")}
-        </Badge>
-      ) : null}
     </div>
   );
 }

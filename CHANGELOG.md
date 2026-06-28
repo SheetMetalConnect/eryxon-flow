@@ -2,7 +2,7 @@
 
 All notable changes to Eryxon Flow are documented here.
 
-## [0.9.0] — 2026-06-28
+## [0.8.3] — 2026-06-28
 
 ### Added
 

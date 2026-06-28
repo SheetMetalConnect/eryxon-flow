@@ -5,7 +5,7 @@ description: Touch-friendly workstation view showing what to work on, with live 
 
 The Operator Terminal is the screen operators see at their workstation. It runs on tablets and large touchscreens on the shop floor. Everything is designed for touch — large tap targets, no tiny buttons, no keyboard needed.
 
-The tabbed detail panel below arrived in the [v0.8.0 release](/release-notes/v0-8-0/); [v0.9.0](/release-notes/v0-9-0/) added time booked-vs-budget, the operators who worked the job, and a one-tap Complete, and made every time read in plain units. All shipped changes live in the [release notes](/release-notes/).
+The tabbed detail panel below arrived in the [v0.8.0 release](/release-notes/v0-8-0/); [v0.8.3](/release-notes/v0-8-3/) added time booked-vs-budget, the operators who worked the job, and a one-tap Complete, and made every time read in plain units. All shipped changes live in the [release notes](/release-notes/).
 
 ## Selecting Your Cell
 
