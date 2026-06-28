@@ -24,10 +24,6 @@ export interface StepCopy {
   h: string;
   b: string;
 }
-export interface IntegrationCopy {
-  name: string;
-  kind: string;
-}
 export interface PlanFeature {
   text: string;
   muted?: boolean;
@@ -52,9 +48,8 @@ export interface LandingCopy {
   features: { eyebrow: string; h2: string; lead: string; items: FeatureCopy[] };
   how: { eyebrow: string; h2: string; steps: StepCopy[] };
   api: { eyebrow: string; h2: string; lead: string; bullets: string[] };
-  integrations: { eyebrow: string; h2: string; lead: string; items: IntegrationCopy[] };
   pricing: { eyebrow: string; h2: string; lead: string; allLink: string };
-  rollout: { eyebrow: string; h2: string; lead: string; points: { h: string; b: string }[]; cta: string };
+  rollout: { eyebrow: string; h2: string; lead: string; cta: string };
   cta: { h2: string; lead: string; ctaPrimary: string; ctaSecondary: string };
 }
 
@@ -86,7 +81,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly, from the tablet on the floor to the planner's desk. Free and open source. Self-host it, let us host it, or have it run on-prem for you.",
     hero: {
       h1: "Keep a grip on every job, floor to planning.",
-      lead: "Eryxon Flow tracks each job through cutting, bending, welding, and assembly. Operators work a tablet at the machine; the planner sees it the moment it changes. Free and open source. No spreadsheets, no whiteboard.",
+      lead: "Track every job through cutting, bending, welding, and assembly. Operators work a tablet at the machine; planners see it the moment it changes. No more spreadsheets and whiteboards.",
       ctaPrimary: "Try it free",
       ctaSecondary: "Self-host it free",
       ctaTertiary: "Read the docs →",
@@ -95,45 +90,30 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "What you get",
       h2: "Everything a high-mix, low-volume shop needs.",
-      lead: "No add-on store, no per-seat extras, no surprise modules. The full MES from day one — tablet to planner to API.",
+      lead: "One system, from the tablet at the machine to the planner's dashboard. Everything's there from day one: no paid add-ons, no per-seat fees.",
       items: [
-        { title: "Touch-friendly operator terminals", body: "Kanban work queues organised by production cell. Large touch targets, glanceable status, due-date urgency, and elapsed timing readable from a metre away." },
-        { title: "Job & part tracking", body: "Full production visibility through cutting, bending, welding, assembly, finishing. Routing visualisation across cells, WIP limits, and a capacity overview." },
-        { title: "3D STEP viewer", body: "Browser-based CAD, no software install. Measurement, exploded views, embedded inside the operator detail modal." },
-        { title: "REST API & webhooks", body: "Filtering, pagination, search, and webhook dispatch for every lifecycle event. Built for ERP-to-MES sync, not just point-and-click." },
-        { title: "Free and open source", body: "Free for any use, including commercial. Self-host via Docker Compose with no feature gates, or let us host it. Fork it, audit it, keep it." },
-        { title: "Multi-tenant, multi-language", body: "Row-level security on PostgreSQL. EN / NL / DE out of the box. Built for shops with one site and groups of shops with many." },
+        { title: "Tablets at the machine", body: "A work queue per cell on a tablet at the machine. Big buttons for gloved hands, with status, due date, and running time you can read from a metre away." },
+        { title: "Job & part tracking", body: "Follow every job through cutting, bending, welding, assembly, and finishing — its route across cells, the load on each one, and what's still on the bench." },
+        { title: "3D part viewer", body: "Open the part in 3D right in the browser — measure it, pull it apart, nothing to install. Right where the operator is working." },
+        { title: "An API your ERP can drive", body: "Push jobs in, get results back, no double entry. Webhooks fire the moment anything changes on the floor." },
+        { title: "Free and open source", body: "Free for any use, commercial included. Run it yourself with Docker, or let us host it. Nothing locked behind a paywall — fork it, audit it, keep it." },
+        { title: "One site or many", body: "Works for a single workshop or a group with many sites, each shop's data kept apart. English, Dutch, and German built in." },
       ],
     },
     how: {
       eyebrow: "How it works",
       h2: "From ERP push to planner dashboard in three steps.",
       steps: [
-        { n: "01", h: "Import your jobs", b: "Push from your ERP via the REST API, drop in a CSV, or use a planning adapter. Eryxon Flow normalises parts, operations, and routing so the floor sees one shape regardless of upstream system." },
-        { n: "02", h: "Operators work the queue", b: "Each cell sees its own tablet. Tap an operation to open it, start the timer, mark good and scrap quantities, raise issues. Real-time updates push back to the planner without a refresh." },
-        { n: "03", h: "Planners watch capacity", b: "A dashboard with WIP limits per cell, due-date heat, and an issue queue. Capacity over 100% is flagged — no surprise overruns on Friday at 16:55." },
+        { n: "01", h: "Bring your jobs in", b: "Push jobs straight from your ERP, drop in a CSV, or connect your planning tool. Eryxon Flow lines up the parts, steps, and routing so the floor always sees the same thing." },
+        { n: "02", h: "The floor works the queue", b: "Each cell has its own tablet. Tap a job to start the clock, log good and scrap, flag a problem. The planner sees it straight away." },
+        { n: "03", h: "Planners watch the load", b: "One dashboard shows the load on every cell, which jobs are running tight, and what's been flagged. When a cell is over capacity, you see it — not at five to five on Friday." },
       ],
     },
     api: {
       eyebrow: "REST + Webhooks",
       h2: "An API your ERP can actually talk to.",
-      lead: "Endpoints with filtering, pagination, search, and webhook dispatch. Built for ERP-to-MES sync — not just point-and-click.",
-      bullets: ["Bearer-token auth with scoped API keys", "Idempotent writes with client-supplied keys", "Webhooks for every lifecycle event", "MCP server for AI assistants"],
-    },
-    integrations: {
-      eyebrow: "Integrations",
-      h2: "Sits between the systems you already run.",
-      lead: "Eryxon Flow takes job intent from your ERP, hands it to the floor as tablet-friendly operations, and pushes results back.",
-      items: [
-        { name: "REST API", kind: "Integration" },
-        { name: "Webhooks", kind: "Events" },
-        { name: "CSV import", kind: "Onboarding" },
-        { name: "Supabase", kind: "Backend" },
-        { name: "PostgreSQL", kind: "Database" },
-        { name: "MQTT", kind: "Protocol" },
-        { name: "MCP", kind: "AI agents" },
-        { name: "3D STEP viewer", kind: "CAD" },
-      ],
+      lead: "Push jobs in, pull results out, and let webhooks tell your other systems the moment work changes. Built for real ERP integration.",
+      bullets: ["Scoped API keys with bearer-token auth", "Safe to retry — the same write only lands once", "A webhook for every change on the floor", "MCP server for AI assistants"],
     },
     pricing: {
       eyebrow: "Pricing",
@@ -145,11 +125,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "Hosted & managed",
       h2: "Rather not run it yourself?",
       lead: "The software is free and open source — self-host it whenever you want. If you'd rather not, we'll host it for you, or install and run it on your own infrastructure.",
-      points: [
-        { h: "Hosted", b: "We run it for you at a flat rate. Unlimited users, daily backups, updates handled." },
-        { h: "Managed on-prem", b: "Installed on your infrastructure, with updates, monitoring, and backups taken care of." },
-        { h: "ERP connected", b: "Job intent in over REST and webhooks, results back out, no double entry." },
-      ],
       cta: "Get in touch",
     },
     cta: {
@@ -200,21 +175,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       lead: "Endpoints met filteren, pagineren, zoeken en een webhook per stap. Bedoeld om je ERP en de werkvloer te koppelen.",
       bullets: ["Bearer-token met afgebakende API-keys", "Schrijfacties zijn idempotent, met je eigen sleutel", "Een webhook bij elke stap in de order", "MCP-server voor AI-assistenten"],
     },
-    integrations: {
-      eyebrow: "Koppelingen",
-      h2: "Past tussen de systemen die je al draait.",
-      lead: "Eryxon Flow pakt de order uit je ERP, geeft die als bewerkingen door aan de vloer en stuurt de resultaten weer terug.",
-      items: [
-        { name: "REST API", kind: "Koppeling" },
-        { name: "Webhooks", kind: "Events" },
-        { name: "CSV-import", kind: "Opstarten" },
-        { name: "Supabase", kind: "Backend" },
-        { name: "PostgreSQL", kind: "Database" },
-        { name: "MQTT", kind: "Protocol" },
-        { name: "MCP", kind: "AI-agents" },
-        { name: "3D STEP-viewer", kind: "CAD" },
-      ],
-    },
     pricing: {
       eyebrow: "Prijzen",
       h2: "Drie manieren om het te draaien.",
@@ -225,11 +185,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "Gehost en beheerd",
       h2: "Liever niet zelf draaien?",
       lead: "De software is gratis en open source, dus zelf hosten kan altijd. Geen zin in? Dan hosten wij het, of we zetten het neer op je eigen servers en houden het draaiend.",
-      points: [
-        { h: "Gehost", b: "Wij draaien het voor je, vast bedrag. Onbeperkt gebruikers, elke dag een back-up, updates doen wij." },
-        { h: "Beheerd op locatie", b: "Op je eigen servers gezet, met updates, monitoring en back-ups erbij." },
-        { h: "Gekoppeld aan je ERP", b: "Orders komen binnen via REST en webhooks, resultaten gaan terug. Niks dubbel invoeren." },
-      ],
       cta: "Neem contact op",
     },
     cta: {
@@ -280,21 +235,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       lead: "Endpunkte mit Filterung, Paginierung, Suche und Webhook-Versand. Gebaut für ERP-zu-MES-Synchronisierung.",
       bullets: ["Bearer-Token-Auth mit scoped API-Keys", "Idempotente Writes mit eigenen Schlüsseln", "Webhooks für jedes Ereignis", "MCP-Server für KI-Assistenten"],
     },
-    integrations: {
-      eyebrow: "Integrationen",
-      h2: "Sitzt zwischen den Systemen, die du schon betreibst.",
-      lead: "Eryxon Flow nimmt die Auftragsabsicht aus deinem ERP, übergibt sie der Werkstatt als bedienbare Arbeitsgänge und meldet Ergebnisse zurück.",
-      items: [
-        { name: "REST-API", kind: "Integration" },
-        { name: "Webhooks", kind: "Events" },
-        { name: "CSV-Import", kind: "Onboarding" },
-        { name: "Supabase", kind: "Backend" },
-        { name: "PostgreSQL", kind: "Datenbank" },
-        { name: "MQTT", kind: "Protokoll" },
-        { name: "MCP", kind: "KI-Agenten" },
-        { name: "3D-STEP-Viewer", kind: "CAD" },
-      ],
-    },
     pricing: {
       eyebrow: "Preise",
       h2: "Drei Wege, es zu betreiben.",
@@ -305,11 +245,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "Gehostet & Managed",
       h2: "Lieber nicht selbst betreiben?",
       lead: "Die Software ist kostenlos und quelloffen — hoste sie selbst, wann immer du willst. Wenn nicht, hosten wir sie für dich oder installieren und betreiben sie auf deiner eigenen Infrastruktur.",
-      points: [
-        { h: "Gehostet", b: "Wir betreiben es für dich zum Pauschalpreis. Unbegrenzte Nutzer, tägliche Backups, Updates erledigt." },
-        { h: "Managed on-prem", b: "Auf deiner Infrastruktur installiert, mit Updates, Monitoring und Backups." },
-        { h: "ERP angebunden", b: "Auftragsabsicht über REST und Webhooks rein, Ergebnisse zurück, keine Doppelerfassung." },
-      ],
       cta: "Kontakt aufnehmen",
     },
     cta: {
