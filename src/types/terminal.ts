@@ -6,6 +6,7 @@ export interface TerminalJob {
     description: string;
     material: string;
     quantity: number;
+    producedQuantity?: number; // Good parts reported so far (sum of operation_quantities.quantity_good)
     currentOp: string;
     totalOps: number; // We might not have this easily, default to 0 or sequence
     hours: number;

@@ -15,9 +15,15 @@ import type { OperationBookedHours } from "@/hooks/useOperationBookedHours";
 export function OperationTimeSummary({
   booked,
   t,
+  producedQuantity = 0,
+  plannedQuantity = 0,
 }: {
   booked: OperationBookedHours;
   t: TFunction;
+  /** Good parts reported so far for this operation. */
+  producedQuantity?: number;
+  /** Planned part quantity. */
+  plannedQuantity?: number;
 }) {
   const { totalMinutes, plannedVsBooked: pvb, entries, activeCount } = booked;
   const planned = pvb.plannedMinutes;
@@ -86,6 +92,18 @@ export function OperationTimeSummary({
               ? t("terminal.time.over", "over budget")
               : t("terminal.time.left", "of budget left")}
           </div>
+        </div>
+      ) : null}
+
+      {plannedQuantity > 0 ? (
+        <div className="flex items-center justify-between border-t border-border pt-2">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {t("terminal.produced", "Produced")}
+          </span>
+          <span className="font-mono text-sm">
+            <span className="font-semibold text-status-completed">{producedQuantity}</span>
+            <span className="text-muted-foreground"> / {plannedQuantity}</span>
+          </span>
         </div>
       ) : null}
 
