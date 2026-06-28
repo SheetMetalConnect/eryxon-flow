@@ -207,6 +207,8 @@
     },
     "capacityBlocked": "Abschluss nicht möglich: Die nächste Zelle ist ausgelastet.",
     "completeOperation": "Arbeitsgang abschließen",
+    "stopAndComplete": "Stoppen & abschließen",
+    "otherOperatorClocked": "Ein anderer Bediener ist noch auf diesen Arbeitsgang eingestempelt.",
     "detailsPanel": "Detailbereich",
     "empty": "Noch keine Zellen konfiguriert",
     "loading": "Terminaldaten werden geladen...",
@@ -217,6 +219,18 @@
     "noOperationsFound": "Keine Routingschritte für dieses Teil gefunden.",
     "onHold": "Pausiert",
     "routing": "Routing",
+    "instructionLabel": "Anweisung",
+    "checklist": "Checkliste",
+    "time": {
+      "booked": "Gebucht",
+      "budget": "Budget",
+      "over": "über Budget",
+      "left": "vom Budget übrig",
+      "activeNow": "Läuft jetzt"
+    },
+    "people": {
+      "title": "Daran gearbeitet"
+    },
     "tabs": {
       "steps": "Schritte",
       "batch": "Batch",

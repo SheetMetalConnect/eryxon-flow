@@ -207,6 +207,8 @@
     },
     "capacityBlocked": "Voltooien niet mogelijk: de volgende cel zit vol.",
     "completeOperation": "Bewerking voltooien",
+    "stopAndComplete": "Stoppen & voltooien",
+    "otherOperatorClocked": "Een andere operator is nog ingeklokt op deze bewerking.",
     "detailsPanel": "Detailpaneel",
     "empty": "Nog geen cellen ingesteld",
     "loading": "Terminalgegevens laden...",
@@ -217,6 +219,18 @@
     "noOperationsFound": "Geen routingstappen gevonden voor dit onderdeel.",
     "onHold": "In de wacht",
     "routing": "Routing",
+    "instructionLabel": "Instructie",
+    "checklist": "Checklist",
+    "time": {
+      "booked": "Geboekt",
+      "budget": "Budget",
+      "over": "over budget",
+      "left": "van budget over",
+      "activeNow": "Loopt nu"
+    },
+    "people": {
+      "title": "Hieraan gewerkt"
+    },
     "tabs": {
       "steps": "Stappen",
       "batch": "Batch",

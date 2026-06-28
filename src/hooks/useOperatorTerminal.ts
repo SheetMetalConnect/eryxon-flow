@@ -753,6 +753,12 @@ export function useOperatorTerminal() {
   const handleComplete = async () => {
     if (!selectedJob || !operatorId || !profile?.tenant_id) return;
     try {
+      // Completing implies finishing — if the operator is still clocked on,
+      // stop their timer first instead of forcing a separate Pause step.
+      // (completeOperation rejects while any entry is open.)
+      if (selectedJob.isCurrentUserClocked) {
+        await stopTimeTracking(selectedJob.operationId, operatorId);
+      }
       await completeOperation(
         selectedJob.operationId,
         profile.tenant_id,

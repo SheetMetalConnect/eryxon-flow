@@ -207,6 +207,8 @@
     },
     "capacityBlocked": "Cannot complete because the next cell is at capacity.",
     "completeOperation": "Complete operation",
+    "stopAndComplete": "Stop & complete",
+    "otherOperatorClocked": "Another operator is still clocked on this operation.",
     "detailsPanel": "Details Panel",
     "empty": "No cells configured yet",
     "loading": "Loading Terminal Data...",
@@ -217,6 +219,18 @@
     "noOperationsFound": "No routing steps found for this part.",
     "onHold": "On hold",
     "routing": "Routing",
+    "instructionLabel": "Instruction",
+    "checklist": "Checklist",
+    "time": {
+      "booked": "Booked",
+      "budget": "Budget",
+      "over": "over budget",
+      "left": "of budget left",
+      "activeNow": "Running now"
+    },
+    "people": {
+      "title": "Worked on this"
+    },
     "tabs": {
       "steps": "Steps",
       "batch": "Batch",
