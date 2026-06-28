@@ -23,11 +23,6 @@ export interface StepCopy {
   n: string;
   h: string;
   b: string;
-  tag: string;
-}
-export interface IntegrationCopy {
-  name: string;
-  kind: string;
 }
 export interface PlanFeature {
   text: string;
@@ -38,7 +33,6 @@ export interface LandingCopy {
   title: string;
   description: string;
   hero: {
-    tag: string;
     h1: string;
     lead: string;
     ctaPrimary: string;
@@ -54,9 +48,8 @@ export interface LandingCopy {
   features: { eyebrow: string; h2: string; lead: string; items: FeatureCopy[] };
   how: { eyebrow: string; h2: string; steps: StepCopy[] };
   api: { eyebrow: string; h2: string; lead: string; bullets: string[] };
-  integrations: { eyebrow: string; h2: string; lead: string; items: IntegrationCopy[] };
   pricing: { eyebrow: string; h2: string; lead: string; allLink: string };
-  rollout: { eyebrow: string; h2: string; lead: string; points: { h: string; b: string }[]; cta: string };
+  rollout: { eyebrow: string; h2: string; lead: string; cta: string };
   cta: { h2: string; lead: string; ctaPrimary: string; ctaSecondary: string };
 }
 
@@ -87,9 +80,8 @@ const LANDING: Record<Locale, LandingCopy> = {
     description:
       "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly, from the tablet on the floor to the planner's desk. Free and open source. Self-host it, let us host it, or have it run on-prem for you.",
     hero: {
-      tag: "Open source · Apache 2.0 · self-hostable",
       h1: "Keep a grip on every job, floor to planning.",
-      lead: "Eryxon Flow tracks each job through cutting, bending, welding, and assembly. Operators work a tablet at the machine; the planner sees it the moment it changes. Free and open source. No spreadsheets, no whiteboard.",
+      lead: "Track every job through cutting, bending, welding, and assembly. Operators work a tablet at the machine; planners see it the moment it changes. No more spreadsheets and whiteboards.",
       ctaPrimary: "Try it free",
       ctaSecondary: "Self-host it free",
       ctaTertiary: "Read the docs →",
@@ -98,45 +90,30 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "What you get",
       h2: "Everything a high-mix, low-volume shop needs.",
-      lead: "No add-on store, no per-seat extras, no surprise modules. The full MES from day one — tablet to planner to API.",
+      lead: "One system, from the tablet at the machine to the planner's dashboard. Everything's there from day one: no paid add-ons, no per-seat fees.",
       items: [
-        { title: "Touch-friendly operator terminals", body: "Kanban work queues organised by production cell. Large touch targets, glanceable status, due-date urgency, and elapsed timing readable from a metre away." },
-        { title: "Job & part tracking", body: "Full production visibility through cutting, bending, welding, assembly, finishing. Routing visualisation across cells, WIP limits, and a capacity overview." },
-        { title: "3D STEP viewer", body: "Browser-based CAD, no software install. Measurement, exploded views, embedded inside the operator detail modal." },
-        { title: "REST API & webhooks", body: "Filtering, pagination, search, and webhook dispatch for every lifecycle event. Built for ERP-to-MES sync, not just point-and-click." },
-        { title: "Free and open source", body: "Apache 2.0 — free for any use, including commercial. Self-host via Docker Compose with no feature gates, or let us host it. Fork it, audit it, keep it." },
-        { title: "Multi-tenant, multi-language", body: "Row-level security on PostgreSQL. EN / NL / DE out of the box. Built for shops with one site and groups of shops with many." },
+        { title: "Tablets at the machine", body: "A work queue per cell on a tablet at the machine. Big buttons for gloved hands, with status, due date, and running time you can read from a metre away." },
+        { title: "Job & part tracking", body: "Follow every job through cutting, bending, welding, assembly, and finishing — its route across cells, the load on each one, and what's still on the bench." },
+        { title: "3D part viewer", body: "Open the part in 3D right in the browser — measure it, pull it apart, nothing to install. Right where the operator is working." },
+        { title: "An API your ERP can drive", body: "Push jobs in, get results back, no double entry. Webhooks fire the moment anything changes on the floor." },
+        { title: "Free and open source", body: "Free for any use, commercial included. Run it yourself with Docker, or let us host it. Nothing locked behind a paywall — fork it, audit it, keep it." },
+        { title: "One site or many", body: "Works for a single workshop or a group with many sites, each shop's data kept apart. English, Dutch, and German built in." },
       ],
     },
     how: {
       eyebrow: "How it works",
       h2: "From ERP push to planner dashboard in three steps.",
       steps: [
-        { n: "01", h: "Import your jobs", b: "Push from your ERP via the REST API, drop in a CSV, or use a planning adapter. Eryxon Flow normalises parts, operations, and routing so the floor sees one shape regardless of upstream system.", tag: "REST · CSV · webhooks" },
-        { n: "02", h: "Operators work the queue", b: "Each cell sees its own tablet. Tap an operation to open it, start the timer, mark good and scrap quantities, raise issues. Real-time updates push back to the planner without a refresh.", tag: "Tablet · large touch targets · realtime" },
-        { n: "03", h: "Planners watch capacity", b: "A dashboard with WIP limits per cell, due-date heat, and an issue queue. Capacity over 100% is flagged — no surprise overruns on Friday at 16:55.", tag: "Capacity · WIP limits · issue queue" },
+        { n: "01", h: "Bring your jobs in", b: "Push jobs straight from your ERP, drop in a CSV, or connect your planning tool. Eryxon Flow lines up the parts, steps, and routing so the floor always sees the same thing." },
+        { n: "02", h: "The floor works the queue", b: "Each cell has its own tablet. Tap a job to start the clock, log good and scrap, flag a problem. The planner sees it straight away." },
+        { n: "03", h: "Planners watch the load", b: "One dashboard shows the load on every cell, which jobs are running tight, and what's been flagged. When a cell is over capacity, you see it — not at five to five on Friday." },
       ],
     },
     api: {
       eyebrow: "REST + Webhooks",
       h2: "An API your ERP can actually talk to.",
-      lead: "Endpoints with filtering, pagination, search, and webhook dispatch. Built for ERP-to-MES sync — not just point-and-click.",
-      bullets: ["Bearer-token auth with scoped API keys", "Idempotent writes with client-supplied keys", "Webhooks for every lifecycle event", "MCP server for AI assistants"],
-    },
-    integrations: {
-      eyebrow: "Integrations",
-      h2: "Sits between the systems you already run.",
-      lead: "Eryxon Flow takes job intent from your ERP, hands it to the floor as tablet-friendly operations, and pushes results back.",
-      items: [
-        { name: "REST API", kind: "Integration" },
-        { name: "Webhooks", kind: "Events" },
-        { name: "CSV import", kind: "Onboarding" },
-        { name: "Supabase", kind: "Backend" },
-        { name: "PostgreSQL", kind: "Database" },
-        { name: "MQTT", kind: "Protocol" },
-        { name: "MCP", kind: "AI agents" },
-        { name: "3D STEP viewer", kind: "CAD" },
-      ],
+      lead: "Push jobs in, pull results out, and let webhooks tell your other systems the moment work changes. Built for real ERP integration.",
+      bullets: ["Scoped API keys with bearer-token auth", "Safe to retry — the same write only lands once", "A webhook for every change on the floor", "MCP server for AI assistants"],
     },
     pricing: {
       eyebrow: "Pricing",
@@ -148,11 +125,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "Hosted & managed",
       h2: "Rather not run it yourself?",
       lead: "The software is free and open source — self-host it whenever you want. If you'd rather not, we'll host it for you, or install and run it on your own infrastructure.",
-      points: [
-        { h: "Hosted", b: "We run it for you at a flat rate. Unlimited users, daily backups, updates handled." },
-        { h: "Managed on-prem", b: "Installed on your infrastructure, with updates, monitoring, and backups taken care of." },
-        { h: "ERP connected", b: "Job intent in over REST and webhooks, results back out, no double entry." },
-      ],
       cta: "Get in touch",
     },
     cta: {
@@ -168,7 +140,6 @@ const LANDING: Record<Locale, LandingCopy> = {
     description:
       "Eryxon Flow houdt je orders bij door snijden, kanten, lassen en assemblage — van de tablet op de vloer tot het bureau van de planner. Gratis en open source. Host het zelf, laat het ons hosten, of laat het bij je op locatie draaien.",
     hero: {
-      tag: "Open source · Apache 2.0 · zelf te hosten",
       h1: "Grip op je orders, van de vloer tot de planning.",
       lead: "Eryxon Flow volgt elke order door snijden, kanten, lassen en assemblage. De operator werkt op een tablet aan de machine, de planner ziet het meteen op zijn scherm. Gratis en open source. Geen Excel, geen whiteboard.",
       ctaPrimary: "Gratis uitproberen",
@@ -185,7 +156,7 @@ const LANDING: Record<Locale, LandingCopy> = {
         { title: "Order- en onderdeelvolging", body: "Je ziet elke order door snijden, kanten, lassen, assemblage en afwerking heen. De route per cel, WIP-limieten en hoeveel werk er nog op de plank ligt." },
         { title: "3D STEP-viewer", body: "CAD in de browser, niks te installeren. Meten en exploded views, direct in het orderscherm van de operator." },
         { title: "REST API en webhooks", body: "Filteren, pagineren, zoeken en een webhook bij elke stap. Gebouwd om je ERP en de werkvloer aan elkaar te knopen, niet om alles met de hand in te kloppen." },
-        { title: "Gratis en open source", body: "Apache 2.0, gratis voor elk gebruik, ook commercieel. Zelf hosten met Docker Compose, niks afgeschermd. Of laat ons hosten. Forken en aanpassen mag." },
+        { title: "Gratis en open source", body: "Gratis voor elk gebruik, ook commercieel. Zelf hosten met Docker Compose, niks afgeschermd. Of laat ons hosten. Forken en aanpassen mag." },
         { title: "Meerdere locaties, meerdere talen", body: "Row-level security op PostgreSQL. NL, DE en EN zitten er standaard in. Werkt voor één werkplaats en voor een groep met meerdere vestigingen." },
       ],
     },
@@ -193,9 +164,9 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "Hoe het werkt",
       h2: "Van order in het ERP naar de planning, in drie stappen.",
       steps: [
-        { n: "01", h: "Zet je orders erin", b: "Via de REST API vanuit je ERP, met een CSV, of via een planningskoppeling. Eryxon Flow trekt onderdelen, bewerkingen en routes recht, zodat de vloer altijd dezelfde opbouw ziet, wat er bovenstrooms ook staat.", tag: "REST · CSV · webhooks" },
-        { n: "02", h: "De vloer werkt de wachtrij af", b: "Elke cel heeft zijn eigen tablet. Tik op een bewerking, start de timer, vul goed- en afkeuraantallen in, meld een probleem. De planner ziet het meteen, zonder de pagina te verversen.", tag: "Tablet · grote knoppen · live" },
-        { n: "03", h: "De planner houdt de capaciteit in de gaten", b: "Eén scherm met de WIP-limiet per cel, welke orders krap zitten en een lijst met meldingen. Zit een cel boven de 100 procent, dan zie je dat. Geen verrassing meer op vrijdag om vijf voor vijf.", tag: "Capaciteit · WIP-limieten · meldingen" },
+        { n: "01", h: "Zet je orders erin", b: "Via de REST API vanuit je ERP, met een CSV, of via een planningskoppeling. Eryxon Flow trekt onderdelen, bewerkingen en routes recht, zodat de vloer altijd dezelfde opbouw ziet, wat er bovenstrooms ook staat." },
+        { n: "02", h: "De vloer werkt de wachtrij af", b: "Elke cel heeft zijn eigen tablet. Tik op een bewerking, start de timer, vul goed- en afkeuraantallen in, meld een probleem. De planner ziet het meteen, zonder de pagina te verversen." },
+        { n: "03", h: "De planner houdt de capaciteit in de gaten", b: "Eén scherm met de WIP-limiet per cel, welke orders krap zitten en een lijst met meldingen. Zit een cel boven de 100 procent, dan zie je dat. Geen verrassing meer op vrijdag om vijf voor vijf." },
       ],
     },
     api: {
@@ -203,21 +174,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "Een API waar je ERP echt mee uit de voeten kan.",
       lead: "Endpoints met filteren, pagineren, zoeken en een webhook per stap. Bedoeld om je ERP en de werkvloer te koppelen.",
       bullets: ["Bearer-token met afgebakende API-keys", "Schrijfacties zijn idempotent, met je eigen sleutel", "Een webhook bij elke stap in de order", "MCP-server voor AI-assistenten"],
-    },
-    integrations: {
-      eyebrow: "Koppelingen",
-      h2: "Past tussen de systemen die je al draait.",
-      lead: "Eryxon Flow pakt de order uit je ERP, geeft die als bewerkingen door aan de vloer en stuurt de resultaten weer terug.",
-      items: [
-        { name: "REST API", kind: "Koppeling" },
-        { name: "Webhooks", kind: "Events" },
-        { name: "CSV-import", kind: "Opstarten" },
-        { name: "Supabase", kind: "Backend" },
-        { name: "PostgreSQL", kind: "Database" },
-        { name: "MQTT", kind: "Protocol" },
-        { name: "MCP", kind: "AI-agents" },
-        { name: "3D STEP-viewer", kind: "CAD" },
-      ],
     },
     pricing: {
       eyebrow: "Prijzen",
@@ -229,11 +185,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "Gehost en beheerd",
       h2: "Liever niet zelf draaien?",
       lead: "De software is gratis en open source, dus zelf hosten kan altijd. Geen zin in? Dan hosten wij het, of we zetten het neer op je eigen servers en houden het draaiend.",
-      points: [
-        { h: "Gehost", b: "Wij draaien het voor je, vast bedrag. Onbeperkt gebruikers, elke dag een back-up, updates doen wij." },
-        { h: "Beheerd op locatie", b: "Op je eigen servers gezet, met updates, monitoring en back-ups erbij." },
-        { h: "Gekoppeld aan je ERP", b: "Orders komen binnen via REST en webhooks, resultaten gaan terug. Niks dubbel invoeren." },
-      ],
       cta: "Neem contact op",
     },
     cta: {
@@ -249,7 +200,6 @@ const LANDING: Record<Locale, LandingCopy> = {
     description:
       "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage, vom Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos und quelloffen. Selbst hosten, von uns hosten lassen oder vor Ort betreiben lassen.",
     hero: {
-      tag: "Open Source · Apache 2.0 · selbst hostbar",
       h1: "Jeden Auftrag im Griff, von der Werkstatt bis zur Planung.",
       lead: "Eryxon Flow verfolgt jeden Auftrag durch Schneiden, Kanten, Schweißen und Montage. Der Werker arbeitet am Tablet an der Maschine, der Planer sieht es sofort auf seinem Bildschirm. Kostenlos und quelloffen. Kein Excel, kein Whiteboard.",
       ctaPrimary: "Kostenlos testen",
@@ -266,7 +216,7 @@ const LANDING: Record<Locale, LandingCopy> = {
         { title: "Auftrags- und Teileverfolgung", body: "Du siehst jeden Auftrag durch Schneiden, Kanten, Schweißen, Montage und Finish. Die Route je Zelle, WIP-Limits und wie viel Arbeit noch ansteht." },
         { title: "3D-STEP-Viewer", body: "CAD im Browser, nichts zu installieren. Messen und Explosionsansichten, direkt im Auftragsfenster des Werkers." },
         { title: "REST-API und Webhooks", body: "Filtern, Paginieren, Suchen und ein Webhook bei jedem Schritt. Gebaut, um dein ERP und die Werkstatt zu verbinden, nicht um alles von Hand einzutippen." },
-        { title: "Kostenlos und quelloffen", body: "Apache 2.0, kostenlos für jeden Einsatz, auch kommerziell. Selbst hosten per Docker Compose, nichts gesperrt. Oder von uns hosten lassen. Forken und anpassen erlaubt." },
+        { title: "Kostenlos und quelloffen", body: "Kostenlos für jeden Einsatz, auch kommerziell. Selbst hosten per Docker Compose, nichts gesperrt. Oder von uns hosten lassen. Forken und anpassen erlaubt." },
         { title: "Mehrere Standorte, mehrere Sprachen", body: "Row-Level-Security auf PostgreSQL. NL, DE und EN ab Werk. Für Betriebe mit einem Standort und für Gruppen mit mehreren." },
       ],
     },
@@ -274,9 +224,9 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "So funktioniert es",
       h2: "Vom Auftrag im ERP bis zur Planung, in drei Schritten.",
       steps: [
-        { n: "01", h: "Aufträge einspielen", b: "Über die REST-API aus deinem ERP, per CSV oder über eine Planungsanbindung. Eryxon Flow zieht Teile, Arbeitsgänge und Routen gerade, sodass die Werkstatt immer denselben Aufbau sieht, egal was vorgelagert steht.", tag: "REST · CSV · Webhooks" },
-        { n: "02", h: "Die Werkstatt arbeitet die Liste ab", b: "Jede Zelle hat ihr eigenes Tablet. Arbeitsgang antippen, Timer starten, Gut- und Ausschussmengen erfassen, Probleme melden. Der Planer sieht es sofort, ohne die Seite neu zu laden.", tag: "Tablet · große Schaltflächen · live" },
-        { n: "03", h: "Der Planer behält die Kapazität im Blick", b: "Ein Bildschirm mit dem WIP-Limit je Zelle, welche Aufträge knapp sind und einer Meldungsliste. Liegt eine Zelle über 100 Prozent, siehst du das. Keine Überraschung mehr am Freitag um kurz vor Feierabend.", tag: "Kapazität · WIP-Limits · Meldungen" },
+        { n: "01", h: "Aufträge einspielen", b: "Über die REST-API aus deinem ERP, per CSV oder über eine Planungsanbindung. Eryxon Flow zieht Teile, Arbeitsgänge und Routen gerade, sodass die Werkstatt immer denselben Aufbau sieht, egal was vorgelagert steht." },
+        { n: "02", h: "Die Werkstatt arbeitet die Liste ab", b: "Jede Zelle hat ihr eigenes Tablet. Arbeitsgang antippen, Timer starten, Gut- und Ausschussmengen erfassen, Probleme melden. Der Planer sieht es sofort, ohne die Seite neu zu laden." },
+        { n: "03", h: "Der Planer behält die Kapazität im Blick", b: "Ein Bildschirm mit dem WIP-Limit je Zelle, welche Aufträge knapp sind und einer Meldungsliste. Liegt eine Zelle über 100 Prozent, siehst du das. Keine Überraschung mehr am Freitag um kurz vor Feierabend." },
       ],
     },
     api: {
@@ -284,21 +234,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "Eine API, mit der dein ERP wirklich sprechen kann.",
       lead: "Endpunkte mit Filterung, Paginierung, Suche und Webhook-Versand. Gebaut für ERP-zu-MES-Synchronisierung.",
       bullets: ["Bearer-Token-Auth mit scoped API-Keys", "Idempotente Writes mit eigenen Schlüsseln", "Webhooks für jedes Ereignis", "MCP-Server für KI-Assistenten"],
-    },
-    integrations: {
-      eyebrow: "Integrationen",
-      h2: "Sitzt zwischen den Systemen, die du schon betreibst.",
-      lead: "Eryxon Flow nimmt die Auftragsabsicht aus deinem ERP, übergibt sie der Werkstatt als bedienbare Arbeitsgänge und meldet Ergebnisse zurück.",
-      items: [
-        { name: "REST-API", kind: "Integration" },
-        { name: "Webhooks", kind: "Events" },
-        { name: "CSV-Import", kind: "Onboarding" },
-        { name: "Supabase", kind: "Backend" },
-        { name: "PostgreSQL", kind: "Datenbank" },
-        { name: "MQTT", kind: "Protokoll" },
-        { name: "MCP", kind: "KI-Agenten" },
-        { name: "3D-STEP-Viewer", kind: "CAD" },
-      ],
     },
     pricing: {
       eyebrow: "Preise",
@@ -310,11 +245,6 @@ const LANDING: Record<Locale, LandingCopy> = {
       eyebrow: "Gehostet & Managed",
       h2: "Lieber nicht selbst betreiben?",
       lead: "Die Software ist kostenlos und quelloffen — hoste sie selbst, wann immer du willst. Wenn nicht, hosten wir sie für dich oder installieren und betreiben sie auf deiner eigenen Infrastruktur.",
-      points: [
-        { h: "Gehostet", b: "Wir betreiben es für dich zum Pauschalpreis. Unbegrenzte Nutzer, tägliche Backups, Updates erledigt." },
-        { h: "Managed on-prem", b: "Auf deiner Infrastruktur installiert, mit Updates, Monitoring und Backups." },
-        { h: "ERP angebunden", b: "Auftragsabsicht über REST und Webhooks rein, Ergebnisse zurück, keine Doppelerfassung." },
-      ],
       cta: "Kontakt aufnehmen",
     },
     cta: {
@@ -336,8 +266,8 @@ const PRICING: Record<Locale, PricingCopy> = {
         features: [{ text: "Hosted by us, runs in minutes" }, { text: "30-day trial" }, { text: "Up to 100 jobs and 500 parts per month" }, { text: "2 GB storage, 100 API requests per day" }, { text: "Full product, no feature gates" }] },
       managed: { head: "Managed hosting", name: "Managed hosting", flag: "By request", price: "Let's talk", sub: "A dedicated, isolated instance we run for you. Set up and scoped to your shop.", cta: "Get in touch",
         features: [{ text: "Your own database, isolated from other tenants" }, { text: "Data isolation end to end" }, { text: "Backups handled for you" }, { text: "Version management and updates" }, { text: "Whitelabeling to your brand" }] },
-      selfHosted: { head: "Self-hosted", name: "Self-hosted", price: "Free", period: "· open source", sub: "Run it yourself on your own infrastructure. Apache 2.0, unlimited, no feature gates.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
-        features: [{ text: "Apache 2.0 — fork it, audit it, keep it" }, { text: "Unlimited jobs, parts, users, and storage" }, { text: "Self-host via Docker Compose" }, { text: "Full product, no feature gates" }, { text: "REST API and webhooks" }] },
+      selfHosted: { head: "Self-hosted", name: "Self-hosted", price: "Free", period: "· open source", sub: "Run it yourself on your own infrastructure. Unlimited, no feature gates.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
+        features: [{ text: "Fork it, audit it, keep it" }, { text: "Unlimited jobs, parts, users, and storage" }, { text: "Self-host via Docker Compose" }, { text: "Full product, no feature gates" }, { text: "REST API and webhooks" }] },
     },
   },
   nl: {
@@ -349,8 +279,8 @@ const PRICING: Record<Locale, PricingCopy> = {
         features: [{ text: "Door ons gehost, binnen enkele minuten klaar" }, { text: "Proefperiode van 30 dagen" }, { text: "Tot 100 orders en 500 onderdelen per maand" }, { text: "2 GB opslag, 100 API-verzoeken per dag" }, { text: "Het hele product, niks afgeschermd" }] },
       managed: { head: "Beheerde hosting", name: "Beheerde hosting", flag: "Op aanvraag", price: "Even overleggen", sub: "Een eigen, afgeschermde instance die wij voor je draaien. Opgezet en toegesneden op jouw bedrijf.", cta: "Neem contact op",
         features: [{ text: "Je eigen database, los van andere klanten" }, { text: "Data volledig afgeschermd" }, { text: "Back-ups door ons geregeld" }, { text: "Versiebeheer en updates" }, { text: "Whitelabeling in jouw huisstijl" }] },
-      selfHosted: { head: "Zelf gehost", name: "Zelf gehost", price: "Gratis", period: "· open source", sub: "Draai het zelf op je eigen infrastructuur. Apache 2.0, onbeperkt, niks afgeschermd.", ctaGuide: "Lees de zelf-hosten-gids", ctaConsulting: "Hulp bij de installatie",
-        features: [{ text: "Apache 2.0 — forken, inzien, houden" }, { text: "Onbeperkt orders, onderdelen, gebruikers en opslag" }, { text: "Zelf hosten via Docker Compose" }, { text: "Het hele product, niks afgeschermd" }, { text: "REST API en webhooks" }] },
+      selfHosted: { head: "Zelf gehost", name: "Zelf gehost", price: "Gratis", period: "· open source", sub: "Draai het zelf op je eigen infrastructuur. Onbeperkt, niks afgeschermd.", ctaGuide: "Lees de zelf-hosten-gids", ctaConsulting: "Hulp bij de installatie",
+        features: [{ text: "Forken, inzien, houden" }, { text: "Onbeperkt orders, onderdelen, gebruikers en opslag" }, { text: "Zelf hosten via Docker Compose" }, { text: "Het hele product, niks afgeschermd" }, { text: "REST API en webhooks" }] },
     },
   },
   de: {
@@ -362,8 +292,8 @@ const PRICING: Record<Locale, PricingCopy> = {
         features: [{ text: "Von uns gehostet, in wenigen Minuten startklar" }, { text: "30 Tage Testzeitraum" }, { text: "Bis zu 100 Aufträge und 500 Teile pro Monat" }, { text: "2 GB Speicher, 100 API-Anfragen pro Tag" }, { text: "Volles Produkt, keine Feature-Sperren" }] },
       managed: { head: "Gemanagtes Hosting", name: "Gemanagtes Hosting", flag: "Auf Anfrage", price: "Sprechen wir", sub: "Eine eigene, isolierte Instanz, die wir für dich betreiben. Eingerichtet und auf deinen Betrieb zugeschnitten.", cta: "Kontakt aufnehmen",
         features: [{ text: "Deine eigene Datenbank, isoliert von anderen Kunden" }, { text: "Datenisolierung durchgängig" }, { text: "Backups von uns erledigt" }, { text: "Versionsverwaltung und Updates" }, { text: "Whitelabeling in deinem Markenauftritt" }] },
-      selfHosted: { head: "Selbst gehostet", name: "Selbst gehostet", price: "Kostenlos", period: "· Open Source", sub: "Betreibe es selbst auf deiner eigenen Infrastruktur. Apache 2.0, unbegrenzt, keine Feature-Sperren.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
-        features: [{ text: "Apache 2.0 — forken, prüfen, behalten" }, { text: "Unbegrenzte Aufträge, Teile, Nutzer und Speicher" }, { text: "Selbst hosten per Docker Compose" }, { text: "Volles Produkt, keine Feature-Sperren" }, { text: "REST-API und Webhooks" }] },
+      selfHosted: { head: "Selbst gehostet", name: "Selbst gehostet", price: "Kostenlos", period: "· Open Source", sub: "Betreibe es selbst auf deiner eigenen Infrastruktur. Unbegrenzt, keine Feature-Sperren.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
+        features: [{ text: "Forken, prüfen, behalten" }, { text: "Unbegrenzte Aufträge, Teile, Nutzer und Speicher" }, { text: "Selbst hosten per Docker Compose" }, { text: "Volles Produkt, keine Feature-Sperren" }, { text: "REST-API und Webhooks" }] },
     },
   },
 };

@@ -1,17 +1,14 @@
 ---
 /*
- * Landing.astro — the full-fidelity marketing homepage body (ERY-60 / v0.6 locale buildout).
+ * Landing.astro — the marketing homepage body.
  *
- * Ports the canonical kit landing (`ui_kits/marketing/index.html` + `components.jsx` +
- * `styles.css`) section-for-section: hero → product-frame mockup → feature grid (00–05) →
- * how-it-works (3 steps) → dark API code block → integrations grid → dark CTA banner. The kit's
- * raw `mk-*` classes are translated to the site `--ery-*` token contract (the same approach used
- * by `pricing/index.astro`), so the look is 1:1 with the kit while the token authority stays
- * `tokens.css`.
+ * Section flow: hero → product-frame mockup → feature grid → how-it-works (3 steps) → dark API
+ * code block → pricing (3 tiers) → managed-rollout contact → dark CTA banner. The `mk-*` classes
+ * map to the site `--ery-*` token contract (same approach as `pricing/index.astro`), so the token
+ * authority stays in `tokens.css`.
  *
  * Content is locale-driven (`marketing-content.ts`). Per Luke's constraints: NO invented
- * testimonials/stats and NO customer names/logos — the kit's `Testimonial` and trust-row sections
- * are deliberately omitted rather than filled with fabricated proof.
+ * testimonials/stats and NO customer names/logos.
  *
  * All CTAs route through the shared CtaButton primitive so the ERY-33 analytics contract holds.
  */
@@ -42,7 +39,6 @@ const arrow =
 
 <!-- 1 · Hero (kit .mk-hero) ------------------------------------------------- -->
 <section class="mk-hero">
-  <p class="mk-tag">{c.hero.tag}</p>
   <h1 class="mk-h1">{c.hero.h1}</h1>
   <p class="mk-lead">{c.hero.lead}</p>
   <div class="mk-hero-cta">
@@ -125,7 +121,6 @@ const arrow =
         <div>
           <h3 class="mk-step-h">{s.h}</h3>
           <p class="mk-step-b">{s.b}</p>
-          <span class="mk-step-tag">{s.tag}</span>
         </div>
       </li>
     ))}
@@ -168,24 +163,7 @@ const arrow =
   </div>
 </section>
 
-<!-- 6 · Integrations grid (kit .mk-int-grid) -------------------------------- -->
-<section class="mk-section" id="integrations">
-  <div class="mk-section-head">
-    <span class="mk-section-eyebrow">{c.integrations.eyebrow}</span>
-    <h2 class="mk-h2">{c.integrations.h2}</h2>
-    <p class="mk-section-lead">{c.integrations.lead}</p>
-  </div>
-  <div class="mk-int-grid">
-    {c.integrations.items.map((it) => (
-      <div class="mk-int-tile">
-        <div class="mk-int-name">{it.name}</div>
-        <div class="mk-int-kind">{it.kind}</div>
-      </div>
-    ))}
-  </div>
-</section>
-
-<!-- 6b · Pricing, inline (kit .mk-pricing-grid / .mk-tier, three tiers) ------ -->
+<!-- 6 · Pricing, inline (kit .mk-pricing-grid / .mk-tier, three tiers) ------- -->
 <section class="mk-section" id="pricing">
   <div class="mk-section-head">
     <span class="mk-section-eyebrow">{c.pricing.eyebrow}</span>
@@ -244,23 +222,13 @@ const arrow =
   </div>
 </section>
 
-<!-- 6c · Managed rollout, inline (folded in from the standalone page) -------- -->
+<!-- 6b · Managed rollout, inline (folded in from the standalone page) -------- -->
 <section class="mk-section mk-rollout" id="managed-rollout">
-  <div class="mk-rollout-grid">
-    <div class="mk-rollout-intro">
-      <span class="mk-section-eyebrow">{c.rollout.eyebrow}</span>
-      <h2 class="mk-h2">{c.rollout.h2}</h2>
-      <p class="mk-section-lead">{c.rollout.lead}</p>
-      <RolloutInquiry label={c.rollout.cta} locale={locale} />
-    </div>
-    <ul class="mk-rollout-points">
-      {c.rollout.points.map((pt) => (
-        <li>
-          <h3 class="mk-rollout-point-h">{pt.h}</h3>
-          <p class="mk-rollout-point-b">{pt.b}</p>
-        </li>
-      ))}
-    </ul>
+  <div class="mk-rollout-intro">
+    <span class="mk-section-eyebrow">{c.rollout.eyebrow}</span>
+    <h2 class="mk-h2">{c.rollout.h2}</h2>
+    <p class="mk-section-lead">{c.rollout.lead}</p>
+    <RolloutInquiry label={c.rollout.cta} locale={locale} />
   </div>
 </section>
 
@@ -294,19 +262,6 @@ const arrow =
     max-inline-size: 900px;
     margin-inline: auto;
     padding: var(--ery-pad-hero) var(--ery-pad-section) var(--ery-space-12);
-  }
-  .mk-tag {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--ery-space-1) var(--ery-space-3);
-    margin: 0 0 var(--ery-space-5);
-    font-family: var(--ery-font-mono);
-    font-size: var(--ery-text-xs);
-    font-weight: 500;
-    color: var(--ery-brand);
-    background: color-mix(in srgb, var(--ery-brand) 10%, transparent);
-    border-radius: var(--ery-radius-pill);
-    white-space: nowrap;
   }
   .mk-h1 {
     font-size: clamp(var(--ery-text-4xl), 5.5vw, var(--ery-text-6xl));
@@ -532,18 +487,7 @@ const arrow =
     margin-block-end: var(--ery-space-4);
   }
   .mk-step-h { font-size: var(--ery-text-lg); font-weight: 600; margin: 0 0 var(--ery-space-3); letter-spacing: -0.01em; }
-  .mk-step-b { font-size: var(--ery-text-sm); line-height: 1.55; color: var(--ery-text-muted); margin: 0 0 var(--ery-space-4); }
-  .mk-step-tag {
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--ery-font-mono);
-    font-size: 11px;
-    color: var(--ery-text-muted);
-    padding: 5px var(--ery-space-3);
-    border-radius: var(--ery-radius-pill);
-    background: var(--ery-surface-subtle);
-    border: 1px solid var(--ery-border);
-  }
+  .mk-step-b { font-size: var(--ery-text-sm); line-height: 1.55; color: var(--ery-text-muted); margin: 0; }
 
   /* ---------- API block ---------- */
   .mk-api-grid {
@@ -603,31 +547,6 @@ const arrow =
     color: var(--ery-code-text);
     white-space: pre;
     overflow: auto;
-  }
-
-  /* ---------- Integrations ---------- */
-  .mk-int-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-block-start: 1px solid var(--ery-border);
-    border-inline-start: 1px solid var(--ery-border);
-  }
-  .mk-int-tile {
-    padding: var(--ery-space-5) var(--ery-space-6);
-    border-inline-end: 1px solid var(--ery-border);
-    border-block-end: 1px solid var(--ery-border);
-    background: var(--ery-surface);
-    transition: background var(--ery-motion-base) var(--ery-ease);
-  }
-  .mk-int-tile:hover { background: var(--ery-surface-subtle); }
-  .mk-int-name { font-size: var(--ery-text-base); font-weight: 600; letter-spacing: -0.01em; color: var(--ery-text); }
-  .mk-int-kind {
-    font-family: var(--ery-font-mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--ery-text-muted);
-    margin-block-start: var(--ery-space-1);
   }
 
   /* ---------- CTA banner ---------- */
@@ -803,12 +722,11 @@ const arrow =
   .mk-pricing-all a:hover { color: var(--ery-brand-hover); }
 
   /* ---------- Managed rollout (folded-in section) ---------- */
-  .mk-rollout-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--ery-space-16);
-    align-items: center;
-    padding: var(--ery-space-8);
+  .mk-rollout-intro {
+    max-inline-size: 640px;
+    margin-inline: auto;
+    text-align: center;
+    padding: var(--ery-space-10) var(--ery-space-8);
     background: var(--ery-surface-subtle);
     border: 1px solid var(--ery-border);
     border-radius: var(--ery-radius-lg);
@@ -832,42 +750,16 @@ const arrow =
     background: var(--ery-brand-hover);
     color: var(--ery-brand-contrast);
   }
-  .mk-rollout-points {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--ery-space-5);
-  }
-  .mk-rollout-points li {
-    padding-inline-start: var(--ery-space-4);
-    border-inline-start: 2px solid color-mix(in srgb, var(--ery-brand) 40%, transparent);
-  }
-  .mk-rollout-point-h {
-    font-size: var(--ery-text-base);
-    font-weight: 600;
-    margin: 0 0 var(--ery-space-1);
-    letter-spacing: -0.01em;
-  }
-  .mk-rollout-point-b {
-    font-size: var(--ery-text-sm);
-    color: var(--ery-text-muted);
-    line-height: 1.55;
-    margin: 0;
-  }
 
   /* ---------- Responsive (kit @media 980px) ---------- */
   @media (max-width: 980px) {
     .mk-feature-grid { grid-template-columns: 1fr 1fr; }
-    .mk-int-grid { grid-template-columns: repeat(2, 1fr); }
     .mk-api-grid { grid-template-columns: 1fr; }
     .mk-steps { grid-template-columns: 1fr; }
     .mk-shot-cards { grid-template-columns: 1fr; }
     .mk-cta-wrap { grid-template-columns: 1fr; text-align: center; }
     .mk-cta-actions { justify-content: center; }
     .mk-pricing-grid { grid-template-columns: 1fr; max-inline-size: 32rem; margin-inline: auto; }
-    .mk-rollout-grid { grid-template-columns: 1fr; gap: var(--ery-space-8); }
   }
   @media (max-width: 600px) {
     .mk-feature-grid { grid-template-columns: 1fr; }
