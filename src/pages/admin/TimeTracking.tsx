@@ -20,16 +20,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { cn } from "@/lib/utils";
 import { useTimeTracking } from "@/hooks/useTimeTracking";
 import type { JobRollup, OperatorRollup } from "@/lib/admin/timeTracking";
-
-/** Minutes -> "Xh Ym" (display only; booked time is stored in minutes). */
-function formatMinutes(min: number): string {
-  const total = Math.max(0, Math.round(min));
-  const h = Math.floor(total / 60);
-  const m = total % 60;
-  if (h === 0) return `${m}m`;
-  if (m === 0) return `${h}h`;
-  return `${h}h ${m}m`;
-}
+import { formatDuration as formatMinutes } from "@/lib/time-utils";
 
 type RangePreset = 7 | 30 | 90;
 

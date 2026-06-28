@@ -1,10 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   formatClockTime,
+  formatDuration,
   formatElapsedSeconds,
   formatRelativeTime,
   toTimeInputValue,
 } from "./time-utils";
+
+describe("formatDuration", () => {
+  it("shows sub-hour values in minutes", () => {
+    expect(formatDuration(0)).toBe("0m");
+    expect(formatDuration(45)).toBe("45m");
+    expect(formatDuration(59)).toBe("59m");
+  });
+
+  it("shows whole hours without a minute part", () => {
+    expect(formatDuration(60)).toBe("1h");
+    expect(formatDuration(120)).toBe("2h");
+  });
+
+  it("combines hours and minutes", () => {
+    expect(formatDuration(80)).toBe("1h 20m");
+    expect(formatDuration(90)).toBe("1h 30m");
+  });
+
+  it("rounds fractional minutes and clamps negatives/NaN", () => {
+    expect(formatDuration(45.6)).toBe("46m");
+    expect(formatDuration(-10)).toBe("0m");
+    expect(formatDuration(NaN)).toBe("0m");
+  });
+});
 
 describe("formatElapsedSeconds", () => {
   it("formats sub-minute values", () => {

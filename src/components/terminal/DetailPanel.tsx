@@ -4,7 +4,6 @@ import { TerminalJob } from "@/types/terminal";
 // getDueUrgency/dueUrgencyTextClass available if needed for future due-date display
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Play,
   Pause,
@@ -33,6 +32,7 @@ import { AssemblyDependencies } from "./AssemblyDependencies";
 import type { PMIData, GeometryData } from "@/hooks/useCADProcessing";
 import { OperationWithDetails } from "@/lib/database";
 import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/time-utils";
 import IssueForm from "@/components/operator/IssueForm";
 import ProductionQuantityModal from "@/components/operator/ProductionQuantityModal";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
@@ -276,7 +276,7 @@ export function DetailPanel({
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <span>{operation.estimated_time}h est.</span>
+                    <span>{formatDuration(operation.estimated_time)} est.</span>
                     {hasSubsteps ? (
                       <span>
                         {completedSubsteps}/{operationSubsteps.length}{" "}
@@ -393,11 +393,6 @@ export function DetailPanel({
             {job.cellName || t("terminal.columns.cell")}
           </span>
           <TerminalEncodingBadges job={job} t={t} />
-          {job.modeSummary ? (
-            <Badge variant="outline" className="rounded-full text-[10px]">
-              {t(`terminal.workModes.readiness.${job.modeSummary.readiness}`)}
-            </Badge>
-          ) : null}
         </div>
       </div>
 

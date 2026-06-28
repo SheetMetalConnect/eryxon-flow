@@ -145,7 +145,6 @@ export function TerminalEncodingBadges({
 }) {
   const statusTone = getTerminalStatusTone(job);
   const StatusIcon = statusTone.icon;
-  const operationType = getTerminalOperationType(job);
   const bulletIsSubdued = job.status === "on_hold";
 
   return (
@@ -159,15 +158,6 @@ export function TerminalEncodingBadges({
       >
         <StatusIcon className="mr-1 h-3 w-3" />
         {t(statusTone.labelKey, statusTone.fallbackLabel)}
-      </Badge>
-      <Badge
-        variant="outline"
-        className={cn(
-          "min-h-6 rounded-full px-2 py-0 text-[10px] font-semibold uppercase tracking-wide",
-          operationType.chipClassName,
-        )}
-      >
-        {t(operationType.label.key, operationType.label.fallback)}
       </Badge>
       {job.isBulletCard ? (
         <Badge
