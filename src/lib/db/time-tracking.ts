@@ -16,9 +16,9 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
   const entry = entries[0];
 
   // Duplicate open entries (race conditions) are closed too. Their duration is
-  // in MINUTES — the unit time_entries.duration uses everywhere — not seconds,
-  // and is folded into actual_time below so the time isn't silently lost.
-  let duplicateMinutes = 0;
+  // in MINUTES — the unit time_entries.duration uses everywhere — not seconds.
+  // actual_time is recomputed from the closed-entry sum below, so every closed
+  // duplicate is counted without being added twice.
   if (entries.length > 1) {
     logger.debug('Database', `Found ${entries.length} duplicate time entries, closing all`);
     const now = new Date();
@@ -29,7 +29,6 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
         0,
         Math.round((now.getTime() - startTime.getTime()) / 60000),
       );
-      duplicateMinutes += dupMinutes;
       const { error: dupError } = await supabase
         .from("time_entries")
         .update({ end_time: now.toISOString(), duration: dupMinutes })
@@ -88,19 +87,25 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
     .eq("id", entry.id);
   if (updateEntryError) throw updateEntryError;
 
-  const { data: operation } = await supabase
-    .from("operations")
-    .select("actual_time")
-    .eq("id", operationId)
-    .single();
+  // Recompute actual_time from the sum of all closed entries for this operation
+  // rather than incrementing — self-healing against duplicate / lost / crashed
+  // writes, so the stored total never drifts from time_entries (the booked truth).
+  const { data: closedEntries, error: closedError } = await supabase
+    .from("time_entries")
+    .select("duration")
+    .eq("operation_id", operationId)
+    .not("end_time", "is", null);
+  if (closedError) throw closedError;
 
-  if (operation) {
-    const { error: actualTimeError } = await supabase
-      .from("operations")
-      .update({ actual_time: (operation.actual_time || 0) + duration + duplicateMinutes })
-      .eq("id", operationId);
-    if (actualTimeError) throw actualTimeError;
-  }
+  const actualTotal = (closedEntries ?? []).reduce(
+    (sum, e) => sum + (e.duration || 0),
+    0,
+  );
+  const { error: actualTimeError } = await supabase
+    .from("operations")
+    .update({ actual_time: actualTotal })
+    .eq("id", operationId);
+  if (actualTimeError) throw actualTimeError;
 }
 
 /**
@@ -166,19 +171,24 @@ export async function adminStopTimeTracking(timeEntryId: string) {
     .eq("id", entry.id);
   if (adminUpdateEntryError) throw adminUpdateEntryError;
 
-  const { data: operation } = await supabase
-    .from("operations")
-    .select("actual_time")
-    .eq("id", entry.operation_id)
-    .single();
+  // Recompute from the closed-entry sum (same self-healing approach as
+  // stopTimeTracking) so actual_time can't drift from time_entries.
+  const { data: closedEntries, error: closedError } = await supabase
+    .from("time_entries")
+    .select("duration")
+    .eq("operation_id", entry.operation_id)
+    .not("end_time", "is", null);
+  if (closedError) throw closedError;
 
-  if (operation) {
-    const { error: adminActualTimeError } = await supabase
-      .from("operations")
-      .update({ actual_time: (operation.actual_time || 0) + duration })
-      .eq("id", entry.operation_id);
-    if (adminActualTimeError) throw adminActualTimeError;
-  }
+  const actualTotal = (closedEntries ?? []).reduce(
+    (sum, e) => sum + (e.duration || 0),
+    0,
+  );
+  const { error: adminActualTimeError } = await supabase
+    .from("operations")
+    .update({ actual_time: actualTotal })
+    .eq("id", entry.operation_id);
+  if (adminActualTimeError) throw adminActualTimeError;
 }
 
 /**

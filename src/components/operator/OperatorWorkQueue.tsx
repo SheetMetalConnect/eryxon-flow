@@ -85,9 +85,15 @@ interface OperatorWorkQueueProps {
 function sumJobs(jobs: TerminalJob[]) {
   let hours = 0;
   let qty = 0;
+  // Count each part's quantity once — a part with several operations in the
+  // same section would otherwise inflate the piece total.
+  const countedParts = new Set<string>();
   for (const j of jobs) {
     hours += j.hours;
-    qty += j.quantity;
+    if (!countedParts.has(j.partId)) {
+      countedParts.add(j.partId);
+      qty += j.quantity;
+    }
   }
   return { hours, qty };
 }
