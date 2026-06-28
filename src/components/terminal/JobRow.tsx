@@ -115,9 +115,16 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         {String(job.material || "-")}
       </td>
 
-      {/* Quantity */}
+      {/* Quantity — produced so far / planned once any good parts are reported */}
       <td className="whitespace-nowrap px-2 py-1.5 text-center text-sm text-foreground">
-        {job.quantity}
+        {job.producedQuantity ? (
+          <span className="font-mono">
+            <span className="font-semibold text-status-completed">{job.producedQuantity}</span>
+            <span className="text-muted-foreground"> / {job.quantity}</span>
+          </span>
+        ) : (
+          job.quantity
+        )}
       </td>
 
       {/* Remaining time — estimated minus booked, in minutes (formatted) */}

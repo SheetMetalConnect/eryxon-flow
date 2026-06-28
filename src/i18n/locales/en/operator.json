@@ -219,6 +219,7 @@
     "noOperationsFound": "No routing steps found for this part.",
     "onHold": "On hold",
     "routing": "Routing",
+    "produced": "Produced",
     "instructionLabel": "Instruction",
     "checklist": "Checklist",
     "time": {

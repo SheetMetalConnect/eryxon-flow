@@ -485,8 +485,13 @@ export function DetailPanel({
 
             {/* Steps: instructions for this cell, then the full routing ── flat, no nested boxes */}
             <TabsContent value="steps" className="m-0 h-full space-y-5 overflow-auto">
-              {/* Time booked vs budget + who worked on this operation */}
-              <OperationTimeSummary booked={bookedHours} t={t} />
+              {/* Time booked vs budget, parts produced, and who worked on this operation */}
+              <OperationTimeSummary
+                booked={bookedHours}
+                t={t}
+                producedQuantity={job.producedQuantity ?? 0}
+                plannedQuantity={job.quantity}
+              />
 
               {/* Instruction — the operation's note, clearly labelled so its source is obvious */}
               <div className="space-y-2">

@@ -11,6 +11,7 @@ const job: TerminalJob = {
   description: "CR-PANEL-A1 — RVS bedieningspaneel cleanroom",
   material: "RVS 316L",
   quantity: 8,
+  producedQuantity: 3,
   currentOp: "TIG lassen",
   totalOps: 5,
   hours: 72, // remaining MINUTES (estimated − booked), matching the DB contract

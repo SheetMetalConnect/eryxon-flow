@@ -219,6 +219,7 @@
     "noOperationsFound": "Keine Routingschritte für dieses Teil gefunden.",
     "onHold": "Pausiert",
     "routing": "Routing",
+    "produced": "Produziert",
     "instructionLabel": "Anweisung",
     "checklist": "Checkliste",
     "time": {

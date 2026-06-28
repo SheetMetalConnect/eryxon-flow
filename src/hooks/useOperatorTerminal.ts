@@ -156,6 +156,9 @@ export function useOperatorTerminal() {
     Record<string, BatchScanMode>
   >({});
   const [scanFeedback, setScanFeedback] = useState<ScanFeedback | null>(null);
+  const [producedByOperation, setProducedByOperation] = useState<Map<string, number>>(
+    new Map(),
+  );
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
@@ -212,7 +215,7 @@ export function useOperatorTerminal() {
     try {
       setLoading(true);
 
-      const [opsData, cellsData, tenantData] = await Promise.all([
+      const [opsData, cellsData, tenantData, quantitiesData] = await Promise.all([
         fetchOperationLookupDetails(profile.tenant_id),
         supabase
           .from("cells")
@@ -225,7 +228,22 @@ export function useOperatorTerminal() {
           .select("feature_flags, factory_opening_time, factory_closing_time, timezone")
           .eq("id", profile.tenant_id)
           .single(),
+        // Good parts reported per operation — summed client-side to avoid a
+        // large id-list query (see the v0.7 chunking fix).
+        supabase
+          .from("operation_quantities")
+          .select("operation_id, quantity_good")
+          .eq("tenant_id", profile.tenant_id),
       ]);
+
+      const producedMap = new Map<string, number>();
+      for (const row of quantitiesData.data ?? []) {
+        producedMap.set(
+          row.operation_id,
+          (producedMap.get(row.operation_id) ?? 0) + (row.quantity_good ?? 0),
+        );
+      }
+      setProducedByOperation(producedMap);
 
       setLookupOperations(opsData);
       setOperations(opsData.filter((operation) => operation.status !== "completed"));
@@ -419,6 +437,7 @@ export function useOperatorTerminal() {
         description: String(op.part.part_number ?? ""),
         material: typeof op.part.material === "string" ? op.part.material : "",
         quantity: Number(op.part.quantity) || 0,
+        producedQuantity: producedByOperation.get(op.id) ?? 0,
         currentOp: String(op.operation_name ?? ""),
         totalOps: 0,
         hours: Number(remaining.toFixed(1)),
@@ -459,7 +478,7 @@ export function useOperatorTerminal() {
           : null,
       };
     },
-    [operatorId, selectedTerminalMode, workModeSettings, workingHoursActive],
+    [operatorId, selectedTerminalMode, workModeSettings, workingHoursActive, producedByOperation],
   );
 
   const allJobs = useMemo(
