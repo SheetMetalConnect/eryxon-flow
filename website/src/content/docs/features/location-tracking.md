@@ -11,14 +11,14 @@ Recent changes to this area are in the [release notes](/release-notes/).
 
 A part finishes at one cell and waits for the next. On a busy floor, finding that part again costs time. Location tracking records the drop-off slot at the moment the operator reports the work done, so the next person walks straight to it and the planner can see what space is left.
 
-If your floor does not move parts between buffers, leave it off. When off, the terminal does not touch any of it.
+It is on by default. If your floor does not move parts between buffers, turn it off in **Organization Settings → Location tracking** — when off, the terminal does not touch any of it.
 
 ## Admin setup
 
-Turn it on in **Organization Settings → Location tracking**. Then lay out your physical drop-off slots at **Configuration → Locations**:
+Location tracking is on out of the box, so lay out your physical drop-off slots at **Configuration → Locations** (Organization Settings reminds you with a link while no slots exist). A fresh demo workspace already comes with a few example slots per cell so you can see it work:
 
 - Give each slot a **code** (for example `A01`) and an optional label.
-- Tie a slot to a **cell** so suggestions stay close to where the work is.
+- Tie a slot to a **cell** so the picker shows that cell's slots first; leave the cell blank for a general slot any cell can use.
 - Set a **capacity** — how many parts the slot holds.
 
 A slot can be a rack position, a floor zone, a trolley — whatever your floor already uses.
@@ -26,7 +26,7 @@ A slot can be a rack position, a floor zone, a trolley — whatever your floor a
 ## Operator flow
 
 1. The operator finishes an operation and taps complete.
-2. A slot picker opens, pre-selecting the most open slot near the **cell the part heads to next**, and naming that cell so the part lands in the right lane.
+2. A slot picker opens, scoped to the **cell the part heads to next** (plus any general slots), pre-selecting the most open one and naming that cell so the part lands in the right lane.
 3. The operator confirms (or picks a different slot). Full slots are marked so nothing gets double-stacked.
 
 That is the whole interaction — one tap on the slot, one to confirm. A part is only ever in one place: recording a new slot clears the old one automatically.

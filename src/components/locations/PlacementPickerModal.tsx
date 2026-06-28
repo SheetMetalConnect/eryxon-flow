@@ -58,13 +58,19 @@ export function PlacementPickerModal({
     if (!open) setSelectedId(null)
   }, [open])
 
+  // Scope the grid to the target cell's slots plus unassigned (general) slots,
+  // falling back to all slots if the cell has none — never leave nothing to pick.
   const sorted = useMemo(() => {
-    return [...occupancy].sort(
-      (a, b) =>
-        (a.location.sort_order ?? 0) - (b.location.sort_order ?? 0) ||
-        a.location.code.localeCompare(b.location.code),
-    )
-  }, [occupancy])
+    const byOrder = (a: LocationOccupancy, b: LocationOccupancy) =>
+      (a.location.sort_order ?? 0) - (b.location.sort_order ?? 0) ||
+      a.location.code.localeCompare(b.location.code)
+    const scoped = cellId
+      ? occupancy.filter(
+          (o) => o.location.cell_id === cellId || o.location.cell_id == null,
+        )
+      : occupancy
+    return [...(scoped.length > 0 ? scoped : occupancy)].sort(byOrder)
+  }, [occupancy, cellId])
 
   const handleConfirm = () => {
     if (selectedId) onConfirm(selectedId)

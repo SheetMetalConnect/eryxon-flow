@@ -179,6 +179,32 @@ export async function generateMockData(
       });
 
       logger.debug('MockData', 'Created 6 QRM cells with WIP limits');
+
+      // Example drop-off slots per cell. Location tracking is on by default, so
+      // a fresh demo tenant otherwise opens an empty placement picker. Four
+      // slots per cell (A1–A4, B1–B4, …) give the module working data to show.
+      const slotLetters = ["A", "B", "C", "D", "E", "F"];
+      const storageLocations = (cellData ?? []).flatMap((c, idx) => {
+        const letter = slotLetters[idx] ?? `Z${idx}`;
+        return [1, 2, 3, 4].map((n) => ({
+          tenant_id: tenantId,
+          cell_id: c.id,
+          code: `${letter}${n}`,
+          label: `${c.name} ${n}`,
+          capacity: 2,
+          sort_order: n,
+          active: true,
+        }));
+      });
+      if (storageLocations.length > 0) {
+        const { error: slotError } = await supabase
+          .from("storage_locations")
+          .insert(storageLocations);
+        if (slotError)
+          logger.warn('MockData', 'Storage locations seed warning:', slotError);
+        else
+          logger.debug('MockData', `Created ${storageLocations.length} demo drop-off slots`);
+      }
     }
 
     reportProgress(2, 'calendar');
@@ -2139,6 +2165,21 @@ export async function clearMockData(
       .delete()
       .eq("tenant_id", tenantId);
     if (opsErr) logger.warn('MockData', 'Operations deletion warning:', opsErr);
+
+    // part_placements + storage_locations: storage_locations survives cell
+    // deletion (its cell FK is ON DELETE SET NULL), so clear it explicitly.
+    // part_placements cascades from parts, but delete it first to be explicit.
+    const { error: placementsErr } = await supabase
+      .from("part_placements")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (placementsErr) logger.warn('MockData', 'Part placements deletion warning:', placementsErr);
+
+    const { error: slotsErr } = await supabase
+      .from("storage_locations")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (slotsErr) logger.warn('MockData', 'Storage locations deletion warning:', slotsErr);
 
     const { error: partsErr } = await supabase
       .from("parts")

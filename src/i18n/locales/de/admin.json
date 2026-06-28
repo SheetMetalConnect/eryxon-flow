@@ -657,7 +657,9 @@
       "enableLabel": "Standortverfolgung aktivieren",
       "enableDescription": "Wenn aktiv, wählt ein Bediener nach Abschluss eines Arbeitsgangs einen Ablageplatz.",
       "updated": "Standortverfolgung aktualisiert",
-      "updateFailed": "Standortverfolgung konnte nicht aktualisiert werden"
+      "updateFailed": "Standortverfolgung konnte nicht aktualisiert werden",
+      "noSlotsHint": "Die Standortverfolgung ist aktiv, aber es sind noch keine Ablageplätze eingerichtet — Bediener sehen eine leere Auswahl. Fügen Sie Plätze hinzu, damit sie nützlich ist.",
+      "setupSlots": "Ablageorte einrichten"
     },
     "config": {
       "navTitle": "Standorte",
@@ -701,7 +703,7 @@
       "suggested": "Vorgeschlagen",
       "full": "Voll",
       "occupancy": "{{occupied}}/{{capacity}} belegt",
-      "noSlots": "Es sind keine Ablageplätze konfiguriert. Bitten Sie einen Administrator, sie einzurichten.",
+      "noSlots": "Noch keine Ablageplätze eingerichtet — Sie können ohne Auswahl abschließen. Ein Administrator kann Plätze in den Einstellungen hinzufügen.",
       "confirm": "Ablage bestätigen",
       "skip": "Überspringen",
       "recorded": "Ablage erfasst",
