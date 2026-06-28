@@ -15,16 +15,24 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
 
   const entry = entries[0];
 
+  // Duplicate open entries (race conditions) are closed too. Their duration is
+  // in MINUTES — the unit time_entries.duration uses everywhere — not seconds,
+  // and is folded into actual_time below so the time isn't silently lost.
+  let duplicateMinutes = 0;
   if (entries.length > 1) {
     logger.debug('Database', `Found ${entries.length} duplicate time entries, closing all`);
     const now = new Date();
     for (let i = 1; i < entries.length; i++) {
       const dupEntry = entries[i];
       const startTime = new Date(dupEntry.start_time);
-      const duration = Math.round((now.getTime() - startTime.getTime()) / 1000);
+      const dupMinutes = Math.max(
+        0,
+        Math.round((now.getTime() - startTime.getTime()) / 60000),
+      );
+      duplicateMinutes += dupMinutes;
       const { error: dupError } = await supabase
         .from("time_entries")
-        .update({ end_time: now.toISOString(), duration })
+        .update({ end_time: now.toISOString(), duration: dupMinutes })
         .eq("id", dupEntry.id);
       if (dupError) throw dupError;
     }
@@ -89,7 +97,7 @@ export async function stopTimeTracking(operationId: string, operatorId: string) 
   if (operation) {
     const { error: actualTimeError } = await supabase
       .from("operations")
-      .update({ actual_time: (operation.actual_time || 0) + duration })
+      .update({ actual_time: (operation.actual_time || 0) + duration + duplicateMinutes })
       .eq("id", operationId);
     if (actualTimeError) throw actualTimeError;
   }
