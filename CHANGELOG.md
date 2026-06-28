@@ -2,7 +2,7 @@
 
 All notable changes to Eryxon Flow are documented here.
 
-## [0.9.0] — 2026-06-28
+## [0.8.3] — 2026-06-28
 
 ### Added
 
@@ -29,6 +29,12 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Fixed
 
+- **Yellow Card standstill flow** — reporting an issue now offers a "standstill?"
+  toggle; turning it on parks the operation under a Yellow Card (`on_hold`) via an
+  `issues` trigger, and the card auto-clears when the issue leaves `pending`.
+  Parked operations stay visible in the queue instead of disappearing. Bullet and
+  Yellow cards are now row formatting + sorting, not pills; the redundant status
+  and operation-type pills are gone from the terminal.
 - **Time-tracking correctness** — duplicate clock-entries were stored in seconds
   instead of minutes (60x inflation) and never added to `actual_time`; the live
   booked figure ignored pauses and dropped on clock-off. All fixed.

@@ -13,7 +13,7 @@ relatedLinks:
   - label: "Operator manual"
     href: "/guides/operator-manual/"
   - label: "Release notes"
-    href: "/release-notes/v0-9-0/"
+    href: "/release-notes/v0-8-3/"
 ---
 
 Stand at a machine with a job in front of you. Three questions decide whether you're on track:
@@ -21,7 +21,7 @@ how long is this *supposed* to take, how long has it *actually* taken so far, an
 you **over or under**? A shop-floor terminal that can't answer those three quickly isn't pulling
 its weight.
 
-The v0.9.0 operator panel answers them directly.
+The v0.8.3 operator panel answers them directly.
 
 ## Time, in units a human reads
 
@@ -57,11 +57,11 @@ real reason: another operator still clocked on, or the next cell at capacity.
 
 ## The boring fixes that matter most
 
-Behind the visible changes, v0.9.0 corrects three time-tracking bugs: duplicate clock-entries
+Behind the visible changes, v0.8.3 corrects three time-tracking bugs: duplicate clock-entries
 (from the occasional double-tap race) were stored in seconds instead of minutes and their time was
 never added to the job's total, and the *live* booked figure ignored pauses — so it would visibly
 drop the instant you clocked off. Those are the kinds of bugs that quietly erode trust in the
 numbers, which is the one thing a time-tracking system can't afford.
 
-Read the full list in the [v0.9.0 release notes](/release-notes/v0-9-0/), or see the whole
+Read the full list in the [v0.8.3 release notes](/release-notes/v0-8-3/), or see the whole
 operator path in [the operator terminal docs](/features/operator-terminal/).

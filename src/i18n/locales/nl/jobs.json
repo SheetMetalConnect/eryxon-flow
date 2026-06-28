@@ -485,6 +485,8 @@
     "createIssue": "Probleem melden",
     "critical": "Kritiek",
     "describeIssue": "Beschrijf het probleem...",
+    "standstill": "Ligt het werk stil?",
+    "standstillDesc": "Zet deze bewerking onder een Gele Kaart tot het probleem is afgehandeld.",
     "description": "Beschrijving",
     "editIssue": "Probleem bewerken",
     "deleteIssue": "Probleem verwijderen",

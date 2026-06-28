@@ -28,6 +28,7 @@ export type IssuesTable = {
     reviewed_by: string | null
     root_cause: string | null
     search_vector: unknown
+    causes_standstill: boolean
     severity: DatabaseEnums["issue_severity"]
     status: DatabaseEnums["issue_status"] | null
     tenant_id: string
@@ -37,6 +38,7 @@ export type IssuesTable = {
   }
   Insert: {
     affected_quantity?: number | null
+    causes_standstill?: boolean
     corrective_action?: string | null
     created_at?: string | null
     created_by: string
@@ -65,6 +67,7 @@ export type IssuesTable = {
   }
   Update: {
     affected_quantity?: number | null
+    causes_standstill?: boolean
     corrective_action?: string | null
     created_at?: string | null
     created_by?: string

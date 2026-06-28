@@ -42,10 +42,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { IconDisplay } from "@/components/ui/icon-picker";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
-import {
-  TerminalEncodingBadges,
-  TerminalInstructionFallback,
-} from "./terminalEncoding";
+import { TerminalInstructionFallback } from "./terminalEncoding";
 import { OperationBatchTab } from "./OperationBatchTab";
 import { OperationLocationTab } from "./OperationLocationTab";
 import { OperationTimeSummary } from "./OperationTimeSummary";
@@ -390,7 +387,15 @@ export function DetailPanel({
   return (
     <div className="flex h-full flex-col overflow-hidden bg-card text-card-foreground">
       {/* ── Identity strip: one calm row, status/type/rush via the shared badges only ── */}
-      <div className="shrink-0 space-y-2 border-b border-border px-4 py-3">
+      <div
+        className={cn(
+          "shrink-0 space-y-2 border-b border-l-4 border-border px-4 py-3",
+          // Card state as formatting, not a chip: amber = Yellow Card (on hold),
+          // red = Bullet Card (priority).
+          job.status === "on_hold" && "border-l-amber-500",
+          job.isBulletCard && job.status !== "on_hold" && "border-l-destructive",
+        )}
+      >
         <div className="min-w-0">
           <h2 className="truncate font-mono text-base font-semibold text-foreground">
             {String(job.jobCode ?? "")}
@@ -407,7 +412,6 @@ export function DetailPanel({
             />
             {job.cellName || t("terminal.columns.cell")}
           </span>
-          <TerminalEncodingBadges job={job} t={t} />
         </div>
       </div>
 

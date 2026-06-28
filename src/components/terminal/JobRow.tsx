@@ -6,7 +6,7 @@ import { TerminalJob } from "@/types/terminal";
 import { getDueUrgency, dueUrgencyTextClass } from "@/lib/due-date";
 import { formatDuration } from "@/lib/time-utils";
 import { TerminalCellInfo } from "./TerminalCellInfo";
-import { getTerminalStatusTone, TerminalEncodingBadges } from "./terminalEncoding";
+import { getTerminalStatusTone } from "./terminalEncoding";
 
 interface JobRowProps {
   job: TerminalJob;
@@ -48,7 +48,10 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         isSelected && "bg-accent/50 ring-1 ring-primary",
         variant === "process" && "bg-status-active/5",
         job.isCurrentUserClocked && "bg-primary/10 ring-1 ring-primary/50",
-        job.isBulletCard && job.status !== "on_hold" && "bg-destructive/5",
+        // QRM cards are row formatting, not chips: Yellow Card (on hold /
+        // standstill) is amber; Bullet Card (priority) is red and sorts to top.
+        job.status === "on_hold" && "border-l-amber-500 bg-amber-500/10",
+        job.isBulletCard && job.status !== "on_hold" && "border-l-destructive bg-destructive/5",
       )}
     >
       {/* Job Number */}
@@ -84,17 +87,14 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
 
       {/* Operation */}
       <td className="px-2 py-1.5">
-        <div className="space-y-1">
-          <Badge
-            className={cn(
-              "whitespace-nowrap px-2 py-0.5 text-xs font-semibold text-primary-foreground",
-              getOperationBadgeColor(job.currentOp),
-            )}
-          >
-            {job.currentOp}
-          </Badge>
-          <TerminalEncodingBadges job={job} t={t} compact />
-        </div>
+        <Badge
+          className={cn(
+            "whitespace-nowrap px-2 py-0.5 text-xs font-semibold text-primary-foreground",
+            getOperationBadgeColor(job.currentOp),
+          )}
+        >
+          {job.currentOp}
+        </Badge>
       </td>
 
       {/* Cell — POLCA signal: current → next cell with GO/PAUSE */}

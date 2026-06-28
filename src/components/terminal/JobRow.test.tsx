@@ -33,7 +33,7 @@ const baseJob = {
 };
 
 describe("JobRow", () => {
-  it("renders blocked precedence with bullet badge preserved", () => {
+  it("shows QRM cards as row formatting, not chips", () => {
     render(
       <table>
         <tbody>
@@ -47,8 +47,10 @@ describe("JobRow", () => {
       </table>,
     );
 
-    expect(screen.getByText(/terminal\.encoding\.status\.blocked/)).toBeInTheDocument();
-    expect(screen.getByText(/terminal\.encoding\.priority\.bullet/)).toBeInTheDocument();
-    expect(screen.getByRole("row")).toHaveClass("border-l-[hsl(var(--status-blocked))]");
+    // No encoding pills any more — status/bullet/yellow are row formatting.
+    expect(screen.queryByText(/terminal\.encoding\./)).not.toBeInTheDocument();
+    // On-hold job = Yellow Card → amber row formatting.
+    expect(screen.getByRole("row")).toHaveClass("border-l-amber-500");
+    expect(screen.getByRole("row")).toHaveClass("bg-amber-500/10");
   });
 });

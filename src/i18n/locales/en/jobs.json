@@ -488,6 +488,8 @@
     "createIssue": "Report Issue",
     "critical": "Critical",
     "describeIssue": "Describe the issue...",
+    "standstill": "Is the work at a standstill?",
+    "standstillDesc": "Parks this operation under a Yellow Card until the issue is handled.",
     "description": "Description",
     "editIssue": "Edit Issue",
     "deleteIssue": "Delete Issue",
