@@ -413,7 +413,9 @@ export function useOperatorTerminal() {
       else if (op.status === "not_started") status = "in_buffer";
       else if (op.status === "completed") status = "expected";
 
-      if (op.active_time_entry) status = "in_progress";
+      // A clocked-on operation reads as in progress — unless it's parked under a
+      // Yellow Card (on_hold), which must win so the standstill stays visible.
+      if (op.active_time_entry && op.status !== "on_hold") status = "in_progress";
 
       const estimated = op.estimated_time || 0;
       const actual = op.actual_time || 0;

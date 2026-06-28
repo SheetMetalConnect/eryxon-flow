@@ -38,11 +38,12 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- A standstill issue leaving 'pending' (resolved/closed) -> release the
-  -- operation, but only once no other standstill is still open on it.
+  -- A standstill clearing -> release the operation, but only once no other
+  -- standstill is still open on it. This covers the issue leaving 'pending'
+  -- (resolved/closed) and the standstill flag being turned off while pending.
   IF TG_OP = 'UPDATE'
      AND OLD.causes_standstill AND OLD.status = 'pending'
-     AND NEW.status IS DISTINCT FROM 'pending' THEN
+     AND (NEW.status IS DISTINCT FROM 'pending' OR NOT NEW.causes_standstill) THEN
     SELECT count(*) INTO open_standstills
       FROM public.issues
       WHERE operation_id = NEW.operation_id
