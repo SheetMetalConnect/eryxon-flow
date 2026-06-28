@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { JobRow } from "@/components/terminal/JobRow";
 import { TerminalJob } from "@/types/terminal";
+import { formatDuration } from "@/lib/time-utils";
 
 interface JobSectionProps {
   title: string;
@@ -38,7 +39,7 @@ function JobSection({
           {title} ({jobs.length})
         </h2>
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="font-mono">{totalHours.toFixed(1)}h</span>
+          <span className="font-mono">{formatDuration(totalHours)}</span>
           <span className="font-mono">{totalQty} pcs</span>
         </div>
       </div>

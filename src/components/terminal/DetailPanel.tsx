@@ -4,7 +4,6 @@ import { TerminalJob } from "@/types/terminal";
 // getDueUrgency/dueUrgencyTextClass available if needed for future due-date display
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Play,
   Pause,
@@ -33,9 +32,11 @@ import { AssemblyDependencies } from "./AssemblyDependencies";
 import type { PMIData, GeometryData } from "@/hooks/useCADProcessing";
 import { OperationWithDetails } from "@/lib/database";
 import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/time-utils";
 import IssueForm from "@/components/operator/IssueForm";
 import ProductionQuantityModal from "@/components/operator/ProductionQuantityModal";
 import { useCellQRMMetrics } from "@/hooks/useQRMMetrics";
+import { useOperationBookedHours } from "@/hooks/useOperationBookedHours";
 import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { IconDisplay } from "@/components/ui/icon-picker";
@@ -47,6 +48,7 @@ import {
 } from "./terminalEncoding";
 import { OperationBatchTab } from "./OperationBatchTab";
 import { OperationLocationTab } from "./OperationLocationTab";
+import { OperationTimeSummary } from "./OperationTimeSummary";
 
 interface Substep {
   id: string;
@@ -176,6 +178,15 @@ export function DetailPanel({
     });
   };
 
+  const currentOperation = useMemo(
+    () => operations.find((op) => op.id === job.operationId) ?? null,
+    [operations, job.operationId],
+  );
+  const bookedHours = useOperationBookedHours(
+    job.operationId,
+    currentOperation?.estimated_time ?? 0,
+  );
+
   const nextOperation = useMemo(() => {
     if (!job.currentSequence) return null;
     const sorted = [...operations].sort((a, b) => a.sequence - b.sequence);
@@ -202,12 +213,16 @@ export function DetailPanel({
   const showCompleteAction =
     showCompleteActionOverride ??
     (job.status === "in_progress" || job.isCurrentUserClocked);
-  const completeDisabled =
-    Boolean(job.activeTimeEntryId) || isBlockedByCapacity;
-  const completeTitle = job.activeTimeEntryId
+  // Completing while clocked on is fine — handleComplete stops the operator's
+  // own timer first. Only block when *another* operator is still clocked on, or
+  // the next cell is at capacity.
+  const otherOperatorClocked =
+    Boolean(job.activeTimeEntryId) && !job.isCurrentUserClocked;
+  const completeDisabled = otherOperatorClocked || isBlockedByCapacity;
+  const completeTitle = otherOperatorClocked
     ? t(
-        "terminal.stopBeforeComplete",
-        "Pause active timing before completing the operation.",
+        "terminal.otherOperatorClocked",
+        "Another operator is still clocked on this operation.",
       )
     : isBlockedByCapacity
       ? t(
@@ -276,7 +291,7 @@ export function DetailPanel({
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <span>{operation.estimated_time}h est.</span>
+                    <span>{formatDuration(operation.estimated_time)} est.</span>
                     {hasSubsteps ? (
                       <span>
                         {completedSubsteps}/{operationSubsteps.length}{" "}
@@ -393,11 +408,6 @@ export function DetailPanel({
             {job.cellName || t("terminal.columns.cell")}
           </span>
           <TerminalEncodingBadges job={job} t={t} />
-          {job.modeSummary ? (
-            <Badge variant="outline" className="rounded-full text-[10px]">
-              {t(`terminal.workModes.readiness.${job.modeSummary.readiness}`)}
-            </Badge>
-          ) : null}
         </div>
       </div>
 
@@ -475,7 +485,14 @@ export function DetailPanel({
 
             {/* Steps: instructions for this cell, then the full routing ── flat, no nested boxes */}
             <TabsContent value="steps" className="m-0 h-full space-y-5 overflow-auto">
+              {/* Time booked vs budget + who worked on this operation */}
+              <OperationTimeSummary booked={bookedHours} t={t} />
+
+              {/* Instruction — the operation's note, clearly labelled so its source is obvious */}
               <div className="space-y-2">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  {t("terminal.instructionLabel", "Instruction")}
+                </div>
                 {hasInstructions ? (
                   <>
                     {instructionPreview ? (
@@ -494,6 +511,38 @@ export function DetailPanel({
                   <TerminalInstructionFallback t={t} />
                 )}
               </div>
+
+              {/* Step-by-step checklist — surfaced while the operator is clocked on */}
+              {job.isCurrentUserClocked && currentOperationSubsteps.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {t("terminal.checklist", "Checklist")}
+                  </div>
+                  <div className="space-y-1.5 rounded-lg border border-border bg-background/60 p-3">
+                    {currentOperationSubsteps.map((substep) => (
+                      <div key={substep.id} className="flex items-center gap-2 text-sm">
+                        {substep.status === "completed" ? (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                        ) : substep.status === "in_progress" ? (
+                          <Clock3 className="h-4 w-4 shrink-0 text-primary" />
+                        ) : substep.status === "blocked" ? (
+                          <AlertTriangle className="h-4 w-4 shrink-0 text-destructive" />
+                        ) : (
+                          <Circle className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                        )}
+                        <span
+                          className={cn(
+                            "text-foreground",
+                            substep.status === "completed" && "text-muted-foreground line-through",
+                          )}
+                        >
+                          {substep.name}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
 
               <div className="space-y-2">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
@@ -599,7 +648,9 @@ export function DetailPanel({
               title={completeTitle}
             >
               <Square className="mr-1.5 h-4 w-4" />
-              {t("production.complete", "Complete")}
+              {job.isCurrentUserClocked
+                ? t("terminal.stopAndComplete", "Stop & complete")
+                : t("production.complete", "Complete")}
             </Button>
           ) : null}
 

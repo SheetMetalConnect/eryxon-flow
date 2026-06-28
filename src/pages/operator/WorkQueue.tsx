@@ -38,6 +38,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
+import { formatDuration } from "@/lib/time-utils";
 import { useSearchParams } from "react-router-dom";
 import { haptics } from "@/native";
 import { ScanDialog } from "@/components/mobile/ScanDialog";
@@ -547,7 +548,7 @@ export default function WorkQueue() {
                   </div>
                 </div>
                 <div className="mt-1 flex items-center gap-2 text-[10px] font-mono text-muted-foreground">
-                  <span>{totalHours.toFixed(1)}h</span>
+                  <span>{formatDuration(totalHours)}</span>
                   <span>·</span>
                   <span>{totalPcs} pcs</span>
                 </div>

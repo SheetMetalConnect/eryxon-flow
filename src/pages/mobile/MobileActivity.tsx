@@ -13,6 +13,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
+import { formatDuration as formatMinutes } from "@/lib/time-utils";
 import { MobileTopBar, PullToRefresh } from "@/components/mobile";
 
 interface TimeEntry {
@@ -44,14 +45,6 @@ interface DayGroup {
   totalMinutes: number;
   completed: number;
 }
-
-const formatMinutes = (totalMinutes: number) => {
-  const minutes = Math.max(0, Math.round(totalMinutes));
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h === 0) return `${m}m`;
-  return m === 0 ? `${h}h` : `${h}h ${m}m`;
-};
 
 /**
  * Operator activity timeline. Groups time entries by day, biggest first,

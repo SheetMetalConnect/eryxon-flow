@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { TerminalJob } from "@/types/terminal";
 import { getDueUrgency, dueUrgencyTextClass } from "@/lib/due-date";
+import { formatDuration } from "@/lib/time-utils";
 import { TerminalCellInfo } from "./TerminalCellInfo";
 import { getTerminalStatusTone, TerminalEncodingBadges } from "./terminalEncoding";
 
@@ -28,16 +29,6 @@ const urgencyLabel: Record<string, string> = {
   overdue: "!",
   today: "⏰",
   soon: "⚡",
-};
-
-const readinessBadgeClassName: Record<string, string> = {
-  not_working: "border-slate-500/30 bg-slate-500/10 text-slate-600",
-  blocked_working_hours: "border-amber-500/30 bg-amber-500/10 text-amber-600",
-  blocked_setup: "border-orange-500/30 bg-orange-500/10 text-orange-600",
-  ready_for_setup: "border-sky-500/30 bg-sky-500/10 text-sky-600",
-  ready_for_production: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
-  in_setup: "border-sky-500/30 bg-sky-500/10 text-sky-600",
-  in_production: "border-emerald-500/30 bg-emerald-500/10 text-emerald-600",
 };
 
 export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
@@ -102,17 +93,6 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
           >
             {job.currentOp}
           </Badge>
-          {job.modeSummary ? (
-            <Badge
-              variant="outline"
-              className={cn(
-                "whitespace-nowrap px-2 py-0.5 text-[10px] font-medium",
-                readinessBadgeClassName[job.modeSummary.readiness],
-              )}
-            >
-              {t(`terminal.workModes.readiness.${job.modeSummary.readiness}`)}
-            </Badge>
-          ) : null}
           <TerminalEncodingBadges job={job} t={t} compact />
         </div>
       </td>
@@ -140,9 +120,9 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         {job.quantity}
       </td>
 
-      {/* Remaining Hours */}
+      {/* Remaining time — estimated minus booked, in minutes (formatted) */}
       <td className="whitespace-nowrap px-2 py-1.5 text-right font-mono text-sm text-foreground">
-        {job.hours}h
+        {formatDuration(job.hours)}
       </td>
 
       {/* Planned Start */}

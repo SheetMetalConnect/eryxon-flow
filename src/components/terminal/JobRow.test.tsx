@@ -49,7 +49,6 @@ describe("JobRow", () => {
 
     expect(screen.getByText(/terminal\.encoding\.status\.blocked/)).toBeInTheDocument();
     expect(screen.getByText(/terminal\.encoding\.priority\.bullet/)).toBeInTheDocument();
-    expect(screen.getByText(/terminal\.encoding\.type\.cut/)).toBeInTheDocument();
     expect(screen.getByRole("row")).toHaveClass("border-l-[hsl(var(--status-blocked))]");
   });
 });

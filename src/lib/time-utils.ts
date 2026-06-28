@@ -18,6 +18,21 @@ export function formatElapsedSeconds(totalSeconds: number): string {
   return `${mins}:${String(secs).padStart(2, "0")}`;
 }
 
+/**
+ * Minutes → human duration: 45 → "45m", 60 → "1h", 80 → "1h 20m".
+ * The MES stores operation/booked time in minutes (operations.estimated_time,
+ * time_entries.duration); this is the one place that renders them, so a value
+ * is never shown raw with a misleading "h" suffix. Negatives/NaN clamp to "0m".
+ */
+export function formatDuration(minutes: number): string {
+  const total = Math.max(0, Math.round(minutes || 0));
+  const h = Math.floor(total / 60);
+  const m = total % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
 /** Wall-clock time of a Date — 24h ("14:05") or 12h ("02:05 PM"). */
 export function formatClockTime(date: Date, use24Hour: boolean): string {
   const hours = date.getHours();
