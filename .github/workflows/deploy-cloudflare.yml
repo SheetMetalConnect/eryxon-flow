@@ -34,10 +34,59 @@ jobs:
       - name: Run tests
         run: npm run test:run
 
+  # Apply DB migrations to prod BEFORE the frontend deploys, so the schema
+  # always leads the UI. This closes the gap that caused merged migrations to
+  # never reach prod (the UI shipped, the DB didn't). Runs only on push to
+  # main / manual dispatch — never on PRs. Skips gracefully when Supabase
+  # secrets are absent (forks, self-hosted) so it doesn't paint builds red.
+  # The migration history was reconciled with the repo files, so `db push`
+  # only applies genuinely-new migrations.
+  migrate:
+    name: Apply DB Migrations
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_PROJECT_REF_PROD: ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Check Supabase credentials
+        id: sb-creds
+        run: |
+          if [ -n "$SUPABASE_ACCESS_TOKEN" ] && [ -n "$SUPABASE_PROJECT_REF_PROD" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Supabase secrets not configured — skipping migrations."
+          fi
+
+      - name: Setup Supabase CLI
+        if: steps.sb-creds.outputs.available == 'true'
+        uses: supabase/setup-cli@v2
+        with:
+          version: latest
+
+      - name: Link to production project
+        if: steps.sb-creds.outputs.available == 'true'
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF_PROD"
+
+      - name: Push migrations
+        if: steps.sb-creds.outputs.available == 'true'
+        run: supabase db push --linked
+
   deploy:
     name: Deploy to Cloudflare Pages
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, migrate]
+    # Build on PRs (migrate is skipped there) and deploy on push after
+    # migrations succeed. always() lets deploy run when migrate is skipped.
+    if: |
+      always() &&
+      needs.test.result == 'success' &&
+      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped')
     permissions:
       contents: read
       deployments: write
