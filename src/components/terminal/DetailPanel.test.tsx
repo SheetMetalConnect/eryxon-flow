@@ -137,14 +137,17 @@ const operations = [
 ];
 
 describe("DetailPanel", () => {
-  it("shows missing-instruction fallback when no notes are available", async () => {
+  it("omits the instruction section entirely when there are no notes", async () => {
     substepRows.splice(0, substepRows.length);
 
     render(<DetailPanel job={baseJob} operations={operations as any} />);
 
+    // No empty placeholder — the Instruction label/section is simply not shown.
     await waitFor(() => {
-      expect(screen.getByText(/terminal\.instructions\.missingTitle/)).toBeInTheDocument();
+      expect(screen.getByText(/terminal\.routing/)).toBeInTheDocument();
     });
+    expect(screen.queryByText(/terminal\.instructions\.missingTitle/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/terminal\.instructionLabel/)).not.toBeInTheDocument();
   });
 
   it("expands routing substeps from the Steps tab", async () => {

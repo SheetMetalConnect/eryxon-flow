@@ -42,7 +42,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { IconDisplay } from "@/components/ui/icon-picker";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
-import { TerminalInstructionFallback } from "./terminalEncoding";
 import { OperationBatchTab } from "./OperationBatchTab";
 import { OperationLocationTab } from "./OperationLocationTab";
 import { OperationTimeSummary } from "./OperationTimeSummary";
@@ -497,29 +496,25 @@ export function DetailPanel({
                 plannedQuantity={job.quantity}
               />
 
-              {/* Instruction — the operation's note, clearly labelled so its source is obvious */}
-              <div className="space-y-2">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                  {t("terminal.instructionLabel", "Instruction")}
+              {/* Instruction — only when there is one. No empty placeholder. */}
+              {hasInstructions ? (
+                <div className="space-y-2">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    {t("terminal.instructionLabel", "Instruction")}
+                  </div>
+                  {instructionPreview ? (
+                    <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
+                      {instructionPreview}
+                    </p>
+                  ) : null}
+                  {currentOperationInstructionSteps.map((substep) => (
+                    <p key={substep.id} className="text-sm leading-6 text-muted-foreground">
+                      <span className="font-medium text-foreground">{substep.name}:</span>{" "}
+                      {substep.notes}
+                    </p>
+                  ))}
                 </div>
-                {hasInstructions ? (
-                  <>
-                    {instructionPreview ? (
-                      <p className="whitespace-pre-wrap text-sm leading-6 text-foreground">
-                        {instructionPreview}
-                      </p>
-                    ) : null}
-                    {currentOperationInstructionSteps.map((substep) => (
-                      <p key={substep.id} className="text-sm leading-6 text-muted-foreground">
-                        <span className="font-medium text-foreground">{substep.name}:</span>{" "}
-                        {substep.notes}
-                      </p>
-                    ))}
-                  </>
-                ) : (
-                  <TerminalInstructionFallback t={t} />
-                )}
-              </div>
+              ) : null}
 
               {/* Step-by-step checklist — surfaced while the operator is clocked on */}
               {job.isCurrentUserClocked && currentOperationSubsteps.length > 0 ? (

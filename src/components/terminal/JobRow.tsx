@@ -51,7 +51,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         // QRM cards are row formatting, not chips: Yellow Card (on hold /
         // standstill) is amber; Bullet Card (priority) is red and sorts to top.
         job.status === "on_hold" && "border-l-amber-500 bg-amber-500/10",
-        job.isBulletCard && job.status !== "on_hold" && "border-l-destructive bg-destructive/5",
+        job.isBulletCard && job.status !== "on_hold" && "border-l-destructive bg-destructive/10",
       )}
     >
       {/* Job Number */}

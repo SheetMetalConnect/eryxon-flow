@@ -493,13 +493,18 @@ export function useOperatorTerminal() {
     return allJobs.filter((job) => job.cellId === selectedCellId);
   }, [allJobs, selectedCellId]);
 
-  const inProcessJobs = filteredJobs.filter(
+  // Bullet Cards always sort to the top of their section — that is the whole
+  // point of a Bullet Card. Stable for everything else.
+  const bulletFirst = (a: TerminalJob, b: TerminalJob) =>
+    (b.isBulletCard ? 1 : 0) - (a.isBulletCard ? 1 : 0);
+
+  const inProcessJobs = filteredJobs
     // Parked Yellow Card (on_hold) operations stay visible at the cell, not lost.
-    (job) => job.status === "in_progress" || job.status === "on_hold",
-  );
-  const notStartedJobs = filteredJobs.filter(
-    (job) => job.status === "in_buffer" || job.status === "expected",
-  );
+    .filter((job) => job.status === "in_progress" || job.status === "on_hold")
+    .sort(bulletFirst);
+  const notStartedJobs = filteredJobs
+    .filter((job) => job.status === "in_buffer" || job.status === "expected")
+    .sort(bulletFirst);
   const inBufferJobs = notStartedJobs
     .slice(0, 5)
     .map((job) => ({ ...job, status: "in_buffer" as const }));
