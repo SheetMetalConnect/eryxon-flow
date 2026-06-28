@@ -2,6 +2,24 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.8.5] — 2026-06-29
+
+### Added
+
+- **Demo workspaces seed example drop-off slots** — generating demo data now
+  creates a few drop-off slots per cell, so location tracking (on by default)
+  shows working data instead of an empty picker.
+- **Setup reminder for drop-off locations** — Organization Settings shows a
+  suggestion with a link to Configuration → Locations when location tracking is
+  on but no slots exist yet. A nudge, not a block.
+
+### Changed
+
+- **Drop-off slot picker is cell-aware** — the picker now shows the slots for
+  the cell the part heads to next (plus unassigned general slots) instead of
+  every cell's slots, falling back to all slots if that cell has none. The
+  suggestion prefers the cell's own slots, then a general slot.
+
 ## [0.8.4] — 2026-06-29
 
 ### Fixed

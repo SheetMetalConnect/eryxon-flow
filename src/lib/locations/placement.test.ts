@@ -60,6 +60,28 @@ describe('suggestLocation', () => {
     const s = suggestLocation(occ);
     expect(s?.location.code).toBe('B01'); // only open slot left, available 3
   });
+
+  it('falls back to a general (unassigned) slot when the cell has none open', () => {
+    const withGeneral: StorageLocation[] = [
+      ...locs,
+      { id: 'g', code: 'GEN1', cell_id: null, capacity: 5, sort_order: 1 },
+    ];
+    // Both 'cut' slots full → should pick the general slot, not a 'weld' slot.
+    const occ = summarizeOccupancy(withGeneral, [
+      { location_id: 'a' }, { location_id: 'a' }, { location_id: 'b' },
+    ]);
+    expect(suggestLocation(occ, { cellId: 'cut' })?.location.code).toBe('GEN1');
+  });
+
+  it('prefers the cell own slot over a general slot when both are open', () => {
+    const withGeneral: StorageLocation[] = [
+      ...locs,
+      { id: 'g', code: 'GEN1', cell_id: null, capacity: 99, sort_order: 1 },
+    ];
+    const occ = summarizeOccupancy(withGeneral, []);
+    // 'cut' has open slots → pick A01 even though GEN1 has far more space.
+    expect(suggestLocation(occ, { cellId: 'cut' })?.location.code).toBe('A01');
+  });
 });
 
 describe('canPlace', () => {

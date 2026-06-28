@@ -48,8 +48,11 @@ export function summarizeOccupancy(
 }
 
 /**
- * Suggest where to drop the part: the open slot with the most free space, then
- * by configured order, then code. Scoped to a cell when given. Null if all full.
+ * Suggest where to drop the part. When a cell is given, prefer that cell's own
+ * slots, then fall back to unassigned (general, cell_id null) slots — a slot
+ * with no cell belongs to no lane in particular, so it's a valid catch-all.
+ * Within that, pick the most free space, then configured order, then code.
+ * Null if everything in scope is full.
  */
 export function suggestLocation(
   occupancy: LocationOccupancy[],
@@ -57,11 +60,19 @@ export function suggestLocation(
 ): LocationOccupancy | null {
   const cellId = opts?.cellId ?? null;
   const candidates = occupancy.filter(
-    (o) => !o.isFull && (cellId == null || o.location.cell_id === cellId)
+    (o) =>
+      !o.isFull &&
+      (cellId == null ||
+        o.location.cell_id === cellId ||
+        o.location.cell_id == null)
   );
   if (candidates.length === 0) return null;
+  // The cell's own slots rank ahead of general slots.
+  const cellRank = (o: LocationOccupancy) =>
+    cellId != null && o.location.cell_id === cellId ? 0 : 1;
   candidates.sort(
     (a, b) =>
+      cellRank(a) - cellRank(b) ||
       b.available - a.available ||
       (a.location.sort_order ?? 0) - (b.location.sort_order ?? 0) ||
       a.location.code.localeCompare(b.location.code)

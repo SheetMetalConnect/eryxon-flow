@@ -813,7 +813,9 @@
       "enableLabel": "Locatieregistratie inschakelen",
       "enableDescription": "Indien aan kiest een operator een neerlegvak na het afronden van een bewerking.",
       "updated": "Locatieregistratie bijgewerkt",
-      "updateFailed": "Locatieregistratie kon niet worden bijgewerkt"
+      "updateFailed": "Locatieregistratie kon niet worden bijgewerkt",
+      "noSlotsHint": "Locatieregistratie staat aan, maar er zijn nog geen neerlegvakken ingesteld — operators zien een leeg keuzemenu. Voeg vakken toe om het bruikbaar te maken.",
+      "setupSlots": "Neerleglocaties instellen"
     },
     "config": {
       "navTitle": "Locaties",
@@ -857,7 +859,7 @@
       "suggested": "Voorgesteld",
       "full": "Vol",
       "occupancy": "{{occupied}}/{{capacity}} gebruikt",
-      "noSlots": "Er zijn geen neerlegvakken ingesteld. Vraag een beheerder om ze aan te maken.",
+      "noSlots": "Nog geen neerlegvakken ingesteld — je kunt afronden zonder er een te kiezen. Een beheerder kan vakken toevoegen in Instellingen.",
       "confirm": "Plaatsing bevestigen",
       "skip": "Overslaan",
       "recorded": "Plaatsing vastgelegd",

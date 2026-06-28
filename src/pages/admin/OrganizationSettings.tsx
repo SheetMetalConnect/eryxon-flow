@@ -8,11 +8,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, Workflow, CheckCircle2, XCircle, MapPin } from 'lucide-react';
+import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, Workflow, CheckCircle2, XCircle, MapPin, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
 import { useLocationTracking } from '@/hooks/locations/useLocationTracking';
+import { useStorageLocations } from '@/hooks/locations/useStorageLocations';
 import { logger } from '@/lib/logger';
 import type { PlanningAdapterType } from '@/lib/planning';
 import {
@@ -44,6 +46,7 @@ export default function OrganizationSettings() {
     setEnabled: setLocationTrackingEnabled,
     isUpdating: locationTrackingUpdating,
   } = useLocationTracking();
+  const { locations: storageSlots, isLoading: storageSlotsLoading } = useStorageLocations();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -849,6 +852,22 @@ export default function OrganizationSettings() {
               onCheckedChange={(checked) => setLocationTrackingEnabled(checked)}
             />
           </div>
+
+          {/* Guide, don't gate: tracking is on but no slots exist yet, so the
+              operator placement picker is empty. Suggest setting slots up. */}
+          {locationTrackingEnabled && !storageSlotsLoading && storageSlots.length === 0 ? (
+            <div className="mt-4 flex flex-col gap-3 rounded-lg border border-dashed border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                {t('locations.tracking.noSlotsHint')}
+              </p>
+              <Button asChild variant="outline" size="sm" className="shrink-0">
+                <Link to="/admin/config/locations">
+                  {t('locations.tracking.setupSlots')}
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 

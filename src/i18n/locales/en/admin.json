@@ -657,7 +657,9 @@
       "enableLabel": "Enable location tracking",
       "enableDescription": "When on, operators pick a drop-off slot after completing an operation.",
       "updated": "Location tracking updated",
-      "updateFailed": "Could not update location tracking"
+      "updateFailed": "Could not update location tracking",
+      "noSlotsHint": "Location tracking is on, but no drop-off slots are set up yet — operators see an empty picker. Add slots to make it useful.",
+      "setupSlots": "Set up drop-off locations"
     },
     "config": {
       "navTitle": "Locations",
@@ -701,7 +703,7 @@
       "suggested": "Suggested",
       "full": "Full",
       "occupancy": "{{occupied}}/{{capacity}} used",
-      "noSlots": "No drop-off slots are configured. Ask an admin to set them up.",
+      "noSlots": "No drop-off slots set up yet — you can finish without recording one. An admin can add slots in Settings.",
       "confirm": "Confirm placement",
       "skip": "Skip",
       "recorded": "Placement recorded",
