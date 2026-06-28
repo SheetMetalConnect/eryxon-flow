@@ -13,7 +13,7 @@ const job: TerminalJob = {
   quantity: 8,
   currentOp: "TIG lassen",
   totalOps: 5,
-  hours: 1.2,
+  hours: 72, // remaining MINUTES (estimated − booked), matching the DB contract
   dueDate: "2026-01-17T00:00:00.000Z",
   status: "in_progress",
   hasPdf: false,
@@ -77,12 +77,13 @@ const statusByOp: Record<string, string> = {
   "op-4": "not_started",
   "op-5": "not_started",
 };
-const hoursByOp: Record<string, number> = {
-  "op-1": 0.8,
-  "op-2": 0.5,
-  "op-3": 1.2,
-  "op-4": 0.6,
-  "op-5": 0.4,
+// estimated_time is stored in MINUTES (mockDataGenerator seeds estimated_hours × 60).
+const estMinutesByOp: Record<string, number> = {
+  "op-1": 48,
+  "op-2": 30,
+  "op-3": 72,
+  "op-4": 36,
+  "op-5": 24,
 };
 
 const operations: OperationWithDetails[] = routing.map(
@@ -91,7 +92,7 @@ const operations: OperationWithDetails[] = routing.map(
     operation_name: name,
     operation_type: name.toLowerCase(),
     sequence,
-    estimated_time: hoursByOp[id],
+    estimated_time: estMinutesByOp[id],
     actual_time: 0,
     status: statusByOp[id],
     completion_percentage: 0,
