@@ -8,7 +8,6 @@
         { "label": "Quick Start", "slug": "guides/quick-start" },
         { "label": "Deployment", "slug": "guides/deployment" },
         { "label": "Self Hosting", "slug": "guides/self-hosting" },
-        { "label": "Roadmap", "slug": "roadmap" },
         { "label": "Release Notes", "link": "/release-notes/" }
       ]
     },

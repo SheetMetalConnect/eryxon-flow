@@ -7,7 +7,7 @@ description: "Get up and running with Eryxon Flow in minutes."
 
 Get Eryxon Flow up and running.
 
-> **Just want to explore?** Open the <a href="https://app.eryxon.eu" data-cta-id="docs_quickstart_hosted_explore_en" data-cta-surface="quickstart" data-cta-kind="hosted_app" data-cta-locale="en">hosted version at app.eryxon.eu</a> - no setup needed. It remains online as-is.
+> **Just want to explore?** Open the <a href="https://app.eryxon.eu" data-cta-id="docs_quickstart_hosted_explore_en" data-cta-surface="quickstart" data-cta-kind="hosted_app" data-cta-locale="en">hosted version at app.eryxon.eu</a> - no setup needed. It's a free 30-day trial.
 
 ---
 

@@ -5,7 +5,7 @@ description: "Eryxon Flow in wenigen Minuten einrichten und verwenden."
 
 Eryxon Flow schnell einrichten.
 
-> **Einfach ausprobieren?** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) - keine Einrichtung nötig. Sie bleibt online wie sie ist.
+> **Einfach ausprobieren?** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) - keine Einrichtung nötig. Eine kostenlose 30-Tage-Testversion.
 
 ---
 

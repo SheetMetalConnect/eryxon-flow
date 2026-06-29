@@ -5,7 +5,7 @@ description: "Application deployment guide for Eryxon Flow."
 
 # Deployment Guide
 
-> **Want to try it first?** Open the <a href="https://app.eryxon.eu" data-cta-id="docs_deployment_hosted_try_first_en" data-cta-surface="deployment" data-cta-kind="hosted_app" data-cta-locale="en">hosted version at app.eryxon.eu</a> before deploying your own instance. It remains online as-is.
+> **Want to try it first?** Open the <a href="https://app.eryxon.eu" data-cta-id="docs_deployment_hosted_try_first_en" data-cta-surface="deployment" data-cta-kind="hosted_app" data-cta-locale="en">hosted version at app.eryxon.eu</a> before deploying your own instance. It's a free 30-day trial.
 
 This page is the shortest setup route. For the full production checklist, see the [Self-Hosting Guide](/guides/self-hosting/).
 

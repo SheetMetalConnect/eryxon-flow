@@ -25,6 +25,9 @@ export default defineConfig({
   },
   redirects: {
     "/articles": "/blog",
+    "/roadmap/": "/",
+    "/nl/roadmap/": "/nl/",
+    "/de/roadmap/": "/de/",
     "/guides/changelog/": "/release-notes/",
     "/de/guides/changelog/": "/release-notes/",
     "/nl/guides/changelog/": "/release-notes/",

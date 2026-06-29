@@ -43,4 +43,4 @@ The same view lives in the operator terminal's **Location** tab, so an operator 
 
 ## Planned
 
-Capacity by part size, a visual map of the layout, and API access for automated placement are on the roadmap, not yet shipped.
+Capacity by part size, a visual map of the layout, and API access for automated placement are possible future work, not yet shipped.

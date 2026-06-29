@@ -19,7 +19,7 @@ description: "Common issues and solutions for Eryxon Flow."
 - **Fix**: Wait for capacity, or ask Supervisor to increase limit/override.
 
 ### 4. Can't create new job (Admin)
-- Check **My Plan** page. You might have hit the Hosted Alpha Trial limits.
+- Check **My Plan** page. You might have hit the hosted trial limits.
 - **Fix**: Delete old jobs, or switch to a self-hosted deployment and set the tenant's `plan` to `enterprise` with `null` limit columns in the database (see [Self-Hosting Guide](/guides/self-hosting/) for details on plan configuration).
 
 ### 5. "Data export taking too long"
@@ -30,29 +30,9 @@ description: "Common issues and solutions for Eryxon Flow."
 
 ## Deployment & Self-Hosting Issues
 
-### New Users Can't Log In
+### New users can't log in
 
-The `on_auth_user_created` trigger must exist on `auth.users`. Without it, new signups won't get profiles/tenants. The consolidated migration `20260127230000_post_schema_setup.sql` ensures this.
-
-The signup notification path must be configured as a **Database Webhook**, not a hardcoded SQL URL.
-
-### Admin Signup Notifications Duplicated or Missing
-
-- The consolidated migration `20260127230000_post_schema_setup.sql` removes the old duplicate-prone trigger path
-- Confirm the `notify-new-signup` database webhook is configured in Supabase Dashboard (see [Self-Hosting Guide Step 7](/guides/self-hosting/))
-- Confirm `RESEND_API_KEY`, `SIGNUP_NOTIFY_EMAIL`, `APP_URL`, and `EMAIL_FROM` are set as edge function secrets
-
-### Template Literal Errors
-
-If URLs aren't interpolating correctly, you're using single quotes instead of backticks:
-
-```javascript
-// Wrong
-const url = 'https://${projectId}.supabase.co';
-
-// Correct
-const url = `https://${projectId}.supabase.co`;
-```
+Make sure every database migration has been applied (`supabase db push`). New signups depend on the schema the migrations create.
 
 ### Storage 403 Forbidden Errors
 
@@ -140,24 +120,6 @@ If you're behind a corporate firewall that blocks CDN access, the viewer will no
 ---
 
 ## Configuration Reference
-
-### Key Migration: `20260127230000_post_schema_setup.sql`
-
-This consolidated migration applies:
-- Storage buckets and RLS policies
-- Cron jobs (pg_cron)
-- Auth trigger for new user signup (`on_auth_user_created`)
-- `blocked` status to batch_status enum
-- `parent_batch_id` column for batch nesting
-- `nesting_image_url` and `layout_image_url` columns
-- `batch_requirements` table with RLS
-- Signup notification trigger cleanup (migrated to Database Webhook)
-
-Always run migrations in order. Never skip migrations.
-
-### SQL Syntax Notes
-- Use `IF EXISTS ... THEN ... END IF` blocks
-- Don't use `PERFORM ... WHERE EXISTS` (invalid syntax)
 
 ### Performance Tips
 
