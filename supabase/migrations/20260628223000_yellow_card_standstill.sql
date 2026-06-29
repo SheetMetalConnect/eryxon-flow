@@ -13,9 +13,11 @@ COMMENT ON COLUMN public.issues.causes_standstill IS
   'True when the reported issue parks its operation under a Yellow Card until resolved.';
 
 -- Remember what the operation was doing before it was parked, so releasing it
--- restores the right state instead of guessing 'in_progress'.
+-- restores the right state instead of guessing 'in_progress'. Must be the same
+-- enum type as operations.status (task_status) — the sync trigger's CASE mixes
+-- the two, and text vs enum fails with "CASE types ... cannot be matched".
 ALTER TABLE public.operations
-  ADD COLUMN IF NOT EXISTS status_before_hold text;
+  ADD COLUMN IF NOT EXISTS status_before_hold task_status;
 
 COMMENT ON COLUMN public.operations.status_before_hold IS
   'Operation status captured when a Yellow Card parked it, restored on release.';
