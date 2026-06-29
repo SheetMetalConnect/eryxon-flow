@@ -1,189 +1,75 @@
 {
   "main": [
     {
-      "label": "Getting Started",
+      "label": "[rocket] Getting Started",
       "collapsed": true,
       "items": [
-        {
-          "label": "[rocket] Introduction",
-          "slug": "introduction"
-        },
-        {
-          "label": "[seti:vite] Quick Start",
-          "slug": "guides/quick-start"
-        },
-        {
-          "label": "[seti:lock] Deployment",
-          "slug": "guides/deployment"
-        },
-        {
-          "label": "[seti:home] Self Hosting",
-          "slug": "guides/self-hosting"
-        },
-        {
-          "label": "[seti:plan] Roadmap",
-          "slug": "roadmap"
-        },
-        {
-          "label": "[seti:changelog] Release Notes",
-          "link": "/release-notes/"
-        }
+        { "label": "Introduction", "slug": "introduction" },
+        { "label": "Quick Start", "slug": "guides/quick-start" },
+        { "label": "Deployment", "slug": "guides/deployment" },
+        { "label": "Self Hosting", "slug": "guides/self-hosting" },
+        { "label": "Roadmap", "slug": "roadmap" },
+        { "label": "Release Notes", "link": "/release-notes/" }
       ]
     },
     {
-      "label": "User Guides",
+      "label": "[open-book] User Guides",
       "collapsed": true,
       "items": [
-        {
-          "label": "Core Concepts",
-          "slug": "guides/concepts"
-        },
-        {
-          "label": "Production Flow",
-          "slug": "guides/production-flow"
-        },
-        {
-          "label": "Glossary",
-          "slug": "guides/glossary"
-        },
-        {
-          "label": "Operator Manual",
-          "slug": "guides/operator-manual"
-        },
-        {
-          "label": "Admin Manual",
-          "slug": "guides/admin-manual"
-        },
-        {
-          "label": "Quality Management",
-          "slug": "guides/quality-management"
-        }
+        { "label": "Core Concepts", "slug": "guides/concepts" },
+        { "label": "Production Flow", "slug": "guides/production-flow" },
+        { "label": "Glossary", "slug": "guides/glossary" },
+        { "label": "Operator Manual", "slug": "guides/operator-manual" },
+        { "label": "Admin Manual", "slug": "guides/admin-manual" },
+        { "label": "Quality Management", "slug": "guides/quality-management" }
       ]
     },
     {
-      "label": "Features",
+      "label": "[puzzle] Features",
       "collapsed": true,
       "items": [
-        {
-          "label": "QRM & Flow Control",
-          "slug": "features/qrm-flow"
-        },
-        {
-          "label": "QRM Cards: Bullet & Yellow",
-          "slug": "features/qrm-cards"
-        },
-        {
-          "label": "Operator Terminal",
-          "slug": "features/operator-terminal"
-        },
-        {
-          "label": "Batch & Nesting",
-          "slug": "features/batch-management"
-        },
-        {
-          "label": "Location Tracking",
-          "slug": "features/location-tracking"
-        },
-        {
-          "label": "Notifications",
-          "slug": "features/notifications"
-        },
-        {
-          "label": "Scheduling & Capacity",
-          "slug": "features/scheduling"
-        },
-        {
-          "label": "3D Viewer",
-          "slug": "features/3d-viewer"
-        },
-        {
-          "label": "ERP Integration",
-          "slug": "features/erp-integration"
-        },
-        {
-          "label": "CSV Import",
-          "slug": "features/csv-import"
-        },
-        {
-          "label": "Flexible Metadata",
-          "slug": "features/flexible-metadata"
-        }
+        { "label": "QRM & Flow Control", "slug": "features/qrm-flow" },
+        { "label": "QRM Cards: Bullet & Yellow", "slug": "features/qrm-cards" },
+        { "label": "Operator Terminal", "slug": "features/operator-terminal" },
+        { "label": "Batch & Nesting", "slug": "features/batch-management" },
+        { "label": "Location Tracking", "slug": "features/location-tracking" },
+        { "label": "Notifications", "slug": "features/notifications" },
+        { "label": "Scheduling & Capacity", "slug": "features/scheduling" },
+        { "label": "3D Viewer", "slug": "features/3d-viewer" },
+        { "label": "ERP Integration", "slug": "features/erp-integration" },
+        { "label": "CSV Import", "slug": "features/csv-import" },
+        { "label": "Flexible Metadata", "slug": "features/flexible-metadata" }
       ]
     },
     {
-      "label": "Architecture",
+      "label": "[setting] Architecture",
       "collapsed": true,
       "items": [
-        {
-          "label": "App Architecture",
-          "slug": "architecture/app-architecture"
-        },
-        {
-          "label": "Connectivity Overview",
-          "slug": "architecture/connectivity-overview"
-        },
-        {
-          "label": "Security",
-          "slug": "architecture/security-architecture"
-        }
+        { "label": "App Architecture", "slug": "architecture/app-architecture" },
+        { "label": "Connectivity Overview", "slug": "architecture/connectivity-overview" },
+        { "label": "MQTT & Webhooks", "slug": "architecture/connectivity-mqtt" },
+        { "label": "Security", "slug": "architecture/security-architecture" },
+        { "label": "Design Principles", "slug": "architecture/design-principles" },
+        { "label": "Design Tokens", "slug": "architecture/design-tokens" },
+        { "label": "Visual Components", "slug": "architecture/design-components" }
       ]
     },
     {
-      "label": "Design System",
+      "label": "[laptop] API & Integration",
       "collapsed": true,
       "items": [
-        {
-          "label": "Design Principles",
-          "slug": "architecture/design-principles"
-        },
-        {
-          "label": "Design Tokens",
-          "slug": "architecture/design-tokens"
-        },
-        {
-          "label": "Visual Components",
-          "slug": "architecture/design-components"
-        }
+        { "label": "API Examples", "slug": "guides/api-examples" },
+        { "label": "REST API", "slug": "api/rest-api-reference" },
+        { "label": "Payload Reference", "slug": "api/payload-reference" },
+        { "label": "MCP Server", "slug": "guides/mcp-setup" }
       ]
     },
     {
-      "label": "API & Integration",
+      "label": "[information] Help",
       "collapsed": true,
       "items": [
-        {
-          "label": "API Examples",
-          "slug": "guides/api-examples"
-        },
-        {
-          "label": "REST API",
-          "slug": "api/rest-api-reference"
-        },
-        {
-          "label": "Payload Reference",
-          "slug": "api/payload-reference"
-        },
-        {
-          "label": "MQTT & Webhooks",
-          "slug": "architecture/connectivity-mqtt"
-        },
-        {
-          "label": "MCP Server",
-          "slug": "guides/mcp-setup"
-        }
-      ]
-    },
-    {
-      "label": "Help",
-      "collapsed": true,
-      "items": [
-        {
-          "label": "[support] FAQ",
-          "slug": "guides/faq"
-        },
-        {
-          "label": "[setting] Troubleshooting",
-          "slug": "guides/troubleshooting"
-        }
+        { "label": "FAQ", "slug": "guides/faq" },
+        { "label": "Troubleshooting", "slug": "guides/troubleshooting" }
       ]
     }
   ]

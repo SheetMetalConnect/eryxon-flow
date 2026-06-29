@@ -298,122 +298,6 @@ const PRICING: Record<Locale, PricingCopy> = {
   },
 };
 
-/* ---------- Roadmap ----------
- *
- * The roadmap renders the REAL public Canny board (`lib/canny.ts`, fetched at build time). It is
- * NOT a hand-maintained list — every item shown is a real Canny post. This module holds only the
- * locale-driven chrome: hero copy, the per-status column labels, the empty-state line, and the
- * "vote on the public board" CTA. The items themselves come from Canny.
- *
- * Columns map 1:1 to Canny's own roadmap statuses (`CANNY_ROADMAP_STATUSES` in `lib/canny.ts`):
- * "under review" → "planned" → "in progress" → "complete". If a status has no posts we render an
- * honest empty column rather than inventing entries.
- */
-import type { CannyRoadmapStatus } from "@/lib/canny";
-
-export interface RoadmapColumn {
-  status: CannyRoadmapStatus;
-  label: string;
-}
-
-export interface RoadmapCopy {
-  title: string;
-  description: string;
-  hero: { eyebrow: string; h1: string; lead: string };
-  /** Column headers keyed to Canny statuses, in render order. */
-  columns: RoadmapColumn[];
-  /** Shown in a column that currently has no posts, and as a banner when the whole board is empty/unavailable. */
-  empty: { column: string; board: string };
-  /** Localized score/comment affordance labels for the live cards. */
-  meta: { votes: string; comments: string };
-  /** The "vote on the public board" call-to-action card. */
-  vote: { eyebrow: string; h: string; b: string; cta: string };
-}
-
-/** Public Canny roadmap board. Single source of truth for the vote-CTA link-out. */
-export { CANNY_PUBLIC_BOARD_URL as CANNY_ROADMAP_URL } from "@/lib/canny";
-
-const ROADMAP: Record<Locale, RoadmapCopy> = {
-  en: {
-    title: "Roadmap — Eryxon Flow",
-    description: "What we're reviewing, planning, building, and have shipped for Eryxon Flow. Public roadmap, straight from Canny, open to your votes.",
-    hero: {
-      eyebrow: "Roadmap",
-      h1: "What's next for Eryxon Flow.",
-      lead: "This is our live public board: what we're reviewing, what's planned, what's in build, and what's shipped. It's public, so tell us what matters to your shop.",
-    },
-    columns: [
-      { status: "under review", label: "Under review" },
-      { status: "planned", label: "Planned" },
-      { status: "in progress", label: "In progress" },
-      { status: "complete", label: "Shipped" },
-    ],
-    empty: {
-      column: "Nothing here yet.",
-      board: "The board is empty right now, or we couldn't reach it. See the latest on the public board.",
-    },
-    meta: { votes: "votes", comments: "comments" },
-    vote: {
-      eyebrow: "Have your say",
-      h: "Vote on what we build next.",
-      b: "The order isn't fixed. If something here would help your shop, vote for it on the public board, or post what's missing.",
-      cta: "Vote on the public board ↗",
-    },
-  },
-  nl: {
-    title: "Roadmap — Eryxon Flow",
-    description: "Wat we beoordelen, plannen, bouwen en al hebben opgeleverd voor Eryxon Flow. Publieke roadmap, rechtstreeks uit Canny, open om op te stemmen.",
-    hero: {
-      eyebrow: "Roadmap",
-      h1: "Wat er aankomt voor Eryxon Flow.",
-      lead: "Dit is ons live publieke bord: wat we beoordelen, wat gepland staat, waar we aan bouwen en wat al klaar is. Het is openbaar, dus laat weten wat voor jouw bedrijf telt.",
-    },
-    columns: [
-      { status: "under review", label: "In beoordeling" },
-      { status: "planned", label: "Gepland" },
-      { status: "in progress", label: "In ontwikkeling" },
-      { status: "complete", label: "Klaar" },
-    ],
-    empty: {
-      column: "Hier staat nog niets.",
-      board: "Het bord is nu leeg, of we konden het niet bereiken. Bekijk de laatste stand op het publieke bord.",
-    },
-    meta: { votes: "stemmen", comments: "reacties" },
-    vote: {
-      eyebrow: "Praat mee",
-      h: "Stem op wat we hierna bouwen.",
-      b: "De volgorde ligt niet vast. Helpt iets hier jouw bedrijf, stem erop op het publieke bord, of zet erbij wat er mist.",
-      cta: "Stem op het publieke bord ↗",
-    },
-  },
-  de: {
-    title: "Roadmap — Eryxon Flow",
-    description: "Was wir prüfen, planen, bauen und schon ausgeliefert haben für Eryxon Flow. Öffentliche Roadmap, direkt aus Canny, offen für deine Stimmen.",
-    hero: {
-      eyebrow: "Roadmap",
-      h1: "Was als Nächstes für Eryxon Flow kommt.",
-      lead: "Das ist unser live öffentliches Board: was wir prüfen, was geplant ist, woran wir bauen und was schon fertig ist. Es ist öffentlich, also sag uns, was für deinen Betrieb zählt.",
-    },
-    columns: [
-      { status: "under review", label: "In Prüfung" },
-      { status: "planned", label: "Geplant" },
-      { status: "in progress", label: "In Arbeit" },
-      { status: "complete", label: "Fertig" },
-    ],
-    empty: {
-      column: "Hier steht noch nichts.",
-      board: "Das Board ist gerade leer, oder wir konnten es nicht erreichen. Sieh dir den aktuellen Stand auf dem öffentlichen Board an.",
-    },
-    meta: { votes: "Stimmen", comments: "Kommentare" },
-    vote: {
-      eyebrow: "Misch dich ein",
-      h: "Stimm darüber ab, was wir als Nächstes bauen.",
-      b: "Die Reihenfolge steht nicht fest. Hilft dir etwas davon, stimm auf dem öffentlichen Board dafür, oder schreib, was fehlt.",
-      cta: "Auf dem öffentlichen Board abstimmen ↗",
-    },
-  },
-};
-
 /* ---------- Legal pages (imprint + privacy) ----------
  *
  * EN / NL / DE copy for the imprint (Impressum) and privacy policy. The publisher of Eryxon Flow
@@ -832,9 +716,6 @@ export function landingCopy(locale: Locale): LandingCopy {
 }
 export function pricingCopy(locale: Locale): PricingCopy {
   return PRICING[locale];
-}
-export function roadmapCopy(locale: Locale): RoadmapCopy {
-  return ROADMAP[locale];
 }
 
 /** Imprint copy with the shared "as is" disclaimer attached. */

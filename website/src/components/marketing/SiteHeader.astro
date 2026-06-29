@@ -17,15 +17,15 @@ import { localizePath, stripLocalePrefix, localeFromPath, SUPPORTED_LOCALES, typ
 interface Props {
   locale?: Locale;
   /** Marks the current section for aria-current. */
-  active?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | "roadmap" | null;
+  active?: "pricing" | "rollout" | "docs" | "blog" | "changelog" | null;
 }
 
 const { locale = "en", active = null } = Astro.props;
 
 const labels: Record<Locale, Record<string, string>> = {
-  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Release Notes", roadmap: "Roadmap", cta: "Start free trial", menu: "Menu" },
-  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Releasenotes", roadmap: "Roadmap", cta: "Gratis uitproberen", menu: "Menu" },
-  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Release Notes", roadmap: "Roadmap", cta: "Kostenlos testen", menu: "Menü" },
+  en: { pricing: "Pricing", rollout: "Managed rollout", docs: "Documentation", blog: "Blog", changelog: "Release Notes", cta: "Start free trial", menu: "Menu" },
+  nl: { pricing: "Prijzen", rollout: "Begeleide uitrol", docs: "Documentatie", blog: "Blog", changelog: "Releasenotes", cta: "Gratis uitproberen", menu: "Menu" },
+  de: { pricing: "Preise", rollout: "Begleitete Einführung", docs: "Dokumentation", blog: "Blog", changelog: "Release Notes", cta: "Kostenlos testen", menu: "Menü" },
 };
 const t = labels[locale];
 
@@ -36,7 +36,6 @@ const links = [
   { key: "docs", label: t.docs, href: "/introduction/" },
   { key: "blog", label: t.blog, href: "/blog/" },
   { key: "changelog", label: t.changelog, href: "/release-notes/" },
-  { key: "roadmap", label: t.roadmap, href: localizePath("/roadmap/", locale) },
 ] as const;
 
 // Language switcher: keep the visitor on the equivalent path in each locale, but only for the
@@ -44,7 +43,7 @@ const links = [
 // locale's home.
 const currentLocale = localeFromPath(Astro.url.pathname);
 const base = stripLocalePrefix(Astro.url.pathname, currentLocale);
-const localizedBase = base === "/" || base === "/roadmap/" ? base : "/";
+const localizedBase = base === "/" ? base : "/";
 const langLinks = SUPPORTED_LOCALES.map((l) => ({
   lang: l,
   href: localizePath(localizedBase, l),

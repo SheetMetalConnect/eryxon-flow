@@ -8,7 +8,6 @@
  * dedicated isolated instance) / Self-hosted (Apache 2.0, unlimited, DIY). Kit `svc-*` → `--ery-*`.
  */
 import CtaButton from "@/components/marketing/CtaButton.astro";
-import RolloutInquiry from "@/components/RolloutInquiry.astro";
 import { pricingCopy } from "@/lib/marketing-content";
 import { localizePath } from "@/lib/locale";
 import type { Locale } from "@/lib/locale";
@@ -20,8 +19,6 @@ interface Props {
 const { locale = "en" } = Astro.props;
 const c = pricingCopy(locale);
 const selfHostHref = localizePath("/guides/self-hosting/", locale);
-// Hosted plans + support arrive at v1; until then the "learn more" path is the publisher's site.
-const learnMoreHref = "https://www.vanenkhuizen.com/";
 
 const check =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -74,9 +71,6 @@ const featureItem = (f: PlanFeature) => f;
         <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
       ))}
     </ul>
-    <CtaButton href={learnMoreHref} ctaId="pricing_hosted_learnmore" surface="pricing_plans" kind="external_site" variant="secondary" locale={locale} external>
-      {c.plans.managed.cta}
-    </CtaButton>
   </article>
 
   <!-- Tier 3 — Self-hosted (Apache 2.0, unlimited, DIY) -->
@@ -97,7 +91,6 @@ const featureItem = (f: PlanFeature) => f;
     <CtaButton href={selfHostHref} ctaId="pricing_selfhost_guide" surface="pricing_plans" kind="docs" variant="secondary" locale={locale}>
       {c.plans.selfHosted.ctaGuide}
     </CtaButton>
-    <RolloutInquiry label={c.plans.selfHosted.ctaConsulting} locale={locale} />
   </article>
 </section>
 

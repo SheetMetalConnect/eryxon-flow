@@ -13,7 +13,6 @@
  * All CTAs route through the shared CtaButton primitive so the ERY-33 analytics contract holds.
  */
 import CtaButton from "@/components/marketing/CtaButton.astro";
-import RolloutInquiry from "@/components/RolloutInquiry.astro";
 import { landingCopy, pricingCopy, type PlanFeature } from "@/lib/marketing-content";
 import { localizePath, type Locale } from "@/lib/locale";
 
@@ -26,13 +25,6 @@ const p = pricingCopy(locale);
 
 const docsHref = localizePath("/introduction/", locale);
 const selfHostHref = localizePath("/guides/self-hosting/", locale);
-
-// Managed rollout now lives inline on this page (#managed-rollout); the hero secondary
-// CTA scrolls there instead of routing to the standalone docs page.
-const rolloutAnchor = "#managed-rollout";
-
-// Hosted plans + support arrive at v1; until then the "learn more" path is the publisher's site.
-const learnMoreHref = "https://www.vanenkhuizen.com/";
 
 const check =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -48,10 +40,7 @@ const arrow =
     <CtaButton href="https://app.eryxon.eu" ctaId="home_hero_primary_hosted" surface="homepage_hero" kind="hosted_app" variant="primary" locale={locale} external>
       <span>{c.hero.ctaPrimary}</span><Fragment set:html={arrow} />
     </CtaButton>
-    <CtaButton href={rolloutAnchor} ctaId="home_hero_secondary_rollout" surface="homepage_hero" kind="rollout_section" variant="secondary" locale={locale}>
-      {c.hero.ctaSecondary}
-    </CtaButton>
-    <CtaButton href={docsHref} ctaId="home_hero_tertiary_docs" surface="homepage_hero" kind="docs" variant="tertiary" locale={locale}>
+    <CtaButton href={docsHref} ctaId="home_hero_secondary_docs" surface="homepage_hero" kind="docs" variant="secondary" locale={locale}>
       {c.hero.ctaTertiary}
     </CtaButton>
   </div>
@@ -200,9 +189,6 @@ const arrow =
           <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
         ))}
       </ul>
-      <a class="mk-tier-link" href={learnMoreHref} target="_blank" rel="noopener noreferrer" data-cta-id="home_pricing_hosted_learnmore" data-cta-surface="homepage_pricing" data-cta-kind="external_site">
-        {p.plans.managed.cta}
-      </a>
     </div>
 
     <!-- Tier 3 — Self-hosted (Apache 2.0, unlimited, DIY) -->
@@ -218,9 +204,6 @@ const arrow =
       <CtaButton href={selfHostHref} ctaId="home_pricing_selfhost_guide" surface="homepage_pricing" kind="docs" variant="secondary" locale={locale}>
         {p.plans.selfHosted.ctaGuide}
       </CtaButton>
-      <a class="mk-tier-link" href={`${rolloutAnchor}`} data-cta-id="home_pricing_selfhost_consulting" data-cta-surface="homepage_pricing" data-cta-kind="rollout_section">
-        {p.plans.selfHosted.ctaConsulting}
-      </a>
     </div>
   </div>
 </section>
@@ -231,7 +214,6 @@ const arrow =
     <span class="mk-section-eyebrow">{c.rollout.eyebrow}</span>
     <h2 class="mk-h2">{c.rollout.h2}</h2>
     <p class="mk-section-lead">{c.rollout.lead}</p>
-    <RolloutInquiry label={c.rollout.cta} locale={locale} />
   </div>
 </section>
 
