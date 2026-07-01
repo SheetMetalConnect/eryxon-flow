@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, GripVertical } from "lucide-react";
@@ -24,9 +24,13 @@ import {
 
 export default function OperatorView() {
   const { t } = useTranslation();
-  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(
-    () => document.getElementById("terminal-header-slot"),
-  );
+  // Resolve the portal target after commit — reading it during render races the
+  // layout's own render, so on cached-chunk loads the slot isn't in the DOM yet
+  // and the cell selector silently never mounts.
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  useLayoutEffect(() => {
+    setHeaderSlot(document.getElementById("terminal-header-slot"));
+  }, []);
 
   const {
     containerRef,
