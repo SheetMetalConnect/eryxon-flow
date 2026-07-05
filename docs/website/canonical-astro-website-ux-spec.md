@@ -89,7 +89,7 @@ Observed repo reality:
 
 - Use calm, precise, operator-respecting copy.
 - Use second person and plain technical manufacturing language.
-- Eryxon Flow is open source under Apache 2.0. Use `open source`, `Apache 2.0`, or `self-hostable`. Do not use `source-available` or `BSL`.
+- Eryxon Flow is source-available under the Business Source License 1.1. Use `source-available`, `Business Source License 1.1`, `BSL`, or `self-hostable`. Do not use `open source`, `Apache 2.0`, or `free for any use`.
 - No hype terms such as `revolutionary`, `magical`, or `seamless`.
 - No emoji in product-facing website UI.
 - Brand in body copy is `Eryxon` and `Eryxon Flow`.
@@ -220,7 +220,7 @@ Use or create Astro components that map to the canonical kit:
 
 - Remove consultant-personal framing from the core product homepage.
 - Move support, services, and contact content into a deliberate product/company pattern instead of appending them to a docs-heavy scroll.
-- `Open Source` footer/resource wording is accurate — Eryxon Flow is Apache 2.0. Keep or pair it with the license name.
+- `Open Source` footer/resource wording is inaccurate — Eryxon Flow is source-available under the Business Source License 1.1, not open source. Replace it with `Source-available` or `BSL 1.1` and pair it with the license name.
 
 ## Gap List: Current Repo vs Canonical Package
 
@@ -230,7 +230,7 @@ Use or create Astro components that map to the canonical kit:
 4. The current docs route is dark-first, while the package defines marketing/docs as light-mode primary.
 5. The current architecture docs explicitly document gradients, glass cards, and animated orbs; those motifs are retired.
 6. Current button primitives still rely on gradient fills and gradient-border outlines.
-7. Current footer/menu config still contains banned `Open Source` wording and product-diluting link clutter.
+7. Current footer/menu config still contains banned `Open Source` wording (it must read `Source-available` / `BSL 1.1`) and product-diluting link clutter.
 8. Current wordmark treatment still reflects older branding conventions instead of the canonical Eryxon standard.
 9. `website/dist` is stale and should not be used to judge implementation completeness.
 

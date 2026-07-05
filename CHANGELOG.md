@@ -2,6 +2,24 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.9.0] — 2026-07-05
+
+### Changed
+
+- **Relicensed from Apache 2.0 to the Business Source License 1.1** — Eryxon
+  Flow is now source-available rather than open source. Two editions replace the
+  single-licence model:
+  - **Community** — free to self-host for a single workshop, with full source to
+    read and modify. Each released version converts to GPL v2.0-or-later four
+    years after its release under the BSL change licence.
+  - **Premium** — commercial (contact sales, SLA-backed): multi-site, ERP
+    connectors, add-ons, monitoring, hub, advanced workflows, whitelabel, and
+    advanced 3D.
+- **License surfaces updated to match** — the README, website, docs, and the
+  in-app license panel now describe the source-available BSL model and the
+  Community / Premium split. `package.json` and `mcp-server/package.json` are set
+  to `BUSL-1.1`.
+
 ## [0.8.5] — 2026-06-29
 
 ### Added

@@ -596,23 +596,23 @@
       "consulting": "Hulp bij installatie"
     },
     "license": {
-      "title": "Licentie (Apache 2.0)",
-      "tldr": "Gebruik het, pas het aan, host het zelf en distribueer het opnieuw. Lever de licentie en meldingen mee bij distributie.",
+      "title": "Licentie (BSL 1.1)",
+      "tldr": "Bekijk en pas de broncode aan en host de Community-editie gratis voor één productielocatie. Meerdere locaties of gebruik als gehoste dienst vereisen een commerciële (Premium-)licentie.",
       "allowed": "Toegestaan",
-      "notAllowed": "Niet toegestaan",
+      "notAllowed": "Vereist een commerciële licentie",
       "allowedItems": {
-        "selfHost": "Zelf hosten of commercieel gebruiken",
-        "modify": "Fork, pas aan en distribueer uw wijzigingen",
+        "selfHost": "De Community-editie zelf hosten voor één locatie",
+        "modify": "Broncode bekijken, aanpassen en erop voortbouwen",
         "consulting": "Gebruik voor ontwikkeling, testen, educatie",
-        "commercial": "Commercieel gebruiken in uw bedrijf"
+        "commercial": "Eén productiewerkplaats gratis draaien"
       },
       "notAllowedItems": {
-        "resell": "Distributie zonder de vereiste licentie en meldingen"
+        "resell": "Meerdere locaties of gebruik als gehoste dienst zonder commerciële licentie"
       },
       "note": "Voorwaarden",
       "noteItems": {
         "attribution": "Behoud de licentie- en auteursrechtvermeldingen",
-        "patent": "Bevat een octrooirecht onder Apache 2.0"
+        "patent": "Elke release wordt vier jaar na uitgave GPL v2.0 of hoger"
       }
     },
     "hostedTrial": {

@@ -86,8 +86,10 @@ Three long-form / editorial layouts sharing one stylesheet
 - **Code samples use the monospace token** (JetBrains Mono).
 - **Headlines: sentence case.** Brand: lowercase wordmark, capital E
   in body copy.
-- **Open source (Apache 2.0).** Copy says "open source", "Apache 2.0",
-  or "self-hostable" — not "source-available" or "BSL".
+- **Source-available (Business Source License 1.1).** Copy says
+  "source-available", "Business Source License 1.1", "BSL", or
+  "self-hostable" (free to self-host the Community edition for a single
+  workshop) — not "open source", "Apache 2.0", or "free for any use".
 
 ## Source
 

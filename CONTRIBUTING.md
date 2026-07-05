@@ -1,7 +1,8 @@
 # Contributing to Eryxon Flow
 
-Thanks for your interest! Eryxon Flow is a free and open-source MES for
-small and mid-size metalworking shops, built under Apache 2.0. Contributions
+Thanks for your interest! Eryxon Flow is a source-available MES for
+small and mid-size metalworking shops, licensed under the Business Source
+License 1.1. Contributions
 of every size are welcome — a typo fix, a Dutch or German translation, a bug
 report from your shop floor, or a new feature.
 
@@ -69,4 +70,5 @@ Hotfixes outside the train are reserved for critical production issues.
 ## License
 
 By contributing, you agree that your contributions are licensed under the
-[Apache License 2.0](./LICENSE).
+[Business Source License 1.1](./LICENSE), and that Sheet Metal Connect e.U.
+may also license your contributions under the commercial (Premium) terms.

@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Open-source Planning & Shop Floor Execution for Job Shops</strong>
+  <strong>Source-available Planning & Shop Floor Execution for Job Shops</strong>
 </p>
 
 <p align="center">
@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/license-Apache--2.0-green" alt="License" />
+  <img src="https://img.shields.io/badge/license-BSL--1.1-blue" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
   <img src="https://img.shields.io/badge/typescript-strict-3178C6?logo=typescript" alt="TypeScript" />
@@ -21,7 +21,7 @@
 
 ---
 
-Eryxon Flow is an open-source MES for metalworking job shops. It runs as a self-hosted platform and installs as a desktop app straight from your browser, no Electron or extra runtime. It's free under Apache 2.0: use it, fork it, adapt it however you like.
+Eryxon Flow is a source-available MES for metalworking job shops. It runs as a self-hosted platform and installs as a desktop app straight from your browser, no Electron or extra runtime. It's licensed under the Business Source License 1.1: read the source, modify it, and self-host the **Community** edition free for a single workshop.
 
 Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and connect it to your ERP or planning system.
 
@@ -55,7 +55,7 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 - Multi-language (English, Dutch, German)
 - Multi-tenant SaaS with row-level security
 - Self-hostable via Docker Compose
-- Apache 2.0 license — fully open source, free for any use
+- Business Source License 1.1 — source-available, free to self-host for a single workshop
 
 ## Quick Start
 
@@ -196,13 +196,14 @@ Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <questio
 
 ## License
 
-**Apache License 2.0**
+**Business Source License 1.1** (source-available)
 
-- Fully open source — free for any use, including commercial
-- Use, modify, fork, and self-host without restriction
-- Patent grant included
+- **Community** — free to self-host for a single production site (one workshop); read, modify, and run the source
+- Read and modify the source, and use it for any non-production purpose, at no charge
+- **Premium** (multi-site, offering it as a service, and the commercial add-ons) needs a commercial license — see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)
+- Each released version converts to its Change License (GNU GPL v2.0 or later) four years after release
 
-See [LICENSE](LICENSE) for full terms.
+See [LICENSE](LICENSE) for full terms, and [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) for Premium.
 
 ## Contributing & Security
 

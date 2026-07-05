@@ -4,8 +4,8 @@
  *
  * Ports the kit services/plans template (`ui_kits/marketing/services.html` `.svc-*`) as the
  * existing `/pricing/` route did, lifted into a shared component so en/nl/de render one markup.
- * Three public tiers: Hosted trial (free, 30 days, usage limits) / Managed hosting (by request,
- * dedicated isolated instance) / Self-hosted (Apache 2.0, unlimited, DIY). Kit `svc-*` → `--ery-*`.
+ * Three tiers: Hosted demo (Community edition, free, 30 days, usage limits) / Premium (sold direct,
+ * SLA, contact sales) / Community self-hosted (source-available, BSL 1.1, single site). Kit `svc-*` → `--ery-*`.
  */
 import CtaButton from "@/components/marketing/CtaButton.astro";
 import { pricingCopy } from "@/lib/marketing-content";
@@ -35,61 +35,64 @@ const featureItem = (f: PlanFeature) => f;
 
 <!-- Plan grid — kit .svc-plans, 3 tiers -->
 <section class="ery-container svc-plans" aria-label="Plans">
-  <!-- Tier 1 — Hosted demo (free, 30 days, usage limits) — the recommended starting point -->
-  <article class="svc-plan is-featured">
+  <!-- Tier 1 — Hosted demo (Community edition, free, 30 days, usage limits) -->
+  <article class="svc-plan">
     <div class="svc-plan-head">
-      <span class="svc-plan-dot"></span>
-      <span>{c.plans.trial.head}</span>
+      <span class="svc-plan-dot svc-plan-dot--neutral"></span>
+      <span>{c.plans.demo.head}</span>
     </div>
-    <h2 class="svc-plan-name">{c.plans.trial.name}</h2>
-    <div class="svc-plan-price">{c.plans.trial.price}<span>{c.plans.trial.period}</span></div>
-    <p class="svc-plan-sub">{c.plans.trial.sub}</p>
+    <h2 class="svc-plan-name">{c.plans.demo.name}</h2>
+    <div class="svc-plan-price">{c.plans.demo.price}<span>{c.plans.demo.period}</span></div>
+    <p class="svc-plan-sub">{c.plans.demo.sub}</p>
     <hr class="svc-plan-divider" />
     <ul class="svc-plan-features">
-      {c.plans.trial.features.map((f) => (
+      {c.plans.demo.features.map((f) => (
         <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
       ))}
     </ul>
-    <CtaButton href="https://app.eryxon.eu" ctaId="pricing_trial_signup" surface="pricing_plans" kind="hosted_app" variant="secondary" locale={locale} external>
-      {c.plans.trial.cta}
+    <CtaButton href="https://app.eryxon.eu" ctaId="pricing_demo_signup" surface="pricing_plans" kind="hosted_app" variant="secondary" locale={locale} external>
+      {c.plans.demo.cta}
     </CtaButton>
   </article>
 
-  <!-- Tier 2 — Hosted & support (paid; arrives at v1, "learn more" links to the publisher's site) -->
-  <article class="svc-plan">
-    <span class="svc-plan-flag">{c.plans.managed.flag}</span>
+  <!-- Tier 2 — Premium (sold direct, SLA, contact sales) — featured -->
+  <article class="svc-plan is-featured">
+    <span class="svc-plan-flag">{c.plans.premium.flag}</span>
     <div class="svc-plan-head">
-      <span class="svc-plan-dot svc-plan-dot--neutral"></span>
-      <span>{c.plans.managed.head}</span>
+      <span class="svc-plan-dot"></span>
+      <span>{c.plans.premium.head}</span>
     </div>
-    <h2 class="svc-plan-name">{c.plans.managed.name}</h2>
-    <div class="svc-plan-price">{c.plans.managed.price}</div>
-    <p class="svc-plan-sub">{c.plans.managed.sub}</p>
+    <h2 class="svc-plan-name">{c.plans.premium.name}</h2>
+    <div class="svc-plan-price">{c.plans.premium.price}</div>
+    <p class="svc-plan-sub">{c.plans.premium.sub}</p>
     <hr class="svc-plan-divider" />
     <ul class="svc-plan-features">
-      {c.plans.managed.features.map((f) => (
+      {c.plans.premium.features.map((f) => (
         <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
       ))}
     </ul>
+    <CtaButton href="https://vanenkhuizen.com" ctaId="pricing_premium_contact" surface="pricing_plans" kind="external_site" variant="primary" locale={locale} external>
+      {c.plans.premium.cta}
+    </CtaButton>
   </article>
 
-  <!-- Tier 3 — Self-hosted (Apache 2.0, unlimited, DIY) -->
+  <!-- Tier 3 — Community self-hosted (source-available, BSL 1.1, single site) -->
   <article class="svc-plan">
     <div class="svc-plan-head">
       <span class="svc-plan-dot svc-plan-dot--neutral"></span>
-      <span>{c.plans.selfHosted.head}</span>
+      <span>{c.plans.community.head}</span>
     </div>
-    <h2 class="svc-plan-name">{c.plans.selfHosted.name}</h2>
-    <div class="svc-plan-price">{c.plans.selfHosted.price}<span>{c.plans.selfHosted.period}</span></div>
-    <p class="svc-plan-sub">{c.plans.selfHosted.sub}</p>
+    <h2 class="svc-plan-name">{c.plans.community.name}</h2>
+    <div class="svc-plan-price">{c.plans.community.price}<span>{c.plans.community.period}</span></div>
+    <p class="svc-plan-sub">{c.plans.community.sub}</p>
     <hr class="svc-plan-divider" />
     <ul class="svc-plan-features">
-      {c.plans.selfHosted.features.map((f) => (
+      {c.plans.community.features.map((f) => (
         <li class:list={[featureItem(f).muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
       ))}
     </ul>
     <CtaButton href={selfHostHref} ctaId="pricing_selfhost_guide" surface="pricing_plans" kind="docs" variant="secondary" locale={locale}>
-      {c.plans.selfHosted.ctaGuide}
+      {c.plans.community.ctaGuide}
     </CtaButton>
   </article>
 </section>

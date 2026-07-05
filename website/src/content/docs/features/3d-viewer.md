@@ -11,16 +11,18 @@ The 3D STEP viewer lets you view CAD models directly in the browser. Upload a ST
 
 ## How it works
 
-The viewer is **browser-first**: by default it parses and renders the STEP file in the operator's browser, so a basic self-hosted install needs no extra CAD infrastructure. When a deployment chooses to run the optional CAD service, the viewer prefers server-processed geometry and can show PMI (the GD&T annotations baked into the model); without it, you still get full geometry and measurement.
+The viewer is **browser-first**: by default it parses and renders the STEP file in the operator's browser, so a self-hosted install needs no extra CAD infrastructure. This browser viewer — full geometry plus measurements — is part of the free **Community** edition.
+
+Advanced 3D (nesting, unfold, and annotations) and server-side processing — tessellation and PMI, the GD&T annotations baked into the model — are part of the commercial **Premium** edition, which runs the CAD service alongside the app.
 
 ```mermaid
 flowchart LR
-  STEP["STEP file on a part"] --> Q{"CAD service enabled?"}
-  Q -->|No| BR["Browser viewer<br/>geometry + measurements"]
-  Q -->|Yes| SV["Server: tessellation + PMI"] --> BR2["Browser viewer<br/>geometry + PMI overlays"]
+  STEP["STEP file on a part"] --> Q{"CAD service (Premium)?"}
+  Q -->|Community| BR["Browser viewer<br/>geometry + measurements"]
+  Q -->|Premium| SV["Server: tessellation + PMI"] --> BR2["Browser viewer<br/>geometry + PMI overlays"]
 ```
 
-That split is deliberate: lightweight viewing for everyone, richer inspection for shops that want it — including bringing your own CAD backend.
+That split is deliberate: lightweight viewing for everyone, richer inspection for shops that need it.
 
 ## Features
 
@@ -110,8 +112,8 @@ Click the **Fit View** button in the toolbar.
 - Try re-exporting as STEP AP214
 - If the file is very large, try splitting the assembly
 
-## Advanced CAD integration
+## Advanced CAD integration (Premium)
 
-The built-in viewer handles geometry visualization and measurements for most shop floor use cases. For advanced requirements like PMI (GD&T annotations from the model), server-side tessellation, or CAD format conversion, Eryxon Flow supports an optional CAD backend service.
+The built-in Community viewer handles geometry visualization and measurements for most shop floor use cases. Advanced requirements — nesting, unfold, annotations, PMI (GD&T annotations from the model), server-side tessellation, or CAD format conversion — are part of the commercial Premium edition, which runs a CAD backend service alongside the app.
 
-Partners like [Sheet Metal Connect](https://www.vanenkhuizen.com/) can help set up advanced CAD processing pipelines. [Get in touch](mailto:office@vanenkhuizen.com) to discuss your requirements.
+Premium is sold direct by [Sheet Metal Connect e.U.](https://vanenkhuizen.com) — [get in touch](mailto:office@vanenkhuizen.com) to discuss your requirements.

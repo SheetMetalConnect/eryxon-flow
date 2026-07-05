@@ -3,10 +3,10 @@
  * SiteFooter — marketing footer for the redesign surfaces (ERY-60).
  *
  * Fills the `footer` slot of MarketingLayout. IA per the ERY-54 brief:
- *   - the "Open Source" group lists the repository links (Apache 2.0, fully open source)
+ *   - the repository group lists the source links (source-available, Business Source License 1.1)
  *   - managed rollout stays in the contact column
  *   - docs + self-hosting stay under resources
- *   - licensing language is factual and compact (Apache 2.0, free and open source)
+ *   - licensing language is factual and compact (source-available, Business Source License 1.1)
  *
  * This footer is authored directly (not from `config/menu.*.json`) because that menu model still
  * drives the Starlight docs footer override and is owned by the docs-chrome migration (ERY-61,
@@ -51,8 +51,8 @@ const resources = [
   <div class="ery-fcol ery-fcol--brand">
     <Wordmark href={null} />
     <p class="ery-fnote">
-      Manufacturing execution for metalworking job shops. Free and open source under
-      <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>.
+      Manufacturing execution for metalworking job shops. Source-available under the
+      <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Business Source License 1.1</a>.
     </p>
   </div>
 
@@ -105,8 +105,8 @@ const resources = [
 <div class="ery-flegal">
   <p class="ery-flegal-copy">
     <a href="https://www.sheetmetalconnect.com/" target="_blank" rel="noopener">Sheet Metal Connect e.U.</a>
-    &copy; 2026 · Open source under
-    <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Apache 2.0</a>
+    &copy; 2026 · Source-available under the
+    <a href="https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE" target="_blank" rel="noopener">Business Source License 1.1</a>
   </p>
   <nav class="ery-flegal-links" aria-label="Legal">
     <a href={imprintHref}>{legal.imprint}</a>

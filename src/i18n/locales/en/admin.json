@@ -445,23 +445,23 @@
       "consulting": "Get Setup Help"
     },
     "license": {
-      "title": "License (Apache 2.0)",
-      "tldr": "Use it, modify it, self-host it, and redistribute it. Keep the license and notices with redistributed copies.",
+      "title": "License (BSL 1.1)",
+      "tldr": "Read and modify the source, and self-host the Community edition free for a single production site. Multi-site use, or offering it as a hosted service, needs a commercial (Premium) license.",
       "allowed": "Allowed",
-      "notAllowed": "Not Allowed",
+      "notAllowed": "Needs a commercial license",
       "allowedItems": {
-        "selfHost": "Self-host or run it commercially",
-        "modify": "Fork, modify, and redistribute your changes",
-        "consulting": "Use for development, testing, education",
-        "commercial": "Use it commercially in your business"
+        "selfHost": "Self-host the Community edition for a single site",
+        "modify": "Read, modify, and build on the source",
+        "consulting": "Use for development, testing, and education",
+        "commercial": "Run one production workshop, free of charge"
       },
       "notAllowedItems": {
-        "resell": "Redistribute it without the required license and notices"
+        "resell": "Multi-site use, or offering it as a hosted service, without a commercial license"
       },
       "note": "Conditions",
       "noteItems": {
         "attribution": "Keep the license and copyright notices",
-        "patent": "Includes a patent grant under Apache 2.0"
+        "patent": "Each release becomes GPL v2.0-or-later four years after release"
       }
     },
     "hostedTrial": {

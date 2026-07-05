@@ -7,6 +7,8 @@ Deploy Eryxon Flow on your own infrastructure with full control.
 
 This guide is the authoritative production checklist. For the shortest setup path, see the [Deployment Guide](/guides/deployment/).
 
+> **Licensing.** Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1. The source is on GitHub — read it, modify it, self-host it. Free production use covers a **single production site** (one facility or workshop) for your own internal operations, and the software is provided **AS IS**. Multi-site management, or offering the app as a service, needs the commercial **Premium** edition — see [Editions & Pricing](/pricing/). Each released version converts to its Change License, GNU GPL v2.0 or later, four years after release.
+
 ## Quick Start (Recommended)
 
 The fastest way to get production-ready deployment using our automated script.
@@ -140,7 +142,7 @@ supabase secrets set \
   SELF_HOSTED_MODE="true"
 ```
 
-> `SELF_HOSTED_MODE` indicates deployment mode to the `plan-mode` edge function (used for UI messaging only). It does **not** disable plan limits. Unlimited operations are achieved by setting the tenant's `plan` field in the database to `enterprise` with `null` limit columns — the app treats `null` as unlimited. Valid plan values are: `free`, `pro`, `premium`, `enterprise`.
+> `SELF_HOSTED_MODE` indicates deployment mode to the `plan-mode` edge function (used for UI messaging only). It does **not** disable plan limits. Higher operation ceilings are achieved by setting the tenant's `plan` field in the database to `enterprise` with `null` limit columns — the app treats `null` as no limit. Valid plan values are: `free`, `pro`, `premium`, `enterprise`.
 
 ### 7. Configure signup notification webhook
 

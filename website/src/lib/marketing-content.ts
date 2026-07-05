@@ -8,10 +8,11 @@
  *
  * Voice: kit voice — calm, utilitarian, short, direct. NL is nl-NL (Dutch directness, no
  * AI filler). DE is plain Hochdeutsch. No invented testimonials/stats, no customer names
- * (Luke's hard rule). FOSS-first three-way model:
- *   Free / self-hosted (Apache 2.0, push the free trial as the low-friction entry) /
- *   Hosted (paid, flat rate, unlimited users — we host it) /
- *   Managed (installed on-prem at the customer, with updates, monitoring, backups).
+ * (Luke's hard rule), and no pricing figures (kept out of the repo). COSS model:
+ *   Hosted demo   — the Community edition, hosted by us, free, 30 days, usage limits.
+ *   Community     — self-hosted, source-available (BSL 1.1), single site, free, as-is.
+ *   Premium       — commercial, sold direct (SLA): connectors, add-ons, monitoring,
+ *                   multi-site + hub, advanced workflows, whitelabel. Hosted or on-prem.
  */
 import type { Locale } from "@/lib/locale";
 
@@ -58,12 +59,12 @@ export interface PricingCopy {
   description: string;
   hero: { eyebrow: string; h1: string; lead: string };
   plans: {
-    /** Tier 1 — free, hosted 30-day trial with usage limits. CTA links to the app. */
-    trial: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
-    /** Tier 2 — managed hosting, by request. Dedicated, isolated instance we run for you. Featured. */
-    managed: { head: string; name: string; flag: string; price: string; sub: string; features: PlanFeature[]; cta: string };
-    /** Tier 3 — self-hosted, fully open source (Apache 2.0), unlimited, DIY. CTA = guide + consulting. */
-    selfHosted: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; ctaGuide: string; ctaConsulting: string };
+    /** Tier 1 — hosted demo of the Community edition, free, 30 days, usage limits. CTA links to the app. */
+    demo: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
+    /** Tier 2 — Premium, sold direct (SLA). Contact sales, no pricing figures. Featured. */
+    premium: { head: string; name: string; flag: string; price: string; sub: string; features: PlanFeature[]; cta: string };
+    /** Tier 3 — Community, self-hosted, source-available (BSL 1.1), single site. CTA = guide + consulting. */
+    community: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; ctaGuide: string; ctaConsulting: string };
   };
 }
 
@@ -76,9 +77,9 @@ const productCards = [
 
 const LANDING: Record<Locale, LandingCopy> = {
   en: {
-    title: "Eryxon Flow — open-source MES for job shops",
+    title: "Eryxon Flow — source-available MES for job shops",
     description:
-      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly, from the tablet on the floor to the planner's desk. Free and open source. Self-host it, let us host it, or have it run on-prem for you.",
+      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly, from the tablet on the floor to the planner's desk. Self-host the Community edition free, try the hosted demo, or go Premium for multi-site, connectors, and support.",
     hero: {
       h1: "Keep a grip on every job, floor to planning.",
       lead: "Track every job through cutting, bending, welding, and assembly. Operators work a tablet at the machine; planners see it the moment it changes. No more spreadsheets and whiteboards.",
@@ -90,14 +91,14 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "What you get",
       h2: "Everything a high-mix, low-volume shop needs.",
-      lead: "One system, from the tablet at the machine to the planner's dashboard. Everything's there from day one: no paid add-ons, no per-seat fees.",
+      lead: "One system, from the tablet at the machine to the planner's dashboard. The full shop-floor core is there from day one — Premium adds ERP connectors, multi-site, and support when you're ready.",
       items: [
         { title: "Tablets at the machine", body: "A work queue per cell on a tablet at the machine. Big buttons for gloved hands, with status, due date, and running time you can read from a metre away." },
         { title: "Job & part tracking", body: "Follow every job through cutting, bending, welding, assembly, and finishing — its route across cells, the load on each one, and what's still on the bench." },
-        { title: "3D part viewer", body: "Open the part in 3D right in the browser — measure it, pull it apart, nothing to install. Right where the operator is working." },
+        { title: "3D part viewer", body: "Open the part in 3D right in the browser — measure it, pull it apart, nothing to install. Premium adds nesting and unfolding." },
         { title: "An API your ERP can drive", body: "Push jobs in, get results back, no double entry. Webhooks fire the moment anything changes on the floor." },
-        { title: "Free and open source", body: "Free for any use, commercial included. Run it yourself with Docker, or let us host it. Nothing locked behind a paywall — fork it, audit it, keep it." },
-        { title: "One site or many", body: "Works for a single workshop or a group with many sites, each shop's data kept apart. English, Dutch, and German built in." },
+        { title: "Source-available", body: "The source is on GitHub — read it, modify it, self-host the Community edition free for a single workshop. Business Source License; each release turns GPL after four years." },
+        { title: "One site or many", body: "Community runs a single workshop; Premium manages many sites from one hub, each shop's data kept apart. English, Dutch, and German built in." },
       ],
     },
     how: {
@@ -118,30 +119,30 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Pricing",
       h2: "Three ways to run it.",
-      lead: "Free and open source today: self-host it, or try the hosted 30-day demo. Paid hosting and support land at the v1 launch.",
+      lead: "Self-host the Community edition free, try the hosted 30-day demo, or go Premium for multi-site and support.",
       allLink: "See full pricing →",
     },
     rollout: {
       eyebrow: "Hosted & support",
       h2: "Rather not run it yourself?",
-      lead: "Eryxon Flow is free and open source today, with a hosted 30-day demo. Paid hosted plans and support packages arrive at the v1 launch — get in touch to learn more or to shape what your shop needs.",
-      cta: "Get in touch",
+      lead: "Premium is hosted or on-prem with an SLA, plus ERP connectors, multi-site management, and whitelabeling. Sold direct — get in touch to scope it for your shop.",
+      cta: "Contact sales",
     },
     cta: {
       h2: "Try it on your own shop floor.",
-      lead: "It runs in minutes. Or pull the Docker image and self-host it free. Open source, no strings.",
-      ctaPrimary: "Try it free",
+      lead: "Spin up the hosted demo in minutes, or pull the Docker image and self-host the Community edition free.",
+      ctaPrimary: "Try the demo",
       ctaSecondary: "Read the self-host guide",
     },
   },
 
   nl: {
-    title: "Eryxon Flow — open-source MES voor de metaalbewerking",
+    title: "Eryxon Flow — source-available MES voor de metaalbewerking",
     description:
-      "Eryxon Flow houdt je orders bij door snijden, kanten, lassen en assemblage — van de tablet op de vloer tot het bureau van de planner. Gratis en open source. Host het zelf, laat het ons hosten, of laat het bij je op locatie draaien.",
+      "Eryxon Flow houdt je orders bij door snijden, kanten, lassen en assemblage — van de tablet op de vloer tot het bureau van de planner. Host de Community-editie gratis zelf, probeer de gehoste demo, of ga Premium voor meerdere locaties, koppelingen en support.",
     hero: {
       h1: "Grip op je orders, van de vloer tot de planning.",
-      lead: "Eryxon Flow volgt elke order door snijden, kanten, lassen en assemblage. De operator werkt op een tablet aan de machine, de planner ziet het meteen op zijn scherm. Gratis en open source. Geen Excel, geen whiteboard.",
+      lead: "Eryxon Flow volgt elke order door snijden, kanten, lassen en assemblage. De operator werkt op een tablet aan de machine, de planner ziet het meteen op zijn scherm. De broncode staat op GitHub. Geen Excel, geen whiteboard.",
       ctaPrimary: "Gratis uitproberen",
       ctaSecondary: "Zelf hosten, gratis",
       ctaTertiary: "Naar de docs →",
@@ -150,14 +151,14 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "Wat je krijgt",
       h2: "Alles wat een maakbedrijf met enkelstuks en kleine series nodig heeft.",
-      lead: "Geen losse modules om bij te kopen, geen prijs per gebruiker, geen verrassingen. Het hele systeem vanaf dag één — van de tablet aan de machine tot de planner en de API.",
+      lead: "Geen prijs per gebruiker in de Community-editie. De volledige werkvloer-kern vanaf dag één — Premium voegt ERP-koppelingen, meerdere locaties en support toe wanneer je die nodig hebt.",
       items: [
         { title: "Tablets aan de machine", body: "Een wachtrij per cel, zoals een kanbanbord. Knoppen van 56 pixels, dus je raakt ze met werkhandschoenen. Status, deadline en doorlooptijd lees je van een meter afstand af." },
         { title: "Order- en onderdeelvolging", body: "Je ziet elke order door snijden, kanten, lassen, assemblage en afwerking heen. De route per cel, WIP-limieten en hoeveel werk er nog op de plank ligt." },
-        { title: "3D STEP-viewer", body: "CAD in de browser, niks te installeren. Meten en exploded views, direct in het orderscherm van de operator." },
+        { title: "3D STEP-viewer", body: "CAD in de browser, niks te installeren. Meten en exploded views, direct in het orderscherm van de operator. Premium voegt nesten en uitslaan toe." },
         { title: "REST API en webhooks", body: "Filteren, pagineren, zoeken en een webhook bij elke stap. Gebouwd om je ERP en de werkvloer aan elkaar te knopen, niet om alles met de hand in te kloppen." },
-        { title: "Gratis en open source", body: "Gratis voor elk gebruik, ook commercieel. Zelf hosten met Docker Compose, niks afgeschermd. Of laat ons hosten. Forken en aanpassen mag." },
-        { title: "Meerdere locaties, meerdere talen", body: "Row-level security op PostgreSQL. NL, DE en EN zitten er standaard in. Werkt voor één werkplaats en voor een groep met meerdere vestigingen." },
+        { title: "Source-available", body: "De broncode staat op GitHub — inzien, aanpassen en de Community-editie gratis zelf hosten voor één werkplaats. Business Source License; elke release wordt na vier jaar GPL." },
+        { title: "Eén locatie of meer", body: "Community draait één werkplaats; Premium beheert meerdere vestigingen vanuit één hub, met de data van elke werkplaats apart. NL, DE en EN zitten er standaard in." },
       ],
     },
     how: {
@@ -178,30 +179,30 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Prijzen",
       h2: "Drie manieren om het te draaien.",
-      lead: "Vandaag gratis en open source: host het zelf of probeer de gehoste demo van 30 dagen. Betaalde hosting en support komen bij de v1-lancering.",
+      lead: "Host de Community-editie gratis zelf, probeer de gehoste demo, of ga Premium voor meerdere locaties en support.",
       allLink: "Bekijk alle prijzen →",
     },
     rollout: {
       eyebrow: "Hosting & support",
       h2: "Liever niet zelf draaien?",
-      lead: "Eryxon Flow is vandaag gratis en open source, met een gehoste demo van 30 dagen. Betaalde hostingpakketten en support komen bij de v1-lancering — neem contact op voor meer info of laat weten wat jouw bedrijf nodig heeft.",
+      lead: "Premium is gehost of on-prem met een SLA, plus ERP-koppelingen, beheer van meerdere locaties en whitelabeling. Rechtstreeks bij ons — neem contact op om het voor jouw bedrijf op maat te maken.",
       cta: "Neem contact op",
     },
     cta: {
       h2: "Probeer het op je eigen werkvloer.",
-      lead: "Binnen een paar minuten draait er een proefversie. Of pak de Docker-image en host het zelf, gratis. Open source, geen addertjes.",
+      lead: "Start binnen enkele minuten met de gehoste demo, of pak de Docker-image en host de Community-editie gratis zelf.",
       ctaPrimary: "Gratis uitproberen",
       ctaSecondary: "Lees de zelf-hosten-gids",
     },
   },
 
   de: {
-    title: "Eryxon Flow — quelloffenes MES für die Metallbearbeitung",
+    title: "Eryxon Flow — source-available MES für die Metallbearbeitung",
     description:
-      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage, vom Tablet in der Werkstatt bis zum Schreibtisch des Planers. Kostenlos und quelloffen. Selbst hosten, von uns hosten lassen oder vor Ort betreiben lassen.",
+      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage, vom Tablet in der Werkstatt bis zum Schreibtisch des Planers. Hoste die Community-Edition kostenlos selbst, teste die gehostete Demo oder wähle Premium für mehrere Standorte, Konnektoren und Support.",
     hero: {
       h1: "Jeden Auftrag im Griff, von der Werkstatt bis zur Planung.",
-      lead: "Eryxon Flow verfolgt jeden Auftrag durch Schneiden, Kanten, Schweißen und Montage. Der Werker arbeitet am Tablet an der Maschine, der Planer sieht es sofort auf seinem Bildschirm. Kostenlos und quelloffen. Kein Excel, kein Whiteboard.",
+      lead: "Eryxon Flow verfolgt jeden Auftrag durch Schneiden, Kanten, Schweißen und Montage. Der Werker arbeitet am Tablet an der Maschine, der Planer sieht es sofort auf seinem Bildschirm. Der Quellcode liegt auf GitHub. Kein Excel, kein Whiteboard.",
       ctaPrimary: "Kostenlos testen",
       ctaSecondary: "Selbst hosten, kostenlos",
       ctaTertiary: "Zur Doku →",
@@ -210,14 +211,14 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "Was du bekommst",
       h2: "Alles, was ein Einzel- und Kleinserienbetrieb braucht.",
-      lead: "Keine Module zum Nachkaufen, kein Preis pro Nutzer, keine Überraschungen. Das ganze System ab Tag eins — vom Tablet an der Maschine bis zum Planer und zur API.",
+      lead: "Kein Preis pro Nutzer in der Community-Edition. Der volle Werkstatt-Kern ab Tag eins — Premium ergänzt ERP-Konnektoren, mehrere Standorte und Support, wenn du sie brauchst.",
       items: [
         { title: "Tablets an der Maschine", body: "Eine Arbeitsliste je Zelle, wie ein Kanban-Board. Schaltflächen mit 56 Pixeln, also auch mit Arbeitshandschuhen bedienbar. Status, Termin und Laufzeit liest du aus einem Meter Entfernung ab." },
         { title: "Auftrags- und Teileverfolgung", body: "Du siehst jeden Auftrag durch Schneiden, Kanten, Schweißen, Montage und Finish. Die Route je Zelle, WIP-Limits und wie viel Arbeit noch ansteht." },
-        { title: "3D-STEP-Viewer", body: "CAD im Browser, nichts zu installieren. Messen und Explosionsansichten, direkt im Auftragsfenster des Werkers." },
+        { title: "3D-STEP-Viewer", body: "CAD im Browser, nichts zu installieren. Messen und Explosionsansichten, direkt im Auftragsfenster des Werkers. Premium ergänzt Schachteln und Abwicklung." },
         { title: "REST-API und Webhooks", body: "Filtern, Paginieren, Suchen und ein Webhook bei jedem Schritt. Gebaut, um dein ERP und die Werkstatt zu verbinden, nicht um alles von Hand einzutippen." },
-        { title: "Kostenlos und quelloffen", body: "Kostenlos für jeden Einsatz, auch kommerziell. Selbst hosten per Docker Compose, nichts gesperrt. Oder von uns hosten lassen. Forken und anpassen erlaubt." },
-        { title: "Mehrere Standorte, mehrere Sprachen", body: "Row-Level-Security auf PostgreSQL. NL, DE und EN ab Werk. Für Betriebe mit einem Standort und für Gruppen mit mehreren." },
+        { title: "Source-available", body: "Der Quellcode liegt auf GitHub — einsehen, anpassen und die Community-Edition kostenlos selbst hosten, für eine Werkstatt. Business Source License; jede Version wird nach vier Jahren GPL." },
+        { title: "Ein Standort oder viele", body: "Community betreibt eine Werkstatt; Premium verwaltet mehrere Standorte aus einem Hub, die Daten jedes Betriebs getrennt. NL, DE und EN ab Werk." },
       ],
     },
     how: {
@@ -238,18 +239,18 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Preise",
       h2: "Drei Wege, es zu betreiben.",
-      lead: "Heute kostenlos und quelloffen: hoste es selbst oder teste die gehostete 30-Tage-Demo. Kostenpflichtiges Hosting und Support kommen mit dem v1-Launch.",
+      lead: "Hoste die Community-Edition kostenlos selbst, teste die gehostete Demo oder wähle Premium für mehrere Standorte und Support.",
       allLink: "Alle Preise ansehen →",
     },
     rollout: {
       eyebrow: "Hosting & Support",
       h2: "Lieber nicht selbst betreiben?",
-      lead: "Eryxon Flow ist heute kostenlos und quelloffen, mit einer gehosteten 30-Tage-Demo. Kostenpflichtige Hosting-Pakete und Support kommen mit dem v1-Launch — melde dich für mehr Infos oder sag uns, was dein Betrieb braucht.",
+      lead: "Premium ist gehostet oder on-prem mit einem SLA, dazu ERP-Konnektoren, Mehr-Standort-Verwaltung und Whitelabeling. Direkt von uns — melde dich, um es für deinen Betrieb zuzuschneiden.",
       cta: "Kontakt aufnehmen",
     },
     cta: {
       h2: "Teste es auf deiner eigenen Werkstatt.",
-      lead: "Starte in wenigen Minuten kostenlos. Oder zieh das Docker-Image und hoste es selbst, kostenlos — es ist quelloffen, ohne Haken.",
+      lead: "Starte in wenigen Minuten mit der gehosteten Demo, oder zieh das Docker-Image und hoste die Community-Edition kostenlos selbst.",
       ctaPrimary: "Kostenlos testen",
       ctaSecondary: "Self-Hosting-Anleitung lesen",
     },
@@ -259,41 +260,41 @@ const LANDING: Record<Locale, LandingCopy> = {
 const PRICING: Record<Locale, PricingCopy> = {
   en: {
     title: "Pricing — Eryxon Flow",
-    description: "Free and open source today, with a hosted 30-day demo. Paid hosted plans and support packages arrive at the v1 launch.",
-    hero: { eyebrow: "Pricing", h1: "Free today. Hosting and support at v1.", lead: "Eryxon Flow is free and open source today — self-host it, or spin up the hosted 30-day demo. Paid hosted plans and support packages arrive at the v1 launch." },
+    description: "Self-host the Community edition free, try the hosted 30-day demo, or go Premium for multi-site, connectors, and support.",
+    hero: { eyebrow: "Pricing", h1: "Community is free. Premium when you scale.", lead: "Self-host the Community edition free for a single workshop, or try the hosted 30-day demo. Premium adds multi-site, connectors, monitoring, and an SLA — sold direct." },
     plans: {
-      trial: { head: "Hosted demo", name: "Hosted demo", price: "Free", period: "· 30 days", sub: "A hosted instance to try on your own shop floor. No install, no card. Usage limits apply during the demo.", cta: "Start free demo",
-        features: [{ text: "Hosted by us, runs in minutes" }, { text: "30-day demo" }, { text: "Up to 100 jobs and 500 parts per month" }, { text: "2 GB storage, 100 API requests per day" }, { text: "Full product, no feature gates" }] },
-      managed: { head: "Hosted & support", name: "Hosted & support", flag: "Coming at v1", price: "Coming soon", sub: "Paid hosted plans and support packages arrive at the v1 launch. Want early access, or to help shape them? Get in touch to learn more.", cta: "Learn more",
-        features: [{ text: "Fully managed hosting" }, { text: "Your own isolated instance" }, { text: "Backups, updates, and monitoring" }, { text: "Support with response times" }, { text: "Whitelabeling to your brand" }] },
-      selfHosted: { head: "Self-hosted", name: "Self-hosted", price: "Free", period: "· open source", sub: "Run it yourself on your own infrastructure. Unlimited, no feature gates.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
-        features: [{ text: "Fork it, audit it, keep it" }, { text: "Unlimited jobs, parts, users, and storage" }, { text: "Self-host via Docker Compose" }, { text: "Full product, no feature gates" }, { text: "REST API and webhooks" }] },
+      demo: { head: "Hosted demo", name: "Hosted demo", price: "Free", period: "· 30 days", sub: "A hosted Community instance to try on your own shop floor. No install, no card. Usage limits apply during the demo.", cta: "Start free demo",
+        features: [{ text: "Hosted by us, runs in minutes" }, { text: "The Community edition, 30-day demo" }, { text: "Up to 100 jobs and 500 parts per month" }, { text: "2 GB storage, 100 API requests per day" }, { text: "The full shop-floor core" }] },
+      premium: { head: "Premium", name: "Premium", flag: "SLA included", price: "Contact sales", sub: "Everything in Community, plus the tools multi-site operations need. Hosted or on-prem, sold direct by us.", cta: "Contact sales",
+        features: [{ text: "All ERP connectors and add-ons" }, { text: "Multi-site management and central hub" }, { text: "Monitoring and advanced workflows" }, { text: "Whitelabeling to your brand" }, { text: "SLA — hosted or on-prem" }] },
+      community: { head: "Community · self-hosted", name: "Community", price: "Free", period: "· single site", sub: "Run it yourself on your own infrastructure, for a single workshop. Source-available under the BSL.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
+        features: [{ text: "Source on GitHub — read, modify, self-host" }, { text: "One production site, no seat limits" }, { text: "The full shop-floor core" }, { text: "REST API and webhooks" }, { text: "Provided as-is, community support" }] },
     },
   },
   nl: {
     title: "Prijzen — Eryxon Flow",
-    description: "Vandaag gratis en open source, met een gehoste demo van 30 dagen. Betaalde hostingpakketten en support komen bij de v1-lancering.",
-    hero: { eyebrow: "Prijzen", h1: "Vandaag gratis. Hosting en support bij v1.", lead: "Eryxon Flow is vandaag gratis en open source — host het zelf of start de gehoste demo van 30 dagen. Betaalde hostingpakketten en support komen bij de v1-lancering." },
+    description: "Host de Community-editie gratis zelf, probeer de gehoste demo van 30 dagen, of ga Premium voor meerdere locaties, koppelingen en support.",
+    hero: { eyebrow: "Prijzen", h1: "Community is gratis. Premium als je opschaalt.", lead: "Host de Community-editie gratis voor één werkplaats, of probeer de gehoste demo van 30 dagen. Premium voegt meerdere locaties, koppelingen, monitoring en een SLA toe — rechtstreeks bij ons." },
     plans: {
-      trial: { head: "Gehoste demo", name: "Gehoste demo", price: "Gratis", period: "· 30 dagen", sub: "Een gehoste instance om op je eigen werkvloer uit te proberen. Niks installeren, geen creditcard. Tijdens de demo gelden gebruikslimieten.", cta: "Gratis uitproberen",
-        features: [{ text: "Door ons gehost, binnen enkele minuten klaar" }, { text: "Demo van 30 dagen" }, { text: "Tot 100 orders en 500 onderdelen per maand" }, { text: "2 GB opslag, 100 API-verzoeken per dag" }, { text: "Het hele product, niks afgeschermd" }] },
-      managed: { head: "Hosting & support", name: "Hosting & support", flag: "Komt bij v1", price: "Binnenkort", sub: "Betaalde hostingpakketten en support komen bij de v1-lancering. Nu al interesse of wil je meedenken? Neem contact op voor meer info.", cta: "Meer weten",
-        features: [{ text: "Volledig beheerde hosting" }, { text: "Je eigen, afgeschermde instance" }, { text: "Back-ups, updates en monitoring" }, { text: "Support met reactietijden" }, { text: "Whitelabeling in jouw huisstijl" }] },
-      selfHosted: { head: "Zelf gehost", name: "Zelf gehost", price: "Gratis", period: "· open source", sub: "Draai het zelf op je eigen infrastructuur. Onbeperkt, niks afgeschermd.", ctaGuide: "Lees de zelf-hosten-gids", ctaConsulting: "Hulp bij de installatie",
-        features: [{ text: "Forken, inzien, houden" }, { text: "Onbeperkt orders, onderdelen, gebruikers en opslag" }, { text: "Zelf hosten via Docker Compose" }, { text: "Het hele product, niks afgeschermd" }, { text: "REST API en webhooks" }] },
+      demo: { head: "Gehoste demo", name: "Gehoste demo", price: "Gratis", period: "· 30 dagen", sub: "Een gehoste Community-instance om op je eigen werkvloer uit te proberen. Niks installeren, geen creditcard. Tijdens de demo gelden gebruikslimieten.", cta: "Gratis uitproberen",
+        features: [{ text: "Door ons gehost, binnen enkele minuten klaar" }, { text: "De Community-editie, demo van 30 dagen" }, { text: "Tot 100 orders en 500 onderdelen per maand" }, { text: "2 GB opslag, 100 API-verzoeken per dag" }, { text: "De volledige werkvloer-kern" }] },
+      premium: { head: "Premium", name: "Premium", flag: "Inclusief SLA", price: "Neem contact op", sub: "Alles uit Community, plus wat je nodig hebt voor meerdere locaties. Gehost of on-prem, rechtstreeks bij ons.", cta: "Neem contact op",
+        features: [{ text: "Alle ERP-koppelingen en add-ons" }, { text: "Beheer van meerdere locaties en centrale hub" }, { text: "Monitoring en geavanceerde workflows" }, { text: "Whitelabeling in jouw huisstijl" }, { text: "SLA — gehost of on-prem" }] },
+      community: { head: "Community · zelf gehost", name: "Community", price: "Gratis", period: "· één locatie", sub: "Draai het zelf op je eigen infrastructuur, voor één werkplaats. Source-available onder de BSL.", ctaGuide: "Lees de zelf-hosten-gids", ctaConsulting: "Hulp bij de installatie",
+        features: [{ text: "Broncode op GitHub — inzien, aanpassen, zelf hosten" }, { text: "Eén productielocatie, geen limiet op gebruikers" }, { text: "De volledige werkvloer-kern" }, { text: "REST API en webhooks" }, { text: "Geleverd as-is, community-support" }] },
     },
   },
   de: {
     title: "Preise — Eryxon Flow",
-    description: "Heute kostenlos und quelloffen, mit einer gehosteten 30-Tage-Demo. Kostenpflichtige Hosting-Pakete und Support kommen mit dem v1-Launch.",
-    hero: { eyebrow: "Preise", h1: "Heute kostenlos. Hosting und Support mit v1.", lead: "Eryxon Flow ist heute kostenlos und quelloffen — hoste es selbst oder starte die gehostete 30-Tage-Demo. Kostenpflichtige Hosting-Pakete und Support kommen mit dem v1-Launch." },
+    description: "Hoste die Community-Edition kostenlos selbst, teste die gehostete 30-Tage-Demo oder wähle Premium für mehrere Standorte, Konnektoren und Support.",
+    hero: { eyebrow: "Preise", h1: "Community ist kostenlos. Premium, wenn du skalierst.", lead: "Hoste die Community-Edition kostenlos für eine Werkstatt oder teste die gehostete 30-Tage-Demo. Premium ergänzt mehrere Standorte, Konnektoren, Monitoring und ein SLA — direkt von uns." },
     plans: {
-      trial: { head: "Gehostete Demo", name: "Gehostete Demo", price: "Kostenlos", period: "· 30 Tage", sub: "Eine gehostete Instanz zum Testen auf deiner eigenen Werkstatt. Keine Installation, keine Karte. Während der Demo gelten Nutzungslimits.", cta: "Kostenlos testen",
-        features: [{ text: "Von uns gehostet, in wenigen Minuten startklar" }, { text: "30 Tage Demo" }, { text: "Bis zu 100 Aufträge und 500 Teile pro Monat" }, { text: "2 GB Speicher, 100 API-Anfragen pro Tag" }, { text: "Volles Produkt, keine Feature-Sperren" }] },
-      managed: { head: "Hosting & Support", name: "Hosting & Support", flag: "Kommt mit v1", price: "Demnächst", sub: "Kostenpflichtige Hosting-Pakete und Support kommen mit dem v1-Launch. Schon jetzt Interesse oder mitgestalten? Melde dich für mehr Infos.", cta: "Mehr erfahren",
-        features: [{ text: "Voll gemanagtes Hosting" }, { text: "Deine eigene, isolierte Instanz" }, { text: "Backups, Updates und Monitoring" }, { text: "Support mit Reaktionszeiten" }, { text: "Whitelabeling in deinem Markenauftritt" }] },
-      selfHosted: { head: "Selbst gehostet", name: "Selbst gehostet", price: "Kostenlos", period: "· Open Source", sub: "Betreibe es selbst auf deiner eigenen Infrastruktur. Unbegrenzt, keine Feature-Sperren.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
-        features: [{ text: "Forken, prüfen, behalten" }, { text: "Unbegrenzte Aufträge, Teile, Nutzer und Speicher" }, { text: "Selbst hosten per Docker Compose" }, { text: "Volles Produkt, keine Feature-Sperren" }, { text: "REST-API und Webhooks" }] },
+      demo: { head: "Gehostete Demo", name: "Gehostete Demo", price: "Kostenlos", period: "· 30 Tage", sub: "Eine gehostete Community-Instanz zum Testen auf deiner eigenen Werkstatt. Keine Installation, keine Karte. Während der Demo gelten Nutzungslimits.", cta: "Kostenlos testen",
+        features: [{ text: "Von uns gehostet, in wenigen Minuten startklar" }, { text: "Die Community-Edition, 30-Tage-Demo" }, { text: "Bis zu 100 Aufträge und 500 Teile pro Monat" }, { text: "2 GB Speicher, 100 API-Anfragen pro Tag" }, { text: "Der volle Werkstatt-Kern" }] },
+      premium: { head: "Premium", name: "Premium", flag: "Inklusive SLA", price: "Kontakt aufnehmen", sub: "Alles aus Community, plus die Werkzeuge für den Mehr-Standort-Betrieb. Gehostet oder on-prem, direkt von uns.", cta: "Kontakt aufnehmen",
+        features: [{ text: "Alle ERP-Konnektoren und Add-ons" }, { text: "Verwaltung mehrerer Standorte und zentraler Hub" }, { text: "Monitoring und fortgeschrittene Workflows" }, { text: "Whitelabeling in deinem Markenauftritt" }, { text: "SLA — gehostet oder on-prem" }] },
+      community: { head: "Community · selbst gehostet", name: "Community", price: "Kostenlos", period: "· ein Standort", sub: "Betreibe es selbst auf deiner eigenen Infrastruktur, für eine Werkstatt. Source-available unter der BSL.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
+        features: [{ text: "Quellcode auf GitHub — einsehen, anpassen, selbst hosten" }, { text: "Ein Produktionsstandort, kein Nutzerlimit" }, { text: "Der volle Werkstatt-Kern" }, { text: "REST-API und Webhooks" }, { text: "Bereitgestellt wie besehen, Community-Support" }] },
     },
   },
 };
@@ -310,9 +311,9 @@ const PRICING: Record<Locale, PricingCopy> = {
  * see `components/Analytics.astro`). The hosted application (app.eryxon.eu) is a separate surface
  * with its own data processing; we say so rather than describing flows that don't exist here.
  *
- * Voice: kit voice — calm, factual, short. The Apache 2.0 "AS IS" / no-warranty / use-at-your-own-
+ * Voice: kit voice — calm, factual, short. The "AS IS" / no-warranty / use-at-your-own-
  * risk disclaimer is surfaced prominently on BOTH pages via a dedicated block, matching the licence
- * that actually ships (LICENSE, Apache 2.0).
+ * that actually ships (LICENSE, Business Source License 1.1).
  */
 
 /** A labelled key/value row (used for entity + registration blocks). */
@@ -338,7 +339,7 @@ export interface LegalSection {
   bullets?: string[];
 }
 
-/** The shared "as is / open source / use at your own risk" disclaimer block. */
+/** The shared "as is / source-available / use at your own risk" disclaimer block. */
 export interface LegalDisclaimer {
   heading: string;
   paragraphs: string[];
@@ -373,7 +374,7 @@ const ENTITY = {
   linkedin: "https://www.linkedin.com/in/lvanenkhuizen/",
 } as const;
 
-const APACHE_LICENSE_HREF = "https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE";
+const LICENSE_HREF = "https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE";
 
 const IMPRINT: Record<Locale, LegalCopy> = {
   en: {
@@ -396,7 +397,7 @@ const IMPRINT: Record<Locale, LegalCopy> = {
       },
       {
         heading: "Business activity",
-        paragraphs: ["IT consulting and services for the metalworking industry. Eryxon Flow is an open-source manufacturing execution system published by Sheet Metal Connect e.U."],
+        paragraphs: ["IT consulting and services for the metalworking industry. Eryxon Flow is a source-available manufacturing execution system published by Sheet Metal Connect e.U."],
       },
       {
         heading: "Registration",
@@ -448,7 +449,7 @@ const IMPRINT: Record<Locale, LegalCopy> = {
       },
       {
         heading: "Bedrijfsactiviteit",
-        paragraphs: ["IT-advies en dienstverlening voor de metaalverwerkende industrie. Eryxon Flow is een open-source manufacturing execution system, uitgegeven door Sheet Metal Connect e.U."],
+        paragraphs: ["IT-advies en dienstverlening voor de metaalverwerkende industrie. Eryxon Flow is een source-available manufacturing execution system, uitgegeven door Sheet Metal Connect e.U."],
       },
       {
         heading: "Registratie",
@@ -500,7 +501,7 @@ const IMPRINT: Record<Locale, LegalCopy> = {
       },
       {
         heading: "Unternehmensgegenstand",
-        paragraphs: ["IT-Beratung und Dienstleistungen für die metallverarbeitende Industrie. Eryxon Flow ist ein quelloffenes Manufacturing-Execution-System, herausgegeben von Sheet Metal Connect e.U."],
+        paragraphs: ["IT-Beratung und Dienstleistungen für die metallverarbeitende Industrie. Eryxon Flow ist ein source-available Manufacturing-Execution-System, herausgegeben von Sheet Metal Connect e.U."],
       },
       {
         heading: "Registrierung",
@@ -538,29 +539,29 @@ const DISCLAIMER: Record<Locale, LegalDisclaimer> = {
   en: {
     heading: "Software disclaimer — provided “as is”",
     paragraphs: [
-      "Eryxon Flow is free and open-source software, licensed under the Apache License 2.0. It is provided on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. You use it at your own risk.",
-      "You are responsible for evaluating whether the software is fit for your shop floor, for backing up your data, and for running it safely in production. To the extent permitted by law, Sheet Metal Connect e.U. accepts no liability for any damages arising from the use of, or inability to use, the software. The full terms are set out in the Apache 2.0 licence.",
+      "Eryxon Flow is source-available software, licensed under the Business Source License 1.1. It is provided on an “AS IS” BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. You use it at your own risk.",
+      "You are responsible for evaluating whether the software is fit for your shop floor, for backing up your data, and for running it safely in production. To the extent permitted by law, Sheet Metal Connect e.U. accepts no liability for any damages arising from the use of, or inability to use, the software. The full terms are set out in the Business Source License 1.1.",
     ],
-    licenseLabel: "Read the Apache 2.0 licence",
-    licenseHref: APACHE_LICENSE_HREF,
+    licenseLabel: "Read the Business Source License",
+    licenseHref: LICENSE_HREF,
   },
   nl: {
     heading: "Software-disclaimer — geleverd “as is”",
     paragraphs: [
-      "Eryxon Flow is gratis open-source software onder de Apache License 2.0. Het wordt geleverd “AS IS” — zonder enige garantie of voorwaarde, expliciet noch impliciet. Je gebruikt het op eigen risico.",
-      "Je bent zelf verantwoordelijk voor het beoordelen of de software geschikt is voor je werkvloer, voor het maken van back-ups en voor veilig gebruik in productie. Voor zover wettelijk toegestaan aanvaardt Sheet Metal Connect e.U. geen aansprakelijkheid voor schade die voortvloeit uit het gebruik of het niet kunnen gebruiken van de software. De volledige voorwaarden staan in de Apache 2.0-licentie.",
+      "Eryxon Flow is source-available software onder de Business Source License 1.1. Het wordt geleverd “AS IS” — zonder enige garantie of voorwaarde, expliciet noch impliciet. Je gebruikt het op eigen risico.",
+      "Je bent zelf verantwoordelijk voor het beoordelen of de software geschikt is voor je werkvloer, voor het maken van back-ups en voor veilig gebruik in productie. Voor zover wettelijk toegestaan aanvaardt Sheet Metal Connect e.U. geen aansprakelijkheid voor schade die voortvloeit uit het gebruik of het niet kunnen gebruiken van de software. De volledige voorwaarden staan in de Business Source License 1.1.",
     ],
-    licenseLabel: "Lees de Apache 2.0-licentie",
-    licenseHref: APACHE_LICENSE_HREF,
+    licenseLabel: "Lees de Business Source License",
+    licenseHref: LICENSE_HREF,
   },
   de: {
     heading: "Software-Haftungsausschluss — bereitgestellt “wie besehen”",
     paragraphs: [
-      "Eryxon Flow ist kostenlose, quelloffene Software unter der Apache License 2.0. Sie wird “WIE BESEHEN” (“AS IS”) bereitgestellt — ohne jegliche Garantie oder Gewährleistung, weder ausdrücklich noch stillschweigend. Die Nutzung erfolgt auf eigenes Risiko.",
-      "Du bist selbst dafür verantwortlich zu prüfen, ob die Software für deinen Betrieb geeignet ist, deine Daten zu sichern und sie sicher im Produktivbetrieb einzusetzen. Soweit gesetzlich zulässig übernimmt Sheet Metal Connect e.U. keine Haftung für Schäden, die aus der Nutzung oder Nichtnutzbarkeit der Software entstehen. Die vollständigen Bedingungen ergeben sich aus der Apache-2.0-Lizenz.",
+      "Eryxon Flow ist source-available Software unter der Business Source License 1.1. Sie wird “WIE BESEHEN” (“AS IS”) bereitgestellt — ohne jegliche Garantie oder Gewährleistung, weder ausdrücklich noch stillschweigend. Die Nutzung erfolgt auf eigenes Risiko.",
+      "Du bist selbst dafür verantwortlich zu prüfen, ob die Software für deinen Betrieb geeignet ist, deine Daten zu sichern und sie sicher im Produktivbetrieb einzusetzen. Soweit gesetzlich zulässig übernimmt Sheet Metal Connect e.U. keine Haftung für Schäden, die aus der Nutzung oder Nichtnutzbarkeit der Software entstehen. Die vollständigen Bedingungen ergeben sich aus der Business Source License 1.1.",
     ],
-    licenseLabel: "Apache-2.0-Lizenz lesen",
-    licenseHref: APACHE_LICENSE_HREF,
+    licenseLabel: "Business Source License lesen",
+    licenseHref: LICENSE_HREF,
   },
 };
 

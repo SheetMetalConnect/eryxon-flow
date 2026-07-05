@@ -98,7 +98,7 @@ All major actions (job created, operation started, issue reported) trigger event
 - Free: 100 requests/day
 - Pro: 1,000 requests/day
 - Premium: 10,000 requests/day
-- Enterprise: unlimited
+- Enterprise: no daily limit
 
 ## Related Docs
 

@@ -42,6 +42,6 @@ Monitoring is where an admin spends the running day. The **dashboard** shows act
 
 ## Connect and extend
 
-API keys, webhooks, and an MCP server open the data to the tools a shop already runs. Self-hosting keeps all of it on the shop's own infrastructure under Apache 2.0, with no per-user fee. The [hosted version](https://app.eryxon.eu) runs the same software at a flat rate when an admin would rather not operate it.
+API keys, webhooks, and an MCP server open the data to the tools a shop already runs. Self-hosting keeps all of it on the shop's own infrastructure under the Business Source License 1.1 — free to self-host for a single workshop, with no per-user fee. The [hosted version](https://app.eryxon.eu) runs the same software at a flat rate when an admin would rather not operate it.
 
 That is the admin loop: define the shop, bring in the work, schedule it, set the terminal to match how the floor actually runs, and watch the signals that say whether it is keeping up.
