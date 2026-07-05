@@ -4,10 +4,8 @@
 # `npm ci` intermittently skips on Apple Silicon (npm optional-deps bug,
 # https://github.com/npm/cli/issues/4828).
 #
-# Without this, Vite (`npm run build`) fails before any native tooling runs
-# because Rollup and SWC cannot load their darwin-arm64 bindings. Both the iOS
-# bootstrap (scripts/ios-init.sh) and the Android assemble lane build the web
-# bundle, so they share this repair. Idempotent and a no-op off Apple Silicon.
+# Without this, Vite (`npm run build`) fails because Rollup and SWC cannot load
+# their darwin-arm64 bindings. Idempotent and a no-op off Apple Silicon.
 
 set -euo pipefail
 

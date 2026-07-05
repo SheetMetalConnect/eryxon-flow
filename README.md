@@ -45,7 +45,7 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 
 **Integration**
 - REST API with 30+ endpoints (jobs, parts, operations, time entries, webhooks)
-- Planning adapters (FrePPLe, Odoo MRP) for scheduling integration
+- FrePPLe / Odoo MRP planning connectors — Premium
 - ERP sync with incremental change detection
 - MQTT connectivity with retry, circuit breaker, dead letter queue
 - Webhook notifications for lifecycle events
@@ -157,12 +157,10 @@ Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website
 | Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
 | Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
 
-### Native + PWA apps
+### Installable PWA
 
 | Surface | Setup | Deploy + test guide |
 |---------|-------|---------------------|
-| iOS / iPadOS | [`docs/IOS.md`](docs/IOS.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#2-ios--ipados-native-app) |
-| Android | [`docs/ANDROID.md`](docs/ANDROID.md) | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#3-android-native-app) |
 | Installable PWA (web + desktop) | n/a — `npm run build` | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#1-pwa-web--desktop-install) |
 
 ## AI Agent Support
