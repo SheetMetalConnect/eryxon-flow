@@ -163,46 +163,49 @@ const arrow =
     <p class="mk-section-lead">{c.pricing.lead}</p>
   </div>
   <div class="mk-pricing-grid">
-    <!-- Tier 1 — Hosted demo (free, 30 days, usage limits) — the recommended starting point -->
-    <div class="mk-tier is-featured">
-      <div class="mk-tier-name">{p.plans.trial.name}</div>
-      <div class="mk-tier-price">{p.plans.trial.price}<span>{p.plans.trial.period}</span></div>
-      <div class="mk-tier-sub">{p.plans.trial.sub}</div>
+    <!-- Tier 1 — Hosted demo (Community edition, free, 30 days, usage limits) -->
+    <div class="mk-tier">
+      <div class="mk-tier-name">{p.plans.demo.name}</div>
+      <div class="mk-tier-price">{p.plans.demo.price}<span>{p.plans.demo.period}</span></div>
+      <div class="mk-tier-sub">{p.plans.demo.sub}</div>
       <ul class="mk-tier-features">
-        {p.plans.trial.features.map((f: PlanFeature) => (
+        {p.plans.demo.features.map((f: PlanFeature) => (
           <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
         ))}
       </ul>
-      <CtaButton href="https://app.eryxon.eu" ctaId="home_pricing_trial_signup" surface="homepage_pricing" kind="hosted_app" variant="secondary" locale={locale} external>
-        {p.plans.trial.cta}
+      <CtaButton href="https://app.eryxon.eu" ctaId="home_pricing_demo_signup" surface="homepage_pricing" kind="hosted_app" variant="secondary" locale={locale} external>
+        {p.plans.demo.cta}
       </CtaButton>
     </div>
 
-    <!-- Tier 2 — Hosted & support (paid; arrives at v1, "learn more" links to the publisher's site) -->
-    <div class="mk-tier">
-      <span class="mk-tier-flag">{p.plans.managed.flag}</span>
-      <div class="mk-tier-name">{p.plans.managed.name}</div>
-      <div class="mk-tier-price">{p.plans.managed.price}</div>
-      <div class="mk-tier-sub">{p.plans.managed.sub}</div>
+    <!-- Tier 2 — Premium (sold direct, SLA, contact sales) — featured -->
+    <div class="mk-tier is-featured">
+      <span class="mk-tier-flag">{p.plans.premium.flag}</span>
+      <div class="mk-tier-name">{p.plans.premium.name}</div>
+      <div class="mk-tier-price">{p.plans.premium.price}</div>
+      <div class="mk-tier-sub">{p.plans.premium.sub}</div>
       <ul class="mk-tier-features">
-        {p.plans.managed.features.map((f: PlanFeature) => (
+        {p.plans.premium.features.map((f: PlanFeature) => (
           <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
         ))}
       </ul>
+      <CtaButton href="https://vanenkhuizen.com" ctaId="home_pricing_premium_contact" surface="homepage_pricing" kind="external_site" variant="primary" locale={locale} external>
+        {p.plans.premium.cta}
+      </CtaButton>
     </div>
 
-    <!-- Tier 3 — Self-hosted (Apache 2.0, unlimited, DIY) -->
+    <!-- Tier 3 — Community self-hosted (source-available, BSL 1.1, single site) -->
     <div class="mk-tier">
-      <div class="mk-tier-name">{p.plans.selfHosted.name}</div>
-      <div class="mk-tier-price">{p.plans.selfHosted.price}<span>{p.plans.selfHosted.period}</span></div>
-      <div class="mk-tier-sub">{p.plans.selfHosted.sub}</div>
+      <div class="mk-tier-name">{p.plans.community.name}</div>
+      <div class="mk-tier-price">{p.plans.community.price}<span>{p.plans.community.period}</span></div>
+      <div class="mk-tier-sub">{p.plans.community.sub}</div>
       <ul class="mk-tier-features">
-        {p.plans.selfHosted.features.map((f: PlanFeature) => (
+        {p.plans.community.features.map((f: PlanFeature) => (
           <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
         ))}
       </ul>
       <CtaButton href={selfHostHref} ctaId="home_pricing_selfhost_guide" surface="homepage_pricing" kind="docs" variant="secondary" locale={locale}>
-        {p.plans.selfHosted.ctaGuide}
+        {p.plans.community.ctaGuide}
       </CtaButton>
     </div>
   </div>

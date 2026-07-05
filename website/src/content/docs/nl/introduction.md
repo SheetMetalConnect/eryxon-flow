@@ -20,7 +20,7 @@ Kies het pad dat past bij uw evaluatie van Eryxon Flow.
   </a>
   <a href="/nl/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_nl" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="nl" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
     <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Evalueer self-hosting</strong>
-    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Draai Eryxon op uw eigen infrastructuur. Gratis en open source onder Apache 2.0.</span>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">De broncode staat op GitHub — lees, wijzig en host hem zelf. Gratis zelf te hosten voor één werkplaats onder de Business Source License 1.1.</span>
   </a>
 </div>
 

@@ -1000,6 +1000,6 @@ npm start
 | free | 100 |
 | pro | 1,000 |
 | premium | 10,000 |
-| enterprise | unlimited |
+| enterprise | no daily limit |
 
 When you exceed your rate limit, the API returns `429 Too Many Requests`.

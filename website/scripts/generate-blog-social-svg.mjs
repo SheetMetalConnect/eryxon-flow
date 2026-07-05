@@ -14,11 +14,6 @@ const profileBySlug = {
     title: 'Latest Development at Eryxon Flow',
     subtitle: 'Road to v0.7',
     kicker: 'Build update'
-  },
-  "why-eryxon-flow-moved-to-apache-2-0": {
-    title: "Why Eryxon Flow moved to Apache 2.0",
-    subtitle: "Deployment freedom for job shops",
-    kicker: "License update"
   }
 };
 
@@ -31,13 +26,7 @@ if (!profile) {
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const siteDir = path.resolve(scriptDir, '..');
 const blogOutDir = path.join(siteDir, 'public', 'social', 'blog', slug);
-const articleAliasOutDir = path.join(
-  siteDir,
-  'public',
-  'social',
-  'articles',
-  slug === 'why-eryxon-flow-moved-to-apache-2-0' ? slug : slug
-);
+const articleAliasOutDir = path.join(siteDir, 'public', 'social', 'articles', slug);
 await fs.mkdir(blogOutDir, { recursive: true });
 await fs.mkdir(articleAliasOutDir, { recursive: true });
 

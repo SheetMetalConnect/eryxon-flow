@@ -389,23 +389,23 @@
       "consulting": "Einrichtungshilfe erhalten"
     },
     "license": {
-      "title": "Lizenz (Apache 2.0)",
-      "tldr": "Nutzen, anpassen, selbst hosten und weitergeben. Bei Weitergabe Lizenztext und Hinweise beibehalten.",
+      "title": "Lizenz (BSL 1.1)",
+      "tldr": "Quellcode einsehen und anpassen und die Community-Edition kostenlos für einen Produktionsstandort selbst hosten. Mehrere Standorte oder der Betrieb als gehosteter Dienst brauchen eine kommerzielle (Premium-)Lizenz.",
       "allowed": "Erlaubt",
-      "notAllowed": "Nicht erlaubt",
+      "notAllowed": "Braucht eine kommerzielle Lizenz",
       "allowedItems": {
-        "selfHost": "Selbst hosten oder kommerziell betreiben",
-        "modify": "Forken, anpassen und Änderungen weitergeben",
+        "selfHost": "Die Community-Edition für einen Standort selbst hosten",
+        "modify": "Quellcode einsehen, anpassen und darauf aufbauen",
         "consulting": "Nutzung für Entwicklung, Tests, Bildung",
-        "commercial": "Kommerziell in Ihrem Unternehmen nutzen"
+        "commercial": "Eine Produktionswerkstatt kostenlos betreiben"
       },
       "notAllowedItems": {
-        "resell": "Weitergabe ohne Lizenztext und erforderliche Hinweise"
+        "resell": "Mehrere Standorte oder Betrieb als gehosteter Dienst ohne kommerzielle Lizenz"
       },
       "note": "Bedingungen",
       "noteItems": {
         "attribution": "Lizenz- und Copyright-Hinweise beibehalten",
-        "patent": "Enthält eine Patentlizenz unter Apache 2.0"
+        "patent": "Jede Version wird vier Jahre nach Release zu GPL v2.0 oder höher"
       }
     },
     "hostedTrial": {

@@ -31,9 +31,7 @@ export default defineConfig({
     "/guides/changelog/": "/release-notes/",
     "/de/guides/changelog/": "/release-notes/",
     "/nl/guides/changelog/": "/release-notes/",
-    "/articles/why-eryxon-flow-moved-to-apache-2-0/": "/blog/why-eryxon-flow-is-now-apache-2-0/",
     "/articles/latest-development-and-road-to-v0-7/": "/blog/eryxon-flow-v0-7-what-we-are-building/",
-    "/blog/why-eryxon-flow-moved-to-apache-2-0/": "/blog/why-eryxon-flow-is-now-apache-2-0/",
   },
   // Use Astro's default Sharp image service. The previous `noop` service had no
   // dev endpoint, so every <img> (docs screenshots + logos) returned HTTP 500

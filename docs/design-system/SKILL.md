@@ -23,7 +23,7 @@ If working on production code, read this skill's contents to become an expert de
 
 Hard rules — these are load-bearing and you should not break them without checking with the user:
 
-- **Eryxon Flow is open source (Apache 2.0).** Say "open source", "Apache 2.0", or "self-hostable". Do not use "source-available" or "BSL".
+- **Eryxon Flow is source-available (Business Source License 1.1).** Say "source-available", "Business Source License 1.1", "BSL", or "self-hostable" (the Community edition is free to self-host for a single workshop). Do not use "open source", "Apache 2.0", or "free for any use".
 - **No gradients** on functional surfaces (buttons, cards, headings). The brand mark's gradient is reserved for the favicon and public-web header only.
 - **No glass / backdrop-blur** on cards. The system uses solid surfaces + 1 px borders.
 - **No celebratory animation or emoji** in product UI. The work is the reward.

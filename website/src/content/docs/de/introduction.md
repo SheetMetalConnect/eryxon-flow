@@ -20,7 +20,7 @@ Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
   </a>
   <a href="/de/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_de" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="de" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
     <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Self-Hosting evaluieren</strong>
-    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Betreiben Sie Eryxon auf Ihrer eigenen Infrastruktur. Kostenlos und quelloffen unter Apache 2.0.</span>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Der Quelltext liegt auf GitHub — lesen, ändern und selbst hosten. Kostenlos selbst hostbar für einen einzelnen Betrieb unter der Business Source License 1.1.</span>
   </a>
 </div>
 

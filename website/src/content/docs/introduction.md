@@ -20,7 +20,7 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
   </a>
   <a href="/guides/self-hosting/" data-cta-id="docs_intro_selfhost_path_en" data-cta-surface="docs_intro_path_chooser" data-cta-kind="self_host" data-cta-locale="en" style="display:block;padding:var(--ery-space-5);border:1px solid var(--ery-border);border-radius:var(--ery-radius);background:var(--ery-surface-subtle);text-decoration:none;min-height:var(--ery-touch-min);">
     <strong style="display:block;color:var(--ery-text);margin-bottom:var(--ery-space-2);">Evaluate it self-hosted</strong>
-    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">Run it on your own infrastructure. Free and open source under Apache 2.0.</span>
+    <span style="color:var(--ery-text-muted);font-size:var(--ery-text-sm);">The source is on GitHub — read it, modify it, self-host it. Free to self-host for a single workshop under the Business Source License 1.1.</span>
   </a>
 </div>
 

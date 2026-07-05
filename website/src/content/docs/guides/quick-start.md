@@ -9,6 +9,8 @@ Get Eryxon Flow up and running.
 
 > **Just want to explore?** Open the <a href="https://app.eryxon.eu" data-cta-id="docs_quickstart_hosted_explore_en" data-cta-surface="quickstart" data-cta-kind="hosted_app" data-cta-locale="en">hosted version at app.eryxon.eu</a> - no setup needed. It's a free 30-day trial.
 
+> Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1 — free to self-host for a single workshop. Multi-site use needs the commercial **Premium** edition; see [Editions & Pricing](/pricing/).
+
 ---
 
 ## Prerequisites
