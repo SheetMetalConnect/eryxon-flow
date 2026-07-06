@@ -103,24 +103,7 @@
     },
     "planning": {
       "title": "Planning Integratie",
-      "description": "Koppel een extern plannings-/schedulingsysteem om werkorders te synchroniseren",
-      "adapter": "Planningssysteem",
-      "adapterNone": "Geen (uitgeschakeld)",
-      "connectionUrl": "Verbindings-URL",
-      "databaseName": "Databasenaam",
-      "databasePlaceholder": "odoo-prod",
-      "databaseHelp": "Verplicht voor Odoo. Vertrouw niet op het URL-pad om de database te selecteren.",
-      "username": "Gebruikersnaam",
-      "password": "Wachtwoord",
-      "syncInterval": "Synchronisatie-interval",
-      "minutes": "minuten",
-      "testConnection": "Test Verbinding",
-      "save": "Planning Opslaan",
-      "saved": "Planningsconfiguratie opgeslagen",
-      "urlRequired": "Voer een verbindings-URL in",
-      "noAdapter": "Geen adapter geselecteerd",
-      "connectionSuccess": "Verbinding succesvol",
-      "connectionFailed": "Verbinding mislukt"
+      "description": "Koppel FrePPLe of Odoo MRP om werkorders te synchroniseren — beschikbaar in Premium."
     }
   },
   "settings": {

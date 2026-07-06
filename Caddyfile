@@ -72,8 +72,5 @@
 # ─── C. Pure-HTTP LAN (no TLS at all) ─────────────────────────────────────
 # Discouraged — without TLS the browser refuses to register the Service
 # Worker, so the PWA install prompt never fires and offline support is
-# disabled. Native Capacitor builds still work because the in-app config
-# (`network_security_config.xml` on Android, NSAllowsLocalNetworking on
-# iOS) permits cleartext to RFC1918 ranges and .local. If you really
-# want HTTP-only LAN, expose port 80 from `eryxon-flow` directly and
-# skip this Caddy file entirely.
+# disabled. If you really want HTTP-only LAN, expose port 80 from
+# `eryxon-flow` directly and skip this Caddy file entirely.

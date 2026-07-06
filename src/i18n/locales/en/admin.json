@@ -103,24 +103,7 @@
     },
     "planning": {
       "title": "Planning Integration",
-      "description": "Connect an external planning/scheduling system to sync work orders",
-      "adapter": "Planning System",
-      "adapterNone": "None (disabled)",
-      "connectionUrl": "Connection URL",
-      "databaseName": "Database Name",
-      "databasePlaceholder": "odoo-prod",
-      "databaseHelp": "Required for Odoo. Do not rely on the URL path to select the database.",
-      "username": "Username",
-      "password": "Password",
-      "syncInterval": "Sync Interval",
-      "minutes": "minutes",
-      "testConnection": "Test Connection",
-      "save": "Save Planning Config",
-      "saved": "Planning configuration saved",
-      "urlRequired": "Please enter a connection URL",
-      "noAdapter": "No adapter selected",
-      "connectionSuccess": "Connection successful",
-      "connectionFailed": "Connection failed"
+      "description": "Connect FrePPLe or Odoo MRP to sync work orders — available in Premium."
     }
   },
   "settings": {

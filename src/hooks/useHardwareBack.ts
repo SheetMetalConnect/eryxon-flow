@@ -1,7 +1,6 @@
 /**
- * Wires the Android hardware back button to React Router via Capacitor's App
- * plugin. No-op on the web. Pops history when there's somewhere to go,
- * otherwise minimises the app instead of exiting (Android convention).
+ * Hook for the hardware back button. No-op on the web build (there is no
+ * hardware back button); kept so mobile shells can call it unconditionally.
  */
 
 import { useEffect } from "react";

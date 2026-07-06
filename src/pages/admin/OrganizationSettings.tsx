@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, Workflow, CheckCircle2, XCircle, MapPin, ArrowRight } from 'lucide-react';
+import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, Workflow, MapPin, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -16,7 +16,6 @@ import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
 import { useLocationTracking } from '@/hooks/locations/useLocationTracking';
 import { useStorageLocations } from '@/hooks/locations/useStorageLocations';
 import { logger } from '@/lib/logger';
-import type { PlanningAdapterType } from '@/lib/planning';
 import {
   DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
   getOperatorTerminalWorkModeSettings,
@@ -66,17 +65,6 @@ export default function OrganizationSettings() {
     whitelabel_favicon_url: '',
   });
 
-  const [planningConfig, setPlanningConfig] = useState({
-    adapter: 'none' as PlanningAdapterType,
-    baseUrl: '',
-    databaseName: '',
-    username: '',
-    password: '',
-    syncIntervalMinutes: 15,
-  });
-  const [testingConnection, setTestingConnection] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [savingPlanning, setSavingPlanning] = useState(false);
   const [operatorTerminalModes, setOperatorTerminalModes] = useState(
     DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
   );
@@ -177,92 +165,6 @@ export default function OrganizationSettings() {
       toast.error(error instanceof Error ? error.message : t('notifications.failed'));
     } finally {
       setSaving(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!tenant?.id) return;
-    // TODO: Migrate to tenant_settings table once migration is applied
-    const stored = localStorage.getItem(`planning_config_${tenant.id}`);
-    if (stored) {
-      try {
-        const cfg = JSON.parse(stored) as Record<string, unknown>;
-        setPlanningConfig({
-          adapter: (cfg.adapter as PlanningAdapterType) || 'none',
-          baseUrl: (cfg.baseUrl as string) || '',
-          databaseName: (cfg.databaseName as string) || '',
-          username: (cfg.username as string) || '',
-          password: '',
-          syncIntervalMinutes: (cfg.syncIntervalMinutes as number) || 15,
-        });
-      } catch {
-        // Invalid stored config, ignore
-      }
-    }
-  }, [tenant?.id]);
-
-  const handleTestConnection = async () => {
-    if (!planningConfig.baseUrl) {
-      toast.error(t('organizationSettings.planning.urlRequired'));
-      return;
-    }
-
-    setTestingConnection(true);
-    setConnectionStatus('idle');
-
-    try {
-      const { createPlanningAdapter } = await import('@/lib/planning');
-      const adapter = createPlanningAdapter({
-        adapter: planningConfig.adapter,
-        baseUrl: planningConfig.baseUrl,
-        databaseName: planningConfig.databaseName,
-        username: planningConfig.username,
-        password: planningConfig.password,
-        syncIntervalMinutes: planningConfig.syncIntervalMinutes,
-      });
-
-      if (!adapter) {
-        toast.error(t('organizationSettings.planning.noAdapter'));
-        setConnectionStatus('error');
-        return;
-      }
-
-      const connected = await adapter.testConnection();
-      setConnectionStatus(connected ? 'success' : 'error');
-      if (connected) {
-        toast.success(t('organizationSettings.planning.connectionSuccess'));
-      } else {
-        toast.error(t('organizationSettings.planning.connectionFailed'));
-      }
-    } catch (error: unknown) {
-      logger.error('OrganizationSettings', 'Planning connection test failed', error);
-      setConnectionStatus('error');
-      toast.error(error instanceof Error ? error.message : t('organizationSettings.planning.connectionFailed'));
-    } finally {
-      setTestingConnection(false);
-    }
-  };
-
-  const handleSavePlanning = async () => {
-    if (!tenant?.id) return;
-
-    setSavingPlanning(true);
-    try {
-      // TODO: Persist to tenant_settings table once migration is applied
-      const persistablePlanningConfig = {
-        adapter: planningConfig.adapter,
-        baseUrl: planningConfig.baseUrl,
-        databaseName: planningConfig.databaseName,
-        username: planningConfig.username,
-        syncIntervalMinutes: planningConfig.syncIntervalMinutes,
-      };
-      localStorage.setItem(`planning_config_${tenant.id}`, JSON.stringify(persistablePlanningConfig));
-      toast.success(t('organizationSettings.planning.saved'));
-    } catch (error: unknown) {
-      logger.error('OrganizationSettings', 'Error saving planning config', error);
-      toast.error(error instanceof Error ? error.message : t('notifications.failed'));
-    } finally {
-      setSavingPlanning(false);
     }
   };
 
@@ -699,130 +601,15 @@ export default function OrganizationSettings() {
           <div className="flex items-center gap-2">
             <Workflow className="h-5 w-5" />
             <CardTitle>{t('organizationSettings.planning.title')}</CardTitle>
+            <div className="ml-auto flex items-center gap-1.5">
+              <Crown className="h-3.5 w-3.5 text-amber-500" />
+              <span className="text-xs font-medium text-amber-500">Premium</span>
+            </div>
           </div>
           <CardDescription>
             {t('organizationSettings.planning.description')}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="planning_adapter">{t('organizationSettings.planning.adapter')}</Label>
-            <Select
-              value={planningConfig.adapter}
-              onValueChange={(value) => {
-                setPlanningConfig({ ...planningConfig, adapter: value as PlanningAdapterType });
-                setConnectionStatus('idle');
-              }}
-            >
-              <SelectTrigger id="planning_adapter">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t('organizationSettings.planning.adapterNone')}</SelectItem>
-                <SelectItem value="frepple">FrePPLe</SelectItem>
-                <SelectItem value="odoo">Odoo MRP</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {planningConfig.adapter !== 'none' && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="planning_url">{t('organizationSettings.planning.connectionUrl')}</Label>
-                <Input
-                  id="planning_url"
-                  value={planningConfig.baseUrl}
-                  onChange={(e) => setPlanningConfig({ ...planningConfig, baseUrl: e.target.value })}
-                  placeholder={planningConfig.adapter === 'frepple' ? 'https://frepple.example.com' : 'https://odoo.example.com'}
-                />
-              </div>
-
-              {planningConfig.adapter === 'odoo' && (
-                <div className="space-y-2">
-                  <Label htmlFor="planning_database">{t('organizationSettings.planning.databaseName')}</Label>
-                  <Input
-                    id="planning_database"
-                    value={planningConfig.databaseName}
-                    onChange={(e) => setPlanningConfig({ ...planningConfig, databaseName: e.target.value })}
-                    placeholder={t('organizationSettings.planning.databasePlaceholder')}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    {t('organizationSettings.planning.databaseHelp')}
-                  </p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="planning_username">{t('organizationSettings.planning.username')}</Label>
-                  <Input
-                    id="planning_username"
-                    value={planningConfig.username}
-                    onChange={(e) => setPlanningConfig({ ...planningConfig, username: e.target.value })}
-                    placeholder="admin"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="planning_password">{t('organizationSettings.planning.password')}</Label>
-                  <Input
-                    id="planning_password"
-                    type="password"
-                    value={planningConfig.password}
-                    onChange={(e) => setPlanningConfig({ ...planningConfig, password: e.target.value })}
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="planning_sync_interval">{t('organizationSettings.planning.syncInterval')}</Label>
-                <Select
-                  value={String(planningConfig.syncIntervalMinutes)}
-                  onValueChange={(value) => setPlanningConfig({ ...planningConfig, syncIntervalMinutes: Number(value) })}
-                >
-                  <SelectTrigger id="planning_sync_interval">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="5">5 {t('organizationSettings.planning.minutes')}</SelectItem>
-                    <SelectItem value="15">15 {t('organizationSettings.planning.minutes')}</SelectItem>
-                    <SelectItem value="30">30 {t('organizationSettings.planning.minutes')}</SelectItem>
-                    <SelectItem value="60">60 {t('organizationSettings.planning.minutes')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleTestConnection}
-                  disabled={testingConnection || !planningConfig.baseUrl}
-                  className="gap-2"
-                >
-                  {testingConnection ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : connectionStatus === 'success' ? (
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                  ) : connectionStatus === 'error' ? (
-                    <XCircle className="h-4 w-4 text-destructive" />
-                  ) : null}
-                  {t('organizationSettings.planning.testConnection')}
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleSavePlanning}
-                  disabled={savingPlanning}
-                  className="cta-button gap-2"
-                >
-                  {savingPlanning && <Loader2 className="h-4 w-4 animate-spin" />}
-                  <Save className="h-4 w-4" />
-                  {t('organizationSettings.planning.save')}
-                </Button>
-              </div>
-            </>
-          )}
-        </CardContent>
       </Card>
 
       <Card className="glass-card">

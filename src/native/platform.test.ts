@@ -9,7 +9,7 @@ import {
   isNativeIOS,
   isTabletViewport,
   shouldUseMobileShell,
-} from "./platform";
+} from "./index";
 
 const ORIGINAL_UA = navigator.userAgent;
 const ORIGINAL_TOUCHPOINTS = navigator.maxTouchPoints;
@@ -50,31 +50,21 @@ afterEach(() => {
 });
 
 describe("isNativeApp / isNativeIOS / isAndroidNative", () => {
-  it("returns false everywhere when Capacitor isn't injected", () => {
+  it("is never native — this is a web-only build", () => {
     expect(isNativeApp()).toBe(false);
     expect(isNativeIOS()).toBe(false);
     expect(isAndroidNative()).toBe(false);
   });
 
-  it("detects Capacitor iOS correctly", () => {
+  it("stays web-only even if a Capacitor global is injected", () => {
     (window as unknown as { Capacitor: unknown }).Capacitor = {
       isNativePlatform: () => true,
       getPlatform: () => "ios",
     };
     __resetPlatformCache();
-    expect(isNativeApp()).toBe(true);
-    expect(isNativeIOS()).toBe(true);
-    expect(isAndroidNative()).toBe(false);
-  });
-
-  it("detects Capacitor Android correctly", () => {
-    (window as unknown as { Capacitor: unknown }).Capacitor = {
-      isNativePlatform: () => true,
-      getPlatform: () => "android",
-    };
-    __resetPlatformCache();
-    expect(isAndroidNative()).toBe(true);
+    expect(isNativeApp()).toBe(false);
     expect(isNativeIOS()).toBe(false);
+    expect(isAndroidNative()).toBe(false);
   });
 });
 

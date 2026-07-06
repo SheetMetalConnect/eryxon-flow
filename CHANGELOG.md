@@ -2,6 +2,24 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.9.1] — 2026-07-05
+
+### Changed
+
+- **Community edition is now a web-only PWA.** Native device integration
+  (iOS/Android via Capacitor — barcode scanner, biometric unlock, push,
+  haptics, status bar) is removed from the Community repo and moved to Premium.
+  The app keeps basic web camera/photo upload and still installs as a PWA
+  ("Add to Home Screen" / "Install app"). All `@capacitor/*` dependencies and
+  the native build workflow were dropped; the native bridge is now a web-only
+  shim.
+- **FrePPLe and Odoo MRP planning connectors are Premium.** The adapter code
+  (`src/lib/planning/`) is removed from Community; Organization Settings now
+  shows the planning integration as a described Premium feature. Basic capacity
+  planning (QRM / WIP dashboards) stays in Community.
+- **LICENSE completed to the canonical BSL 1.1 template** (MariaDB text
+  attribution and the "not an Open Source license" notice).
+
 ## [0.9.0] — 2026-07-05
 
 ### Changed

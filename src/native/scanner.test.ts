@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { isScannerAvailable, scanOnce, ScannerUnavailableError } from "./scanner";
+import { isScannerAvailable, scanOnce, ScannerUnavailableError } from "./index";
 
 afterEach(() => {
   // Clean any platform stubs we introduced.
