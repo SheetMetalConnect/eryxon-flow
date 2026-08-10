@@ -11,6 +11,7 @@ import {
   LogOut,
   LayoutDashboard,
   ListChecks,
+  ClipboardList,
   Settings,
   AlertCircle,
   UserCheck,
@@ -49,6 +50,7 @@ import {
   Boxes,
   MapPin,
   Timer,
+  Warehouse,
 } from "lucide-react";
 import { TenantSwitcher } from "@/components/admin/TenantSwitcher";
 import { NavigationButtons } from "@/components/NavigationButtons";
@@ -120,6 +122,24 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       label: t("navigation.batches"),
       icon: Boxes,
       activePaths: ["/admin/batches"],
+    },
+    {
+      path: "/admin/inventory",
+      label: "Inventory",
+      icon: Warehouse,
+      exact: true,
+    },
+    {
+      path: "/admin/inventory/work-orders",
+      label: "Work Orders",
+      icon: ClipboardList,
+      activePaths: ["/admin/inventory/work-orders"],
+    },
+    {
+      path: "/admin/inventory/dispatch",
+      label: "Dispatch",
+      icon: Truck,
+      activePaths: ["/admin/inventory/dispatch"],
     },
     ...(featureFlags.assignments ? [{
       path: "/admin/assignments",

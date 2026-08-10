@@ -74,3 +74,5 @@ yarn-debug.log*
 yarn-error.log*
 ~
 .research/
+# Local inventory workbook (source of truth stays in Downloads / office)
+data/inventory/*.xlsx

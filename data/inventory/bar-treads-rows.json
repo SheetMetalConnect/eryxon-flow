@@ -1,0 +1,682 @@
+[
+  {
+    "item_no": "T4x48",
+    "description": "1-1/4 X 3/16 X 97mm X 1219mm Stair Treads",
+    "type": "Inventory",
+    "quantity": -18,
+    "category": "Treads",
+    "sheet_row": 11
+  },
+  {
+    "item_no": "T4x36",
+    "description": "1-1/4 X 3/16 X 97mm X 914mm Stair Treads",
+    "type": "Inventory",
+    "quantity": -133,
+    "category": "Treads",
+    "sheet_row": 12
+  },
+  {
+    "item_no": "T12X48",
+    "description": "1-1/4 X 3/16 X 308mm X 1219mm Stair Treads.",
+    "type": "Inventory",
+    "quantity": 231,
+    "category": "Treads",
+    "sheet_row": 13
+  },
+  {
+    "item_no": "T12X36G",
+    "description": "1-1/4 X 3/16 X 12\"  X  36\" Serrated Galvanized Stair Treads",
+    "type": "Inventory",
+    "quantity": -2118,
+    "category": "Treads",
+    "sheet_row": 14
+  },
+  {
+    "item_no": "T12X36B",
+    "description": "1-1/4 X 3/16  X 308mm X 914mm Serrated Treads Painted Black",
+    "type": "Inventory",
+    "quantity": -445,
+    "category": "Treads",
+    "sheet_row": 15
+  },
+  {
+    "item_no": "T12X36",
+    "description": "1-1/4 X 3/16 X 12\" X  36\" Serrated Stair Treads  19W4 UNP",
+    "type": "Inventory",
+    "quantity": 181,
+    "category": "Treads",
+    "sheet_row": 16
+  },
+  {
+    "item_no": "T11X48",
+    "description": "1-1/4 X 3/16 X 10-15/16 X 48\" Serrated Treads",
+    "type": "Inventory",
+    "quantity": -197,
+    "category": "Treads",
+    "sheet_row": 17
+  },
+  {
+    "item_no": "T11x36G",
+    "description": "1-1/4 X 3/16 X 11\" X 36\"  Serrated Galvanized",
+    "type": "Inventory",
+    "quantity": -74,
+    "category": "Treads",
+    "sheet_row": 18
+  },
+  {
+    "item_no": "T11X36B",
+    "description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Painted Black",
+    "type": "Inventory",
+    "quantity": -197,
+    "category": "Treads",
+    "sheet_row": 19
+  },
+  {
+    "item_no": "T11X36",
+    "description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Treads unpainted",
+    "type": "Inventory",
+    "quantity": -248,
+    "category": "Treads",
+    "sheet_row": 20
+  },
+  {
+    "item_no": "T10X48",
+    "description": "1-1/4 X 3/16 X -9-3/4 X48\" Serrated Treads",
+    "type": "Inventory",
+    "quantity": -35,
+    "category": "Treads",
+    "sheet_row": 21
+  },
+  {
+    "item_no": "T10x36G",
+    "description": "1-1/4 X 3/16 X10\" X 36\" Serrated Treads Galvanized",
+    "type": "Inventory",
+    "quantity": 63,
+    "category": "Treads",
+    "sheet_row": 22
+  },
+  {
+    "item_no": "T10X36B",
+    "description": "1-1/4X3/16X10\"X 36\" Serrated Treads Painted Black",
+    "type": "Inventory",
+    "quantity": -52,
+    "category": "Treads",
+    "sheet_row": 23
+  },
+  {
+    "item_no": "T10x36",
+    "description": "1-1/4X3/16 X 10\" X 36\" Serrated Treads  Unpainted",
+    "type": "Inventory",
+    "quantity": 204,
+    "category": "Treads",
+    "sheet_row": 24
+  },
+  {
+    "item_no": "96P15W2",
+    "description": "2-1/4 X 3/8 X 486mm X 20' 15W2   Smooth",
+    "type": "Inventory",
+    "quantity": 10,
+    "category": "Bar Grating",
+    "sheet_row": 118
+  },
+  {
+    "item_no": "94P",
+    "description": "2-1/4 X 1/4 X 3' X 24' 19W4",
+    "type": "Inventory",
+    "quantity": 6,
+    "category": "Bar Grating",
+    "sheet_row": 119
+  },
+  {
+    "item_no": "93S",
+    "description": "2-1/4 X 3/16 Serrated 19W4 Unpainted.",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 120
+  },
+  {
+    "item_no": "86S",
+    "description": "2\" X 3/8 Serrated",
+    "type": "Inventory",
+    "quantity": 7,
+    "category": "Bar Grating",
+    "sheet_row": 121
+  },
+  {
+    "item_no": "86P",
+    "description": "2\" X 3/8\" X 2' X 20' 19W4",
+    "type": "Inventory",
+    "quantity": -3,
+    "category": "Bar Grating",
+    "sheet_row": 122
+  },
+  {
+    "item_no": "86 S",
+    "description": "2\" X 3/8\" X2' X 20' Serrated 19W4 Bare.",
+    "type": "Inventory",
+    "quantity": 4,
+    "category": "Bar Grating",
+    "sheet_row": 123
+  },
+  {
+    "item_no": "84S",
+    "description": "2\" X 1/4\" X 3' X 24' Serrtaed 19W4 Bare",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 124
+  },
+  {
+    "item_no": "84P",
+    "description": "2\" X 1/4\" X 3' X 24'  SMOOTH  Bare 19W4",
+    "type": "Inventory",
+    "quantity": 16,
+    "category": "Bar Grating",
+    "sheet_row": 125
+  },
+  {
+    "item_no": "83S",
+    "description": "WPU194083324......2X3/16 19W4 Serrated  3X24 Bare",
+    "type": "Inventory",
+    "quantity": 9,
+    "category": "Bar Grating",
+    "sheet_row": 127
+  },
+  {
+    "item_no": "83P",
+    "description": "2X3/16 19W4 Smooth 3'X24'",
+    "type": "Inventory",
+    "quantity": 5,
+    "category": "Bar Grating",
+    "sheet_row": 128
+  },
+  {
+    "item_no": "74 P",
+    "description": "WNU194064324.....1-3/4 X1/4 19W4 PLAIN 3X24 UNP",
+    "type": "Inventory",
+    "quantity": 10,
+    "category": "Bar Grating",
+    "sheet_row": 129
+  },
+  {
+    "item_no": "73S",
+    "description": "1-3/4 X 3/16 Serrated  Bare 19W4",
+    "type": "Inventory",
+    "quantity": 21,
+    "category": "Bar Grating",
+    "sheet_row": 130
+  },
+  {
+    "item_no": "73P",
+    "description": "1-3/4 X 3/16 Smooth 19W4 Bare",
+    "type": "Inventory",
+    "quantity": 21,
+    "category": "Bar Grating",
+    "sheet_row": 131
+  },
+  {
+    "item_no": "66S",
+    "description": "1-1/2 X 3/8 X 2' X 20' Serrated 19W4 Bare.",
+    "type": "Inventory",
+    "quantity": 19,
+    "category": "Bar Grating",
+    "sheet_row": 132
+  },
+  {
+    "item_no": "66P",
+    "description": "1-1/2 X 3/8 X 2' X 20' 19W4 Smooth Bare",
+    "type": "Inventory",
+    "quantity": 12,
+    "category": "Bar Grating",
+    "sheet_row": 133
+  },
+  {
+    "item_no": "64S",
+    "description": "1-1/2 X 1/4 Serrated Unpainted",
+    "type": "Inventory",
+    "quantity": 16,
+    "category": "Bar Grating",
+    "sheet_row": 134
+  },
+  {
+    "item_no": "64P",
+    "description": "1-1/2\" X 1/4\" X 3' X 24' Smooth 19W4",
+    "type": "Inventory",
+    "quantity": 3,
+    "category": "Bar Grating",
+    "sheet_row": 135
+  },
+  {
+    "item_no": "63SAL",
+    "description": "1-1/2 X 3/16 X 3' X 24' Serrated Aluminium.",
+    "type": "Inventory",
+    "quantity": 1,
+    "category": "Bar Grating",
+    "sheet_row": 136
+  },
+  {
+    "item_no": "63S38W4",
+    "description": "1-1/2 X 3/16 Serrated 38W4",
+    "type": "Inventory",
+    "quantity": 6,
+    "category": "Bar Grating",
+    "sheet_row": 137
+  },
+  {
+    "item_no": "63S",
+    "description": "1-1/2X3/16 19W4 Serrated  3'X24'",
+    "type": "Inventory",
+    "quantity": -64,
+    "category": "Bar Grating",
+    "sheet_row": 138
+  },
+  {
+    "item_no": "63P",
+    "description": "1-1/2X3/16 19W4  3'X24'  PLAIN UNP",
+    "type": "Inventory",
+    "quantity": -41,
+    "category": "Bar Grating",
+    "sheet_row": 139
+  },
+  {
+    "item_no": "63 SG",
+    "description": "1-1/2X3/16 19W4 SERRATED 3'X24   GALVANIZED",
+    "type": "Inventory",
+    "quantity": 4,
+    "category": "Bar Grating",
+    "sheet_row": 140
+  },
+  {
+    "item_no": "63 PG",
+    "description": "1-1/2X3/16 19W4 Smooth 3'X24'   Galvanized.",
+    "type": "Inventory",
+    "quantity": 20,
+    "category": "Bar Grating",
+    "sheet_row": 141
+  },
+  {
+    "item_no": "62P",
+    "description": "1-1/2X1/8 PLAIN 19W4 3X24",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 142
+  },
+  {
+    "item_no": "62 S",
+    "description": "1-1/2X1/8 SERR 19W4 3'X24'  UNP",
+    "type": "Inventory",
+    "quantity": 39,
+    "category": "Bar Grating",
+    "sheet_row": 143
+  },
+  {
+    "item_no": "56S",
+    "description": "WPU194046220.....1X3/8 19W4 SERR 2X20 UNP",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 144
+  },
+  {
+    "item_no": "54P",
+    "description": "1-1/4 X 1/4 19W4 Plain 3'X24' Unpainted.",
+    "type": "Inventory",
+    "quantity": 7,
+    "category": "Bar Grating",
+    "sheet_row": 145
+  },
+  {
+    "item_no": "54 S",
+    "description": "1-1/4 X 1/4 Serrated 19W4 Unpainted",
+    "type": "Inventory",
+    "quantity": 10,
+    "category": "Bar Grating",
+    "sheet_row": 146
+  },
+  {
+    "item_no": "53S38W4",
+    "description": "1-1/4\" X 3/16 Serrated 38W4",
+    "type": "Inventory",
+    "quantity": -6,
+    "category": "Bar Grating",
+    "sheet_row": 147
+  },
+  {
+    "item_no": "53s19w2",
+    "description": "1-1/4 X 3/16 Serrated 19W2",
+    "type": "Inventory",
+    "quantity": 15,
+    "category": "Bar Grating",
+    "sheet_row": 148
+  },
+  {
+    "item_no": "53S",
+    "description": "1-1/4X3/16  Serrated  19W4  3'X24'",
+    "type": "Inventory",
+    "quantity": -906,
+    "category": "Bar Grating",
+    "sheet_row": 149
+  },
+  {
+    "item_no": "53PG",
+    "description": "1-1/4X3/16 Plain 19W4 3'X24' Galvanized.",
+    "type": "Inventory",
+    "quantity": 63,
+    "category": "Bar Grating",
+    "sheet_row": 150
+  },
+  {
+    "item_no": "53p",
+    "description": "1-1/4X3/16  SMOOTH 19W4 3'X24'",
+    "type": "Inventory",
+    "quantity": 62,
+    "category": "Bar Grating",
+    "sheet_row": 151
+  },
+  {
+    "item_no": "53ALS",
+    "description": "1-1/4 X 3/16 X 3' X 24' Aluminium Serrated 19w4",
+    "type": "Inventory",
+    "quantity": 1,
+    "category": "Bar Grating",
+    "sheet_row": 152
+  },
+  {
+    "item_no": "53ALP",
+    "description": "1-1/4 X 3/16 X3' X 20' Aluminium Smooth. 19W4",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 153
+  },
+  {
+    "item_no": "53 SG",
+    "description": "1-1/4X3/16 19W4 Serrated  3'X24' Galvanized.",
+    "type": "Inventory",
+    "quantity": -74,
+    "category": "Bar Grating",
+    "sheet_row": 154
+  },
+  {
+    "item_no": "52S",
+    "description": "1-1/4X1/8 19W4 Serrated 3'X24'",
+    "type": "Inventory",
+    "quantity": 43,
+    "category": "Bar Grating",
+    "sheet_row": 155
+  },
+  {
+    "item_no": "52P",
+    "description": "1-1/4X1/8 19W4 Smooth  3'X24' Bare",
+    "type": "Inventory",
+    "quantity": 37,
+    "category": "Bar Grating",
+    "sheet_row": 156
+  },
+  {
+    "item_no": "46P",
+    "description": "1\"X3/8\" X 2' X20' Smooth 19W4",
+    "type": "Inventory",
+    "quantity": 16,
+    "category": "Bar Grating",
+    "sheet_row": 157
+  },
+  {
+    "item_no": "46 P",
+    "description": "1X3/8 19W4 Smooth 2'X20'",
+    "type": "Inventory",
+    "quantity": 1,
+    "category": "Bar Grating",
+    "sheet_row": 158
+  },
+  {
+    "item_no": "44S",
+    "description": "1\" X 1/4\" Serrated 19W4 Unpainted",
+    "type": "Inventory",
+    "quantity": 25,
+    "category": "Bar Grating",
+    "sheet_row": 159
+  },
+  {
+    "item_no": "44P",
+    "description": "1\" X 1/4\" X 3' X 24' Smooth 19W4",
+    "type": "Inventory",
+    "quantity": 19,
+    "category": "Bar Grating",
+    "sheet_row": 160
+  },
+  {
+    "item_no": "43SG",
+    "description": "1X3/16 Serrated 19W4  Galvanized.",
+    "type": "Inventory",
+    "quantity": 33,
+    "category": "Bar Grating",
+    "sheet_row": 161
+  },
+  {
+    "item_no": "43SALM",
+    "description": "1\" X 3/16 Serrated Aluminium 3' X 24'",
+    "type": "Inventory",
+    "quantity": 2,
+    "category": "Bar Grating",
+    "sheet_row": 162
+  },
+  {
+    "item_no": "43S38W4",
+    "description": "1\" X 3/16 Serrated 38W4",
+    "type": "Inventory",
+    "quantity": 15,
+    "category": "Bar Grating",
+    "sheet_row": 163
+  },
+  {
+    "item_no": "43S",
+    "description": "1X3/16 19W4 Serrated 3X24 Bare.",
+    "type": "Inventory",
+    "quantity": -8,
+    "category": "Bar Grating",
+    "sheet_row": 164
+  },
+  {
+    "item_no": "43PG",
+    "description": "1\"X3/16\" PLAIN 19W4  Galvanized.",
+    "type": "Inventory",
+    "quantity": 45,
+    "category": "Bar Grating",
+    "sheet_row": 165
+  },
+  {
+    "item_no": "43P",
+    "description": "1X3/16 19W4 Smooth 3'X24' Bare.",
+    "type": "Inventory",
+    "quantity": 2,
+    "category": "Bar Grating",
+    "sheet_row": 166
+  },
+  {
+    "item_no": "42S",
+    "description": "1X1/8 19W4 Serrated 3'X24' Bare",
+    "type": "Inventory",
+    "quantity": 17,
+    "category": "Bar Grating",
+    "sheet_row": 167
+  },
+  {
+    "item_no": "42P",
+    "description": "1X1/8 19W4 Smooth  3'X24' Bare.",
+    "type": "Inventory",
+    "quantity": 129,
+    "category": "Bar Grating",
+    "sheet_row": 168
+  },
+  {
+    "item_no": "33P",
+    "description": "3/4 X 3/16 Smooth 19W4 Bare 3' X 24'",
+    "type": "Inventory",
+    "quantity": 4,
+    "category": "Bar Grating",
+    "sheet_row": 169
+  },
+  {
+    "item_no": "180S",
+    "description": "4-1/2X3/8 19W4 Serrated  2X20 Bare.",
+    "type": "Inventory",
+    "quantity": 4,
+    "category": "Bar Grating",
+    "sheet_row": 171
+  },
+  {
+    "item_no": "160S",
+    "description": "4X3/8 19W4 Serrated  2' X 20'",
+    "type": "Inventory",
+    "quantity": 2,
+    "category": "Bar Grating",
+    "sheet_row": 172
+  },
+  {
+    "item_no": "126S",
+    "description": "3\" X 3/8 Serrated 19W4 2' X 20'",
+    "type": "Inventory",
+    "quantity": 10,
+    "category": "Bar Grating",
+    "sheet_row": 173
+  },
+  {
+    "item_no": "126P15W2",
+    "description": "3\" X 3/8 X 486mm X 20'  15W2 Smooth",
+    "type": "Inventory",
+    "quantity": 4,
+    "category": "Bar Grating",
+    "sheet_row": 174
+  },
+  {
+    "item_no": "126P",
+    "description": "3\" X 3/8 SMOOTH 19W4 2' X 20'",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 175
+  },
+  {
+    "item_no": "124S",
+    "description": "3\" X 1/4\" X3' X 24'  Serrated 19W4",
+    "type": "Inventory",
+    "quantity": 7,
+    "category": "Bar Grating",
+    "sheet_row": 176
+  },
+  {
+    "item_no": "1238P",
+    "description": "3\" X 3/8 X20' X 2' Smooth",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 177
+  },
+  {
+    "item_no": "104P",
+    "description": "2-1/2\" X 1/4\" X 3' X 24' Smooth Bare 19W4",
+    "type": "Inventory",
+    "quantity": 7,
+    "category": "Bar Grating",
+    "sheet_row": 178
+  },
+  {
+    "item_no": "104 S",
+    "description": "2-1/2 X 1/4\" Serrated Bare 19W4",
+    "type": "Inventory",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 179
+  },
+  {
+    "item_no": "103S",
+    "description": "2-1/2 X 3/16 Serrated bare 19W4 3' X 24'",
+    "type": "Inventory",
+    "quantity": 10,
+    "category": "Bar Grating",
+    "sheet_row": 180
+  },
+  {
+    "item_no": "103P",
+    "description": "2-1/2\" X 3/16 Plain 19W4 Bare",
+    "type": "Inventory",
+    "quantity": 8,
+    "category": "Bar Grating",
+    "sheet_row": 181
+  },
+  {
+    "item_no": "t4x36G",
+    "description": "1-1/4X3/16X4\" X 36\" Serrated Galvanized Tread",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 187
+  },
+  {
+    "item_no": "t12x24",
+    "description": "Tread Fabrication 1-1/4 x 3/16 x12-1/8 x 24\" Serrated Bare.",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 188
+  },
+  {
+    "item_no": "T11X36SB",
+    "description": "1-1/4 X 3/16 TREADS 11 X 36 Serrated  BLK",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Treads",
+    "sheet_row": 189
+  },
+  {
+    "item_no": "pblk",
+    "description": "Painted BLACK.",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 191
+  },
+  {
+    "item_no": "fab166s",
+    "description": "Fabrication 4\" X 3/8\" Serrated 19W4 ( pcs)",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 235
+  },
+  {
+    "item_no": "74P",
+    "description": "1-3/4\" X 1/4\" Smooth 3' X 24'  19W4",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 245
+  },
+  {
+    "item_no": "53sb",
+    "description": "1-1/4 X 3/16 X3' X24' Serrated 19w4 Painted Black.",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 246
+  },
+  {
+    "item_no": "106S",
+    "description": "2-1/2\" X 3/8 X 2' X 20' Serrated Bare19W4",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 247
+  },
+  {
+    "item_no": "106P",
+    "description": "2-1/2\" X 3/8 X 2' X 20' Smooth 19W4",
+    "type": "Service",
+    "quantity": 0,
+    "category": "Bar Grating",
+    "sheet_row": 248
+  }
+]

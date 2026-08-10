@@ -38,6 +38,12 @@ const ConfigStages = lazy(() => import("@/pages/admin/config/Stages"));
 const ConfigUsers = lazy(() => import("@/pages/admin/config/Users"));
 const ConfigWebhooks = lazy(() => import("@/pages/admin/config/Webhooks"));
 
+const InventoryStockList = lazy(() => import("@/pages/admin/inventory/InventoryStockList"));
+const InventoryReconcile = lazy(() => import("@/pages/admin/inventory/InventoryReconcile"));
+const InventoryCalculator = lazy(() => import("@/pages/admin/inventory/InventoryCalculator"));
+const InventoryWorkOrders = lazy(() => import("@/pages/admin/inventory/InventoryWorkOrders"));
+const InventoryDispatch = lazy(() => import("@/pages/admin/inventory/InventoryDispatch"));
+
 function AdminRoute({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute adminOnly>
@@ -78,6 +84,11 @@ export function AdminRoutes() {
       <Route path="/admin/batches/new" element={<AdminRoute><BatchCreate /></AdminRoute>} />
       <Route path="/admin/batches/:id" element={<AdminRoute><BatchDetail /></AdminRoute>} />
       <Route path="/admin/batches/:id/edit" element={<AdminRoute><BatchCreate /></AdminRoute>} />
+      <Route path="/admin/inventory" element={<AdminRoute><InventoryStockList /></AdminRoute>} />
+      <Route path="/admin/inventory/reconcile" element={<AdminRoute><InventoryReconcile /></AdminRoute>} />
+      <Route path="/admin/inventory/calculator" element={<AdminRoute><InventoryCalculator /></AdminRoute>} />
+      <Route path="/admin/inventory/work-orders" element={<AdminRoute><InventoryWorkOrders /></AdminRoute>} />
+      <Route path="/admin/inventory/dispatch" element={<AdminRoute><InventoryDispatch /></AdminRoute>} />
       <Route path="/admin/activity" element={<AdminRoute><ActivityMonitor /></AdminRoute>} />
       <Route path="/admin/capacity" element={<AdminRoute><CapacityMatrix /></AdminRoute>} />
       <Route path="/admin/time-tracking" element={<AdminRoute><TimeTracking /></AdminRoute>} />

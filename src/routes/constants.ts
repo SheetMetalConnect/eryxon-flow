@@ -40,6 +40,11 @@ export const ROUTES = {
     INTEGRATIONS: "/admin/integrations",
     DATA_EXPORT: "/admin/data-export",
     SETTINGS: "/admin/settings",
+    INVENTORY: "/admin/inventory",
+    INVENTORY_RECONCILE: "/admin/inventory/reconcile",
+    INVENTORY_CALCULATOR: "/admin/inventory/calculator",
+    INVENTORY_WORK_ORDERS: "/admin/inventory/work-orders",
+    INVENTORY_DISPATCH: "/admin/inventory/dispatch",
 
     CONFIG: {
       STAGES: "/admin/config/stages",

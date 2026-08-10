@@ -1,0 +1,2798 @@
+[
+  {
+    "item_no": "T4x48",
+    "category": "Treads",
+    "quantity": -18,
+    "description": "1-1/4 X 3/16 X 97mm X 1219mm Stair Treads",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 97mm X 1219mm Stair Treads",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "unknown",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 3.818897637795276,
+      "panelLengthIn": 47.99212598425197,
+      "confidence": "medium",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 1.272757059403008
+  },
+  {
+    "item_no": "T4x36",
+    "category": "Treads",
+    "quantity": -133,
+    "description": "1-1/4 X 3/16 X 97mm X 914mm Stair Treads",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 97mm X 914mm Stair Treads",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "unknown",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 3.818897637795276,
+      "panelLengthIn": 35.98425196850394,
+      "confidence": "medium",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 0.9543067697246508
+  },
+  {
+    "item_no": "T12X48",
+    "category": "Treads",
+    "quantity": 231,
+    "description": "1-1/4 X 3/16 X 308mm X 1219mm Stair Treads.",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 308mm X 1219mm Stair Treads.",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "unknown",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 12.125984251968505,
+      "panelLengthIn": 47.99212598425197,
+      "confidence": "medium",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 4.041331693774499
+  },
+  {
+    "item_no": "T12X36G",
+    "category": "Treads",
+    "quantity": -2118,
+    "description": "1-1/4 X 3/16 X 12\"  X  36\" Serrated Galvanized Stair Treads",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 12\"  X  36\" Serrated Galvanized Stair Treads",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 12,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 3
+  },
+  {
+    "item_no": "T12X36B",
+    "category": "Treads",
+    "quantity": -445,
+    "description": "1-1/4 X 3/16  X 308mm X 914mm Serrated Treads Painted Black",
+    "parsed": {
+      "raw": "1-1/4 X 3/16  X 308mm X 914mm Serrated Treads Painted Black",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "painted_black",
+      "material": "carbon_steel",
+      "panelWidthIn": 12.125984251968505,
+      "panelLengthIn": 35.98425196850394,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 3.030169949228788
+  },
+  {
+    "item_no": "T12X36",
+    "category": "Treads",
+    "quantity": 181,
+    "description": "1-1/4 X 3/16 X 12\" X  36\" Serrated Stair Treads  19W4 UNP",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 12\" X  36\" Serrated Stair Treads  19W4 UNP",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 12,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 3
+  },
+  {
+    "item_no": "T11X48",
+    "category": "Treads",
+    "quantity": -197,
+    "description": "1-1/4 X 3/16 X 10-15/16 X 48\" Serrated Treads",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 10-15/16 X 48\" Serrated Treads",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 16,
+      "panelLengthIn": 48,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X 10-15/"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 5.333333333333333
+  },
+  {
+    "item_no": "T11x36G",
+    "category": "Treads",
+    "quantity": -74,
+    "description": "1-1/4 X 3/16 X 11\" X 36\"  Serrated Galvanized",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 11\" X 36\"  Serrated Galvanized",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 11,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 2.75
+  },
+  {
+    "item_no": "T11X36B",
+    "category": "Treads",
+    "quantity": -197,
+    "description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Painted Black",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 11\" X 36\" Serrated Painted Black",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "painted_black",
+      "material": "carbon_steel",
+      "panelWidthIn": 11,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 2.75
+  },
+  {
+    "item_no": "T11X36",
+    "category": "Treads",
+    "quantity": -248,
+    "description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Treads unpainted",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 11\" X 36\" Serrated Treads unpainted",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 11,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 2.75
+  },
+  {
+    "item_no": "T10X48",
+    "category": "Treads",
+    "quantity": -35,
+    "description": "1-1/4 X 3/16 X -9-3/4 X48\" Serrated Treads",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X -9-3/4 X48\" Serrated Treads",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "medium",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [
+        "X -9-3/4 X48\""
+      ],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "T10x36G",
+    "category": "Treads",
+    "quantity": 63,
+    "description": "1-1/4 X 3/16 X10\" X 36\" Serrated Treads Galvanized",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X10\" X 36\" Serrated Treads Galvanized",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 10,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 2.5
+  },
+  {
+    "item_no": "T10X36B",
+    "category": "Treads",
+    "quantity": -52,
+    "description": "1-1/4X3/16X10\"X 36\" Serrated Treads Painted Black",
+    "parsed": {
+      "raw": "1-1/4X3/16X10\"X 36\" Serrated Treads Painted Black",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "painted_black",
+      "material": "carbon_steel",
+      "panelWidthIn": 10,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 2.5
+  },
+  {
+    "item_no": "T10x36",
+    "category": "Treads",
+    "quantity": 204,
+    "description": "1-1/4X3/16 X 10\" X 36\" Serrated Treads  Unpainted",
+    "parsed": {
+      "raw": "1-1/4X3/16 X 10\" X 36\" Serrated Treads  Unpainted",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 10,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 2.5
+  },
+  {
+    "item_no": "96P15W2",
+    "category": "Bar Grating",
+    "quantity": 10,
+    "description": "2-1/4 X 3/8 X 486mm X 20' 15W2   Smooth",
+    "parsed": {
+      "raw": "2-1/4 X 3/8 X 486mm X 20' 15W2   Smooth",
+      "kind": "bar_grating",
+      "barDepthIn": 2.25,
+      "barThicknessIn": 0.375,
+      "designation": "15W2",
+      "bearingBarSpacingIn": 0.9375,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 19.133858267716537,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 31.88976377952756
+  },
+  {
+    "item_no": "94P",
+    "category": "Bar Grating",
+    "quantity": 6,
+    "description": "2-1/4 X 1/4 X 3' X 24' 19W4",
+    "parsed": {
+      "raw": "2-1/4 X 1/4 X 3' X 24' 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 2.25,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "unknown",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": [
+        "surface not stated"
+      ]
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "93S",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "2-1/4 X 3/16 Serrated 19W4 Unpainted.",
+    "parsed": {
+      "raw": "2-1/4 X 3/16 Serrated 19W4 Unpainted.",
+      "kind": "bar_grating",
+      "barDepthIn": 2.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "86S",
+    "category": "Bar Grating",
+    "quantity": 7,
+    "description": "2\" X 3/8 Serrated",
+    "parsed": {
+      "raw": "2\" X 3/8 Serrated",
+      "kind": "bar_grating",
+      "barDepthIn": 2,
+      "barThicknessIn": 0.375,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "medium",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "86P",
+    "category": "Bar Grating",
+    "quantity": -3,
+    "description": "2\" X 3/8\" X 2' X 20' 19W4",
+    "parsed": {
+      "raw": "2\" X 3/8\" X 2' X 20' 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 2,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "unknown",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": [
+        "surface not stated"
+      ]
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "86 S",
+    "category": "Bar Grating",
+    "quantity": 4,
+    "description": "2\" X 3/8\" X2' X 20' Serrated 19W4 Bare.",
+    "parsed": {
+      "raw": "2\" X 3/8\" X2' X 20' Serrated 19W4 Bare.",
+      "kind": "bar_grating",
+      "barDepthIn": 2,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "84S",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "2\" X 1/4\" X 3' X 24' Serrtaed 19W4 Bare",
+    "parsed": {
+      "raw": "2\" X 1/4\" X 3' X 24' Serrtaed 19W4 Bare",
+      "kind": "bar_grating",
+      "barDepthIn": 2,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "84P",
+    "category": "Bar Grating",
+    "quantity": 16,
+    "description": "2\" X 1/4\" X 3' X 24'  SMOOTH  Bare 19W4",
+    "parsed": {
+      "raw": "2\" X 1/4\" X 3' X 24'  SMOOTH  Bare 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 2,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "83S",
+    "category": "Bar Grating",
+    "quantity": 9,
+    "description": "WPU194083324......2X3/16 19W4 Serrated  3X24 Bare",
+    "parsed": {
+      "raw": "WPU194083324......2X3/16 19W4 Serrated  3X24 Bare",
+      "kind": "bar_grating",
+      "barDepthIn": 2,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "WPU194083324"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "83P",
+    "category": "Bar Grating",
+    "quantity": 5,
+    "description": "2X3/16 19W4 Smooth 3'X24'",
+    "parsed": {
+      "raw": "2X3/16 19W4 Smooth 3'X24'",
+      "kind": "bar_grating",
+      "barDepthIn": 2,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "74 P",
+    "category": "Bar Grating",
+    "quantity": 10,
+    "description": "WNU194064324.....1-3/4 X1/4 19W4 PLAIN 3X24 UNP",
+    "parsed": {
+      "raw": "WNU194064324.....1-3/4 X1/4 19W4 PLAIN 3X24 UNP",
+      "kind": "bar_grating",
+      "barDepthIn": 1.75,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "WNU194064324"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "73S",
+    "category": "Bar Grating",
+    "quantity": 21,
+    "description": "1-3/4 X 3/16 Serrated  Bare 19W4",
+    "parsed": {
+      "raw": "1-3/4 X 3/16 Serrated  Bare 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1.75,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "73P",
+    "category": "Bar Grating",
+    "quantity": 21,
+    "description": "1-3/4 X 3/16 Smooth 19W4 Bare",
+    "parsed": {
+      "raw": "1-3/4 X 3/16 Smooth 19W4 Bare",
+      "kind": "bar_grating",
+      "barDepthIn": 1.75,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "66S",
+    "category": "Bar Grating",
+    "quantity": 19,
+    "description": "1-1/2 X 3/8 X 2' X 20' Serrated 19W4 Bare.",
+    "parsed": {
+      "raw": "1-1/2 X 3/8 X 2' X 20' Serrated 19W4 Bare.",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "66P",
+    "category": "Bar Grating",
+    "quantity": 12,
+    "description": "1-1/2 X 3/8 X 2' X 20' 19W4 Smooth Bare",
+    "parsed": {
+      "raw": "1-1/2 X 3/8 X 2' X 20' 19W4 Smooth Bare",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "64S",
+    "category": "Bar Grating",
+    "quantity": 16,
+    "description": "1-1/2 X 1/4 Serrated Unpainted",
+    "parsed": {
+      "raw": "1-1/2 X 1/4 Serrated Unpainted",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.25,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "medium",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "64P",
+    "category": "Bar Grating",
+    "quantity": 3,
+    "description": "1-1/2\" X 1/4\" X 3' X 24' Smooth 19W4",
+    "parsed": {
+      "raw": "1-1/2\" X 1/4\" X 3' X 24' Smooth 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "63SAL",
+    "category": "Bar Grating",
+    "quantity": 1,
+    "description": "1-1/2 X 3/16 X 3' X 24' Serrated Aluminium.",
+    "parsed": {
+      "raw": "1-1/2 X 3/16 X 3' X 24' Serrated Aluminium.",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "aluminum",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "medium",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "63S38W4",
+    "category": "Bar Grating",
+    "quantity": 6,
+    "description": "1-1/2 X 3/16 Serrated 38W4",
+    "parsed": {
+      "raw": "1-1/2 X 3/16 Serrated 38W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.1875,
+      "designation": "38W4",
+      "bearingBarSpacingIn": 2.375,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "63S",
+    "category": "Bar Grating",
+    "quantity": -64,
+    "description": "1-1/2X3/16 19W4 Serrated  3'X24'",
+    "parsed": {
+      "raw": "1-1/2X3/16 19W4 Serrated  3'X24'",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "63P",
+    "category": "Bar Grating",
+    "quantity": -41,
+    "description": "1-1/2X3/16 19W4  3'X24'  PLAIN UNP",
+    "parsed": {
+      "raw": "1-1/2X3/16 19W4  3'X24'  PLAIN UNP",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "63 SG",
+    "category": "Bar Grating",
+    "quantity": 4,
+    "description": "1-1/2X3/16 19W4 SERRATED 3'X24   GALVANIZED",
+    "parsed": {
+      "raw": "1-1/2X3/16 19W4 SERRATED 3'X24   GALVANIZED",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [
+        "3'X24"
+      ],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "63 PG",
+    "category": "Bar Grating",
+    "quantity": 20,
+    "description": "1-1/2X3/16 19W4 Smooth 3'X24'   Galvanized.",
+    "parsed": {
+      "raw": "1-1/2X3/16 19W4 Smooth 3'X24'   Galvanized.",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "62P",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "1-1/2X1/8 PLAIN 19W4 3X24",
+    "parsed": {
+      "raw": "1-1/2X1/8 PLAIN 19W4 3X24",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.125,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "62 S",
+    "category": "Bar Grating",
+    "quantity": 39,
+    "description": "1-1/2X1/8 SERR 19W4 3'X24'  UNP",
+    "parsed": {
+      "raw": "1-1/2X1/8 SERR 19W4 3'X24'  UNP",
+      "kind": "bar_grating",
+      "barDepthIn": 1.5,
+      "barThicknessIn": 0.125,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "56S",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "WPU194046220.....1X3/8 19W4 SERR 2X20 UNP",
+    "parsed": {
+      "raw": "WPU194046220.....1X3/8 19W4 SERR 2X20 UNP",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "WPU194046220"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "54P",
+    "category": "Bar Grating",
+    "quantity": 7,
+    "description": "1-1/4 X 1/4 19W4 Plain 3'X24' Unpainted.",
+    "parsed": {
+      "raw": "1-1/4 X 1/4 19W4 Plain 3'X24' Unpainted.",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "54 S",
+    "category": "Bar Grating",
+    "quantity": 10,
+    "description": "1-1/4 X 1/4 Serrated 19W4 Unpainted",
+    "parsed": {
+      "raw": "1-1/4 X 1/4 Serrated 19W4 Unpainted",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "53S38W4",
+    "category": "Bar Grating",
+    "quantity": -6,
+    "description": "1-1/4\" X 3/16 Serrated 38W4",
+    "parsed": {
+      "raw": "1-1/4\" X 3/16 Serrated 38W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "38W4",
+      "bearingBarSpacingIn": 2.375,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "53s19w2",
+    "category": "Bar Grating",
+    "quantity": 15,
+    "description": "1-1/4 X 3/16 Serrated 19W2",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 Serrated 19W2",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W2",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "53S",
+    "category": "Bar Grating",
+    "quantity": -906,
+    "description": "1-1/4X3/16  Serrated  19W4  3'X24'",
+    "parsed": {
+      "raw": "1-1/4X3/16  Serrated  19W4  3'X24'",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "53PG",
+    "category": "Bar Grating",
+    "quantity": 63,
+    "description": "1-1/4X3/16 Plain 19W4 3'X24' Galvanized.",
+    "parsed": {
+      "raw": "1-1/4X3/16 Plain 19W4 3'X24' Galvanized.",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "53p",
+    "category": "Bar Grating",
+    "quantity": 62,
+    "description": "1-1/4X3/16  SMOOTH 19W4 3'X24'",
+    "parsed": {
+      "raw": "1-1/4X3/16  SMOOTH 19W4 3'X24'",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "53ALS",
+    "category": "Bar Grating",
+    "quantity": 1,
+    "description": "1-1/4 X 3/16 X 3' X 24' Aluminium Serrated 19w4",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X 3' X 24' Aluminium Serrated 19w4",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "aluminum",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "53ALP",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "1-1/4 X 3/16 X3' X 20' Aluminium Smooth. 19W4",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X3' X 20' Aluminium Smooth. 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "aluminum",
+      "panelWidthIn": 36,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 60
+  },
+  {
+    "item_no": "53 SG",
+    "category": "Bar Grating",
+    "quantity": -74,
+    "description": "1-1/4X3/16 19W4 Serrated  3'X24' Galvanized.",
+    "parsed": {
+      "raw": "1-1/4X3/16 19W4 Serrated  3'X24' Galvanized.",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "52S",
+    "category": "Bar Grating",
+    "quantity": 43,
+    "description": "1-1/4X1/8 19W4 Serrated 3'X24'",
+    "parsed": {
+      "raw": "1-1/4X1/8 19W4 Serrated 3'X24'",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.125,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "52P",
+    "category": "Bar Grating",
+    "quantity": 37,
+    "description": "1-1/4X1/8 19W4 Smooth  3'X24' Bare",
+    "parsed": {
+      "raw": "1-1/4X1/8 19W4 Smooth  3'X24' Bare",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.125,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "46P",
+    "category": "Bar Grating",
+    "quantity": 16,
+    "description": "1\"X3/8\" X 2' X20' Smooth 19W4",
+    "parsed": {
+      "raw": "1\"X3/8\" X 2' X20' Smooth 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "46 P",
+    "category": "Bar Grating",
+    "quantity": 1,
+    "description": "1X3/8 19W4 Smooth 2'X20'",
+    "parsed": {
+      "raw": "1X3/8 19W4 Smooth 2'X20'",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "44S",
+    "category": "Bar Grating",
+    "quantity": 25,
+    "description": "1\" X 1/4\" Serrated 19W4 Unpainted",
+    "parsed": {
+      "raw": "1\" X 1/4\" Serrated 19W4 Unpainted",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unpainted",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "44P",
+    "category": "Bar Grating",
+    "quantity": 19,
+    "description": "1\" X 1/4\" X 3' X 24' Smooth 19W4",
+    "parsed": {
+      "raw": "1\" X 1/4\" X 3' X 24' Smooth 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "43SG",
+    "category": "Bar Grating",
+    "quantity": 33,
+    "description": "1X3/16 Serrated 19W4  Galvanized.",
+    "parsed": {
+      "raw": "1X3/16 Serrated 19W4  Galvanized.",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "43SALM",
+    "category": "Bar Grating",
+    "quantity": 2,
+    "description": "1\" X 3/16 Serrated Aluminium 3' X 24'",
+    "parsed": {
+      "raw": "1\" X 3/16 Serrated Aluminium 3' X 24'",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "aluminum",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "medium",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "43S38W4",
+    "category": "Bar Grating",
+    "quantity": 15,
+    "description": "1\" X 3/16 Serrated 38W4",
+    "parsed": {
+      "raw": "1\" X 3/16 Serrated 38W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.1875,
+      "designation": "38W4",
+      "bearingBarSpacingIn": 2.375,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "43S",
+    "category": "Bar Grating",
+    "quantity": -8,
+    "description": "1X3/16 19W4 Serrated 3X24 Bare.",
+    "parsed": {
+      "raw": "1X3/16 19W4 Serrated 3X24 Bare.",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "43PG",
+    "category": "Bar Grating",
+    "quantity": 45,
+    "description": "1\"X3/16\" PLAIN 19W4  Galvanized.",
+    "parsed": {
+      "raw": "1\"X3/16\" PLAIN 19W4  Galvanized.",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "43P",
+    "category": "Bar Grating",
+    "quantity": 2,
+    "description": "1X3/16 19W4 Smooth 3'X24' Bare.",
+    "parsed": {
+      "raw": "1X3/16 19W4 Smooth 3'X24' Bare.",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "42S",
+    "category": "Bar Grating",
+    "quantity": 17,
+    "description": "1X1/8 19W4 Serrated 3'X24' Bare",
+    "parsed": {
+      "raw": "1X1/8 19W4 Serrated 3'X24' Bare",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.125,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "42P",
+    "category": "Bar Grating",
+    "quantity": 129,
+    "description": "1X1/8 19W4 Smooth  3'X24' Bare.",
+    "parsed": {
+      "raw": "1X1/8 19W4 Smooth  3'X24' Bare.",
+      "kind": "bar_grating",
+      "barDepthIn": 1,
+      "barThicknessIn": 0.125,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "33P",
+    "category": "Bar Grating",
+    "quantity": 4,
+    "description": "3/4 X 3/16 Smooth 19W4 Bare 3' X 24'",
+    "parsed": {
+      "raw": "3/4 X 3/16 Smooth 19W4 Bare 3' X 24'",
+      "kind": "bar_grating",
+      "barDepthIn": 0.75,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "180S",
+    "category": "Bar Grating",
+    "quantity": 4,
+    "description": "4-1/2X3/8 19W4 Serrated  2X20 Bare.",
+    "parsed": {
+      "raw": "4-1/2X3/8 19W4 Serrated  2X20 Bare.",
+      "kind": "bar_grating",
+      "barDepthIn": 4.5,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "160S",
+    "category": "Bar Grating",
+    "quantity": 2,
+    "description": "4X3/8 19W4 Serrated  2' X 20'",
+    "parsed": {
+      "raw": "4X3/8 19W4 Serrated  2' X 20'",
+      "kind": "bar_grating",
+      "barDepthIn": 4,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "126S",
+    "category": "Bar Grating",
+    "quantity": 10,
+    "description": "3\" X 3/8 Serrated 19W4 2' X 20'",
+    "parsed": {
+      "raw": "3\" X 3/8 Serrated 19W4 2' X 20'",
+      "kind": "bar_grating",
+      "barDepthIn": 3,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "126P15W2",
+    "category": "Bar Grating",
+    "quantity": 4,
+    "description": "3\" X 3/8 X 486mm X 20'  15W2 Smooth",
+    "parsed": {
+      "raw": "3\" X 3/8 X 486mm X 20'  15W2 Smooth",
+      "kind": "bar_grating",
+      "barDepthIn": 3,
+      "barThicknessIn": 0.375,
+      "designation": "15W2",
+      "bearingBarSpacingIn": 0.9375,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 19.133858267716537,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 31.88976377952756
+  },
+  {
+    "item_no": "126P",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "3\" X 3/8 SMOOTH 19W4 2' X 20'",
+    "parsed": {
+      "raw": "3\" X 3/8 SMOOTH 19W4 2' X 20'",
+      "kind": "bar_grating",
+      "barDepthIn": 3,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "124S",
+    "category": "Bar Grating",
+    "quantity": 7,
+    "description": "3\" X 1/4\" X3' X 24'  Serrated 19W4",
+    "parsed": {
+      "raw": "3\" X 1/4\" X3' X 24'  Serrated 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 3,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "1238P",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "3\" X 3/8 X20' X 2' Smooth",
+    "parsed": {
+      "raw": "3\" X 3/8 X20' X 2' Smooth",
+      "kind": "bar_grating",
+      "barDepthIn": 3,
+      "barThicknessIn": 0.375,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 240,
+      "panelLengthIn": 24,
+      "confidence": "medium",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "104P",
+    "category": "Bar Grating",
+    "quantity": 7,
+    "description": "2-1/2\" X 1/4\" X 3' X 24' Smooth Bare 19W4",
+    "parsed": {
+      "raw": "2-1/2\" X 1/4\" X 3' X 24' Smooth Bare 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 2.5,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "104 S",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "2-1/2 X 1/4\" Serrated Bare 19W4",
+    "parsed": {
+      "raw": "2-1/2 X 1/4\" Serrated Bare 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 2.5,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "103S",
+    "category": "Bar Grating",
+    "quantity": 10,
+    "description": "2-1/2 X 3/16 Serrated bare 19W4 3' X 24'",
+    "parsed": {
+      "raw": "2-1/2 X 3/16 Serrated bare 19W4 3' X 24'",
+      "kind": "bar_grating",
+      "barDepthIn": 2.5,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "103P",
+    "category": "Bar Grating",
+    "quantity": 8,
+    "description": "2-1/2\" X 3/16 Plain 19W4 Bare",
+    "parsed": {
+      "raw": "2-1/2\" X 3/16 Plain 19W4 Bare",
+      "kind": "bar_grating",
+      "barDepthIn": 2.5,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "t4x36G",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "1-1/4X3/16X4\" X 36\" Serrated Galvanized Tread",
+    "parsed": {
+      "raw": "1-1/4X3/16X4\" X 36\" Serrated Galvanized Tread",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 4,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 1
+  },
+  {
+    "item_no": "t12x24",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "Tread Fabrication 1-1/4 x 3/16 x12-1/8 x 24\" Serrated Bare.",
+    "parsed": {
+      "raw": "Tread Fabrication 1-1/4 x 3/16 x12-1/8 x 24\" Serrated Bare.",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 8,
+      "panelLengthIn": 24,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "x12-1/"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 1.3333333333333333
+  },
+  {
+    "item_no": "T11X36SB",
+    "category": "Treads",
+    "quantity": 0,
+    "description": "1-1/4 X 3/16 TREADS 11 X 36 Serrated  BLK",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 TREADS 11 X 36 Serrated  BLK",
+      "kind": "tread",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "serrated",
+      "finish": "painted_black",
+      "material": "carbon_steel",
+      "panelWidthIn": 11,
+      "panelLengthIn": 36,
+      "confidence": "high",
+      "extracted": [
+        "kind",
+        "barDepthIn",
+        "barThicknessIn",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 2.75
+  },
+  {
+    "item_no": "pblk",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "Painted BLACK.",
+    "parsed": {
+      "raw": "Painted BLACK.",
+      "kind": "bar_grating",
+      "barDepthIn": null,
+      "barThicknessIn": null,
+      "designation": null,
+      "bearingBarSpacingIn": null,
+      "surface": "unknown",
+      "finish": "painted_black",
+      "material": "unknown",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "none",
+      "extracted": [
+        "finish"
+      ],
+      "unparsedTokens": [],
+      "warnings": [
+        "non-product or fabrication note without geometry",
+        "missing bearing bar depth and/or thickness"
+      ]
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "fab166s",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "Fabrication 4\" X 3/8\" Serrated 19W4 ( pcs)",
+    "parsed": {
+      "raw": "Fabrication 4\" X 3/8\" Serrated 19W4 ( pcs)",
+      "kind": "bar_grating",
+      "barDepthIn": 4,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": null,
+      "panelLengthIn": null,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": null
+  },
+  {
+    "item_no": "74P",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "1-3/4\" X 1/4\" Smooth 3' X 24'  19W4",
+    "parsed": {
+      "raw": "1-3/4\" X 1/4\" Smooth 3' X 24'  19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 1.75,
+      "barThicknessIn": 0.25,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "53sb",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "1-1/4 X 3/16 X3' X24' Serrated 19w4 Painted Black.",
+    "parsed": {
+      "raw": "1-1/4 X 3/16 X3' X24' Serrated 19w4 Painted Black.",
+      "kind": "bar_grating",
+      "barDepthIn": 1.25,
+      "barThicknessIn": 0.1875,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "painted_black",
+      "material": "carbon_steel",
+      "panelWidthIn": 36,
+      "panelLengthIn": 288,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 72
+  },
+  {
+    "item_no": "106S",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "2-1/2\" X 3/8 X 2' X 20' Serrated Bare19W4",
+    "parsed": {
+      "raw": "2-1/2\" X 3/8 X 2' X 20' Serrated Bare19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 2.5,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "serrated",
+      "finish": "bare",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "finish",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  },
+  {
+    "item_no": "106P",
+    "category": "Bar Grating",
+    "quantity": 0,
+    "description": "2-1/2\" X 3/8 X 2' X 20' Smooth 19W4",
+    "parsed": {
+      "raw": "2-1/2\" X 3/8 X 2' X 20' Smooth 19W4",
+      "kind": "bar_grating",
+      "barDepthIn": 2.5,
+      "barThicknessIn": 0.375,
+      "designation": "19W4",
+      "bearingBarSpacingIn": 1.1875,
+      "surface": "smooth",
+      "finish": "unknown",
+      "material": "carbon_steel",
+      "panelWidthIn": 24,
+      "panelLengthIn": 240,
+      "confidence": "high",
+      "extracted": [
+        "barDepthIn",
+        "barThicknessIn",
+        "designation",
+        "surface",
+        "material_default",
+        "panelWidthIn",
+        "panelLengthIn"
+      ],
+      "unparsedTokens": [
+        "X"
+      ],
+      "warnings": []
+    },
+    "area_sqft": 40
+  }
+]

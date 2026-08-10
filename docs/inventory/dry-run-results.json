@@ -1,0 +1,900 @@
+{
+  "workbookPath": "C:\\Users\\hvine\\Projects\\eryxon-flow\\data\\inventory\\BarInventory.xlsx",
+  "focus_row_count": 85,
+  "byConfidence": {
+    "high": 75,
+    "medium": 9,
+    "low": 0,
+    "none": 1
+  },
+  "fieldHits": {
+    "barDepthIn": 84,
+    "barThicknessIn": 84,
+    "designation": 63,
+    "surface": 79,
+    "finish": 39,
+    "material": 84,
+    "panelWidthIn": 66,
+    "panelLengthIn": 66
+  },
+  "failures": [
+    {
+      "sheet_row": 191,
+      "item_no": "pblk",
+      "category": "Bar Grating",
+      "description": "Painted BLACK.",
+      "confidence": "none",
+      "warnings": [
+        "non-product or fabrication note without geometry",
+        "missing bearing bar depth and/or thickness"
+      ]
+    }
+  ],
+  "negatives": [
+    {
+      "item_no": "T4x48",
+      "quantity": -18,
+      "description": "1-1/4 X 3/16 X 97mm X 1219mm Stair Treads"
+    },
+    {
+      "item_no": "T4x36",
+      "quantity": -133,
+      "description": "1-1/4 X 3/16 X 97mm X 914mm Stair Treads"
+    },
+    {
+      "item_no": "T12X36G",
+      "quantity": -2118,
+      "description": "1-1/4 X 3/16 X 12\"  X  36\" Serrated Galvanized Stair Treads"
+    },
+    {
+      "item_no": "T12X36B",
+      "quantity": -445,
+      "description": "1-1/4 X 3/16  X 308mm X 914mm Serrated Treads Painted Black"
+    },
+    {
+      "item_no": "T11X48",
+      "quantity": -197,
+      "description": "1-1/4 X 3/16 X 10-15/16 X 48\" Serrated Treads"
+    },
+    {
+      "item_no": "T11x36G",
+      "quantity": -74,
+      "description": "1-1/4 X 3/16 X 11\" X 36\"  Serrated Galvanized"
+    },
+    {
+      "item_no": "T11X36B",
+      "quantity": -197,
+      "description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Painted Black"
+    },
+    {
+      "item_no": "T11X36",
+      "quantity": -248,
+      "description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Treads unpainted"
+    },
+    {
+      "item_no": "T10X48",
+      "quantity": -35,
+      "description": "1-1/4 X 3/16 X -9-3/4 X48\" Serrated Treads"
+    },
+    {
+      "item_no": "T10X36B",
+      "quantity": -52,
+      "description": "1-1/4X3/16X10\"X 36\" Serrated Treads Painted Black"
+    },
+    {
+      "item_no": "86P",
+      "quantity": -3,
+      "description": "2\" X 3/8\" X 2' X 20' 19W4"
+    },
+    {
+      "item_no": "63S",
+      "quantity": -64,
+      "description": "1-1/2X3/16 19W4 Serrated  3'X24'"
+    },
+    {
+      "item_no": "63P",
+      "quantity": -41,
+      "description": "1-1/2X3/16 19W4  3'X24'  PLAIN UNP"
+    },
+    {
+      "item_no": "53S38W4",
+      "quantity": -6,
+      "description": "1-1/4\" X 3/16 Serrated 38W4"
+    },
+    {
+      "item_no": "53S",
+      "quantity": -906,
+      "description": "1-1/4X3/16  Serrated  19W4  3'X24'"
+    },
+    {
+      "item_no": "53 SG",
+      "quantity": -74,
+      "description": "1-1/4X3/16 19W4 Serrated  3'X24' Galvanized."
+    },
+    {
+      "item_no": "43S",
+      "quantity": -8,
+      "description": "1X3/16 19W4 Serrated 3X24 Bare."
+    }
+  ],
+  "would_insert_sample": [
+    {
+      "sheet_row": 11,
+      "sku": "T4X48",
+      "source_item_no": "T4x48",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 97mm X 1219mm Stair Treads",
+      "qty_on_hand": -18,
+      "area_sqft": 1.272757059403008,
+      "parse_confidence": "medium",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 97mm X 1219mm Stair Treads",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "unknown",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 3.818897637795276,
+        "panelLengthIn": 47.99212598425197,
+        "confidence": "medium",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 12,
+      "sku": "T4X36",
+      "source_item_no": "T4x36",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 97mm X 914mm Stair Treads",
+      "qty_on_hand": -133,
+      "area_sqft": 0.9543067697246508,
+      "parse_confidence": "medium",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 97mm X 914mm Stair Treads",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "unknown",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 3.818897637795276,
+        "panelLengthIn": 35.98425196850394,
+        "confidence": "medium",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 13,
+      "sku": "T12X48",
+      "source_item_no": "T12X48",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 308mm X 1219mm Stair Treads.",
+      "qty_on_hand": 231,
+      "area_sqft": 4.041331693774499,
+      "parse_confidence": "medium",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 308mm X 1219mm Stair Treads.",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "unknown",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 12.125984251968505,
+        "panelLengthIn": 47.99212598425197,
+        "confidence": "medium",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 14,
+      "sku": "T12X36G",
+      "source_item_no": "T12X36G",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 12\"  X  36\" Serrated Galvanized Stair Treads",
+      "qty_on_hand": -2118,
+      "area_sqft": 3,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 12\"  X  36\" Serrated Galvanized Stair Treads",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 12,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 15,
+      "sku": "T12X36B",
+      "source_item_no": "T12X36B",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16  X 308mm X 914mm Serrated Treads Painted Black",
+      "qty_on_hand": -445,
+      "area_sqft": 3.030169949228788,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16  X 308mm X 914mm Serrated Treads Painted Black",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "painted_black",
+        "material": "carbon_steel",
+        "panelWidthIn": 12.125984251968505,
+        "panelLengthIn": 35.98425196850394,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "finish",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 16,
+      "sku": "T12X36",
+      "source_item_no": "T12X36",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 12\" X  36\" Serrated Stair Treads  19W4 UNP",
+      "qty_on_hand": 181,
+      "area_sqft": 3,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 12\" X  36\" Serrated Stair Treads  19W4 UNP",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": "19W4",
+        "bearingBarSpacingIn": 1.1875,
+        "surface": "serrated",
+        "finish": "unpainted",
+        "material": "carbon_steel",
+        "panelWidthIn": 12,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "designation",
+          "surface",
+          "finish",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 17,
+      "sku": "T11X48",
+      "source_item_no": "T11X48",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 10-15/16 X 48\" Serrated Treads",
+      "qty_on_hand": -197,
+      "area_sqft": 5.333333333333333,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 10-15/16 X 48\" Serrated Treads",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 16,
+        "panelLengthIn": 48,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X 10-15/"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 18,
+      "sku": "T11X36G",
+      "source_item_no": "T11x36G",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 11\" X 36\"  Serrated Galvanized",
+      "qty_on_hand": -74,
+      "area_sqft": 2.75,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 11\" X 36\"  Serrated Galvanized",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 11,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 19,
+      "sku": "T11X36B",
+      "source_item_no": "T11X36B",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Painted Black",
+      "qty_on_hand": -197,
+      "area_sqft": 2.75,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 11\" X 36\" Serrated Painted Black",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "painted_black",
+        "material": "carbon_steel",
+        "panelWidthIn": 11,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "finish",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 20,
+      "sku": "T11X36",
+      "source_item_no": "T11X36",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X 11\" X 36\" Serrated Treads unpainted",
+      "qty_on_hand": -248,
+      "area_sqft": 2.75,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X 11\" X 36\" Serrated Treads unpainted",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unpainted",
+        "material": "carbon_steel",
+        "panelWidthIn": 11,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "finish",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 21,
+      "sku": "T10X48",
+      "source_item_no": "T10X48",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X -9-3/4 X48\" Serrated Treads",
+      "qty_on_hand": -35,
+      "area_sqft": null,
+      "parse_confidence": "medium",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X -9-3/4 X48\" Serrated Treads",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": null,
+        "panelLengthIn": null,
+        "confidence": "medium",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "material_default"
+        ],
+        "unparsedTokens": [
+          "X -9-3/4 X48\""
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 22,
+      "sku": "T10X36G",
+      "source_item_no": "T10x36G",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4 X 3/16 X10\" X 36\" Serrated Treads Galvanized",
+      "qty_on_hand": 63,
+      "area_sqft": 2.5,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4 X 3/16 X10\" X 36\" Serrated Treads Galvanized",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 10,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 23,
+      "sku": "T10X36B",
+      "source_item_no": "T10X36B",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4X3/16X10\"X 36\" Serrated Treads Painted Black",
+      "qty_on_hand": -52,
+      "area_sqft": 2.5,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4X3/16X10\"X 36\" Serrated Treads Painted Black",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "painted_black",
+        "material": "carbon_steel",
+        "panelWidthIn": 10,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "finish",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 24,
+      "sku": "T10X36",
+      "source_item_no": "T10x36",
+      "category": "Treads",
+      "kind": "tread",
+      "raw_description": "1-1/4X3/16 X 10\" X 36\" Serrated Treads  Unpainted",
+      "qty_on_hand": 204,
+      "area_sqft": 2.5,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "1-1/4X3/16 X 10\" X 36\" Serrated Treads  Unpainted",
+        "kind": "tread",
+        "barDepthIn": 1.25,
+        "barThicknessIn": 0.1875,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unpainted",
+        "material": "carbon_steel",
+        "panelWidthIn": 10,
+        "panelLengthIn": 36,
+        "confidence": "high",
+        "extracted": [
+          "kind",
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "finish",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 118,
+      "sku": "96P15W2",
+      "source_item_no": "96P15W2",
+      "category": "Bar Grating",
+      "kind": "bar_grating",
+      "raw_description": "2-1/4 X 3/8 X 486mm X 20' 15W2   Smooth",
+      "qty_on_hand": 10,
+      "area_sqft": 31.88976377952756,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "2-1/4 X 3/8 X 486mm X 20' 15W2   Smooth",
+        "kind": "bar_grating",
+        "barDepthIn": 2.25,
+        "barThicknessIn": 0.375,
+        "designation": "15W2",
+        "bearingBarSpacingIn": 0.9375,
+        "surface": "smooth",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 19.133858267716537,
+        "panelLengthIn": 240,
+        "confidence": "high",
+        "extracted": [
+          "barDepthIn",
+          "barThicknessIn",
+          "designation",
+          "surface",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 119,
+      "sku": "94P",
+      "source_item_no": "94P",
+      "category": "Bar Grating",
+      "kind": "bar_grating",
+      "raw_description": "2-1/4 X 1/4 X 3' X 24' 19W4",
+      "qty_on_hand": 6,
+      "area_sqft": 72,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "2-1/4 X 1/4 X 3' X 24' 19W4",
+        "kind": "bar_grating",
+        "barDepthIn": 2.25,
+        "barThicknessIn": 0.25,
+        "designation": "19W4",
+        "bearingBarSpacingIn": 1.1875,
+        "surface": "unknown",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 36,
+        "panelLengthIn": 288,
+        "confidence": "high",
+        "extracted": [
+          "barDepthIn",
+          "barThicknessIn",
+          "designation",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": [
+          "surface not stated"
+        ]
+      }
+    },
+    {
+      "sheet_row": 120,
+      "sku": "93S",
+      "source_item_no": "93S",
+      "category": "Bar Grating",
+      "kind": "bar_grating",
+      "raw_description": "2-1/4 X 3/16 Serrated 19W4 Unpainted.",
+      "qty_on_hand": 0,
+      "area_sqft": null,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "2-1/4 X 3/16 Serrated 19W4 Unpainted.",
+        "kind": "bar_grating",
+        "barDepthIn": 2.25,
+        "barThicknessIn": 0.1875,
+        "designation": "19W4",
+        "bearingBarSpacingIn": 1.1875,
+        "surface": "serrated",
+        "finish": "unpainted",
+        "material": "carbon_steel",
+        "panelWidthIn": null,
+        "panelLengthIn": null,
+        "confidence": "high",
+        "extracted": [
+          "barDepthIn",
+          "barThicknessIn",
+          "designation",
+          "surface",
+          "finish",
+          "material_default"
+        ],
+        "unparsedTokens": [],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 121,
+      "sku": "86S",
+      "source_item_no": "86S",
+      "category": "Bar Grating",
+      "kind": "bar_grating",
+      "raw_description": "2\" X 3/8 Serrated",
+      "qty_on_hand": 7,
+      "area_sqft": null,
+      "parse_confidence": "medium",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "2\" X 3/8 Serrated",
+        "kind": "bar_grating",
+        "barDepthIn": 2,
+        "barThicknessIn": 0.375,
+        "designation": null,
+        "bearingBarSpacingIn": null,
+        "surface": "serrated",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": null,
+        "panelLengthIn": null,
+        "confidence": "medium",
+        "extracted": [
+          "barDepthIn",
+          "barThicknessIn",
+          "surface",
+          "material_default"
+        ],
+        "unparsedTokens": [],
+        "warnings": []
+      }
+    },
+    {
+      "sheet_row": 122,
+      "sku": "86P",
+      "source_item_no": "86P",
+      "category": "Bar Grating",
+      "kind": "bar_grating",
+      "raw_description": "2\" X 3/8\" X 2' X 20' 19W4",
+      "qty_on_hand": -3,
+      "area_sqft": 40,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "2\" X 3/8\" X 2' X 20' 19W4",
+        "kind": "bar_grating",
+        "barDepthIn": 2,
+        "barThicknessIn": 0.375,
+        "designation": "19W4",
+        "bearingBarSpacingIn": 1.1875,
+        "surface": "unknown",
+        "finish": "unknown",
+        "material": "carbon_steel",
+        "panelWidthIn": 24,
+        "panelLengthIn": 240,
+        "confidence": "high",
+        "extracted": [
+          "barDepthIn",
+          "barThicknessIn",
+          "designation",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": [
+          "surface not stated"
+        ]
+      }
+    },
+    {
+      "sheet_row": 123,
+      "sku": "86-S",
+      "source_item_no": "86 S",
+      "category": "Bar Grating",
+      "kind": "bar_grating",
+      "raw_description": "2\" X 3/8\" X2' X 20' Serrated 19W4 Bare.",
+      "qty_on_hand": 4,
+      "area_sqft": 40,
+      "parse_confidence": "high",
+      "structurally_usable": true,
+      "parsed": {
+        "raw": "2\" X 3/8\" X2' X 20' Serrated 19W4 Bare.",
+        "kind": "bar_grating",
+        "barDepthIn": 2,
+        "barThicknessIn": 0.375,
+        "designation": "19W4",
+        "bearingBarSpacingIn": 1.1875,
+        "surface": "serrated",
+        "finish": "bare",
+        "material": "carbon_steel",
+        "panelWidthIn": 24,
+        "panelLengthIn": 240,
+        "confidence": "high",
+        "extracted": [
+          "barDepthIn",
+          "barThicknessIn",
+          "designation",
+          "surface",
+          "finish",
+          "material_default",
+          "panelWidthIn",
+          "panelLengthIn"
+        ],
+        "unparsedTokens": [
+          "X"
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "would_insert_count": 85
+}
