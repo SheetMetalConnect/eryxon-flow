@@ -2,6 +2,27 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.9.2] — 2026-08-24
+
+### Fixed
+
+- **Test suite runs green on Node 22+.** Node defines a `localStorage` accessor
+  on `globalThis` that stays unusable without `--localstorage-file`, and Vitest's
+  jsdom environment skips globals that already exist — so jsdom's own Storage
+  never landed and `window.localStorage` read back `undefined`. Two `OperatorView`
+  tests failed on it. `src/test/setup.ts` now installs an in-memory `Storage`
+  whenever the runtime's `localStorage` is unusable. 984 tests pass.
+
+### Changed
+
+- **`package.json` is the single version source and matches the changelog again.**
+  It had been left at `0.8.5` through the 0.9.0 and 0.9.1 releases. Releases are
+  tagged: `v0.9.1` on the Community/Premium split, `v0.9.2` here.
+- **`package-lock.json` regenerated.** It still carried the whole Capacitor /
+  Ionic native tree that 0.9.1 dropped from `package.json`, and its own
+  `version`/`license` fields still read `0.6.0` / `Apache-2.0`. Build and tests
+  verified after the prune.
+
 ## [0.9.1] — 2026-07-05
 
 ### Changed

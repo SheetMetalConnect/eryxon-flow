@@ -55,3 +55,37 @@ windowRef.scrollTo = vi.fn();
 afterEach(() => {
   vi.clearAllMocks();
 });
+
+// Node >= 22 defines a `localStorage` accessor on globalThis that throws unless
+// the process was started with --localstorage-file. Vitest's jsdom environment
+// skips globals that already exist, so jsdom's own Storage never lands and
+// `window.localStorage` reads back undefined. Install an in-memory Storage when
+// the runtime's is unusable; jsdom's sessionStorage is left alone.
+const localStorageUsable = (() => {
+  try {
+    return typeof (windowRef as Window).localStorage?.getItem === 'function';
+  } catch {
+    return false;
+  }
+})();
+
+if (!localStorageUsable) {
+  const store = new Map<string, string>();
+  const memoryStorage: Storage = {
+    get length() {
+      return store.size;
+    },
+    key: (index: number) => Array.from(store.keys())[index] ?? null,
+    getItem: (key: string) => store.get(String(key)) ?? null,
+    setItem: (key: string, value: string) => void store.set(String(key), String(value)),
+    removeItem: (key: string) => void store.delete(String(key)),
+    clear: () => store.clear(),
+  };
+  for (const target of new Set<object>([windowRef, globalThis])) {
+    Object.defineProperty(target, 'localStorage', {
+      configurable: true,
+      writable: true,
+      value: memoryStorage,
+    });
+  }
+}
