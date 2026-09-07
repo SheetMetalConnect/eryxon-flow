@@ -97,7 +97,7 @@ The default build is a regular responsive website. Phone, tablet, and desktop us
 
 Set `VITE_ENABLE_PWA=true` at build time to enable the install manifest and service worker. For Docker, pass `--build-arg VITE_ENABLE_PWA=true` when building a custom image; setting it on an already-built container does not enable PWA support.
 
-With PWA enabled, use your browser's install action or Safari's **Add to Home Screen**. The service worker caches the app shell and fonts; manufacturing data and production actions require a backend connection. A new version offers **Reload** or **Later**, so an update does not interrupt a shift. Returning to a disabled build unregisters only the app's own worker when that build loads.
+With PWA enabled, use your browser's install action or Safari's **Add to Home Screen**. The service worker caches the app shell and fonts; manufacturing data and production actions require a backend connection. A new version offers **Reload** or **Later**, so an update does not interrupt a shift. A disabled build retires the old app worker on its next update without forcing open pages to reload.
 
 ### Regenerating PWA icons
 

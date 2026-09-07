@@ -17,8 +17,9 @@ preview locally with `npm run build` followed by `npm run preview`.
 
 ## Optional PWA
 
-The default build omits the install manifest link and does not generate or register
-an app service worker. To enable PWA support:
+The default build omits the install manifest link and does not register a caching
+service worker. It serves a small retirement worker at the old `sw.js` URL so
+previously installed clients can leave the cached version. To enable PWA support:
 
 ```sh
 VITE_ENABLE_PWA=true npm run build
@@ -40,9 +41,10 @@ For an enabled build, verify the following over HTTPS or localhost:
   actions still require a backend connection; there is no offline write queue.
 - A newer build offers Reload and Later. Only Reload activates the waiting worker.
 
-When a disabled build loads, it unregisters only this app's `sw.js`, leaving other
-registrations and caches intact. Existing controlled tabs complete their current
-lifecycle before the change takes effect on subsequent navigation or reload.
+On the browser's next service-worker update, the retirement worker replaces the
+old caching worker and unregisters itself. It does not navigate open pages or delete
+caches. The next navigation or reload reaches the new web build. The disabled app
+also unregisters its own worker when loaded, leaving unrelated registrations intact.
 
 ## Deployment verification
 

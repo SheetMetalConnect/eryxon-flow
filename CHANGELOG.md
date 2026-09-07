@@ -6,15 +6,16 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Changed
 
-- PR feedback snapshots now show the commit covered by each submitted review and
-  distinguish structural checks from completed reviewer feedback.
+- PR feedback snapshots now record requested reviewers and the commit covered by
+  each submitted review, and distinguish structural checks from completed feedback.
 - Database CI starts only PostgreSQL; clean migration replay, tenant isolation,
   verified operator sessions, and concurrency checks retain the same coverage.
 - Updated deployment documentation for Node 22, explicit releases, immutable image
   digests, and the default responsive web build. Custom Docker builds now accept
   `VITE_ENABLE_PWA=true`; changing runtime configuration does not enable PWA support.
   Removed the obsolete self-hosting script that rewrote configuration and repaired
-  migration history during setup.
+  migration history during setup. Operator routing and screen guidance now live in
+  the website manual; contributor documentation retains implementation patterns.
 - Community uses one responsive web interface for phones, tablets, and desktops.
   Legacy `/m` links redirect to the shared operator routes, including operation
   details and issue reporting. Removed duplicated mobile pages, shells, styling,
@@ -78,7 +79,8 @@ All notable changes to Eryxon Flow are documented here.
 - Container health checks use the IPv4 listener explicitly, fixing false failures
   when `localhost` resolves to IPv6.
 - Clean database setup tolerates the optional historical signup notification
-  trigger. Documentation type checking now passes after removing a dead script
+  trigger through a documented replay compatibility exception; existing applied
+  migrations and tenant trial dates are not rerun. Documentation type checking now passes after removing a dead script
   and correcting component/DOM types.
 
 ### Upgrade notes

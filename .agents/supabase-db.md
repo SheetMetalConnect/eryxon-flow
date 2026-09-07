@@ -47,7 +47,7 @@ src/integrations/supabase/   # Generated types and client setup
 
 ## Conventions
 
-1. **Migrations** — Always create new timestamped migration files, never modify existing ones
+1. **Migrations** — Create new timestamped files for schema and data changes; do not modify applied migrations. The sole historical replay exception is the [optional-trigger guard in `20260525130000`](../supabase/migrations/README.md#compatibility-exception-20260525130000).
 2. **RLS Policies** — Every table MUST have RLS enabled with appropriate policies for tenant isolation
 3. **Naming** — Use snake_case for tables/columns, match existing patterns
 4. **Types** — After schema changes, regenerate TypeScript types with `npx supabase gen types typescript`

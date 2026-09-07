@@ -3,7 +3,38 @@ title: Operator Manual
 description: How to use Eryxon Flow as an operator — work queue, terminal, time tracking.
 ---
 
-This manual covers everything you need to work with Eryxon Flow on the shop floor. Two main interfaces exist: the **Work Queue** for desktop use and the **Terminal** for dedicated workstation screens. Both show the same work — just presented differently.
+Use the same operator interface on a phone, tablet, or desktop. The **Work Queue**
+shows operations across cells; the **Terminal** focuses on the cell selected for
+your workstation. Both provide operation details and time tracking.
+
+## Navigation and screen layout
+
+Use the operator navigation to open these views:
+
+| View | Address | Purpose |
+| --- | --- | --- |
+| Work Queue | `/operator/work-queue` | Find operations across cells; use the scan button to open scanner input. |
+| Terminal View | `/operator/view` | Work from the queues for a selected cell. |
+| My Activity | `/operator/my-activity` | Review your recorded work. |
+| My Issues | `/operator/my-issues` | Review the issues you reported. |
+
+Shared operation links open `/operator/operations/<operation-id>`. Previously saved
+`/m` links redirect to the corresponding operator view, preserving operation IDs
+and URL parameters. A saved scan shortcut still opens scanner input.
+
+In the Work Queue, cell columns sit side by side on wider screens and stack
+vertically on narrow screens. In the Terminal, screens narrower than 768 pixels
+show one pane at a time: select an operation to open its details, then tap **Back**
+to return to the queue. Wider screens show the queue alongside the detail pane,
+which you can collapse.
+
+```mermaid
+flowchart LR
+  Q[Terminal queue on a narrow screen] -->|Select operation| D[Operation details]
+  D -->|Back| Q
+```
+
+For optional app installation, see [PWA setup and verification](/guides/self-hosting/#optional-pwa-verification).
 
 ## Work Queue (Kanban)
 
@@ -38,7 +69,7 @@ If you see nothing: check that your filters are cleared. If still empty, no work
 
 ### Detail panel
 
-Click any card to open the detail panel on the right side. Here you see:
+Select a card to open its operation details. Here you see:
 
 - Full part information (customer, quantity, material)
 - Complete routing — every operation in sequence, shown as a visual flow through cells
@@ -86,7 +117,7 @@ Operations show a backlog label when deadlines are near:
 
 ### Detail sidebar
 
-Tap any operation to open the sidebar on the right:
+Select an operation to open its details:
 
 - **3D viewer** — rotate and zoom the part model (if a STEP file is attached)
 - **PDF viewer** — view the technical drawing

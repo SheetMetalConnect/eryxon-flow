@@ -114,9 +114,10 @@ old `/m` links remain supported. Cached assets allow the shell to render offline
 but manufacturing data and production actions require a backend connection. Updates
 offer Reload or Later, with no forced reload during an active session.
 
-When a disabled build loads, it unregisters only the app's own worker and leaves
-unrelated registrations and caches intact. Already controlled tabs finish their
-current lifecycle before switching on a later navigation or reload.
+A disabled build serves a retirement worker at the old `sw.js` URL. When the browser
+checks for a worker update, it replaces the old caching worker and unregisters
+itself. It does not reload open pages or delete caches. The next navigation reaches
+the new web build; unrelated registrations remain intact.
 
 ## HTTPS and backend connectivity
 
