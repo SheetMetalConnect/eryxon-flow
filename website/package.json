@@ -28,7 +28,7 @@
     "@astrojs/check": "^0.9.9",
     "astro-vtbot": "^2.1.11",
     "tailwindcss": "^4.1.17",
-    "typescript": "^5.9.3"
+    "typescript": "^7.0.2"
   },
   "overrides": {
     "yaml": "2.8.4"
