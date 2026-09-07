@@ -14,7 +14,7 @@ High code quality is non-negotiable. Use these skills as part of normal work, no
 - **Superpowers**: `systematic-debugging` (root cause before any fix), `test-driven-development` (test-first for features/bugfixes), `verification-before-completion` (run the command and show real output before claiming done), `requesting-code-review` before merge.
 
 Standing bar (enforced, not optional):
-- **No hardcoded config in this open-source code** — no vendor domains, URLs, secrets, or environment-specific values in source. Config comes from env vars (e.g. `ALLOWED_ORIGIN`); keep hosted and self-hosted modes cleanly separated.
+- **No hardcoded config in this source-available code** — no vendor domains, URLs, secrets, or environment-specific values in source. Config comes from env vars (e.g. `ALLOWED_ORIGIN`); keep hosted and self-hosted modes cleanly separated.
 - **i18n for all UI text** (EN/NL/DE) — never hardcode user-facing strings.
 - **`npm run build` and `npm run test:run` green before commit.** Verify, don't assume.
 

@@ -3,7 +3,7 @@
  *
  * SOURCE OF TRUTH PRECEDENCE
  *   1. External design package `Eryxon Design System (1).zip` (canonical archive on ERY-49).
- *   2. `docs/website/canonical-astro-website-ux-spec.md` (ERY-52) — translates the package into
+ *   2. `website/strategy/canonical-astro-website-ux-spec.md` (ERY-52) — translates the package into
  *      website rules. This file encodes that spec as CSS custom properties.
  *   3. The legacy repo-local mirror (`src/content/docs/architecture/design-{tokens,principles,
  *      components}.md`) describes the RETIRED gradient/glass/orb dark-first era and DOES NOT win
