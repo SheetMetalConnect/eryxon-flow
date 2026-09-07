@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>Source-available Planning & Shop Floor Execution for Job Shops</strong>
+  <strong>Planning and shop floor execution for metalworking job shops</strong>
 </p>
 
 <p align="center">
@@ -21,13 +21,15 @@
 
 ---
 
-Eryxon Flow is a source-available MES for metalworking job shops. It runs as a self-hosted platform and installs as a desktop app straight from your browser, no Electron or extra runtime. It's licensed under the Business Source License 1.1: read the source, modify it, and self-host the **Community** edition free for a single workshop.
+Eryxon Flow is a manufacturing execution system for metalworking job shops: sheet metal, machine shops, custom fabrication. It is built for **high-mix, low-volume** production, where thousands of unique parts move through cutting, bending, welding and assembly and nobody has time to chase paper.
 
-Track jobs through production, give operators tablet-friendly work queues, view 3D CAD models in the browser, and connect it to your ERP or planning system.
+**For planners and managers** it gives one live view of every job, part and operation in production, with QRM capacity signals, issue tracking and a browser-based 3D viewer for STEP files.
 
-See the [Architecture docs](docs/ARCHITECTURE.md) to learn how it fits together, and the [Changelog](CHANGELOG.md) for what's new.
+**For operators** it gives a touch-friendly work queue on any tablet, kiosk or phone: clock in with a PIN, see what is next, record what happened.
 
-Built for **high-mix, low-volume** production: sheet metal, machine shops, custom fabrication. If you're tracking thousands of unique parts through cutting, bending, welding, and assembly, this is for you.
+**For the systems around it** it offers a REST API, webhooks, MQTT and an MCP server, so your ERP or planning tool stays the system of record.
+
+Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). See [Architecture](docs/ARCHITECTURE.md) for how it fits together and the [Changelog](CHANGELOG.md) for what is new.
 
 ## Features
 
@@ -55,7 +57,6 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 - Multi-language (English, Dutch, German)
 - Multi-tenant SaaS with row-level security
 - Self-hostable via Docker Compose
-- Business Source License 1.1 — source-available, free to self-host for a single workshop
 
 ## Quick Start
 
@@ -166,7 +167,7 @@ Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and rep
 
 ### Knowledge Graph (OpenTrace)
 
-The codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace). The current local index reports 1,019 functions, 45 classes, 822 files, 144 directories, 143 packages, and 3,341 graph edges for AI-assisted development.
+The codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace) for AI-assisted development.
 
 ```bash
 pip install opentraceai          # One-time install
