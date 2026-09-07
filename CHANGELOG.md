@@ -16,9 +16,12 @@ All notable changes to Eryxon Flow are documented here.
 - Releases use one manually dispatched workflow, stable SemVer, matching package
   and lockfile versions, changelog notes, versioned images, and recorded digests.
   Production deployment is optional, verifies its target, waits for health, and
-  restores the previous app image on failure. Removed the competing publisher.
+  restores the previous app image on failure. Removed the competing publisher
+  and disabled automatic Vercel production deployment from `main`; previews remain
+  available while migrations and frontend rollout are coordinated.
 - CI checks the referenced TypeScript projects, application tests and build,
-  Edge tests, documentation, clean database migrations, tenant isolation, and
+  all Edge entrypoint type checks and tests, documentation, clean database
+  migrations, tenant isolation, and
   concurrent production actions. The former root `tsc --noEmit` checked no files.
 - Added a persistent PR feedback loop covering late comments, unresolved threads,
   current-head checks, and changes during review. CodeRabbit is configured for

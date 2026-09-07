@@ -27,7 +27,8 @@
     "test:edge": "deno test --allow-env --allow-read --config supabase/functions/deno.json supabase/functions/",
     "test:db": "bash scripts/test-db.sh",
     "test:release": "node --test scripts/deploy-image.test.mjs scripts/check-release.test.mjs scripts/check-pr-review.test.mjs",
-    "pr:review": "node scripts/check-pr-review.mjs"
+    "pr:review": "node scripts/check-pr-review.mjs",
+    "typecheck:edge": "deno check --config supabase/functions/deno.json supabase/functions/*/index.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
