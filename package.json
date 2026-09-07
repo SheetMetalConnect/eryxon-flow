@@ -26,7 +26,7 @@
     "screenshots:terminal": "node scripts/screenshots/capture-terminal.mjs",
     "test:edge": "deno test --allow-env --allow-read --config supabase/functions/deno.json supabase/functions/",
     "test:db": "bash scripts/test-db.sh",
-    "test:release": "node --test scripts/deploy-image.test.mjs scripts/check-release.test.mjs scripts/check-pr-review.test.mjs",
+    "test:release": "node --test scripts/deploy-image.test.mjs scripts/check-release.test.mjs scripts/check-pr-review.test.mjs scripts/docker-runtime-config.test.mjs",
     "pr:review": "node scripts/check-pr-review.mjs",
     "typecheck:edge": "deno check --config supabase/functions/deno.json supabase/functions/*/index.ts"
   },

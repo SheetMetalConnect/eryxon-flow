@@ -71,6 +71,20 @@ All notable changes to Eryxon Flow are documented here.
   activity, operator indicators, and reports use the employee identity.
 - Authentication changes clear cached tenant data and ignore stale asynchronous
   profile/session responses. Operator lock and sign-out revoke the PIN binding.
+- Terminal accounts with the operator role must verify an employee PIN before
+  production actions. The operator routes and legacy `/m` redirects no longer admit
+  an unverified operator profile, and the database rejects lifecycle writes without
+  a verified employee session unless the caller is an admin or the service API.
+- Self-hosted containers add the configured Supabase HTTP and WebSocket origins to
+  the Content Security Policy at start-up, so backends outside `*.supabase.co`
+  (a LAN address or custom domain) are reachable. Runtime configuration is written
+  as JSON, and an invalid backend URL stops the container instead of serving a
+  broken page.
+- Batch images selected before the batch exists upload to a tenant-scoped staging
+  path that the storage policies accept.
+- Restarting a timer on an operation already in progress no longer emits a second
+  `operation.started` event. Both the browser and the API emit it only on the
+  first transition out of `not_started`.
 - API query modifiers no longer execute the Supabase query before applying filters.
   Bulk synchronization reports failed writes, CRUD endpoints restrict writable
   fields and validate tenant references, and internal events require authentication.

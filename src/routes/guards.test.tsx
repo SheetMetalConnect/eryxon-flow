@@ -24,16 +24,18 @@ vi.mock("@/contexts/OperatorContext", () => ({
 }));
 
 import { ProtectedRoute } from "./guards";
+import { MobileRoutes } from "./mobileRoutes";
 
 function LocationProbe() {
   const location = useLocation();
-  return <div data-testid="location">{location.pathname}</div>;
+  return <div data-testid="location">{location.pathname}:{location.state?.from}</div>;
 }
 
-function renderProtectedRoute() {
+function renderProtectedRoute(initialEntry = "/operator/work-queue") {
   return render(
-    <MemoryRouter initialEntries={["/operator/work-queue"]}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
+        {MobileRoutes()}
         <Route
           path="/operator/work-queue"
           element={(
@@ -83,11 +85,25 @@ describe("ProtectedRoute", () => {
     expect(screen.getByText("operator screen")).toBeInTheDocument();
   });
 
-  it("allows email-auth operators through without a separate terminal verification", () => {
+  it.each(["/operator/work-queue?scan=1", "/m/queue?scan=1", "/m/scan"])("requires a verified employee for operator account at %s", (entry) => {
     mockUseProfile.mockReturnValue({ role: "operator" });
+    renderProtectedRoute(entry);
+    expect(screen.queryByText("operator screen")).not.toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("/operator/login:/operator/work-queue?scan=1");
+  });
 
-    renderProtectedRoute();
-
+  it("relocks the canonical queue when the PIN session expires", () => {
+    mockUseProfile.mockReturnValue({ role: "operator" });
+    mockUseOperator.mockReturnValue({ activeOperator: { id: "employee-1" }, isLoading: false });
+    const view = renderProtectedRoute("/m/queue");
     expect(screen.getByText("operator screen")).toBeInTheDocument();
+    mockUseOperator.mockReturnValue({ activeOperator: null, resumeOperator: { id: "employee-1" }, lockReason: "session_expired", isLoading: false });
+    view.rerender(<MemoryRouter initialEntries={["/m/queue"]}><Routes>
+      {MobileRoutes()}
+      <Route path="/operator/work-queue" element={<ProtectedRoute operatorOnly><div>operator screen</div></ProtectedRoute>} />
+      <Route path="/operator/login" element={<LocationProbe />} />
+    </Routes></MemoryRouter>);
+    expect(screen.queryByText("operator screen")).not.toBeInTheDocument();
+    expect(screen.getByTestId("location")).toHaveTextContent("/operator/login:/operator/work-queue");
   });
 });

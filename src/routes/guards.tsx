@@ -8,9 +8,6 @@ import { Loader2 } from "lucide-react";
 import { ROUTES } from "./constants";
 import { buildReturnTo } from "./launchTargets";
 
-// SECURITY NOTE: This route protection is for UI convenience only.
-// Actual authorization is enforced server-side via RLS policies.
-// Attackers can bypass these checks, but they cannot access data without proper RLS permissions.
 export function ProtectedRoute({
   children,
   adminOnly = false,
@@ -44,7 +41,6 @@ export function ProtectedRoute({
     );
   }
 
-  // UI-only check: redirect operators away from admin pages (convenience, not security)
   if (adminOnly && profile.role !== "admin") {
     return (
       <Navigate
@@ -54,12 +50,9 @@ export function ProtectedRoute({
     );
   }
 
-  // UI-only check: operator views (terminal / kanban) are open to operators, to a
-  // PIN'd shop-floor operator, AND to admins/shift-leaders for oversight. Only an
-  // unauthenticated-as-operator non-admin is sent to the operator login.
+  // Admin oversight uses account identity; production operators verify an employee PIN.
   if (
     operatorOnly &&
-    profile.role !== "operator" &&
     profile.role !== "admin" &&
     !activeOperator
   ) {

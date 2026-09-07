@@ -9,23 +9,43 @@ BEGIN
     IF auth.uid() IS NULL OR p_tenant_id IS DISTINCT FROM public.get_user_tenant_id() THEN
       RAISE EXCEPTION 'Tenant access denied' USING ERRCODE = '42501';
     END IF;
+    IF NOT public.has_role(auth.uid(), 'admin') THEN
+      IF EXISTS (
+        SELECT 1 FROM public.operator_sessions s
+        JOIN public.operators o ON o.id=s.operator_id AND o.tenant_id=s.tenant_id AND o.active
+        WHERE s.user_id=auth.uid() AND s.session_id=NULLIF(auth.jwt()->>'session_id','')::uuid
+          AND s.tenant_id=p_tenant_id AND s.expires_at>now()
+          AND (p_operator_id IS NULL OR p_operator_id=s.operator_id)
+      ) THEN RETURN; END IF;
+      RAISE EXCEPTION 'Active operator verification required for this tenant' USING ERRCODE = '42501';
+    END IF;
   END IF;
   IF p_operator_id IS NULL THEN RETURN; END IF;
   IF EXISTS (SELECT 1 FROM public.profiles WHERE id=p_operator_id AND tenant_id=p_tenant_id AND active) THEN
-    IF auth.role()='service_role' OR p_operator_id=auth.uid() OR public.has_role(auth.uid(),'admin') THEN RETURN; END IF;
+    IF auth.role()='service_role' OR public.has_role(auth.uid(),'admin') THEN RETURN; END IF;
   ELSIF EXISTS (SELECT 1 FROM public.operators WHERE id=p_operator_id AND tenant_id=p_tenant_id AND active) THEN
     -- A service-role API has no authenticated terminal profile for attribution.
-    IF auth.uid() IS NOT NULL AND (public.has_role(auth.uid(),'admin') OR EXISTS (
-      SELECT 1 FROM public.operator_sessions WHERE user_id=auth.uid()
-        AND session_id=NULLIF(auth.jwt()->>'session_id','')::uuid
-        AND tenant_id=p_tenant_id AND operator_id=p_operator_id AND expires_at>now()
-    )) THEN RETURN; END IF;
+    IF auth.uid() IS NOT NULL AND public.has_role(auth.uid(),'admin') THEN RETURN; END IF;
   END IF;
   RAISE EXCEPTION 'Active operator verification required for this tenant' USING ERRCODE = '42501';
 END;
 $$;
 REVOKE ALL ON FUNCTION public.assert_production_actor(uuid, uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.assert_production_actor(uuid, uuid) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.protect_production_write()
+RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$
+BEGIN
+  IF current_user IN ('postgres','service_role','supabase_admin') THEN RETURN COALESCE(NEW,OLD); END IF;
+  IF TG_OP<>'INSERT' THEN PERFORM public.assert_production_actor(OLD.tenant_id); END IF;
+  IF TG_OP<>'DELETE' THEN PERFORM public.assert_production_actor(NEW.tenant_id); END IF;
+  RETURN COALESCE(NEW,OLD);
+END;
+$$;
+CREATE OR REPLACE TRIGGER protect_production_write BEFORE INSERT OR UPDATE OR DELETE ON public.operations
+  FOR EACH ROW EXECUTE FUNCTION public.protect_production_write();
+CREATE OR REPLACE TRIGGER protect_production_write BEFORE INSERT OR UPDATE OR DELETE ON public.operation_batches
+  FOR EACH ROW EXECUTE FUNCTION public.protect_production_write();
 
 CREATE OR REPLACE FUNCTION public.production_profile_id(p_operator_id uuid)
 RETURNS uuid LANGUAGE sql STABLE SECURITY DEFINER SET search_path=public AS $$

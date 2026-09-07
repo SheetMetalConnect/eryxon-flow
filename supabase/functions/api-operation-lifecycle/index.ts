@@ -26,7 +26,7 @@ serveApi(async (req, ctx) => {
     console.error("Committed operation could not be read", lookupError);
     return successResponse({ operation: result, operation_type: action, committed: true });
   }
-  if (result.changed !== false) {
+  if (result.changed !== false && (action !== "start" || result.previous_status === "not_started")) {
     await ctx.recordPilotEvent({
       eventType: "operation.lifecycle", action: `operation.${action}`,
       entityType: "operation", entityId: operationId, entityName: operation.operation_name,

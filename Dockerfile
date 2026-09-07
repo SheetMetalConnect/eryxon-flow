@@ -39,6 +39,7 @@ RUN npm run build
 
 # Production stage
 FROM nginx:alpine
+RUN apk add --no-cache jq
 ARG APP_VERSION=0.0.0-dev
 ARG APP_REVISION=local
 
@@ -57,9 +58,11 @@ COPY nginx-security-headers.conf /etc/nginx/conf.d/security-headers.conf
 
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist/index.html /etc/eryxon/index.html
 
 # Copy entrypoint script for runtime env injection
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker-runtime-config.sh /docker-runtime-config.sh
 RUN chmod +x /docker-entrypoint.sh
 
 # Expose port 80

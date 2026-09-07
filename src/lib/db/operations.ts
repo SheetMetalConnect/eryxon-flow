@@ -452,9 +452,10 @@ export async function startTimeTracking(
     p_notes: notes ?? null,
   });
   if (error) throw error;
-  if (data && typeof data === "object" && !Array.isArray(data) && data.changed === false) return;
+  if (!data || typeof data !== "object" || Array.isArray(data)
+      || data.changed !== true || data.previous_status !== "not_started") return;
   await dispatchCommittedOperation(operationId, tenantId, operatorId, "start",
-    data && typeof data === "object" && !Array.isArray(data) && typeof data.operator_name === "string" ? data.operator_name : undefined);
+    typeof data.operator_name === "string" ? data.operator_name : undefined);
 }
 
 export async function completeOperation(operationId: string, tenantId: string, operatorId?: string) {
