@@ -42,8 +42,12 @@ function readSnapshot(gh, target, repo) {
   const pr = graphql(gh, metadataQuery, { id: target.id });
   const threads = connection(gh, target.id, 'PullRequest', 'reviewThreads', 'id path line isResolved isOutdated');
   for (const thread of threads) thread.comments = connection(gh, thread.id, 'PullRequestReviewThread', 'comments', commentFields);
-  const reviews = connection(gh, target.id, 'PullRequest', 'reviews', `${commentFields} state submittedAt`);
+  const reviews = connection(gh, target.id, 'PullRequest', 'reviews', `${commentFields} state submittedAt commit{oid}`);
   const comments = connection(gh, target.id, 'PullRequest', 'comments', commentFields);
+  const reviewRequests = connection(gh, target.id, 'PullRequest', 'reviewRequests', `id asCodeOwner requestedReviewer{
+    __typename ... on User{login} ... on Team{combinedSlug} ... on Mannequin{login}
+    ... on Bot{login} ... on EnterpriseTeam{combinedSlug}
+  }`);
   const endpoint = `repos/${repo}/commits/${pr.headRefOid}`;
   const checkPages = gh(['api', `${endpoint}/check-runs?per_page=100&filter=latest`, '--paginate', '--slurp']);
   const statusPages = gh(['api', `${endpoint}/status?per_page=100`, '--paginate', '--slurp']);
@@ -55,7 +59,7 @@ function readSnapshot(gh, target, repo) {
     if (!Array.isArray(page.statuses)) throw new Error('Incomplete status response');
     return page.statuses.map(({ id, context, state, target_url }) => ({ id, name: context, state, url: target_url }));
   });
-  return { pr, threads, reviews, comments, checks, statuses };
+  return { pr, threads, reviews, comments, reviewRequests, checks, statuses };
 }
 
 function fingerprint(snapshot) {
@@ -104,12 +108,18 @@ export function checkReview({ pr: selector, repo, expectHead, expectFingerprint 
 
 export function formatReport(report) {
   const { snapshot, blockers } = report;
+  const requestedReviewers = snapshot.reviewRequests.map(({ requestedReviewer: reviewer, asCodeOwner }) => {
+    const label = reviewer ? `${reviewer.__typename} ${reviewer.login ?? reviewer.combinedSlug}` : 'unknown reviewer';
+    return `${label}${asCodeOwner ? ' (code owner)' : ''}`;
+  });
   const lines = [
-    `${report.ready ? 'READY SNAPSHOT' : 'NOT READY'}: ${snapshot.pr.url}`,
+    `${report.ready ? 'STRUCTURAL GATES PASS' : 'STRUCTURAL GATES BLOCKED'}: ${snapshot.pr.url}`,
+    'Human feedback inspection and current-head reviewer completion evidence are still required.',
     `Checked: ${report.checkedAt}`,
     `Head: ${report.head}`,
     ...(report.observedHead !== report.head ? [`Head at end of read: ${report.observedHead}`] : []),
     `Fingerprint: ${report.fingerprint}`,
+    `Requested reviewers: ${requestedReviewers.join(', ') || 'none'}`,
     ...blockers.map((blocker) => `BLOCK: ${blocker}`),
     `Checks: ${snapshot.checks.length}; statuses: ${snapshot.statuses.length}; threads: ${snapshot.threads.length}; reviews: ${snapshot.reviews.length}; discussion comments: ${snapshot.comments.length}`,
   ];
@@ -120,6 +130,8 @@ export function formatReport(report) {
   }
   for (const review of snapshot.reviews) {
     lines.push(`\nREVIEW ${review.state}`);
+    const reviewedHead = review.commit?.oid;
+    lines.push(`Reviewed commit: ${reviewedHead ?? 'unknown'}${reviewedHead ? (reviewedHead === report.head ? ' (current head)' : ' (earlier commit)') : ''}`);
     printComment(review);
   }
   for (const comment of snapshot.comments) {

@@ -60,7 +60,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Start disposable database
-        run: npx --no-install supabase start --exclude studio,postgres-meta,imgproxy,logflare,vector,supavisor,mailpit,realtime,edge-runtime
+        run: npx --no-install supabase start --exclude studio,postgres-meta,imgproxy,logflare,vector,supavisor,mailpit,realtime,edge-runtime,gotrue,postgrest,storage-api,kong
       - run: npm run test:db
       - name: Stop disposable database
         if: always()

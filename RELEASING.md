@@ -21,8 +21,9 @@ merge does not deploy production. Keep unrelated changes in separate pull reques
 
 Run `npm run pr:review -- <PR number or URL>` whenever resuming a pull request,
 after pushing fixes and receiving review results, and immediately before merging.
-Read discussion comments as well as inline review threads; outdated unresolved
-threads still need a decision. Verify each fix, rerun relevant tests, then fetch
+Read edited discussion comments and all inline review threads, including resolved
+and outdated threads. Record requested reviewers and the commit each review covers;
+verify current-head completion separately from CI. Every finding needs a disposition. Verify each fix, rerun relevant tests, then fetch
 fresh feedback. The script reports the head and a fingerprint; use its expected
 head/fingerprint options to detect changes since review. It does not decide whether
 a prose comment has been substantively addressed and never resolves threads.
@@ -65,7 +66,7 @@ candidates. ESLint warnings are visible debt, not a claim of a warning-free code
 Database checks use a disposable local Supabase stack, never a linked remote target:
 
 ```sh
-npx --no-install supabase start --exclude studio,postgres-meta,imgproxy,logflare,vector,supavisor,mailpit,realtime,edge-runtime
+npx --no-install supabase start --exclude studio,postgres-meta,imgproxy,logflare,vector,supavisor,mailpit,realtime,edge-runtime,gotrue,postgrest,storage-api,kong
 npm run test:db
 npx --no-install supabase stop --no-backup
 ```

@@ -23,9 +23,15 @@ function fixture(change = () => {}) {
       snapshot++;
       value = { id: 'PR7', number: 7, url: 'https://github.com/acme/app/pull/7', title: 'Improve review loop', headRefOid: head, baseRefOid: 'b'.repeat(40), state: 'OPEN', isDraft: false, reviewDecision: null, mergeable: 'MERGEABLE', mergeStateStatus: 'CLEAN' };
     } else {
-      const field = query.match(/\{(reviewThreads|reviews|comments)\(first:/)[1];
+      const field = query.match(/\{(reviewThreads|reviews|comments|reviewRequests)\(first:/)[1];
       const data = {
-        PR7: { reviewThreads: [{ id: 'T1', path: 'app.ts', line: 10, isResolved: true, isOutdated: false }, { id: 'T2', path: 'old.ts', line: null, isResolved: true, isOutdated: true }], reviews: [{ ...comment('R1', 'Review summary'), state: 'COMMENTED', submittedAt: '2026-09-01T00:00:00Z' }], comments: [comment('D1'), comment('D2', 'Late discussion point')] },
+        PR7: { reviewRequests: [
+          { id: 'Q1', requestedReviewer: { __typename: 'User', login: 'reviewer' } },
+          { id: 'Q2', requestedReviewer: { __typename: 'Team', combinedSlug: 'acme/backend' } },
+          { id: 'Q3', requestedReviewer: { __typename: 'Mannequin', login: 'imported-user' } },
+          { id: 'Q4', requestedReviewer: { __typename: 'Bot', login: 'review-bot' } },
+          { id: 'Q5', requestedReviewer: { __typename: 'EnterpriseTeam', combinedSlug: 'acme/platform' } },
+        ], reviewThreads: [{ id: 'T1', path: 'app.ts', line: 10, isResolved: true, isOutdated: false }, { id: 'T2', path: 'old.ts', line: null, isResolved: true, isOutdated: true }], reviews: [{ ...comment('R1', 'Review summary'), state: 'COMMENTED', submittedAt: '2026-09-01T00:00:00Z' }], comments: [comment('D1'), comment('D2', 'Late discussion point')] },
         T1: { comments: [comment('C1'), comment('C2', 'Reply beyond the first page')] },
         T2: { comments: [comment('C3')] },
       };
@@ -145,4 +151,43 @@ test('no checks and a missing required review fail closed', () => {
   const report = checkReview({ pr: '7' }, gh);
   assert.ok(report.blockers.includes('Required approval is missing'));
   assert.ok(report.blockers.includes('No CI checks reported for this head'));
+});
+
+test('retains and displays a review of an earlier commit without claiming bot completion', () => {
+  const reviewedHead = 'e'.repeat(40);
+  const { gh, calls } = fixture((value) => {
+    if (value.reviews) value.reviews.nodes[0].commit = { oid: reviewedHead };
+  });
+  const report = checkReview({ pr: '7' }, gh);
+  assert.equal(report.snapshot.reviews[0].commit.oid, reviewedHead);
+  assert.notEqual(report.snapshot.reviews[0].commit.oid, report.head);
+  assert.ok(calls.filter(({ input }) => input && JSON.parse(input).query.includes('reviews(first:')).every(({ input }) => JSON.parse(input).query.includes('commit{oid}')));
+  const text = formatReport(report);
+  assert.match(text, new RegExp(`Reviewed commit: ${reviewedHead} \\(earlier commit\\)`));
+  assert.match(text, /STRUCTURAL GATES PASS/);
+  assert.match(text, /Human feedback inspection and current-head reviewer completion evidence are still required/);
+});
+
+
+test('paginates and displays requested users, teams, mannequins and bots as evidence', () => {
+  const { gh, calls } = fixture();
+  const report = checkReview({ pr: '7' }, gh);
+  assert.equal(report.snapshot.reviewRequests.length, 5);
+  assert.equal(report.ready, true);
+  const text = formatReport(report);
+  for (const label of ['User reviewer', 'Team acme/backend', 'Mannequin imported-user', 'Bot review-bot', 'EnterpriseTeam acme/platform']) assert.ok(text.includes(label), label);
+  const requests = calls.filter(({ input }) => input && JSON.parse(input).query.includes('reviewRequests(first:'));
+  assert.equal(requests.length, 10);
+  assert.ok(requests.every(({ input }) => JSON.parse(input).query.includes('... on Mannequin')));
+});
+
+test('changed requested reviewers invalidate the fingerprint and racing snapshot', () => {
+  const first = checkReview({ pr: '7' }, fixture().gh);
+  const { gh } = fixture((value, snapshot) => {
+    if (snapshot === 2 && value.reviewRequests?.nodes[0]?.id === 'Q1') value.reviewRequests.nodes[0].requestedReviewer.login = 'another-reviewer';
+  });
+  const report = checkReview({ pr: '7', expectFingerprint: first.fingerprint }, gh);
+  assert.notEqual(report.fingerprint, first.fingerprint);
+  assert.ok(report.blockers.some((text) => text.includes('changed while')));
+  assert.ok(report.blockers.some((text) => text.includes('Expected fingerprint')));
 });

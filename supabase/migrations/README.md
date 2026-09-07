@@ -25,13 +25,10 @@ The `archive/` directory contains 84 pre-consolidation migrations (Nov-Dec 2025)
 
 ## Deployment
 
-```bash
-# Push all migrations to remote
-supabase db push --include-all
-
-# Or use the automated setup script
-./scripts/automate_self_hosting.sh
-```
+Follow [RELEASING.md](../../RELEASING.md) for a verified target, backups, migration
+checks, and the matching backend/frontend rollout. Replay schema changes on a
+disposable local database before applying them remotely. Do not repair migration
+history or reset a production database as a routine deployment step.
 
 ## Signup Notifications
 

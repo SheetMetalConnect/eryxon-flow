@@ -150,15 +150,17 @@ troubleshooting, glossary) → **the website**, not this table.
 ## PR feedback loop
 
 Every PR interaction must include a fresh check of its current head, CI checks,
-review state, inline review threads (including unresolved outdated threads), and
-PR discussion comments. Use `npm run pr:review -- <PR>`; paginate all responses.
+requested reviewers, submitted review commits, all inline review threads (including
+resolved and outdated threads), and edited PR discussion comments. Use
+`npm run pr:review -- <PR> --repo SheetMetalConnect/eryxon-flow`; paginate all responses.
 Never infer completion from a prior green run or an earlier review snapshot.
 
 After pushing a fix, wait for the new checks and reviewer/bot feedback, fetch again,
 and address each actionable point. Resolve a thread only after verifying the fix;
 explain a declined suggestion with technical evidence. Do not silently dismiss
-reviews or mark every thread resolved. A CodeRabbit summary or skipped review is
-not evidence that the current head was reviewed.
+reviews or mark every thread resolved. Require reviewer completion evidence tied to the current head. A CodeRabbit summary
+or skipped review is not evidence that the current head was reviewed. Report missing
+coverage explicitly; successful CI or elapsed time does not establish completion.
 
 Immediately before merging, rerun the feedback check against the reviewed head and
 fingerprint. If either changes, repeat the loop. Merge with `gh pr merge --match-head-commit`

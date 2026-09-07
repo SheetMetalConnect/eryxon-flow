@@ -63,11 +63,11 @@ Built for **high-mix, low-volume** production: sheet metal, machine shops, custo
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 cp .env.example .env    # Add your Supabase credentials
-npm install
+npm ci
 npm run dev             # http://localhost:8080
 ```
 
-Requires: Node.js 20+, [Supabase](https://supabase.com) project
+Requires: Node.js 22 and a [Supabase](https://supabase.com) backend. Cloning this private repository requires access.
 
 ## Architecture
 
@@ -91,19 +91,13 @@ PostgreSQL + Auth + RLS + Realtime + Storage
 | Deployment | Vercel (frontend), Supabase (backend), Docker (self-hosted) |
 | API | REST with API key auth, rate limiting, webhook dispatch |
 
-## Install as a Desktop App (PWA)
+## Responsive web and optional PWA
 
-Eryxon Flow ships as an installable Progressive Web App, so it runs as a standalone desktop application with its own Dock/Launchpad/Start-menu tile — no Electron, no extra runtime.
+The default build is a regular responsive website. Phone, tablet, and desktop use the same operator interface.
 
-**macOS — Safari 17+ (Sonoma):** open the app, then *File → Add to Dock…*. The app appears in Launchpad and Applications.
+Set `VITE_ENABLE_PWA=true` at build time to enable the install manifest and service worker. For Docker, pass `--build-arg VITE_ENABLE_PWA=true` when building a custom image; setting it on an already-built container does not enable PWA support.
 
-**macOS / Windows / Linux — Chrome, Edge, Brave:** click the install icon at the right of the address bar (or *⋮ → Install / Apps → Install this site*). On macOS the resulting `.app` bundle shows up in Launchpad with the Eryxon icon.
-
-**iOS / iPadOS — Safari:** *Share → Add to Home Screen*.
-
-**Android — Chrome:** *⋮ → Install app*.
-
-The installed app launches in a standalone window with its own icon and works offline for assets it has already loaded. Runtime config (`/env.js`) and API calls always go to the network. When a new version ships, a toast prompts the operator to reload — no forced mid-shift reloads on shop-floor terminals.
+With PWA enabled, use your browser's install action or Safari's **Add to Home Screen**. The service worker caches the app shell and fonts; manufacturing data and production actions require a backend connection. A new version offers **Reload** or **Later**, so an update does not interrupt a shift. Returning to a disabled build unregisters only the app's own worker when that build loads.
 
 ### Regenerating PWA icons
 
@@ -119,9 +113,7 @@ This regenerates `pwa-{64,192,512}.png`, `maskable-icon-512x512.png`, `apple-tou
 
 Full self-hosting guide: [eryxon.eu/guides/self-hosting](https://eryxon.eu/guides/self-hosting/)
 
-```bash
-docker compose up -d
-```
+Use the versioned image or immutable digest recorded in a GitHub release. Configure `.env` and `ERYXON_IMAGE`, then follow [RELEASING.md](RELEASING.md) for matching backend migrations, deployment, and recovery. Merging a pull request does not deploy production.
 
 ## API
 
@@ -157,11 +149,7 @@ Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website
 | Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
 | Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
 
-### Installable PWA
-
-| Surface | Setup | Deploy + test guide |
-|---------|-------|---------------------|
-| Installable PWA (web + desktop) | n/a — `npm run build` | [`docs/DEPLOY_AND_TEST.md`](docs/DEPLOY_AND_TEST.md#1-pwa-web--desktop-install) |
+Developer deployment checks and PWA verification: [docs/DEPLOY_AND_TEST.md](docs/DEPLOY_AND_TEST.md). Versioning and publication: [RELEASING.md](RELEASING.md).
 
 ## AI Agent Support
 
