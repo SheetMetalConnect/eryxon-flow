@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { unified } from "@astrojs/markdown-remark";
 
 import tailwindcss from "@tailwindcss/vite";
 import config from "./src/config/config.json";
@@ -20,8 +21,9 @@ export const locales = locals
 // https://astro.build/config
 export default defineConfig({
   site: site.url,
+  compressHTML: true,
   markdown: {
-    remarkPlugins: [remarkMermaid],
+    processor: unified({ remarkPlugins: [remarkMermaid] }),
   },
   redirects: {
     "/articles": "/blog",

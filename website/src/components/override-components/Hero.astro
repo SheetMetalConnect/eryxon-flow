@@ -112,18 +112,3 @@ const is404 = Astro.locals.starlightRoute?.id === "404";
     }
   }
 </style>
-<script>
-  /* Manual height calculation removed to allow content to flow naturally with background wrapper */
-
-  // make image element and add the path to src
-  if (iconElements) {
-    const iconPath = iconElements.getAttribute("data-icon-path");
-
-    const img = document.createElement("img");
-    img.src = `/${iconPath}` || "";
-    img.alt = "icon";
-    img.className =
-      "hidden lg:inline-block size-20 -mb-2 rounded-2xl animate-[bounce_2s_ease-in-out_infinite]";
-    iconElements.replaceWith(img);
-  }
-</script>

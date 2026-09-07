@@ -161,15 +161,14 @@ export default function OperatorView() {
     <div
       ref={containerRef}
       className={cn(
-        "relative flex w-full bg-background font-sans text-foreground md:h-[calc(100vh-160px)] md:overflow-hidden",
-        !isMobile && "h-[calc(100vh-160px)] overflow-hidden",
+        "relative flex h-[calc(100dvh-240px)] min-h-[360px] w-full min-w-0 overflow-hidden bg-background font-sans text-foreground lg:h-[calc(100dvh-180px)]",
         isDragging && "cursor-col-resize select-none",
       )}
     >
       {/* Portal cell selector into the top header bar */}
       {headerSlot
         ? createPortal(
-            <div className="flex items-center gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Select value={selectedCellId} onValueChange={handleCellChange}>
                 <SelectTrigger className="h-8 w-[180px] border-input bg-card text-sm text-foreground">
                   <SelectValue placeholder={t("terminal.selectCell", "Select Cell")} />
@@ -208,7 +207,7 @@ export default function OperatorView() {
       {/* Left panel (queue) */}
       {showQueue ? (
       <div
-        className="flex flex-col border-r border-border transition-all duration-200"
+        className="flex min-w-0 flex-col border-r border-border transition-all duration-200"
         style={{ width: isMobile ? "100%" : collapsed ? "100%" : `${leftPanelWidth}%` }}
       >
         {scanFeedbackMessage ? (
@@ -271,7 +270,7 @@ export default function OperatorView() {
       {showDetail ? (
       <div
         className={cn(
-          "z-10 flex flex-col border-l border-border bg-card/95 shadow-2xl backdrop-blur-md transition-all duration-200",
+          "z-10 flex min-w-0 flex-col border-l border-border bg-card/95 shadow-2xl backdrop-blur-md transition-all duration-200",
           !isMobile && collapsed ? "w-10" : "",
         )}
         style={{

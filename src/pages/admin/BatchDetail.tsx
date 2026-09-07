@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";

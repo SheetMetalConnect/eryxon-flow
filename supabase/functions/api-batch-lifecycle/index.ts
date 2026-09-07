@@ -12,7 +12,7 @@
 import { createClient } from "@supabase/supabase-js";
 import { authenticateAndSetContext } from "@shared/auth.ts";
 import { corsHeaders } from "@shared/cors.ts";
-import { handleOptions, handleError } from "@shared/validation/errorHandler.ts";
+import { handleOptions, handleError, throwDatabaseError } from "@shared/validation/errorHandler.ts";
 import { dispatchEvent } from "@shared/events.ts";
 import {
   BatchLifecycleBatch,
@@ -55,51 +55,6 @@ function normalizeOperationIds(value: unknown): { ids: string[]; error?: string 
   }
 
   return { ids };
-}
-
-async function validateOperationsInTenant(
-  supabase: any,
-  tenantId: string,
-  operationIds: string[],
-): Promise<string | null> {
-  if (operationIds.length === 0) return null;
-
-  const { data, error } = await supabase
-    .from("operations")
-    .select("id")
-    .eq("tenant_id", tenantId)
-    .in("id", operationIds);
-
-  if (error) return `Operation validation failed: ${error.message}`;
-
-  const foundIds = new Set((data || []).map((operation: { id: string }) => operation.id));
-  const missingIds = operationIds.filter((id) => !foundIds.has(id));
-  if (missingIds.length > 0) {
-    return "operation_ids must reference operations in the authenticated tenant";
-  }
-
-  return null;
-}
-
-async function validateOperationsUnassigned(
-  supabase: any,
-  tenantId: string,
-  operationIds: string[],
-): Promise<string | null> {
-  if (operationIds.length === 0) return null;
-
-  const { data, error } = await supabase
-    .from("batch_operations")
-    .select("operation_id")
-    .eq("tenant_id", tenantId)
-    .in("operation_id", operationIds);
-
-  if (error) return `Batch assignment validation failed: ${error.message}`;
-  if ((data || []).length > 0) {
-    return "operation_ids must not already be assigned to another batch";
-  }
-
-  return null;
 }
 
 function createRepository(supabase: any): BatchLifecycleRepository {
@@ -166,127 +121,15 @@ function createRepository(supabase: any): BatchLifecycleRepository {
       }));
     },
 
-    async insertTimeEntries(tenantId: string, operatorId: string, operationIds: string[], startedAt: string): Promise<void> {
-      const rows = operationIds.map((operationId) => ({
-        tenant_id: tenantId,
-        operation_id: operationId,
-        operator_id: operatorId,
-        start_time: startedAt,
-      }));
-      const { error } = await supabase.from("time_entries").insert(rows);
-      if (error) {
-        throw new Error(`Time entries: ${error.message}`);
-      }
-    },
-
-    async updateOperationsStarted(tenantId: string, operationIds: string[], startedAt: string): Promise<void> {
-      const { error } = await supabase
-        .from("operations")
-        .update({ status: "in_progress", started_at: startedAt })
-        .in("id", operationIds)
-        .eq("tenant_id", tenantId)
-        .eq("status", "not_started");
-      if (error) {
-        throw new Error(`Failed to start operations: ${error.message}`);
-      }
-    },
-
-    async listActiveTimeEntries(tenantId: string, operationIds: string[]) {
-      const { data, error } = await supabase
-        .from("time_entries")
-        .select("id, operation_id, start_time")
-        .in("operation_id", operationIds)
-        .eq("tenant_id", tenantId)
-        .is("end_time", null);
-
-      if (error) {
-        throw new Error(`Failed to fetch active time entries: ${error.message}`);
-      }
-
-      return (data ?? []).map((entry: any) => ({
-        id: entry.id,
-        operationId: entry.operation_id,
-        startTime: entry.start_time,
-      }));
-    },
-
-    async closeTimeEntry(tenantId: string, entryId: string, endedAt: string, durationMinutes: number): Promise<void> {
-      const { error } = await supabase
-        .from("time_entries")
-        .update({ end_time: endedAt, duration_minutes: durationMinutes })
-        .eq("id", entryId)
-        .eq("tenant_id", tenantId);
-      if (error) {
-        throw new Error(`Failed to close time entry: ${error.message}`);
-      }
-    },
-
-    async getOperationActualTime(tenantId: string, operationId: string): Promise<number> {
-      const { data, error } = await supabase
-        .from("operations")
-        .select("actual_time")
-        .eq("id", operationId)
-        .eq("tenant_id", tenantId)
-        .single();
-      if (error) {
-        throw new Error(`Failed to read operation actual time: ${error.message}`);
-      }
-      return data?.actual_time ?? 0;
-    },
-
-    async updateOperationActualTime(tenantId: string, operationId: string, actualTime: number): Promise<void> {
-      const { error } = await supabase
-        .from("operations")
-        .update({ actual_time: actualTime })
-        .eq("id", operationId)
-        .eq("tenant_id", tenantId);
-      if (error) {
-        throw new Error(`Failed to update operation actual time: ${error.message}`);
-      }
-    },
-
-    async updateOperationsCompleted(tenantId: string, operationIds: string[], completedAt: string): Promise<void> {
-      const { error } = await supabase
-        .from("operations")
-        .update({ status: "completed", completed_at: completedAt })
-        .in("id", operationIds)
-        .eq("tenant_id", tenantId);
-      if (error) {
-        throw new Error(`Failed to complete operations: ${error.message}`);
-      }
-    },
-
-    async updateBatchStarted(tenantId: string, batchId: string, startedAt: string, startedBy: string | null): Promise<void> {
-      const { error } = await supabase
-        .from("operation_batches")
-        .update({ status: "in_progress", started_at: startedAt, started_by: startedBy })
-        .eq("id", batchId)
-        .eq("tenant_id", tenantId);
-      if (error) {
-        throw new Error(`Failed to update batch start: ${error.message}`);
-      }
-    },
-
-    async updateBatchCompleted(
-      tenantId: string,
-      batchId: string,
-      completedAt: string,
-      completedBy: string | null,
-      actualTime: number,
-    ): Promise<void> {
-      const { error } = await supabase
-        .from("operation_batches")
-        .update({
-          status: "completed",
-          completed_at: completedAt,
-          completed_by: completedBy,
-          actual_time: actualTime,
-        })
-        .eq("id", batchId)
-        .eq("tenant_id", tenantId);
-      if (error) {
-        throw new Error(`Failed to update batch completion: ${error.message}`);
-      }
+    async transitionBatch(tenantId, batchId, action, operatorId) {
+      const { data, error } = await supabase.rpc("transition_batch", {
+        p_tenant_id: tenantId,
+        p_batch_id: batchId,
+        p_action: action,
+        p_operator_id: operatorId,
+      });
+      if (error) throwDatabaseError(error);
+      return data;
     },
   };
 }
@@ -547,46 +390,19 @@ Deno.serve(async (req) => {
 
     if (action === "add-operations") {
       if (!batchId) return errorResponse("VALIDATION_ERROR", "Batch ID required (?id=xxx)");
-      const batch = await repository.getBatch(tenantId, batchId);
-      if (!batch) return errorResponse("NOT_FOUND", "Batch not found", 404);
-      if (batch.status !== "draft" && batch.status !== "ready") {
-        return errorResponse("INVALID_STATE", `Cannot modify operations in '${batch.status}' status`);
-      }
-
-      const { ids: opIds, error } = normalizeOperationIds(body.operation_ids);
-      if (error) return errorResponse("VALIDATION_ERROR", error);
-
-      const operationError = await validateOperationsInTenant(supabase, tenantId, opIds);
-      if (operationError) return errorResponse("VALIDATION_ERROR", operationError);
-
-      const assignmentError = await validateOperationsUnassigned(supabase, tenantId, opIds);
-      if (assignmentError) return errorResponse("VALIDATION_ERROR", assignmentError);
-
-      const { data: existing } = await supabase
-        .from("batch_operations")
-        .select("sequence_in_batch")
-        .eq("batch_id", batchId)
-        .eq("tenant_id", tenantId)
-        .order("sequence_in_batch", { ascending: false })
-        .limit(1);
-
-      const startSeq = (existing?.[0]?.sequence_in_batch ?? 0) + 1;
-
-      const rows = opIds.map((opId: string, i: number) => ({
-        tenant_id: tenantId,
-        batch_id: batchId,
-        operation_id: opId,
-        sequence_in_batch: startSeq + i,
-      }));
-
-      const { error } = await supabase.from("batch_operations").insert(rows);
-      if (error) return errorResponse("INSERT_ERROR", error.message, 500);
-
-      return jsonResponse({ success: true, data: { batch_id: batchId, operations_added: opIds.length } });
+      const { ids: operationIds, error: validationError } = normalizeOperationIds(body.operation_ids);
+      if (validationError) return errorResponse("VALIDATION_ERROR", validationError);
+      const { data, error } = await supabase.rpc("add_batch_operations", {
+        p_tenant_id: tenantId,
+        p_batch_id: batchId,
+        p_operation_ids: operationIds,
+      });
+      if (error) throwDatabaseError(error);
+      return jsonResponse({ success: true, data });
     }
 
     if (action === "monitor") {
-      const data = await monitor.run(tenantId, batchId);
+      const data = await monitor.run(tenantId, batchId ?? undefined);
       return jsonResponse({ success: true, data });
     }
 

@@ -45,25 +45,18 @@ export function createTwoLevelGrid(
   const group = new THREE.Group();
   group.name = 'viewer_grid';
 
-  // Minor grid: 5x subdivisions
-  const minorDivisions = majorDivisions * 5;
-  const minorGrid = new THREE.GridHelper(size, minorDivisions);
-  minorGrid.material = createFadingGridMaterial(
-    palette.gridMinor,
-    palette.gridMinorOpacity
-  );
-  (minorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
-  group.add(minorGrid);
-
-  // Major grid
-  const majorGrid = new THREE.GridHelper(size, majorDivisions);
-  majorGrid.material = createFadingGridMaterial(
-    palette.gridMajor,
-    palette.gridMajorOpacity
-  );
-  (majorGrid.material as THREE.ShaderMaterial).uniforms.uGridExtent.value = size / 2;
-  majorGrid.position.y = 0.01; // Slight offset to render on top of minor
-  group.add(majorGrid);
+  for (const [divisions, color, opacity, elevation] of [
+    [majorDivisions * 5, palette.gridMinor, palette.gridMinorOpacity, 0],
+    [majorDivisions, palette.gridMajor, palette.gridMajorOpacity, 0.01],
+  ]) {
+    const helper = new THREE.GridHelper(size, divisions);
+    const material = createFadingGridMaterial(color, opacity);
+    material.uniforms.uGridExtent.value = size / 2;
+    const lines = new THREE.LineSegments(helper.geometry, material);
+    helper.material.dispose();
+    lines.position.y = elevation;
+    group.add(lines);
+  }
 
   return group;
 }

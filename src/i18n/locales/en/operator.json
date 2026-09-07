@@ -1,5 +1,7 @@
 {
   "workQueue": {
+    "operationNotFound": "This operation is no longer available.",
+    "scanInputHint": "Scan with a connected scanner or enter a job, part or operation code.",
     "filtersAndControls": "Filters & Controls",
     "statistics": "Statistics",
     "total": "Total",

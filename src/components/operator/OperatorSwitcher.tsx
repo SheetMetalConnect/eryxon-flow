@@ -14,7 +14,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Users, UserCheck, LogOut, RefreshCw } from "lucide-react";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { cn } from "@/lib/utils";
 
 interface OperatorSwitcherProps {

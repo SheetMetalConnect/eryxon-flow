@@ -6,7 +6,6 @@ const useProfileMock = vi.fn();
 const useSessionMock = vi.fn();
 const useAuthActionsMock = vi.fn();
 const useOperatorMock = vi.fn();
-const useNativeMock = vi.fn();
 
 vi.mock("@/hooks/useProfile", () => ({
   useProfile: () => useProfileMock(),
@@ -20,22 +19,13 @@ vi.mock("@/hooks/useAuthActions", () => ({
 vi.mock("@/contexts/OperatorContext", () => ({
   useOperator: () => useOperatorMock(),
 }));
-vi.mock("@/hooks/useNative", () => ({
-  useNative: () => useNativeMock(),
-}));
 
-import { ProtectedRoute, RequireActiveOperator } from "./guards";
+import { ProtectedRoute } from "./guards";
 
 function AuthProbe() {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from ?? "none";
   return <div>auth:{from}</div>;
-}
-
-function MobileLoginProbe() {
-  const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from ?? "none";
-  return <div>mobile-login:{from}</div>;
 }
 
 describe("launch route guards", () => {
@@ -44,10 +34,6 @@ describe("launch route guards", () => {
     useSessionMock.mockReturnValue({ user: { id: "user-1" } });
     useProfileMock.mockReturnValue({ role: "operator" });
     useOperatorMock.mockReturnValue({ activeOperator: null, isLoading: false });
-    useNativeMock.mockReturnValue({
-      isNative: false,
-      isMobileShell: false,
-    });
   });
 
   it("preserves the requested /m target when auth redirects to /auth", () => {
@@ -73,11 +59,7 @@ describe("launch route guards", () => {
     expect(screen.getByText("auth:/m/scan?scan=1")).toBeInTheDocument();
   });
 
-  it("redirects mobile operators away from admin routes into the touch shell", () => {
-    useNativeMock.mockReturnValue({
-      isNative: true,
-      isMobileShell: true,
-    });
+  it("redirects operators away from admin routes into the common queue", () => {
 
     render(
       <MemoryRouter initialEntries={["/admin/dashboard"]}>
@@ -99,26 +81,7 @@ describe("launch route guards", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Mobile queue")).toBeInTheDocument();
+    expect(screen.getByText("Desktop queue")).toBeInTheDocument();
   });
 
-  it("preserves the requested /m target when the operator gate sends users to /m/login", () => {
-    render(
-      <MemoryRouter initialEntries={["/m/activity"]}>
-        <Routes>
-          <Route
-            path="/m/activity"
-            element={
-              <RequireActiveOperator>
-                <div>Mobile activity</div>
-              </RequireActiveOperator>
-            }
-          />
-          <Route path="/m/login" element={<MobileLoginProbe />} />
-        </Routes>
-      </MemoryRouter>,
-    );
-
-    expect(screen.getByText("mobile-login:/m/activity")).toBeInTheDocument();
-  });
 });

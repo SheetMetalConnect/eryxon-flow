@@ -1,3 +1,4 @@
+import { validateCrudWrite } from "@shared/crud-write-policy.ts";
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import { canCreateJob } from "@shared/plan-limits.ts";
@@ -7,10 +8,10 @@ import { PaymentRequiredError, ValidationException, createSuccessResponse } from
 
 // Custom POST handler with plan limits check
 async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promise<Response> {
-  const { supabase, tenantId, plan } = ctx;
+  const { supabase, tenantId } = ctx;
 
   // Check plan limits before creating
-  const canCreate = await canCreateJob(supabase, tenantId, plan);
+  const canCreate = await canCreateJob(supabase, tenantId);
   if (!canCreate.allowed) {
     throw new PaymentRequiredError(
       "job",  // limitType
@@ -24,7 +25,7 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
 
   if (JobValidator) {
     const validator = new JobValidator();
-    const validation = await validator.validate(body, { tenantId, supabase });
+    const validation = await validator.validate(body, { tenantId });
     if (!validation.valid) {
       throw new ValidationException(validation);
     }
@@ -32,6 +33,13 @@ async function handleCreateWithLimits(req: Request, ctx: HandlerContext): Promis
 
   // Extract nested data before creating job
   const { parts, ...jobData } = body;
+  await validateCrudWrite("jobs", jobData, tenantId, supabase);
+  for (const { operations, ...partData } of parts ?? []) {
+    await validateCrudWrite("parts", partData, tenantId, supabase);
+    for (const operation of operations ?? []) {
+      await validateCrudWrite("operations", operation, tenantId, supabase);
+    }
+  }
 
   // Create the job
   const dataToInsert = {

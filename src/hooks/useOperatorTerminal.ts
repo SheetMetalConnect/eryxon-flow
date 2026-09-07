@@ -618,7 +618,7 @@ export function useOperatorTerminal() {
       try {
         let pdf: string | null = null;
         let step: string | null = null;
-        let signedStep: string | null = null;
+        let stepPath: string | null = null;
         let stepFileName: string | null = null;
 
         for (const path of selectedJob.filePaths) {
@@ -637,7 +637,7 @@ export function useOperatorTerminal() {
               .from("parts-cad")
               .createSignedUrl(path, 3600);
             if (data?.signedUrl) {
-              signedStep = data.signedUrl;
+              stepPath = path;
               stepFileName = path.split("/").pop() || "model.step";
               const response = await fetch(data.signedUrl);
               const blob = await response.blob();
@@ -649,9 +649,9 @@ export function useOperatorTerminal() {
         setPdfUrl(pdf);
         setStepUrl(step);
 
-        if (signedStep && stepFileName && isCADServiceEnabled()) {
+        if (stepPath && stepFileName && isCADServiceEnabled()) {
           try {
-            const result = await processCAD(signedStep, stepFileName, {
+            const result = await processCAD({ bucket: "parts-cad", path: stepPath, recordId: selectedJob.partId }, stepFileName, {
               includeGeometry: true,
               includePMI: true,
               generateThumbnail: false,

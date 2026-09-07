@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "./runtime-env.ts";
 /**
  * API Handler Factory
  *
@@ -129,8 +130,8 @@ export function createApiHandler(
 
     // Initialize Supabase client
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ""
+      getRuntimeEnv("SUPABASE_URL") ?? "",
+      getRuntimeEnv("SUPABASE_SERVICE_ROLE_KEY") ?? getRuntimeEnv("SUPABASE_SERVICE_KEY") ?? ""
     );
 
     // Base request-correlation context, enriched after auth.
@@ -171,7 +172,7 @@ export function createApiHandler(
             entityId: input.entityId,
             entityName: input.entityName,
             extra: input.extra,
-          }).then(() => undefined),
+          }).then((): void => {}),
       };
 
       // Execute handler
@@ -235,7 +236,10 @@ export function serveApi(
   handler: HandlerFn,
   options: HandlerOptions = {}
 ): void {
-  Deno.serve(createApiHandler(handler, options));
+  const runtime = globalThis as typeof globalThis & {
+    Deno: { serve(handler: (request: Request) => Promise<Response>): unknown };
+  };
+  runtime.Deno.serve(createApiHandler(handler, options));
 }
 
 /**

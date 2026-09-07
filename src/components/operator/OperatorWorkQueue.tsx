@@ -44,7 +44,7 @@ function JobSection({
         </div>
       </div>
       <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse text-left">
+        <table className="terminal-queue-table w-full border-collapse text-left">
           {tableHead}
           <tbody>
             {jobs.length === 0 ? (

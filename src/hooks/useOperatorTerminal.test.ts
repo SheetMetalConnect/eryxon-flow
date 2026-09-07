@@ -1,3 +1,4 @@
+import type { OperationWithDetails, OperationBatchContext } from "@/lib/database";
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 
@@ -15,12 +16,12 @@ const mockProfile = {
 
 const mockUseProfile = vi.fn(() => mockProfile as any);
 vi.mock('@/hooks/useProfile', () => ({
-  useProfile: (...args: any[]) => mockUseProfile(...args),
+  useProfile: () => mockUseProfile(),
 }));
 
 const mockUseOperator = vi.fn(() => ({ activeOperator: null }));
 vi.mock('@/contexts/OperatorContext', () => ({
-  useOperator: (...args: any[]) => mockUseOperator(...args),
+  useOperator: () => mockUseOperator(),
 }));
 
 vi.mock('@/hooks/useCADProcessing', () => ({
@@ -95,7 +96,7 @@ vi.mock('@/lib/logger', () => ({
 }));
 
 const localStorageMock = {
-  getItem: vi.fn(() => null),
+  getItem: vi.fn<(key: string) => string | null>(() => null),
   setItem: vi.fn(),
   removeItem: vi.fn(),
   clear: vi.fn(),
@@ -107,13 +108,14 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock, wri
 import { useOperatorTerminal } from './useOperatorTerminal';
 import { toast } from 'sonner';
 
-const makeBaseOp = (overrides: Record<string, any> = {}) => ({
+const makeBaseOp = (overrides: Partial<OperationWithDetails> = {}): OperationWithDetails => ({
   id: 'op-1',
   operation_name: 'Op',
   operation_type: 'cutting',
   sequence: 1,
   estimated_time: 1,
   actual_time: 0,
+  updated_at: null,
   status: 'not_started' as const,
   completion_percentage: 0,
   notes: null,
@@ -633,7 +635,7 @@ describe('useOperatorTerminal', () => {
   });
 
   it('exposes batch prompt details for multi-operation batches', async () => {
-    const batchContext = {
+    const batchContext: OperationBatchContext = {
       batch_id: 'batch-1',
       batch_number: 'NEST-001',
       batch_type: 'laser_nesting',
@@ -684,7 +686,7 @@ describe('useOperatorTerminal', () => {
   });
 
   it('requires a batch-flow choice before start', async () => {
-    const batchContext = {
+    const batchContext: OperationBatchContext = {
       batch_id: 'batch-1',
       batch_number: 'NEST-001',
       batch_type: 'laser_nesting',
@@ -721,7 +723,7 @@ describe('useOperatorTerminal', () => {
   });
 
   it('starts batch time tracking when full-batch mode is selected', async () => {
-    const batchContext = {
+    const batchContext: OperationBatchContext = {
       batch_id: 'batch-1',
       batch_number: 'NEST-001',
       batch_type: 'laser_nesting',

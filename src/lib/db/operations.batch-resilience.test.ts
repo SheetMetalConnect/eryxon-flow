@@ -23,7 +23,7 @@ const OP_ROW = {
 
 /** Thenable query builder; awaiting resolves to the per-table result. */
 function makeBuilder(table: string) {
-  const result =
+  const result: { data: unknown[] | null; error: { code: string; message: string } | null } =
     table === "operations"
       ? { data: [OP_ROW], error: null }
       : table === "batch_operations"
@@ -32,7 +32,7 @@ function makeBuilder(table: string) {
         : { data: [], error: null };
 
   const builder: Record<string, unknown> = {};
-  for (const m of ["select", "eq", "is", "in", "like", "order", "neq"]) {
+  for (const m of ["select", "eq", "is", "in", "like", "order", "neq", "range"]) {
     builder[m] = vi.fn(() => builder);
   }
   builder.then = (resolve: (v: unknown) => unknown) => Promise.resolve(result).then(resolve);

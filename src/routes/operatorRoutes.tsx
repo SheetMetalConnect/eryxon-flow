@@ -25,6 +25,18 @@ export function OperatorRoutes() {
         }
       />
       <Route
+        path="/operator/operations/:operationId"
+        element={
+          <ProtectedRoute operatorOnly>
+            <Layout>
+              <LazyRoute>
+                <WorkQueue />
+              </LazyRoute>
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/operator/my-activity"
         element={
           <ProtectedRoute operatorOnly>

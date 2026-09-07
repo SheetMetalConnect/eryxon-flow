@@ -8,7 +8,6 @@ const mockSwitchTenant = vi.fn();
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    profile: null, tenant: null, user: null, session: null,
     loading: false,
     signIn: mockSignIn,
     signUp: mockSignUp,

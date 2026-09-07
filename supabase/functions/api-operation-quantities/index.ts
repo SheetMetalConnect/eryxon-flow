@@ -1,4 +1,3 @@
-// v1774628752
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
@@ -76,12 +75,13 @@ serveApi(
 
       // Handle part_id filter (requires getting operations for that part)
       if (partId) {
-        const { data: operations } = await ctx.supabase
+        const { data: operations, error: operationError } = await ctx.supabase
           .from('operations')
           .select('id')
           .eq('part_id', partId)
           .eq('tenant_id', ctx.tenantId);
 
+        if (operationError) throw new Error(`Failed to filter quantities: ${operationError.message}`);
         if (operations && operations.length > 0) {
           const operationIds = operations.map((op: any) => op.id);
           query = query.in('operation_id', operationIds);
@@ -93,20 +93,22 @@ serveApi(
 
       // Handle job_id filter (requires getting parts for that job, then operations)
       if (jobId) {
-        const { data: parts } = await ctx.supabase
+        const { data: parts, error: partError } = await ctx.supabase
           .from('parts')
           .select('id')
           .eq('job_id', jobId)
           .eq('tenant_id', ctx.tenantId);
 
+        if (partError) throw new Error(`Failed to filter quantities: ${partError.message}`);
         if (parts && parts.length > 0) {
           const partIds = parts.map((p: any) => p.id);
-          const { data: operations } = await ctx.supabase
+          const { data: operations, error: operationError } = await ctx.supabase
             .from('operations')
             .select('id')
             .in('part_id', partIds)
             .eq('tenant_id', ctx.tenantId);
 
+          if (operationError) throw new Error(`Failed to filter quantities: ${operationError.message}`);
           if (operations && operations.length > 0) {
             const operationIds = operations.map((op: any) => op.id);
             query = query.in('operation_id', operationIds);
@@ -120,7 +122,7 @@ serveApi(
         }
       }
 
-      return query;
+      return { query };
     },
   })
 );

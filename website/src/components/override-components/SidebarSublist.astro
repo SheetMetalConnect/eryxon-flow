@@ -2,15 +2,19 @@
 import { Icon } from "@astrojs/starlight/components";
 import { Badge } from "@astrojs/starlight/components";
 import SidebarRestorePoint from "./SidebarRestorePoint.astro";
-import { flattenSidebar } from "node_modules/@astrojs/starlight/utils/navigation";
 import { plainLabel, getIconFromLabel } from "@/lib/utils/textConverter";
 
+type SidebarEntry = App.Locals['starlightRoute']['sidebar'][number];
+interface Props { sublist: SidebarEntry[]; nested?: boolean }
 const { sublist, nested } = Astro.props;
+const containsCurrent = (entries: SidebarEntry[]): boolean => entries.some(
+  entry => entry.type === 'link' ? entry.isCurrent : containsCurrent(entry.entries)
+);
 ---
 
 <ul class:list={{ "top-level": !nested }}>
   {
-    sublist.map((entry: any) => (
+    sublist.map((entry) => (
       <li>
         {entry.type === "link" ? (
           <a
@@ -38,7 +42,7 @@ const { sublist, nested } = Astro.props;
         ) : (
           <details
             open={
-              flattenSidebar(entry.entries).some((i) => i.isCurrent) ||
+              containsCurrent(entry.entries) ||
               !entry.collapsed
             }
           >
@@ -51,7 +55,7 @@ const { sublist, nested } = Astro.props;
                     size="1.3rem"
                     class="mr-2.5"
                     color={
-                      flattenSidebar(entry.entries).some((i) => i.isCurrent)
+                      containsCurrent(entry.entries)
                         ? "var(--color-primary)"
                         : ""
                     }

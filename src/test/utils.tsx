@@ -54,15 +54,14 @@ export const mockAuthContextValue = {
   refreshTenant: vi.fn().mockResolvedValue(undefined),
 };
 
-// Mock i18n
+const { translate } = vi.hoisted(() => ({
+  translate: (key: string, params?: Record<string, unknown>) =>
+    params ? `${key}:${JSON.stringify(params)}` : key,
+}));
+
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string, params?: Record<string, unknown>) => {
-      if (params) {
-        return `${key}:${JSON.stringify(params)}`;
-      }
-      return key;
-    },
+    t: translate,
     i18n: {
       language: 'en',
       changeLanguage: vi.fn(),

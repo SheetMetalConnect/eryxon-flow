@@ -1,6 +1,6 @@
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useState } from "react";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
 import { useNavigate } from "react-router-dom";

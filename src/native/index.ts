@@ -61,7 +61,7 @@ export function isIPhone(): boolean {
  * Approximate "is this a tablet-class screen?" — short side ≥ 600 CSS px.
  *
  * NOT cached: viewport changes when the user rotates the device or splits the
- * screen. Callers that need reactive updates subscribe via `useNative()`.
+ * screen.
  */
 export function isTabletViewport(): boolean {
   if (typeof window === "undefined") return false;
@@ -82,12 +82,6 @@ export function getPlatform(): PlatformId {
   else if (/Android/.test(ua)) cachedPlatform = "android";
   else cachedPlatform = "web";
   return cachedPlatform;
-}
-
-/** Whether the device should render the touch-first mobile shell. */
-export function shouldUseMobileShell(): boolean {
-  if (typeof window === "undefined") return false;
-  return window.matchMedia("(max-width: 1023px)").matches;
 }
 
 /** Coarse pointer detection for hover-vs-tap branches. */

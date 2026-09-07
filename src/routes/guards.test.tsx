@@ -56,8 +56,6 @@ describe("ProtectedRoute", () => {
   });
 
   it("allows admins/shift-leaders into operator views for oversight without a PIN", () => {
-    // Operator views (terminal / kanban) are open to admins for oversight; the
-    // shared-terminal PIN requirement is enforced separately by RequireActiveOperator.
     mockUseProfile.mockReturnValue({ role: "admin" });
 
     renderProtectedRoute();

@@ -1,84 +1,41 @@
-# Dependabot configuration for automated dependency updates
-# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates
-#
-# May 2026: active development is on hold after v0.5.0. Keep this file in
-# place for future maintainers, but pause version-update PRs to avoid noisy
-# preview deployments while the project is in maintenance/sunset mode.
-
 version: 2
 updates:
-  # NPM dependencies for main app
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: npm
+    directory: /
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Europe/Amsterdam"
-    open-pull-requests-limit: 0
-    commit-message:
-      prefix: "deps"
-    labels:
-      - "dependencies"
-      - "npm"
-    # Group minor and patch updates together
+      interval: weekly
+    open-pull-requests-limit: 5
     groups:
-      radix-ui:
-        patterns:
-          - "@radix-ui/*"
-        update-types:
-          - "minor"
-          - "patch"
-      tanstack:
-        patterns:
-          - "@tanstack/*"
-        update-types:
-          - "minor"
-          - "patch"
-      dev-dependencies:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-          - "patch"
-    # Ignore major versions that need manual review
-    ignore:
-      # React 19 - wait for ecosystem stability
-      - dependency-name: "react"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "react-dom"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@types/react"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "@types/react-dom"
-        update-types: ["version-update:semver-major"]
-      # TailwindCSS v4 - requires migration
-      - dependency-name: "tailwindcss"
-        update-types: ["version-update:semver-major"]
-
-  # GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    open-pull-requests-limit: 0
+      compatible-updates:
+        update-types: [minor, patch]
     commit-message:
-      prefix: "ci"
-    labels:
-      - "dependencies"
-      - "github-actions"
-
-  # MCP Server (if it has its own package.json)
-  - package-ecosystem: "npm"
-    directory: "/mcp-server"
+      prefix: deps
+  - package-ecosystem: npm
+    directory: /website
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Europe/Amsterdam"
-    open-pull-requests-limit: 0
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      compatible-updates:
+        update-types: [minor, patch]
     commit-message:
-      prefix: "deps(mcp)"
-    labels:
-      - "dependencies"
-      - "mcp-server"
+      prefix: deps(docs)
+  - package-ecosystem: npm
+    directory: /mcp-server
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3
+    groups:
+      compatible-updates:
+        update-types: [minor, patch]
+    commit-message:
+      prefix: deps(mcp)
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+    commit-message:
+      prefix: ci

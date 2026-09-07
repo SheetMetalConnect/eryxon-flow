@@ -1,3 +1,4 @@
+import type { TerminalJob } from "@/types/terminal";
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/utils";
 import { JobRow } from "./JobRow";
@@ -6,7 +7,7 @@ vi.mock("./TerminalCellInfo", () => ({
   TerminalCellInfo: () => <div data-testid="terminal-cell-info">cell</div>,
 }));
 
-const baseJob = {
+const baseJob: TerminalJob = {
   id: "job-1",
   jobCode: "JOB-001",
   description: "PART-001",

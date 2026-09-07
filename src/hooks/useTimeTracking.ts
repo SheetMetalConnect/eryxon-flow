@@ -39,6 +39,8 @@ interface JoinedOperation {
 interface JoinedRow {
   operation_id: string;
   operator_id: string;
+  shop_floor_operator_id: string | null;
+  shop_floor_operator: Rel<{ full_name: string | null }>;
   duration: number | null;
   start_time: string;
   end_time: string | null;
@@ -85,6 +87,8 @@ export function useTimeTracking(from: Date, to: Date): UseTimeTrackingResult {
           `
           operation_id,
           operator_id,
+          shop_floor_operator_id,
+          shop_floor_operator:operators!time_entries_shop_floor_operator_id_fkey(full_name),
           duration,
           start_time,
           end_time,
@@ -111,14 +115,14 @@ export function useTimeTracking(from: Date, to: Date): UseTimeTrackingResult {
       // Anchor live-elapsed for active entries to one instant for the snapshot.
       const now = Date.now();
       const entries: TrackedTimeEntry[] = ((rows ?? []) as JoinedRow[]).map((row) => {
-        const operator = one(row.operator);
+        const operator = one(row.shop_floor_operator) ?? one(row.operator);
         const operation = one(row.operation);
         const part = one(operation?.part);
         const job = one(part?.job);
 
         return {
           operation_id: row.operation_id,
-          operator_id: row.operator_id,
+          operator_id: row.shop_floor_operator_id ?? row.operator_id,
           operator_name: operator?.full_name ?? null,
           duration: row.duration,
           start_time: row.start_time,

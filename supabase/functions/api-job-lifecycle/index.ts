@@ -30,7 +30,7 @@
  */
 
 import { serveApi, errorResponse, successResponse } from "@shared/handler.ts";
-import { REQUEST_ID_HEADER } from "@shared/observability.ts";
+import { dispatchWebhookEvent, type EventType } from "@shared/events.ts";
 
 async function triggerWebhook(
   supabase: any,
@@ -40,21 +40,7 @@ async function triggerWebhook(
   requestId: string,
 ) {
   try {
-    await fetch(`${Deno.env.get('SUPABASE_URL')}/functions/v1/webhook-dispatch`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Propagate the request id so the dispatch hop logs/persists under the
-        // same correlation id as this lifecycle request.
-        [REQUEST_ID_HEADER]: requestId,
-        'Authorization': `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY")}`,
-      },
-      body: JSON.stringify({
-        tenant_id: tenantId,
-        event_type: eventType,
-        data: data,
-      }),
-    });
+    await dispatchWebhookEvent(tenantId, eventType as EventType, data, requestId);
   } catch (error) {
     console.error(`Failed to trigger ${eventType} webhook:`, error);
   }

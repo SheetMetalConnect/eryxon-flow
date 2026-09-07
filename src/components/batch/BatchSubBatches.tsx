@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { useNavigate } from "react-router-dom";
 import { Layers, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useTenant } from '@/hooks/useTenant';
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,6 +49,7 @@ export default function OrganizationSettings() {
   const { locations: storageSlots, isLoading: storageSlotsLoading } = useStorageLocations();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [tenantFeatureFlags, setTenantFeatureFlags] = useState<Json>(null);
   const [formData, setFormData] = useState({
     name: '',
     company_name: '',
@@ -110,6 +112,7 @@ export default function OrganizationSettings() {
         whitelabel_primary_color: data.whitelabel_primary_color || '',
         whitelabel_favicon_url: data.whitelabel_favicon_url || '',
       });
+      setTenantFeatureFlags(data.feature_flags);
       setOperatorTerminalModes(getOperatorTerminalWorkModeSettings(data.feature_flags));
     } catch (error: unknown) {
       logger.error('OrganizationSettings', 'Error loading tenant details', error);
@@ -137,7 +140,7 @@ export default function OrganizationSettings() {
         factory_closing_time: formData.factory_closing_time + ':00',
         auto_stop_tracking: formData.auto_stop_tracking,
         feature_flags: mergeOperatorTerminalWorkModeSettings(
-          tenant?.feature_flags,
+          tenantFeatureFlags,
           operatorTerminalModes,
         ),
       };

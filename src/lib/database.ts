@@ -3,6 +3,7 @@
 export {
   fetchOperationsWithDetails,
   fetchOperationLookupDetails,
+  fetchOperationDetails,
   startTimeTracking,
   completeOperation,
   stopTimeTracking,
@@ -17,4 +18,4 @@ export {
   startBatchTimeTracking,
   stopBatchTimeTracking,
 } from './db';
-export type { OperationWithDetails } from './db';
+export type { OperationWithDetails, OperationBatchContext } from './db';

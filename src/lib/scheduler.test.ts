@@ -8,7 +8,7 @@ type Job = Database['public']['Tables']['jobs']['Row'];
 type Cell = Database['public']['Tables']['cells']['Row'];
 
 // Mock cell data
-const createMockCells = () => [
+const createMockCells = (): Cell[] => [
   {
     id: 'cell-1',
     tenant_id: 'tenant-1',
@@ -28,7 +28,8 @@ const createMockCells = () => [
     deleted_by: null as string | null,
     external_id: null as string | null,
     external_source: null as string | null,
-    synced_at: null as string | null,
+    synced_at: null,
+    sync_hash: null,
     icon_name: null as string | null,
     image_url: null as string | null,
   },
@@ -51,7 +52,8 @@ const createMockCells = () => [
     deleted_by: null as string | null,
     external_id: null as string | null,
     external_source: null as string | null,
-    synced_at: null as string | null,
+    synced_at: null,
+    sync_hash: null,
     icon_name: null as string | null,
     image_url: null as string | null,
   },

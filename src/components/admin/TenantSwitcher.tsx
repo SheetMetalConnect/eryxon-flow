@@ -17,19 +17,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
 import { useProfile } from "@/hooks/useProfile";
 import { useTenant } from "@/hooks/useTenant";
 import { useAuthActions } from "@/hooks/useAuthActions";
 
-interface Tenant {
-  id: string;
-  name: string;
-  company_name: string | null;
-  plan: "free" | "pro" | "premium" | "enterprise";
-  status: "active" | "cancelled" | "suspended" | "trial";
-  user_count: number;
-  created_at: string;
-}
+type Tenant = Database["public"]["Functions"]["list_all_tenants"]["Returns"][number];
 
 interface TenantSwitcherProps {
   open: boolean;

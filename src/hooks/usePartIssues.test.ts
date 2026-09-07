@@ -11,13 +11,11 @@ const mockSubscribe = vi.fn();
 vi.mock('@/integrations/supabase/client', () => ({
   supabase: {
     rpc: (...args: any[]) => mockRpc(...args),
-    channel: () => ({
-      on: () => ({
-        subscribe: () => ({
-          unsubscribe: vi.fn(),
-        }),
-      }),
-    }),
+    channel: () => {
+      const channel = { on: () => channel, subscribe: () => channel };
+      return channel;
+    },
+    removeChannel: vi.fn(),
   },
 }));
 

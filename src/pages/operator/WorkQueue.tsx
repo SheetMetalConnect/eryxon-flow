@@ -6,6 +6,8 @@ import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
 import {
   fetchOperationsWithDetails,
+  fetchOperationLookupDetails,
+  fetchOperationDetails,
   type OperationWithDetails,
 } from "@/lib/database";
 import OperationCard from "@/components/operator/OperationCard";
@@ -39,9 +41,13 @@ import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/time-utils";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { useKeyboardWedgeScanner } from "@/hooks/useKeyboardWedgeScanner";
+import { findOperationsByScanToken } from "@/lib/operatorScanner";
+import OperationDetailModal from "@/components/operator/OperationDetailModal";
 import { haptics } from "@/native";
-import { ScanDialog } from "@/components/mobile/ScanDialog";
+import { ScanDialog } from "@/components/operator/ScanDialog";
 
 interface PartAssignment {
   part_id: string;
@@ -58,6 +64,8 @@ export default function WorkQueue() {
   usePageTitle("navigation.workQueue");
   const { t } = useTranslation();
   const profile = useProfile();
+  const navigate = useNavigate();
+  const { operationId } = useParams();
   const { activeOperator } = useOperator();
   const [searchParams, setSearchParams] = useSearchParams();
   const [operations, setOperations] = useState<OperationWithDetails[]>([]);
@@ -69,12 +77,23 @@ export default function WorkQueue() {
     () => searchParams.get("scan") === "1"
   );
 
-  // Honour incoming ?q= and ?scan=1 updates. ?q= comes from the floating
-  // scan FAB after a successful scan and pre-fills the search box. ?scan=1
-  // is what the installed-PWA "Scan Job" home-screen shortcut points at —
-  // it pops the scan dialog the moment the operator launches that tile.
-  // Both params are stripped after consumption so the URL stays clean and
-  // a manual refresh doesn't re-fire either action.
+  const { data: linkedOperation, isError: linkedError, isPending: linkedLoading, refetch: refetchLinkedOperation } = useQuery({
+    queryKey: ['operations', 'operator-detail', profile?.tenant_id, operationId],
+    queryFn: () => fetchOperationDetails(profile.tenant_id, operationId),
+    enabled: !!profile?.tenant_id && !!operationId,
+  });
+  const handleScanResult = useCallback((token: string) => {
+    const matches = findOperationsByScanToken(operations, token);
+    setScanOpen(false);
+    if (matches.length === 1) {
+      navigate(`/operator/operations/${encodeURIComponent(matches[0].id)}`);
+    } else {
+      setSearchQuery(token.trim());
+    }
+  }, [navigate, operations]);
+  useKeyboardWedgeScanner({ onScan: handleScanResult });
+
+  // Consume shortcut parameters once so refreshing does not reopen the scanner.
   useEffect(() => {
     const incomingQ = searchParams.get("q");
     const incomingScan = searchParams.get("scan");
@@ -82,14 +101,12 @@ export default function WorkQueue() {
     const next = new URLSearchParams(searchParams);
     let mutated = false;
     if (incomingQ && incomingQ !== searchQuery) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchQuery(incomingQ);
       void haptics.tap("light");
       next.delete("q");
       mutated = true;
     }
     if (incomingScan === "1") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setScanOpen(true);
       next.delete("scan");
       mutated = true;
@@ -108,10 +125,13 @@ export default function WorkQueue() {
 
   const loadData = useCallback(async () => {
     if (!profile?.tenant_id) return;
+    if (operationId) { setLoading(false); return; }
 
     try {
       const [operationsData, cellsData] = await Promise.all([
-        fetchOperationsWithDetails(profile.tenant_id),
+        showCompleted
+          ? fetchOperationLookupDetails(profile.tenant_id)
+          : fetchOperationsWithDetails(profile.tenant_id),
         supabase
           .from("cells")
           .select("id, name, color")
@@ -160,13 +180,14 @@ export default function WorkQueue() {
     } finally {
       setLoading(false);
     }
-  }, [activeOperator?.id, profile?.tenant_id, t]);
+  }, [activeOperator?.id, operationId, profile?.tenant_id, showCompleted, t]);
 
   // Realtime delivers one event per touched row, so a single multi-operation
   // action (or a busy shift) arrives as a burst. Coalesce bursts into one
   // refetch instead of refetching the whole queue per event.
   const scheduleRealtimeRefresh = useDebouncedCallback(() => {
-    void loadData();
+    if (operationId) void refetchLinkedOperation();
+    else void loadData();
   }, 250);
 
   const setupRealtimeSubscriptions = useCallback(() => {
@@ -335,7 +356,7 @@ export default function WorkQueue() {
     return { cell, operations: cellOps, inProgress, onHold, rushCount, totalHours, totalPcs };
   });
 
-  if (loading) {
+  if (loading || (operationId && linkedLoading)) {
     return (
       <div
         className="flex h-[calc(100vh-160px)] gap-3 overflow-hidden pt-2"
@@ -354,8 +375,15 @@ export default function WorkQueue() {
     );
   }
 
+  if (operationId && !linkedOperation) {
+    return <div className="space-y-4 p-4" role="alert">
+      <p>{t(linkedError ? 'workQueue.failedToLoad' : 'workQueue.operationNotFound')}</p>
+      <Button onClick={() => navigate('/operator/work-queue', { replace: true })}>{t('common.back')}</Button>
+    </div>;
+  }
+
   return (
-    <div className="flex h-[calc(100vh-160px)] flex-col overflow-hidden">
+    <div className="flex min-w-0 flex-col md:h-[calc(100dvh-210px)] md:overflow-hidden">
       {/* ── Compact filter bar ── */}
       <div className="shrink-0 border-b border-border bg-card/80 px-3 py-2 backdrop-blur-sm">
         <div className="flex flex-wrap items-center gap-2">
@@ -492,7 +520,7 @@ export default function WorkQueue() {
       </div>
 
       {/* ── Kanban board — horizontal scroll of columns ── */}
-      <div className="flex min-h-0 flex-1 overflow-x-auto">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col md:flex-row md:overflow-x-auto">
         {kanbanColumns.length === 0 ? (
           <div className="flex flex-1 items-center justify-center">
             <div className="flex flex-col items-center gap-3 text-center">
@@ -512,7 +540,7 @@ export default function WorkQueue() {
           kanbanColumns.map(({ cell, operations: cellOps, inProgress, onHold, rushCount, totalHours, totalPcs }) => (
             <div
               key={cell.id}
-              className="flex h-full w-[320px] shrink-0 flex-col border-r border-border last:border-r-0"
+              className="flex w-full shrink-0 flex-col border-b border-border md:h-full md:w-[320px] md:border-b-0 md:border-r md:last:border-r-0"
             >
               {/* Column header */}
               <div className="shrink-0 border-b border-border bg-muted/30 px-3 py-2">
@@ -555,7 +583,7 @@ export default function WorkQueue() {
               </div>
 
               {/* Column body — scrollable cards */}
-              <div className="flex-1 overflow-y-auto p-2">
+              <div className="flex-1 p-2 md:overflow-y-auto">
                 {cellOps.length === 0 ? (
                   <div className="flex h-full items-center justify-center p-4">
                     <div className="text-center text-xs text-muted-foreground">
@@ -589,17 +617,18 @@ export default function WorkQueue() {
         )}
       </div>
 
-      {/* Tap-to-scan dialog wired to the home-screen "Scan Job" shortcut
-          (?scan=1) and to anything else that wants to fire a scan from
-          this page. Result becomes the search query — the operator lands
-          on a queue filtered to whatever they just scanned. */}
+      {linkedOperation && <OperationDetailModal
+        key={linkedOperation.id}
+        operation={linkedOperation}
+        open
+        initialIssueOpen={searchParams.get('tab') === 'issue'}
+        onOpenChange={(open) => { if (!open) navigate('/operator/work-queue', { replace: true }); }}
+        onUpdate={() => { void loadData(); void refetchLinkedOperation(); }}
+      />}
       <ScanDialog
         open={scanOpen}
         onOpenChange={setScanOpen}
-        onResult={(value) => {
-          setSearchQuery(value);
-          setScanOpen(false);
-        }}
+        onResult={handleScanResult}
       />
     </div>
   );

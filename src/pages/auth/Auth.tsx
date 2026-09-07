@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
 import { useAuthActions } from "@/hooks/useAuthActions";
-import { useNative } from "@/hooks/useNative";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,7 @@ import { Loader2, ArrowRight, CheckCircle2, Info, Monitor } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
 import { Link } from "react-router-dom";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { resolvePostAuthTarget } from "@/routes/launchTargets";
 
 export default function Auth() {
@@ -32,12 +31,10 @@ export default function Auth() {
   const { signIn, signUp } = useAuthActions();
   const navigate = useNavigate();
   const location = useLocation();
-  const native = useNative();
 
   const redirectTarget = profile
     ? resolvePostAuthTarget({
         role: profile.role,
-        preferMobileShell: native.isNative || native.isMobileShell,
         state: location.state,
       })
     : null;

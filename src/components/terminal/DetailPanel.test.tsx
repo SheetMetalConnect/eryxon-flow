@@ -1,3 +1,5 @@
+import type { TerminalJob } from "@/types/terminal";
+import type { OperationWithDetails } from "@/lib/database";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@/test/utils";
 import { DetailPanel } from "./DetailPanel";
@@ -27,11 +29,11 @@ vi.mock("./JobFlowProgress", () => ({
 }));
 
 vi.mock("@/components/operator/IssueForm", () => ({
-  default: () => null,
+  default: (): null => null,
 }));
 
 vi.mock("@/components/operator/ProductionQuantityModal", () => ({
-  default: () => null,
+  default: (): null => null,
 }));
 
 vi.mock("@/hooks/useProfile", () => ({
@@ -39,7 +41,7 @@ vi.mock("@/hooks/useProfile", () => ({
 }));
 
 vi.mock("@/hooks/useQRMMetrics", () => ({
-  useCellQRMMetrics: () => ({ metrics: null }),
+  useCellQRMMetrics: (): { metrics: null } => ({ metrics: null }),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -73,7 +75,7 @@ vi.mock("@/integrations/supabase/client", () => ({
   },
 }));
 
-const baseJob = {
+const baseJob: TerminalJob = {
   id: "job-1",
   jobCode: "JOB-001",
   description: "PART-001",
@@ -99,7 +101,7 @@ const baseJob = {
   isBulletCard: false,
 };
 
-const operations = [
+const operations: OperationWithDetails[] = [
   {
     id: "op-1",
     operation_name: "Laser cutting",
@@ -107,6 +109,7 @@ const operations = [
     sequence: 1,
     estimated_time: 2,
     actual_time: 0,
+    updated_at: null,
     status: "not_started",
     completion_percentage: 0,
     notes: null,
@@ -140,7 +143,7 @@ describe("DetailPanel", () => {
   it("omits the instruction section entirely when there are no notes", async () => {
     substepRows.splice(0, substepRows.length);
 
-    render(<DetailPanel job={baseJob} operations={operations as any} />);
+    render(<DetailPanel job={baseJob} operations={operations} />);
 
     // No empty placeholder — the Instruction label/section is simply not shown.
     await waitFor(() => {
@@ -160,7 +163,7 @@ describe("DetailPanel", () => {
       notes: null,
     });
 
-    render(<DetailPanel job={baseJob} operations={operations as any} />);
+    render(<DetailPanel job={baseJob} operations={operations} />);
 
     // The routing operation is visible in the default Steps tab; its substeps
     // stay collapsed until the operator taps the operation row.

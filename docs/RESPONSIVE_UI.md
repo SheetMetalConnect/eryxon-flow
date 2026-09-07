@@ -1,3 +1,9 @@
+# Responsive operator interface
+
+Phone, tablet, and desktop use the same operator routes, queue, scan input, operation detail, activity, and issue views. The terminal shows one pane at a time below 768px; Back returns from detail to the queue. Legacy `/m` links redirect to the corresponding `/operator` routes and preserve operation IDs and query parameters.
+
+The regular responsive website is the default. Set `VITE_ENABLE_PWA=true` **at build time** to enable the install manifest and service worker. Disabled builds remove the manifest link and unregister only the app's own `sw.js` worker when loaded; they leave unrelated registrations and caches intact. Existing controlled tabs finish their current page lifecycle before using the network-only version on their next navigation/reload. There is no separate native/mobile shell.
+
 This document describes the responsive design patterns and SaaS-style UI conventions used throughout Eryxon Flow.
 
 The app is designed to work **equally well on all screen sizes** - desktop, tablet, and mobile. It is not mobile-first or desktop-first, but rather **responsive and adaptive** to provide the best experience on each device.

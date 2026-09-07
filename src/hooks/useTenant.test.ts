@@ -3,12 +3,11 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    profile: null, user: null, session: null, loading: false,
     tenant: { id: "t1", name: "Test Co", plan: "pro", status: "active",
-      trial_ends_at: null, company_name: "Test Co",
-      whitelabel_enabled: false, whitelabel_logo_url: null,
-      whitelabel_app_name: null, whitelabel_primary_color: null,
-      whitelabel_favicon_url: null },
+      trial_ends_at: null as null, company_name: "Test Co",
+      whitelabel_enabled: false, whitelabel_logo_url: null as null,
+      whitelabel_app_name: null as null, whitelabel_primary_color: null as null,
+      whitelabel_favicon_url: null as null },
     signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(),
     switchTenant: vi.fn(), refreshTenant: vi.fn(),
   }),

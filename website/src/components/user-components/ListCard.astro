@@ -18,7 +18,7 @@ const { title, imageIcon, icon, number, image } = Astro.props;
         />
       )}
       {icon && !imageIcon && (
-         <Icon name={icon} class="w-8 h-8 text-primary" style="color: var(--sl-color-accent-high);" />
+         <Icon name={icon} class="w-8 h-8 text-primary" />
       )}
       <h3 class="text-h5! sm:text-h4! mt-0!">{title}</h3>
     </div>

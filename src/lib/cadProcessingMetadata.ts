@@ -1,5 +1,5 @@
 import type { CADBackendMode } from "@/config/cadBackend";
-import type { BoundingBox, GeometryData, PMIData } from "@/hooks/useCADProcessing";
+import type { BoundingBox, GeometryData, PMIData } from "@/types/cad";
 
 type MetadataRecord = Record<string, unknown>;
 

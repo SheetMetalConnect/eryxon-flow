@@ -16,7 +16,7 @@ import { describe, it, expect, vi } from 'vitest';
 // exist before the import graph below evaluates. vi.hoisted runs first.
 vi.hoisted(() => {
   (globalThis as unknown as { Deno: unknown }).Deno = {
-    env: { get: (_key: string) => undefined },
+    env: { get: (_key: string): undefined => undefined },
   };
 });
 

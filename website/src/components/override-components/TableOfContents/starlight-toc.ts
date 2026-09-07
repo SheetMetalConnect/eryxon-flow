@@ -1,4 +1,4 @@
-import { PAGE_TITLE_ID } from "node_modules/@astrojs/starlight/constants";
+
 
 
 
@@ -30,7 +30,7 @@ export class StarlightTOC extends HTMLElement {
 		const isHeading = (el: Element): el is HTMLHeadingElement => {
 			if (el instanceof HTMLHeadingElement) {
 				// Special case for page title h1
-				if (el.id === PAGE_TITLE_ID) return true;
+				if (el === document.querySelector("h1")) return true;
 				// Check the heading level is within the user-configured limits for the ToC
 				const level = el.tagName[1];
 				if (level) {

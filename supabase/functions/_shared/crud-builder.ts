@@ -1,26 +1,5 @@
-/**
- * Generic CRUD Handler Builder
- *
- * Eliminates repetitive CRUD boilerplate by providing configurable handlers
- * for standard database operations. Handles pagination, filtering, validation,
- * soft deletes, and more.
- *
- * Usage:
- * ```ts
- * import { serveApi } from "@shared/handler.ts";
- * import { createCrudHandler } from "@shared/crud-builder.ts";
- *
- * export default serveApi(createCrudHandler({
- *   table: 'jobs',
- *   selectFields: '*, parts(id, part_number)',
- *   searchFields: ['job_number', 'customer'],
- *   allowedFilters: ['status', 'customer'],
- *   sortableFields: ['created_at', 'job_number'],
- *   validator: JobValidator,
- * }));
- * ```
- */
-
+import { validateCrudWrite } from "./crud-write-policy.ts";
+import type { ValidationContext, ValidationResult } from "./validation/types.ts";
 import type { HandlerContext } from "./handler.ts";
 import {
   createSuccessResponse,
@@ -28,6 +7,26 @@ import {
   BadRequestError,
   ValidationException,
 } from "./validation/errorHandler.ts";
+
+interface QueryResult<T> { data: T | null; error: { message: string } | null; count?: number | null }
+interface CrudQuery extends PromiseLike<QueryResult<unknown[]>> {
+  eq(column: string, value: unknown): CrudQuery;
+  is(column: string, value: boolean | null): CrudQuery;
+  in(column: string, values: readonly unknown[]): CrudQuery;
+  gt(column: string, value: unknown): CrudQuery;
+  gte(column: string, value: unknown): CrudQuery;
+  lte(column: string, value: unknown): CrudQuery;
+  ilike(column: string, pattern: string): CrudQuery;
+  or(filters: string): CrudQuery;
+  order(column: string, options?: { ascending?: boolean; foreignTable?: string }): CrudQuery;
+  range(from: number, to: number): CrudQuery;
+  maybeSingle(): PromiseLike<QueryResult<unknown>>;
+}
+type QueryModifier = (query: CrudQuery, ctx: HandlerContext) => { query: CrudQuery } | Promise<{ query: CrudQuery }>;
+type ValidatorConstructor = new () => {
+  validate(value: unknown, context: ValidationContext): ValidationResult | Promise<ValidationResult>;
+  validatePartial?(value: unknown, context: ValidationContext): ValidationResult | Promise<ValidationResult>;
+};
 
 export interface CrudConfig {
   /** Database table name */
@@ -55,7 +54,7 @@ export interface CrudConfig {
   softDelete?: boolean;
 
   /** Validator class for POST/PATCH validation (optional) */
-  validator?: any;
+  validator?: ValidatorConstructor;
 
   /** Custom handlers to override default behavior */
   customHandlers?: {
@@ -66,7 +65,7 @@ export interface CrudConfig {
   };
 
   /** Custom query modifications for GET requests */
-  queryModifier?: (query: any, ctx: HandlerContext) => any;
+  queryModifier?: QueryModifier;
 
   /** Skip automatic tenant_id filter (for tables without tenant_id column, e.g. webhook_logs) */
   skipTenantFilter?: boolean;
@@ -86,7 +85,7 @@ export interface CrudConfig {
    * `activity_log` with the request-correlated id. Best-effort: failures here
    * must not break the create response.
    */
-  onCreated?: (ctx: HandlerContext, record: any) => Promise<void>;
+  onCreated?: (ctx: HandlerContext, record: Record<string, unknown>) => Promise<void>;
 }
 
 /**
@@ -187,7 +186,7 @@ async function handleGet(
     sortableFields: string[];
     defaultSort: { field: string; direction: 'asc' | 'desc' };
     softDelete: boolean;
-    queryModifier?: (query: any, ctx: HandlerContext) => any;
+    queryModifier?: QueryModifier;
     skipTenantFilter?: boolean;
   }
 ): Promise<Response> {
@@ -211,7 +210,7 @@ async function handleGet(
     let query = supabase
       .from(table)
       .select(selectFields)
-      .eq('id', id);
+      .eq('id', id) as unknown as CrudQuery;
 
     if (!skipTenantFilter) {
       query = query.eq('tenant_id', tenantId);
@@ -222,7 +221,7 @@ async function handleGet(
     }
 
     if (queryModifier) {
-      query = await queryModifier(query, ctx);
+      ({ query } = await queryModifier(query, ctx));
     }
 
     const { data, error } = await query.maybeSingle();
@@ -241,7 +240,7 @@ async function handleGet(
   // List items with pagination and filters
   let query = supabase
     .from(table)
-    .select(selectFields, { count: 'exact' });
+    .select(selectFields, { count: 'exact' }) as unknown as CrudQuery;
 
   if (!skipTenantFilter) {
     query = query.eq('tenant_id', tenantId);
@@ -285,23 +284,18 @@ async function handleGet(
 
   // Apply custom query modifications
   if (queryModifier) {
-    query = await queryModifier(query, ctx);
+    ({ query } = await queryModifier(query, ctx));
   }
 
   // Pagination
-  let limit = parseInt(url.searchParams.get('limit') || '100');
-  if (limit < 1) limit = 1;
-  if (limit > 1000) limit = 1000;
-
-  const offset = parseInt(url.searchParams.get('offset') || '0');
-
-  // Apply pagination — ensure query is resolved if it's a Promise
-  if (query && typeof query.then === 'function' && typeof query.range !== 'function') {
-    query = await query;
+  const requestedLimit = Number(url.searchParams.get('limit') ?? 100);
+  const offset = Number(url.searchParams.get('offset') ?? 0);
+  if (!Number.isInteger(requestedLimit) || !Number.isInteger(offset) || offset < 0) {
+    throw new BadRequestError('limit and offset must be integers; offset must be non-negative');
   }
-  if (typeof query.range === 'function') {
-    query = query.range(offset, offset + limit - 1);
-  }
+  const limit = Math.min(1000, Math.max(1, requestedLimit));
+
+  query = query.range(offset, offset + limit - 1);
 
   const { data, error, count } = await query;
 
@@ -326,19 +320,19 @@ async function handlePost(
   req: Request,
   ctx: HandlerContext,
   table: string,
-  validator: any,
+  validator: ValidatorConstructor | undefined,
   softDelete: boolean,
   entityKey: string,
-  onCreated?: (ctx: HandlerContext, record: any) => Promise<void>
+  onCreated?: (ctx: HandlerContext, record: Record<string, unknown>) => Promise<void>
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
-  const body = await req.json();
+  const body = await validateCrudWrite(table, await req.json(), tenantId, supabase);
 
   // Validate if validator provided
   if (validator) {
     const validatorInstance = new validator();
-    const validation = await validatorInstance.validate(body, { tenantId, supabase });
+    const validation = await validatorInstance.validate(body, { tenantId });
     if (!validation.valid) {
       throw new ValidationException(validation);
     }
@@ -380,7 +374,7 @@ async function handlePatch(
   req: Request,
   ctx: HandlerContext,
   table: string,
-  validator: any,
+  validator: ValidatorConstructor | undefined,
   softDelete: boolean,
   entityKey: string
 ): Promise<Response> {
@@ -391,16 +385,16 @@ async function handlePatch(
     throw new BadRequestError('ID parameter is required for updates');
   }
 
-  const body = await req.json();
+  const body = await validateCrudWrite(table, await req.json(), tenantId, supabase);
 
   // Partial validation for PATCH: validate provided fields individually
   // (skip required-field enforcement, but enforce type/length constraints)
   if (validator) {
     const validatorInstance = new validator();
     if (typeof validatorInstance.validatePartial === 'function') {
-      const validation = await validatorInstance.validatePartial(body, { tenantId, supabase });
+      const validation = await validatorInstance.validatePartial(body, { tenantId });
       if (!validation.valid) {
-        throw new ValidationException(validation.errors);
+        throw new ValidationException(validation);
       }
     }
   }
@@ -488,13 +482,13 @@ async function handleSync(
   ctx: HandlerContext,
   table: string,
   syncIdField: string,
-  validator: any,
+  validator: ValidatorConstructor | undefined,
   softDelete: boolean = false,
   entityKey: string
 ): Promise<Response> {
   const { supabase, tenantId } = ctx;
 
-  const body = await req.json();
+  const body = await validateCrudWrite(table, await req.json(), tenantId, supabase);
 
   if (!body[syncIdField]) {
     throw new BadRequestError(`${syncIdField} is required for sync operations`);
@@ -508,7 +502,7 @@ async function handleSync(
   // Validate if validator provided
   if (validator) {
     const validatorInstance = new validator();
-    const validation = await validatorInstance.validate(body, { tenantId, supabase });
+    const validation = await validatorInstance.validate(body, { tenantId });
     if (!validation.valid) {
       throw new ValidationException(validation);
     }
@@ -527,7 +521,8 @@ async function handleSync(
     query = query.is('deleted_at', null);
   }
 
-  const { data: existing } = await query.maybeSingle();
+  const { data: existing, error: lookupError } = await query.maybeSingle();
+  if (lookupError) throw new Error(`Failed to look up ${table}: ${lookupError.message}`);
 
   // Generate sync hash for change detection
   const encoder = new TextEncoder();
@@ -553,6 +548,7 @@ async function handleSync(
         updated_at: now,
       })
       .eq('id', existing.id)
+      .eq('tenant_id', tenantId)
       .select()
       .single();
 
@@ -585,7 +581,7 @@ async function handleBulkSync(
   ctx: HandlerContext,
   table: string,
   syncIdField: string,
-  validator: any,
+  validator: ValidatorConstructor | undefined,
   softDelete: boolean = false,
   entityKey: string
 ): Promise<Response> {
@@ -594,7 +590,7 @@ async function handleBulkSync(
   const body = await req.json();
 
   // Support both new format {items: [...]} and legacy format {jobs: [...], parts: [...], etc.}
-  let items: any[];
+  let items: unknown[];
   if (Array.isArray(body.items)) {
     items = body.items;
   } else if (Array.isArray(body[table])) {
@@ -612,11 +608,12 @@ async function handleBulkSync(
     created: 0,
     updated: 0,
     failed: 0,
-    errors: [] as any[],
+    errors: [] as Array<{ item: unknown; error: unknown }>,
   };
 
-  for (const item of items) {
+  for (const rawItem of items) {
     try {
+      const item = await validateCrudWrite(table, rawItem, tenantId, supabase);
       if (!item[syncIdField]) {
         results.failed++;
         results.errors.push({
@@ -639,7 +636,7 @@ async function handleBulkSync(
       // Validate if validator provided
       if (validator) {
         const validatorInstance = new validator();
-        const validation = await validatorInstance.validate(item, { tenantId, supabase });
+        const validation = await validatorInstance.validate(item, { tenantId });
         if (!validation.valid) {
           results.failed++;
           results.errors.push({
@@ -663,7 +660,8 @@ async function handleBulkSync(
         query = query.is('deleted_at', null);
       }
 
-      const { data: existing } = await query.maybeSingle();
+      const { data: existing, error: lookupError } = await query.maybeSingle();
+  if (lookupError) throw new Error(`Failed to look up ${table}: ${lookupError.message}`);
 
       // Generate sync hash
       const encoder = new TextEncoder();
@@ -681,24 +679,27 @@ async function handleBulkSync(
       };
 
       if (existing) {
-        await supabase
+        const { error } = await supabase
           .from(table)
           .update({
             ...dataToUpsert,
             updated_at: now,
           })
-          .eq('id', existing.id);
+          .eq('id', existing.id)
+          .eq('tenant_id', tenantId);
+        if (error) throw new Error(`Failed to sync ${table}: ${error.message}`);
         results.updated++;
       } else {
-        await supabase
+        const { error } = await supabase
           .from(table)
           .insert(dataToUpsert);
+        if (error) throw new Error(`Failed to sync ${table}: ${error.message}`);
         results.created++;
       }
     } catch (error) {
       results.failed++;
       results.errors.push({
-        item,
+        item: rawItem,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }

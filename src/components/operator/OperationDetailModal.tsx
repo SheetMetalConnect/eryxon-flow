@@ -47,6 +47,7 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import type { Tables } from "@/integrations/supabase/types";
 import { supabase } from "@/integrations/supabase/client";
 import { EnhancedMetadataDisplay } from "@/components/ui/EnhancedMetadataDisplay";
 import { FlowCell } from "@/components/FlowCell";
@@ -63,6 +64,7 @@ interface OperationDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onUpdate: () => void;
+  initialIssueOpen?: boolean;
 }
 
 export default function OperationDetailModal({
@@ -70,13 +72,14 @@ export default function OperationDetailModal({
   open,
   onOpenChange,
   onUpdate,
+  initialIssueOpen = false,
 }: OperationDetailModalProps) {
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
   const [loading, setLoading] = useState(false);
-  const [showIssueForm, setShowIssueForm] = useState(false);
+  const [showIssueForm, setShowIssueForm] = useState(initialIssueOpen);
   const [showAssemblyWarning, setShowAssemblyWarning] = useState(false);
   const [incompleteChildren, setIncompleteChildren] = useState<string[]>([]);
   const [fileViewerOpen, setFileViewerOpen] = useState(false);
@@ -85,7 +88,7 @@ export default function OperationDetailModal({
     null,
   );
   const [currentFileTitle, setCurrentFileTitle] = useState<string>("");
-  const [requiredResources, setRequiredResources] = useState<any[]>([]);
+  const [requiredResources, setRequiredResources] = useState<Array<Tables<"operation_resources"> & { resource: Tables<"resources"> | null }>>([]);
 
   const isCurrentUserTiming =
     operation.active_time_entry?.operator_id === operatorId;
@@ -267,10 +270,11 @@ export default function OperationDetailModal({
       <SheetContent
         side="right"
         className="w-full sm:max-w-[600px] p-0 flex flex-col glass-card border-l border-white/10"
+        style={{ paddingTop: "env(safe-area-inset-top)", paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex-shrink-0 border-b border-white/10 bg-background/95 backdrop-blur-sm">
           <SheetHeader className="p-4">
-            <div className="flex items-start justify-between gap-3 pr-8">
+            <div className="flex items-start justify-between gap-3 pr-14">
               <div className="flex-1 min-w-0">
                 <SheetTitle className="text-xl font-semibold truncate">
                   {operation.operation_name}
@@ -421,9 +425,9 @@ export default function OperationDetailModal({
               </div>
             )}
 
-            {(operation as unknown as { metadata?: Record<string, unknown> }).metadata && (
+            {operation.metadata && typeof operation.metadata === "object" && !Array.isArray(operation.metadata) && (
               <EnhancedMetadataDisplay
-                metadata={(operation as unknown as { metadata: Record<string, unknown> }).metadata}
+                metadata={operation.metadata}
                 title="Process Settings"
                 showTypeIndicator={true}
                 compact={true}
@@ -437,7 +441,9 @@ export default function OperationDetailModal({
                   {t("operations.requiredResources")}
                 </div>
                 <div className="space-y-2">
-                  {requiredResources.map((opResource: any) => (
+                  {requiredResources.map((opResource) => {
+                    if (!opResource.resource) return null;
+                    return (
                     <div
                       key={opResource.id}
                       className="border rounded-md p-3 bg-card/50"
@@ -448,7 +454,7 @@ export default function OperationDetailModal({
                             <p className="font-medium text-sm truncate">
                               {opResource.resource.name}
                             </p>
-                            {opResource.quantity > 1 && (
+                            {(opResource.quantity ?? 0) > 1 && (
                               <Badge variant="secondary" className="text-[10px] px-1 py-0">
                                 ×{opResource.quantity}
                               </Badge>
@@ -491,7 +497,7 @@ export default function OperationDetailModal({
                         </div>
                       )}
 
-                      {opResource.resource.metadata && (
+                      {opResource.resource.metadata && typeof opResource.resource.metadata === "object" && !Array.isArray(opResource.resource.metadata) && (
                         <div className="mt-2">
                           <EnhancedMetadataDisplay
                             metadata={opResource.resource.metadata}
@@ -501,7 +507,8 @@ export default function OperationDetailModal({
                         </div>
                       )}
                     </div>
-                  ))}
+                  );
+                  })}
                 </div>
               </div>
             )}

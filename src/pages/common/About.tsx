@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DOCS_GUIDES_URL } from "@/lib/config";

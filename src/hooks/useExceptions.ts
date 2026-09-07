@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client'
 import { useProfile } from '@/hooks/useProfile'
 import { QueryKeys } from '@/lib/queryClient'
 import { toast } from 'sonner'
-import type { ExceptionStatus, ExceptionWithExpectation } from '@/integrations/supabase/types/tables/expectations'
+import type { ExceptionStatus, ExceptionWithExpectation } from '@/types/exceptions'
 import type { Json } from '@/integrations/supabase/types'
 import { logger } from '@/lib/logger'
 

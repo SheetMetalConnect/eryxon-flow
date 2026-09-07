@@ -4,73 +4,12 @@ import { dispatchOperationStarted, dispatchOperationCompleted } from "../event-d
 import { logger } from '@/lib/logger';
 import { parseOperatorTerminalModeNote } from "@/features/operator-terminal/workModes";
 import { fetchInChunks } from "./chunked";
-
-interface OperationQueryResult {
-  status: string;
-  part_id: string;
-  cell_id: string;
-  operation_name: string;
-  part: {
-    id: string;
-    part_number: string;
-    job: {
-      id: string;
-      job_number: string;
-    };
-  };
-}
-
-interface ActiveTimeEntryResult {
-  id: string;
-  operation_id: string;
-  operator_id: string;
-  start_time: string;
-  notes?: string | null;
-  operations?: {
-    operation_name: string;
-  };
-  operator?: {
-    full_name: string;
-  } | {
-    full_name: string;
-  }[];
-}
-
-interface JobOperationResult {
-  cell_id: string;
-  cells: {
-    sequence: number;
-  };
-}
-
-interface PartOperationResult {
-  status: string;
-  cell_id: string;
-  cells: {
-    sequence: number;
-  };
-}
-
-interface CompleteOperationQueryResult {
-  part_id: string;
-  operation_name: string;
-  estimated_time: number | null;
-  actual_time: number | null;
-  assigned_operator_id: string | null;
-  part: {
-    id: string;
-    part_number: string;
-    job: {
-      id: string;
-      job_number: string;
-    };
-  };
-}
+import { fetchAllPages } from "./pagination";
 
 export interface OperationWithDetails {
   id: string;
   operation_name: string;
-  operation_type: string | null;
+  operation_type?: string | null;
   sequence: number;
   estimated_time: number;
   actual_time: number;
@@ -78,6 +17,7 @@ export interface OperationWithDetails {
   status: "not_started" | "in_progress" | "completed" | "on_hold";
   completion_percentage: number;
   notes: string | null;
+  metadata?: Tables<"operations">["metadata"];
   assigned_operator_id: string | null;
   cell_id: string;
   planned_start: string | null;
@@ -213,8 +153,9 @@ interface OperationModeHistoryResult {
 async function fetchOperationsWithDetailsInternal(
   tenantId: string,
   includeCompleted: boolean,
+  operationId?: string,
 ): Promise<OperationWithDetails[]> {
-  const { data: operations, error: operationsError } = await supabase
+  let operationQuery = supabase
     .from("operations")
     .select(`
       *,
@@ -245,39 +186,25 @@ async function fetchOperationsWithDetailsInternal(
       )
     `)
     .eq("tenant_id", tenantId)
-    .order("sequence");
+    .order("sequence")
+    .order("id");
 
-  if (operationsError) {
-    logger.error('Database', 'Error fetching operations with details', operationsError);
-    throw operationsError;
-  }
+  if (!includeCompleted) operationQuery = operationQuery.neq("status", "completed");
+  if (operationId) operationQuery = operationQuery.eq("id", operationId);
+  const visibleOperations = await fetchAllPages((from, to) => operationQuery.range(from, to));
+  if (visibleOperations.length === 0) return [];
 
-  if (!operations) {
-    logger.warn('Database', 'No operations found for tenant', tenantId);
-    return [];
-  }
-
-  const visibleOperations = includeCompleted
-    ? operations
-    : operations.filter((operation) => operation.status !== "completed");
-
-  const { data: activeEntries, error: entriesError } = await supabase
+  const activeEntries = await fetchAllPages((from, to) => supabase
     .from("time_entries")
     .select(`
-      id,
-      operation_id,
-      operator_id,
-      start_time,
-      notes,
-      operator:profiles!inner(full_name)
+      id, operation_id, operator_id, shop_floor_operator_id, start_time, notes,
+      operator:profiles!operator_id(full_name),
+      shop_floor_operator:operators!shop_floor_operator_id(full_name)
     `)
     .eq("tenant_id", tenantId)
-    .is("end_time", null);
-
-  if (entriesError) {
-    logger.error('Database', 'Error fetching active time entries', entriesError);
-    throw entriesError;
-  }
+    .is("end_time", null)
+    .order("id")
+    .range(from, to));
 
   const operationIds = visibleOperations.map((operation) => operation.id);
   const activeEntriesByOperation = new Map(
@@ -285,12 +212,10 @@ async function fetchOperationsWithDetailsInternal(
       entry.operation_id,
       {
         id: entry.id,
-        operator_id: entry.operator_id,
+        operator_id: entry.shop_floor_operator_id ?? entry.operator_id,
         start_time: entry.start_time,
         notes: entry.notes ?? null,
-        operator: Array.isArray(entry.operator)
-          ? (entry.operator[0] as { full_name: string })
-          : (entry.operator as { full_name: string }),
+        operator: entry.shop_floor_operator ?? entry.operator ?? { full_name: "Unknown" },
       },
     ]),
   );
@@ -463,6 +388,11 @@ export async function fetchOperationLookupDetails(tenantId: string): Promise<Ope
   return fetchOperationsWithDetailsInternal(tenantId, true);
 }
 
+export async function fetchOperationDetails(tenantId: string, operationId: string): Promise<OperationWithDetails | null> {
+  const operations = await fetchOperationsWithDetailsInternal(tenantId, true, operationId);
+  return operations[0] ?? null;
+}
+
 export interface OperationPlanUpdate {
   /** Planned time in MINUTES (operations.estimated_time). */
   estimated_time?: number;
@@ -514,363 +444,68 @@ export async function startTimeTracking(
   tenantId: string,
   notes?: string,
 ) {
-  const { data: existingForOperation } = await supabase
-    .from("time_entries")
-    .select("id")
-    .eq("operation_id", operationId)
-    .eq("operator_id", operatorId)
-    .is("end_time", null);
-
-  // Prevent duplicate entries for same operation (race condition protection)
-  if (existingForOperation && existingForOperation.length > 0) {
-    logger.debug('Database', 'Time entry already exists for this operation, skipping duplicate');
-    return; // Silently succeed - entry already exists
-  }
-
-  const { data: activeEntries } = await supabase
-    .from("time_entries")
-    .select("id, operation_id, operations(operation_name)")
-    .eq("operator_id", operatorId)
-    .eq("tenant_id", tenantId)
-    .neq("operation_id", operationId)
-    .is("end_time", null);
-
-  if (activeEntries && activeEntries.length > 0) {
-    const activeOperation = activeEntries[0] as ActiveTimeEntryResult;
-    throw new Error(
-      `Please stop timing on "${activeOperation.operations?.operation_name || 'current operation'}" before starting a new operation`
-    );
-  }
-
-  const { data: operation } = await supabase
-    .from("operations")
-    .select(`
-      status,
-      part_id,
-      cell_id,
-      operation_name,
-      part:parts!inner(
-        id,
-        part_number,
-        job:jobs!inner(
-          id,
-          job_number
-        )
-      )
-    `)
-    .eq("id", operationId)
-    .single();
-
-  if (!operation) throw new Error("Operation not found");
-
-  const { data: operator } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", operatorId)
-    .single();
-
-  const startedAt = new Date().toISOString();
-  const isNewStart = operation.status === "not_started";
-
-  // Create time entry - use a lock by checking again right before insert
-  const { data: doubleCheck } = await supabase
-    .from("time_entries")
-    .select("id")
-    .eq("operation_id", operationId)
-    .eq("operator_id", operatorId)
-    .is("end_time", null);
-
-  if (doubleCheck && doubleCheck.length > 0) {
-    logger.debug('Database', 'Time entry created by concurrent request, skipping');
-    return;
-  }
-
-  const { error: timeError } = await supabase.from("time_entries").insert({
-    operation_id: operationId,
-    operator_id: operatorId,
-    tenant_id: tenantId,
-    start_time: startedAt,
-    notes: notes ?? null,
+  const { data, error } = await supabase.rpc("transition_operation", {
+    p_tenant_id: tenantId,
+    p_operation_id: operationId,
+    p_action: "start",
+    p_operator_id: operatorId,
+    p_notes: notes ?? null,
   });
-
-  if (timeError) throw timeError;
-
-  if (isNewStart) {
-    const { error: statusError } = await supabase
-      .from("operations")
-      .update({ status: "in_progress" })
-      .eq("id", operationId);
-    if (statusError) throw statusError;
-
-    const operationData = operation as OperationQueryResult;
-    dispatchOperationStarted(tenantId, {
-      operation_id: operationId,
-      operation_name: operationData.operation_name,
-      part_id: operationData.part_id,
-      part_number: operationData.part.part_number,
-      job_id: operationData.part.job.id,
-      job_number: operationData.part.job.job_number,
-      operator_id: operatorId,
-      operator_name: operator?.full_name || 'Unknown',
-      started_at: startedAt,
-    }).then(result => {
-      if (!result.success) {
-        logger.error('Database', 'Failed to dispatch operation.started event', result.errors);
-      }
-    });
-  }
-
-  const { data: part } = await supabase
-    .from("parts")
-    .select("status, job_id, current_cell_id")
-    .eq("id", operation.part_id)
-    .single();
-
-  if (!part) return;
-
-  if (part.status === "not_started") {
-    const { error: partStatusError } = await supabase
-      .from("parts")
-      .update({
-        status: "in_progress",
-        current_cell_id: operation.cell_id
-      })
-      .eq("id", operation.part_id);
-    if (partStatusError) throw partStatusError;
-  } else if (part.current_cell_id !== operation.cell_id) {
-    const { error: partCellError } = await supabase
-      .from("parts")
-      .update({ current_cell_id: operation.cell_id })
-      .eq("id", operation.part_id);
-    if (partCellError) throw partCellError;
-  }
-
-  const { data: jobOperations } = await supabase
-    .from("operations")
-    .select("cell_id, cells!inner(sequence)")
-    .eq("tenant_id", tenantId)
-    .eq("part_id", operation.part_id)
-    .eq("status", "in_progress");
-
-  if (jobOperations && jobOperations.length > 0) {
-    // Get the earliest cell (lowest sequence) that has in_progress operations
-    const typedOperations = jobOperations as JobOperationResult[];
-    const earliestCell = typedOperations.reduce((earliest, o) => {
-      return o.cells.sequence < earliest.sequence
-        ? { cell_id: o.cell_id, sequence: o.cells.sequence }
-        : earliest;
-    }, { cell_id: typedOperations[0].cell_id, sequence: typedOperations[0].cells.sequence });
-
-    const { data: job } = await supabase
-      .from("jobs")
-      .select("status, current_cell_id")
-      .eq("id", part.job_id)
-      .eq("tenant_id", tenantId)
-      .single();
-
-    if (job) {
-      const updates: Partial<Pick<Tables<'jobs'>, 'status' | 'current_cell_id'>> = {};
-
-      if (job.status === "not_started") {
-        updates.status = "in_progress";
-      }
-
-      if (job.current_cell_id !== earliestCell.cell_id) {
-        updates.current_cell_id = earliestCell.cell_id;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        const { error: jobUpdateError } = await supabase
-          .from("jobs")
-          .update(updates)
-          .eq("id", part.job_id);
-        if (jobUpdateError) throw jobUpdateError;
-      }
-    }
-  }
+  if (error) throw error;
+  if (data && typeof data === "object" && !Array.isArray(data) && data.changed === false) return;
+  await dispatchCommittedOperation(operationId, tenantId, operatorId, "start",
+    data && typeof data === "object" && !Array.isArray(data) && typeof data.operator_name === "string" ? data.operator_name : undefined);
 }
 
 export async function completeOperation(operationId: string, tenantId: string, operatorId?: string) {
-  const { data: activeEntry } = await supabase
-    .from("time_entries")
-    .select("id, operator_id")
-    .eq("operation_id", operationId)
-    .is("end_time", null)
-    .maybeSingle();
-
-  if (activeEntry) {
-    throw new Error("Please stop time tracking before completing the operation");
-  }
-
-  const { data: operation } = await supabase
-    .from("operations")
-    .select(`
-      part_id,
-      operation_name,
-      estimated_time,
-      actual_time,
-      assigned_operator_id,
-      part:parts!inner(
-        id,
-        part_number,
-        job:jobs!inner(
-          id,
-          job_number
-        )
-      )
-    `)
-    .eq("id", operationId)
-    .single();
-
-  if (!operation) throw new Error("Operation not found");
-
-  const completedAt = new Date().toISOString();
-  const effectiveOperatorId = operatorId || operation.assigned_operator_id;
-
-  let operatorName = 'Unknown';
-  if (effectiveOperatorId) {
-    const { data: operator } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", effectiveOperatorId)
-      .single();
-    operatorName = operator?.full_name || 'Unknown';
-  }
-
-  const { error: completeOpError } = await supabase
-    .from("operations")
-    .update({
-      status: "completed",
-      completed_at: completedAt,
-      completion_percentage: 100,
-    })
-    .eq("id", operationId);
-  if (completeOpError) throw completeOpError;
-
-  const operationData = operation as CompleteOperationQueryResult;
-  dispatchOperationCompleted(tenantId, {
-    operation_id: operationId,
-    operation_name: operationData.operation_name,
-    part_id: operationData.part_id,
-    part_number: operationData.part.part_number,
-    job_id: operationData.part.job.id,
-    job_number: operationData.part.job.job_number,
-    operator_id: effectiveOperatorId || '',
-    operator_name: operatorName,
-    completed_at: completedAt,
-    actual_time: operationData.actual_time || 0,
-    estimated_time: operationData.estimated_time || 0,
-  }).then(result => {
-    if (!result.success) {
-      logger.error('Database', 'Failed to dispatch operation.completed event', result.errors);
-    }
+  const { data, error } = await supabase.rpc("transition_operation", {
+    p_tenant_id: tenantId,
+    p_operation_id: operationId,
+    p_action: "complete",
+    p_operator_id: operatorId ?? null,
   });
-
-  const { data: partOperations } = await supabase
-    .from("operations")
-    .select("status, cell_id, cells!inner(sequence)")
-    .eq("part_id", operation.part_id);
-
-  const allCompleted = partOperations?.every((o) => o.status === "completed");
-  const inProgressOperations = partOperations?.filter((o) => o.status === "in_progress");
-
-  if (allCompleted) {
-    const { data: part } = await supabase
-      .from("parts")
-      .select("job_id")
-      .eq("id", operation.part_id)
-      .single();
-
-    const { error: completePartError } = await supabase
-      .from("parts")
-      .update({
-        status: "completed",
-        current_cell_id: null  // Clear current cell when complete
-      })
-      .eq("id", operation.part_id);
-    if (completePartError) throw completePartError;
-
-    if (part) {
-      const { data: jobParts } = await supabase
-        .from("parts")
-        .select("status")
-        .eq("job_id", part.job_id);
-
-      const allPartsCompleted = jobParts?.every((p) => p.status === "completed");
-
-      if (allPartsCompleted) {
-        const { error: completeJobError } = await supabase
-          .from("jobs")
-          .update({
-            status: "completed",
-            current_cell_id: null  // Clear current cell when complete
-          })
-          .eq("id", part.job_id);
-        if (completeJobError) throw completeJobError;
-      } else {
-        await recalculateJobCurrentCell(part.job_id);
-      }
-    }
-  } else if (inProgressOperations && inProgressOperations.length > 0) {
-    const typedInProgress = inProgressOperations as PartOperationResult[];
-    const earliestCell = typedInProgress.reduce((earliest, o) => {
-      return o.cells.sequence < earliest.sequence
-        ? { cell_id: o.cell_id, sequence: o.cells.sequence }
-        : earliest;
-    }, { cell_id: typedInProgress[0].cell_id, sequence: typedInProgress[0].cells.sequence });
-
-    const { error: partCellUpdateError } = await supabase
-      .from("parts")
-      .update({ current_cell_id: earliestCell.cell_id })
-      .eq("id", operation.part_id);
-    if (partCellUpdateError) throw partCellUpdateError;
-
-    const { data: part } = await supabase
-      .from("parts")
-      .select("job_id")
-      .eq("id", operation.part_id)
-      .single();
-
-    if (part) {
-      await recalculateJobCurrentCell(part.job_id);
-    }
-  }
+  if (error) throw error;
+  if (data && typeof data === "object" && !Array.isArray(data) && data.changed === false) return;
+  await dispatchCommittedOperation(operationId, tenantId, operatorId, "complete",
+    data && typeof data === "object" && !Array.isArray(data) && typeof data.operator_name === "string" ? data.operator_name : undefined);
 }
 
-async function recalculateJobCurrentCell(jobId: string) {
-  const { data: jobParts } = await supabase
-    .from("parts")
-    .select("id")
-    .eq("job_id", jobId);
-
-  if (!jobParts || jobParts.length === 0) return;
-
-  const partIds = jobParts.map(p => p.id);
-
-  const { data: inProgressOperations } = await supabase
-    .from("operations")
-    .select("cell_id, cells!inner(sequence)")
-    .in("part_id", partIds)
-    .eq("status", "in_progress");
-
-  if (inProgressOperations && inProgressOperations.length > 0) {
-    const typedOperations = inProgressOperations as JobOperationResult[];
-    const earliestCell = typedOperations.reduce((earliest, o) => {
-      return o.cells.sequence < earliest.sequence
-        ? { cell_id: o.cell_id, sequence: o.cells.sequence }
-        : earliest;
-    }, { cell_id: typedOperations[0].cell_id, sequence: typedOperations[0].cells.sequence });
-
-    const { error: jobCellError } = await supabase
-      .from("jobs")
-      .update({ current_cell_id: earliestCell.cell_id })
-      .eq("id", jobId);
-    if (jobCellError) throw jobCellError;
-  } else {
-    const { error: jobCellNullError } = await supabase
-      .from("jobs")
-      .update({ current_cell_id: null })
-      .eq("id", jobId);
-    if (jobCellNullError) throw jobCellNullError;
+async function dispatchCommittedOperation(
+  operationId: string,
+  tenantId: string,
+  operatorId: string | undefined,
+  action: "start" | "complete",
+  actorName?: string,
+) {
+  try {
+    const { data: operation, error } = await supabase.from("operations")
+      .select("id, operation_name, part_id, assigned_operator_id, started_at, completed_at, actual_time, estimated_time, part:parts!part_id(part_number, job:jobs!job_id(id, job_number))")
+      .eq("id", operationId).eq("tenant_id", tenantId).single();
+    if (error) throw error;
+    const effectiveOperator = operatorId ?? operation.assigned_operator_id;
+    const { data: operator, error: operatorError } = effectiveOperator
+      ? await supabase.from("profiles").select("full_name").eq("id", effectiveOperator).eq("tenant_id", tenantId).maybeSingle()
+      : { data: null, error: null };
+    if (operatorError) throw operatorError;
+    const payload = {
+      operation_id: operationId,
+      operation_name: operation.operation_name,
+      part_id: operation.part_id,
+      part_number: operation.part.part_number,
+      job_id: operation.part.job.id,
+      job_number: operation.part.job.job_number,
+      operator_id: effectiveOperator ?? "",
+      operator_name: actorName ?? operator?.full_name ?? "Unknown",
+    };
+    const result = action === "start"
+      ? await dispatchOperationStarted(tenantId, { ...payload, started_at: operation.started_at })
+      : await dispatchOperationCompleted(tenantId, {
+        ...payload, completed_at: operation.completed_at,
+        actual_time: operation.actual_time ?? 0, estimated_time: operation.estimated_time ?? 0,
+      });
+    if (!result.success) logger.error("Database", "Operation event dispatch failed", result.errors);
+  } catch (error) {
+    // The transaction committed; a notification failure must not invite a duplicate mutation.
+    logger.error("Database", "Committed operation event could not be dispatched", error);
   }
 }

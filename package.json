@@ -1,7 +1,7 @@
 {
   "name": "eryxon-flow",
   "private": true,
-  "version": "0.9.2",
+  "version": "0.10.0",
   "license": "BUSL-1.1",
   "type": "module",
   "scripts": {
@@ -9,6 +9,7 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "typecheck": "tsc -b --pretty false",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
@@ -22,7 +23,11 @@
     "pwa:assets": "pwa-assets-generator --preset minimal-2023 public/pwa-icon.svg",
     "deps:graph": "madge --ts-config tsconfig.app.json --extensions ts,tsx --json src/App.tsx > docs/dependency-graph.json",
     "deps:circular": "madge --ts-config tsconfig.app.json --extensions ts,tsx --circular src/App.tsx",
-    "screenshots:terminal": "node scripts/screenshots/capture-terminal.mjs"
+    "screenshots:terminal": "node scripts/screenshots/capture-terminal.mjs",
+    "test:edge": "deno test --allow-env --allow-read --config supabase/functions/deno.json supabase/functions/",
+    "test:db": "bash scripts/test-db.sh",
+    "test:release": "node --test scripts/deploy-image.test.mjs scripts/check-release.test.mjs scripts/check-pr-review.test.mjs",
+    "pr:review": "node scripts/check-pr-review.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -66,13 +71,10 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
-    "embla-carousel-react": "^8.6.0",
     "i18next": "^26.0.6",
     "i18next-browser-languagedetector": "^8.2.1",
-    "input-otp": "^1.4.2",
     "jszip": "^3.10.1",
     "lucide-react": "^1.8.0",
-    "next-themes": "^0.4.6",
     "papaparse": "^5.5.3",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
@@ -84,11 +86,9 @@
     "react-joyride": "^2.9.3",
     "react-markdown": "^10.1.0",
     "react-pdf": "^10.4.1",
-    "react-resizable-panels": "^4.7.2",
     "react-router-dom": "^7.13.1",
     "recharts": "^3.8.1",
     "sonner": "^2.0.7",
-    "supabase": "^2.92.1",
     "swagger-ui-react": "^5.32.1",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
@@ -130,6 +130,13 @@
     "typescript-eslint": "^8.58.2",
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.3.0",
-    "vitest": "^4.0.18"
+    "vitest": "^4.0.18",
+    "supabase": "^2.92.1"
+  },
+  "overrides": {
+    "sharp": "^0.35.4"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

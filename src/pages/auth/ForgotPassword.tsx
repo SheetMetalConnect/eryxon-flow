@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, ArrowLeft, Factory, CheckCircle2, Mail } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { AuthCardHeader, AuthShell } from "@/components/auth/AuthShell";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { logger } from "@/lib/logger";
 
 export default function ForgotPassword() {

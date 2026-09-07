@@ -25,12 +25,13 @@ serveApi(
     sortableFields: ['name', 'operation_type', 'created_at'],
     defaultSort: { field: 'name', direction: 'asc' },
     softDelete: false,
+    skipTenantFilter: true,
     queryModifier: (query, ctx) => {
       // Allow fetching global templates OR tenant-specific templates
       query = query.or(`tenant_id.eq.${ctx.tenantId},is_global.eq.true`);
       // Order template items by sequence
       query = query.order('sequence', { foreignTable: 'substep_template_items', ascending: true });
-      return query;
+      return { query };
     },
   })
 );

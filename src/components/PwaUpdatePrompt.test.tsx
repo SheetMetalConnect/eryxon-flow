@@ -5,7 +5,7 @@ import { PwaUpdatePrompt } from "./PwaUpdatePrompt";
 const mocks = vi.hoisted(() => ({
   isNativeApp: vi.fn(() => false),
   useRegisterSW: vi.fn(),
-  toast: Object.assign(vi.fn(() => "toast-id"), {
+  toast: Object.assign(vi.fn((_message: string, _options?: { action: { label: string; onClick: () => void } }) => "toast-id"), {
     success: vi.fn(),
     loading: vi.fn(),
     dismiss: vi.fn(),
@@ -39,7 +39,14 @@ function mockRegisterSW({
 describe("PwaUpdatePrompt", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("VITE_ENABLE_PWA", "true");
     mocks.isNativeApp.mockReturnValue(false);
+  });
+
+  it("does not register when PWA is disabled", () => {
+    vi.stubEnv("VITE_ENABLE_PWA", "false");
+    render(<PwaUpdatePrompt />);
+    expect(mocks.useRegisterSW).not.toHaveBeenCalled();
   });
 
   it("never registers the service worker inside the native shell", () => {
@@ -62,13 +69,16 @@ describe("PwaUpdatePrompt", () => {
     expect(setOfflineReady).toHaveBeenCalledWith(false);
   });
 
-  it("auto-applies the update and shows an updating toast when a new version is ready", () => {
+  it("waits for an explicit reload before applying an update", () => {
     const { updateServiceWorker } = mockRegisterSW({ needRefresh: true });
     render(<PwaUpdatePrompt />);
-
-    // No manual tap: `true` posts SKIP_WAITING so the waiting SW activates and reloads.
+    expect(updateServiceWorker).not.toHaveBeenCalled();
+    expect(mocks.toast).toHaveBeenCalledWith("pwa.updateAvailable", expect.objectContaining({
+      action: expect.objectContaining({ label: "pwa.reload", onClick: expect.any(Function) }),
+    }));
+    const options = mocks.toast.mock.calls[0][1];
+    options?.action.onClick();
     expect(updateServiceWorker).toHaveBeenCalledWith(true);
-    expect(mocks.toast.loading).toHaveBeenCalledWith("pwa.updating", expect.anything());
   });
 
   it("does not toast or update when there is nothing to announce", () => {

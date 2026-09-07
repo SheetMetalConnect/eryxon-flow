@@ -93,6 +93,7 @@ export default function AcceptInvitation() {
           full_name: invitation.email.split('@')[0], // Temporary, user can update later
           role: invitation.role as 'admin' | 'operator',
           tenant_id: invitation.tenant_id,
+          invitation_token: token,
         }
       );
 

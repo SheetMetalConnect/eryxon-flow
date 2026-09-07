@@ -37,7 +37,7 @@ describe("HandoffRemarksSection", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    const builder = {
+    const builder: { error: null; eq: typeof mockEq } = {
       error: null,
       eq: mockEq,
     };

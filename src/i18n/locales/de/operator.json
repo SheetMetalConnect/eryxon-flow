@@ -1,5 +1,7 @@
 {
   "workQueue": {
+    "operationNotFound": "Dieser Arbeitsgang ist nicht mehr verfügbar.",
+    "scanInputHint": "Mit einem angeschlossenen Scanner scannen oder einen Auftrags-, Teile- oder Arbeitsgangcode eingeben.",
     "filtersAndControls": "Filter & Steuerung",
     "statistics": "Statistiken",
     "total": "Gesamt",

@@ -16,7 +16,16 @@ alter table public.tenants alter column trial_ends_at set default (now() + inter
 -- Backfill existing free tenants to a fresh 30-day trial + limits.
 -- The new-signup webhook fires on tenants UPDATE; disable it for the bulk
 -- write so we don't emit a notification per backfilled row.
-alter table public.tenants disable trigger "notify-new-signup";
+do $$
+begin
+  if exists (
+    select 1 from pg_trigger
+    where tgrelid = 'public.tenants'::regclass and tgname = 'notify-new-signup'
+  ) then
+    alter table public.tenants disable trigger "notify-new-signup";
+  end if;
+end;
+$$;
 
 update public.tenants
 set max_jobs = 100,
@@ -27,4 +36,13 @@ set max_jobs = 100,
     updated_at = now()
 where plan = 'free';
 
-alter table public.tenants enable trigger "notify-new-signup";
+do $$
+begin
+  if exists (
+    select 1 from pg_trigger
+    where tgrelid = 'public.tenants'::regclass and tgname = 'notify-new-signup'
+  ) then
+    alter table public.tenants enable trigger "notify-new-signup";
+  end if;
+end;
+$$;

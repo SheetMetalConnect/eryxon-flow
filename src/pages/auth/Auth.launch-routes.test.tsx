@@ -4,7 +4,6 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 const useProfileMock = vi.fn();
 const useAuthActionsMock = vi.fn();
-const useNativeMock = vi.fn();
 
 vi.mock("react-i18next", () => ({
   useTranslation: () => ({
@@ -16,9 +15,6 @@ vi.mock("@/hooks/useProfile", () => ({
 }));
 vi.mock("@/hooks/useAuthActions", () => ({
   useAuthActions: () => useAuthActionsMock(),
-}));
-vi.mock("@/hooks/useNative", () => ({
-  useNative: () => useNativeMock(),
 }));
 vi.mock("@/components/LanguageSwitcher", () => ({
   LanguageSwitcher: () => <div>Language</div>,
@@ -36,10 +32,6 @@ describe("Auth launch routes", () => {
     useAuthActionsMock.mockReturnValue({
       signIn: vi.fn(),
       signUp: vi.fn(),
-    });
-    useNativeMock.mockReturnValue({
-      isNative: false,
-      isMobileShell: false,
     });
   });
 
@@ -65,11 +57,7 @@ describe("Auth launch routes", () => {
     });
   });
 
-  it("sends mobile-shell operators to /m/queue when there is no return target", async () => {
-    useNativeMock.mockReturnValue({
-      isNative: false,
-      isMobileShell: true,
-    });
+  it("uses the same operator queue on every viewport when no return target exists", async () => {
 
     render(
       <MemoryRouter initialEntries={["/auth"]}>
@@ -85,7 +73,7 @@ describe("Auth launch routes", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Mobile queue")).toBeInTheDocument();
+      expect(screen.getByText("Desktop queue")).toBeInTheDocument();
     });
   });
 });

@@ -1,3 +1,4 @@
+import { validateCrudWrite } from "@shared/crud-write-policy.ts";
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import { canCreateParts } from "@shared/plan-limits.ts";
@@ -35,6 +36,11 @@ async function handleCreate(
   if (!body.job_id) throw new BadRequestError("job_id is required");
 
   const { operations, ...partData } = body;
+  await validateCrudWrite("parts", partData, tenantId, supabase);
+  if (operations !== undefined && !Array.isArray(operations)) throw new BadRequestError("operations must be an array");
+  for (const op of operations ?? []) {
+    await validateCrudWrite("operations", op, tenantId, supabase);
+  }
 
   const { data: part, error } = await supabase
     .from("parts")
@@ -63,7 +69,8 @@ async function handleCreate(
         })
         .select()
         .single();
-      if (!opErr && created) createdOps.push(created);
+      if (opErr) throw new Error(`Failed to create nested operation: ${opErr.message}`);
+      createdOps.push(created);
     }
   }
 

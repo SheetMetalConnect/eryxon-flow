@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";

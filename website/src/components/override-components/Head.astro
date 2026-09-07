@@ -185,7 +185,7 @@ const supportedLangs = localeEntries.map(([key, val]) => ({
 <script>
   let initialised = false;
   const renderMermaid = async () => {
-    const blocks = document.querySelectorAll("pre.mermaid:not([data-processed])");
+    const blocks = document.querySelectorAll<HTMLElement>("pre.mermaid:not([data-processed])");
     if (blocks.length === 0) return;
     const { default: mermaid } = await import("mermaid");
     const dark = document.documentElement.dataset.theme === "dark";
