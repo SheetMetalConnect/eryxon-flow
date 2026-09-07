@@ -52,6 +52,9 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Fixed
 
+- Disabled PWA builds now serve a retiring worker at the existing URL so installed
+  clients can leave the old cached app. Retirement preserves open pages and caches;
+  the next navigation loads the regular web build.
 - Prevented browser writes from granting platform privileges, changing tenant
   membership or subscription limits, and calling privileged maintenance RPCs.
   Storage access and references between tenant-owned records now enforce tenant

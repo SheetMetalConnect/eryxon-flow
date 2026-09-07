@@ -85,16 +85,28 @@ export default defineConfig(({ mode }) => {
     react(),
     applyCspBuildRewrites(),
     {
-      name: "eryxon:pwa-manifest",
+      name: "eryxon:pwa",
       transformIndexHtml: (html: string) => pwaEnabled ? html : html.replace(/\s*<link rel="manifest"[^>]*>/, ""),
-    },
+      generateBundle() {
+        if (pwaEnabled) return;
+        this.emitFile({
+          type: "asset",
+          fileName: "sw.js",
+          // Existing Workbox clients cannot reach the disabled app through its cached index.
+          source: `self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.registration.unregister());
+});
+`,
+        });
+      },
+    } satisfies Plugin,
     VitePWA({
       disable: !pwaEnabled,
-      // The ONLY service worker is the Workbox `generateSW` output written to
-      // dist/sw.js at build time (it precaches the app shell and handles the
-      // SKIP_WAITING message itself). Do not add a hand-written public/sw.js:
-      // generateSW overwrites it in dist/, so it would silently never ship.
-      //
+      // Enabled builds generate the caching worker. Disabled builds serve the
+      // retirement worker above at the same URL so existing clients can upgrade.
       // Prompt the operator before activating a new SW: a Sonner toast in
       // src/components/PwaUpdatePrompt.tsx calls updateServiceWorker(true)
       // when the user clicks Reload. This prevents mid-shift forced reloads
