@@ -1,3 +1,7 @@
+# Responsive UI patterns
+
+Operator guidance lives in the [Operator Manual](https://eryxon.eu/guides/operator-manual/).
+
 This document describes the responsive design patterns and SaaS-style UI conventions used throughout Eryxon Flow.
 
 The app is designed to work **equally well on all screen sizes** - desktop, tablet, and mobile. It is not mobile-first or desktop-first, but rather **responsive and adaptive** to provide the best experience on each device.

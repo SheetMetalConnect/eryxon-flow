@@ -1,23 +1,11 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { isNativeApp } from "@/native";
 
-/**
- * Update-available toast for the PWA. **Do not render this inside a
- * Capacitor WebView.** Mounting it calls `navigator.serviceWorker
- * .register()`, which on Android (Chrome-based WebView) would install a
- * service worker for the app's origin and start intercepting Supabase
- * calls under `CAPACITOR_SERVER_URL=https://...`. iOS (WKWebView) doesn't
- * support SWs at all, so there it's just dead weight.
- *
- * Callers should gate the mount on `!isNativeApp()` (App.tsx does this).
- * The component itself also bails out as a belt-and-suspenders safety net.
- */
-export function PwaUpdatePrompt(): null {
-  if (isNativeApp()) {
-    // The hook below would still register if reached. Bail before it runs.
+export function PwaUpdatePrompt() {
+  if (import.meta.env.VITE_ENABLE_PWA !== "true" || isNativeApp()) {
     return null;
   }
   return <PwaUpdatePromptInner />;
@@ -29,6 +17,8 @@ const UPDATE_CHECK_INTERVAL_MS = 20 * 60 * 1000;
 
 function PwaUpdatePromptInner(): null {
   const { t } = useTranslation("common");
+  const timer = useRef<ReturnType<typeof setInterval>>();
+  useEffect(() => () => clearInterval(timer.current), []);
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh],
@@ -36,7 +26,8 @@ function PwaUpdatePromptInner(): null {
   } = useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
       if (!registration) return;
-      setInterval(() => {
+      clearInterval(timer.current);
+      timer.current = setInterval(() => {
         void registration.update();
       }, UPDATE_CHECK_INTERVAL_MS);
     },
@@ -49,12 +40,15 @@ function PwaUpdatePromptInner(): null {
     }
   }, [offlineReady, setOfflineReady, t]);
 
-  // Auto-apply updates: when a new version is ready, activate it and reload so
-  // the UI is always current — no manual "Reload" tap, no stale cached bundle.
   useEffect(() => {
     if (!needRefresh) return;
-    toast.loading(t("pwa.updating"), { id: "pwa-update", duration: Infinity });
-    void updateServiceWorker(true);
+    toast(t("pwa.updateAvailable"), {
+      id: "pwa-update",
+      description: t("pwa.updateDescription"),
+      duration: Infinity,
+      action: { label: t("pwa.reload"), onClick: () => void updateServiceWorker(true) },
+      cancel: { label: t("pwa.later"), onClick: () => undefined },
+    });
   }, [needRefresh, updateServiceWorker, t]);
 
   return null;

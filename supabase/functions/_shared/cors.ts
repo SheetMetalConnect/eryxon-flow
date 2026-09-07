@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "./runtime-env.ts";
 /**
  * CORS for Supabase Edge Functions.
  *
@@ -10,7 +11,7 @@
 const DEV_ORIGINS = ['http://localhost:5173', 'http://localhost:8080'];
 
 function allowedOrigins(): string[] {
-  const configured = (Deno.env.get('ALLOWED_ORIGIN') ?? '')
+  const configured = (getRuntimeEnv('ALLOWED_ORIGIN') ?? '')
     .split(',')
     .map((o) => o.trim())
     .filter(Boolean);

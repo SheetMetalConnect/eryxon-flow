@@ -1,6 +1,6 @@
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useMemo, useState } from "react";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
 import { ColumnDef } from "@tanstack/react-table";
@@ -50,27 +50,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { JobIssueBadge } from "@/components/issues/JobIssueBadge";
-import { FlowCell } from "@/components/FlowCell";
+import { CompactOperationsFlow } from "@/components/qrm/OperationsFlowVisualization";
+import { groupRoutingSteps } from "@/lib/routingSummary";
+import { fetchAllPages } from "@/lib/db/pagination";
+import type { RoutingStep } from "@/types/qrm";
 import { DataTable } from "@/components/ui/data-table/DataTable";
 import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
 import { cn } from "@/lib/utils";
-
-interface JobPart {
-  id: string;
-  file_paths: string[] | null;
-  operations: { id: string }[];
-}
-
-interface JobRow {
-  id: string;
-  job_number: string;
-  customer: string;
-  due_date: string;
-  due_date_override: string | null;
-  status: string;
-  parts: JobPart[] | null;
-}
 
 interface JobData {
   id: string;
@@ -85,6 +72,8 @@ interface JobData {
   pdfFiles: string[];
   hasSTEP: boolean;
   hasPDF: boolean;
+  hasBullet: boolean;
+  routing: RoutingStep[];
 }
 
 export default function Jobs() {
@@ -106,22 +95,18 @@ export default function Jobs() {
     refetch,
   } = useQuery({
     queryKey: QueryKeys.jobs.all(profile?.tenant_id ?? ''),
+    enabled: !!profile?.tenant_id,
     queryFn: async () => {
-      let query = supabase.from("jobs").select(`
+      const query = supabase.from("jobs").select(`
           *,
-          parts(id, file_paths, is_bullet_card, operations(id))
-        `);
+          parts(id, file_paths, is_bullet_card, operations(id, status, cell_id, cell:cells(id, name, color, sequence)))
+        `).eq("tenant_id", profile.tenant_id).order("id");
 
-      if (profile?.tenant_id) {
-        query = query.eq("tenant_id", profile.tenant_id);
-      }
+      const data = await fetchAllPages((from, to) => query.range(from, to));
 
-      const { data, error } = await query;
-      if (error) throw error;
-
-      return (data as JobRow[]).map((job) => {
+      return data.map((job) => {
         const allFiles: string[] =
-          job.parts?.flatMap((part: JobPart) => part.file_paths || []) || [];
+          job.parts?.flatMap((part) => part.file_paths || []) || [];
         const stepFiles = allFiles.filter((f) => {
           const ext = f.split(".").pop()?.toLowerCase();
           return ext === "step" || ext === "stp";
@@ -135,26 +120,25 @@ export default function Jobs() {
           parts_count: job.parts?.length || 0,
           operations_count:
             job.parts?.reduce(
-              (sum: number, part: JobPart) => sum + (part.operations?.length || 0),
+              (sum, part) => sum + (part.operations?.length || 0),
               0,
             ) || 0,
           stepFiles,
           pdfFiles,
           hasSTEP: stepFiles.length > 0,
           hasPDF: pdfFiles.length > 0,
-          hasBullet: job.parts?.some((part: any) => part.is_bullet_card) || false,
+          hasBullet: job.parts?.some((part) => part.is_bullet_card) || false,
+          routing: groupRoutingSteps(job.parts?.flatMap((part) => part.operations) ?? []),
         };
       })
-      // Rush jobs first, then by due date
-      .sort((a: any, b: any) => {
+      // Keep rush jobs first.
+      .sort((a, b) => {
         if (a.hasBullet && !b.hasBullet) return -1;
         if (!a.hasBullet && b.hasBullet) return 1;
         return 0;
       });
     },
   });
-
-  // FlowCell handles its own data fetching per-row — no bulk hook needed
 
   const handleSetOnHold = useCallback(async (jobId: string) => {
     const { error } = await supabase.from("jobs").update({ status: "on_hold" }).eq("id", jobId);
@@ -319,7 +303,7 @@ export default function Jobs() {
     {
       id: "flow",
       header: t("qrm.flow", "Flow"),
-      cell: ({ row }) => <FlowCell jobId={row.original.id} />,
+      cell: ({ row }) => <CompactOperationsFlow routing={row.original.routing} loading={false} />,
       size: 140,
     },
     {
@@ -459,10 +443,10 @@ export default function Jobs() {
     },
     {
       id: "rush",
-      accessorFn: (row: any) => row.hasBullet ? "rush" : "normal",
+      accessorFn: (row) => row.hasBullet ? "rush" : "normal",
       header: () => null,
       cell: () => null,
-      filterFn: (row: any, _id: string, value: string[]) => value.includes(row.getValue("rush")),
+      filterFn: (row, _id, value: string[]) => value.includes(row.getValue<string>("rush")),
       enableHiding: true,
     },
   ], [getStatusBadge, handleResume, handleSetOnHold, handleViewFile, t]);
@@ -544,7 +528,7 @@ export default function Jobs() {
           emptyMessage={t("jobs.noJobsFound") || "No jobs found."}
           searchDebounce={200}
           onRowClick={(row) => setSelectedJobId(row.id)}
-          rowClassName={(row: any) => row.hasBullet ? "ring-1 ring-red-500/30 bg-red-500/5 animate-[pulse_3s_ease-in-out_1]" : ""}
+          rowClassName={(row) => row.hasBullet ? "ring-1 ring-red-500/30 bg-red-500/5 animate-[pulse_3s_ease-in-out_1]" : ""}
           compact={true}
           columnVisibility={{ ...columnVisibility, rush: false }}
           maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}

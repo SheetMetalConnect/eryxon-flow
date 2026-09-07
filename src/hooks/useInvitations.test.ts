@@ -15,7 +15,7 @@ const mockProfile = {
 
 const mockUseProfile = vi.fn(() => mockProfile as any);
 vi.mock('@/hooks/useProfile', () => ({
-  useProfile: (...args: any[]) => mockUseProfile(...args),
+  useProfile: () => mockUseProfile(),
 }));
 
 // Per-table response map

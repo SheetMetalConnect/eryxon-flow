@@ -1,49 +1,26 @@
-import { lazy } from "react";
-import { Navigate, Route } from "react-router-dom";
-import { ProtectedRoute, RequireActiveOperator } from "./guards";
-import { LazyRoute } from "./LazyRoute";
-import { MobileShell } from "@/components/mobile";
+import { Navigate, Route, useLocation, useParams } from 'react-router-dom';
+import { ROUTES } from './constants';
 
-const MobileQueue = lazy(() => import("@/pages/mobile/MobileQueue"));
-const MobileOperationDetail = lazy(
-  () => import("@/pages/mobile/MobileOperationDetail"),
-);
-const MobileScanner = lazy(() => import("@/pages/mobile/MobileScanner"));
-const MobileActivity = lazy(() => import("@/pages/mobile/MobileActivity"));
-const MobileIssues = lazy(() => import("@/pages/mobile/MobileIssues"));
-const MobileTerminal = lazy(() => import("@/pages/mobile/MobileTerminal"));
-const MobileLogin = lazy(() => import("@/pages/mobile/MobileLogin"));
+function LegacyOperatorRedirect({ to, scan = false }: { to: string; scan?: boolean }) {
+  const location = useLocation();
+  const { operationId } = useParams();
+  const search = new URLSearchParams(location.search);
+  if (scan) search.set('scan', '1');
+  const pathname = operationId ? `/operator/operations/${encodeURIComponent(operationId)}` : to;
+  return <Navigate to={{ pathname, search: search.toString(), hash: location.hash }}
+    state={location.state} replace />;
+}
 
-/**
- * Mobile / iOS native shell routes. Mounted under `/m` so the existing
- * desktop URLs still work — operators who prefer the desktop terminal can
- * keep using it, the iOS app simply launches into `/m/queue` instead.
- */
+/** Preserve installed shortcuts and previously shared URLs on the common web UI. */
 export function MobileRoutes() {
-  return (
-    <>
-      <Route path="/m/login" element={<LazyRoute><MobileLogin /></LazyRoute>} />
-      <Route
-        path="/m"
-        element={
-          <ProtectedRoute>
-            <RequireActiveOperator>
-              <MobileShell />
-            </RequireActiveOperator>
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Navigate to="/m/queue" replace />} />
-        <Route path="queue" element={<LazyRoute><MobileQueue /></LazyRoute>} />
-        <Route
-          path="op/:operationId"
-          element={<LazyRoute><MobileOperationDetail /></LazyRoute>}
-        />
-        <Route path="scan" element={<LazyRoute><MobileScanner /></LazyRoute>} />
-        <Route path="activity" element={<LazyRoute><MobileActivity /></LazyRoute>} />
-        <Route path="issues" element={<LazyRoute><MobileIssues /></LazyRoute>} />
-        <Route path="terminal" element={<LazyRoute><MobileTerminal /></LazyRoute>} />
-      </Route>
-    </>
-  );
+  return <>
+    <Route path="/m" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.WORK_QUEUE} />} />
+    <Route path="/m/login" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.LOGIN} />} />
+    <Route path="/m/queue" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.WORK_QUEUE} />} />
+    <Route path="/m/op/:operationId" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.WORK_QUEUE} />} />
+    <Route path="/m/scan" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.WORK_QUEUE} scan />} />
+    <Route path="/m/activity" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.MY_ACTIVITY} />} />
+    <Route path="/m/issues" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.MY_ISSUES} />} />
+    <Route path="/m/terminal" element={<LegacyOperatorRedirect to={ROUTES.OPERATOR.VIEW} />} />
+  </>;
 }

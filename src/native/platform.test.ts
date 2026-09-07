@@ -8,7 +8,6 @@ import {
   isNativeApp,
   isNativeIOS,
   isTabletViewport,
-  shouldUseMobileShell,
 } from "./index";
 
 const ORIGINAL_UA = navigator.userAgent;
@@ -123,38 +122,10 @@ describe("isTabletViewport — must not lie after rotation", () => {
   });
 });
 
-describe("getPlatform / shouldUseMobileShell", () => {
+describe("getPlatform", () => {
   it("falls back to web fingerprint without Capacitor", () => {
     setUserAgent("Mozilla/5.0 (X11; Linux x86_64) Gecko/20100101 Firefox/127.0");
     expect(getPlatform()).toBe("web");
   });
 
-  it("respects the small-viewport heuristic on the web", () => {
-    // jsdom's matchMedia is stubbed to return matches=false, so we override
-    // with one that actually evaluates max-width against the current
-    // window.innerWidth.
-    const originalMatch = window.matchMedia;
-    window.matchMedia = vi.fn().mockImplementation((query: string) => {
-      const max = /max-width:\s*(\d+)px/.exec(query);
-      const matches = max ? window.innerWidth <= parseInt(max[1], 10) : false;
-      return {
-        matches,
-        media: query,
-        onchange: null,
-        addListener: vi.fn(),
-        removeListener: vi.fn(),
-        addEventListener: vi.fn(),
-        removeEventListener: vi.fn(),
-        dispatchEvent: vi.fn(),
-      } as unknown as MediaQueryList;
-    }) as unknown as typeof window.matchMedia;
-    try {
-      setViewport(800, 1200);
-      expect(shouldUseMobileShell()).toBe(true);
-      setViewport(1440, 900);
-      expect(shouldUseMobileShell()).toBe(false);
-    } finally {
-      window.matchMedia = originalMatch;
-    }
-  });
 });

@@ -116,7 +116,7 @@ describe('ERY-93 scheduled alert evaluation core', () => {
     const supabase = {
       from(table: string) {
         return {
-          async insert(r: Record<string, unknown>) {
+          async insert(r: Record<string, unknown>): Promise<{ error: null }> {
             inserted.push({ table, row: r });
             return { error: null };
           },

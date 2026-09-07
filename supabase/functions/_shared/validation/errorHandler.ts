@@ -41,10 +41,10 @@ export class NotFoundError extends Error {
 export class ConflictError extends Error {
   constructor(
     public resource: string,
-    public field: string,
-    public value: any,
+    public field?: string,
+    public value?: unknown,
   ) {
-    super(`${resource} with ${field} "${value}" already exists`);
+    super(field ? `${resource} with ${field} "${value}" already exists` : resource);
     this.name = "ConflictError";
   }
 }
@@ -72,6 +72,14 @@ export class InternalServerError extends Error {
     super(message);
     this.name = "InternalServerError";
   }
+}
+
+export function throwDatabaseError(error: { code?: string; message: string }): never {
+  if (error.code === "42501") throw new ForbiddenError(error.message);
+  if (error.code === "P0002") throw new NotFoundError(error.message);
+  if (error.code === "23505") throw new ConflictError("The record already exists");
+  if (["22023", "23503", "23514"].includes(error.code ?? "")) throw new BadRequestError(error.message);
+  throw new InternalServerError(error.message);
 }
 
 /**

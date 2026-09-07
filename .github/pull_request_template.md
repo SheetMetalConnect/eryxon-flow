@@ -1,23 +1,16 @@
-## Summary
-<!-- 1-3 bullet points -->
+## Change
 
-## Release Path
-<!-- Mark the intended production path for this change. -->
-- [ ] Next biweekly train
-- [ ] Critical hotfix exception
+Describe the problem and resulting behavior. Link the relevant technical issue.
 
-Planned train date (`YYYY-MM-DD`) or hotfix issue:
-<!-- If this is a hotfix, include the sanitized incident/approval reference. -->
+## Validation
 
-## Changes
-<!-- What was modified and why -->
+List the checks actually run and their results.
 
-## Checklist
-- [ ] Change was prepared on a non-`main` branch; no direct push to `main` was used
-- [ ] `npm run build` passes
-- [ ] `npm run test:run` passes
-- [ ] New tables have RLS policies
-- [ ] New UI text uses i18n keys (EN + NL + DE)
-- [ ] Edge functions have `deno.json` with import map
-- [ ] Column names verified against actual DB schema
-- [ ] No customer-identifying, credential, or commercial details were added to repo, PR, commit, or synced ticket surfaces
+## Rollout
+
+Describe migrations, compatibility requirements, or recovery steps when applicable.
+
+- [ ] Type check, build, and relevant tests pass
+- [ ] Changelog and affected documentation are updated
+- [ ] Tenant boundaries and authorization are covered where changed
+- [ ] No credentials, customer details, or commercial information are included

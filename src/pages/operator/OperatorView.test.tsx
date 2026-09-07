@@ -60,7 +60,7 @@ const mockCells = [
   { id: "cell-2", name: "Brake", color: "#16a34a" },
 ];
 
-const tenantSettings = {
+const tenantSettings: { feature_flags: null; factory_opening_time: string; factory_closing_time: string; timezone: string } = {
   feature_flags: null,
   factory_opening_time: "07:00:00",
   factory_closing_time: "17:00:00",
@@ -181,6 +181,25 @@ describe("OperatorView", () => {
     const expectedHeading = headings.find(h => h.textContent?.includes("expected"));
     expect(bufferHeading).toHaveTextContent("5");
     expect(expectedHeading).toHaveTextContent("1");
+  });
+
+  it("shows one usable pane at a phone viewport and returns to the queue", async () => {
+    const width = window.innerWidth;
+    Object.defineProperty(window, "innerWidth", { configurable: true, value: 390 });
+    mockFetchOperationLookupDetails.mockResolvedValue([createOperation("1", "not_started", 1)]);
+    try {
+      render(<OperatorView />);
+      await waitFor(() => expect(screen.getByText("JOB-1")).toBeInTheDocument());
+      expect(screen.queryByTestId("detail-panel")).not.toBeInTheDocument();
+      fireEvent.click(screen.getByText("JOB-1"));
+      expect(screen.getByTestId("detail-panel")).toHaveTextContent("JOB-1::Op 1");
+      expect(screen.queryByRole("table")).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: /common.back/ }));
+      expect(screen.queryByTestId("detail-panel")).not.toBeInTheDocument();
+      expect(screen.getByText("JOB-1")).toBeInTheDocument();
+    } finally {
+      Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+    }
   });
 
   it("captures newline-terminated scanner input and selects the matching operation", async () => {

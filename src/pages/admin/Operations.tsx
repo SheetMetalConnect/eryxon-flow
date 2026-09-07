@@ -1,3 +1,5 @@
+import { fetchAllPages } from "@/lib/db/pagination";
+import { fetchInChunks } from "@/lib/db/chunked";
 import React, { useState, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
@@ -42,22 +44,6 @@ interface Operation {
   resource_names: string[];
 }
 
-interface OperationRow {
-  id: string;
-  operation_name: string | null;
-  status: string | null;
-  assigned_operator_id: string | null;
-  part_id: string;
-  parts: {
-    part_number: string;
-    job_id: string;
-    current_cell_id: string | null;
-    jobs: { job_number: string } | null;
-  } | null;
-  cells: { name: string; color: string | null } | null;
-  profiles: { full_name: string | null; email: string } | null;
-}
-
 export const Operations: React.FC = () => {
   const { t } = useTranslation();
   const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
@@ -70,7 +56,7 @@ export const Operations: React.FC = () => {
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
 
-      const { data } = await supabase
+      const query = supabase
         .from("operations")
         .select(
           `
@@ -91,25 +77,24 @@ export const Operations: React.FC = () => {
             name,
             color
           ),
-          profiles:assigned_operator_id (
+          profiles:profiles!assigned_operator_id (
             full_name,
             email
           )
         `,
         )
         .eq("tenant_id", profile.tenant_id)
-        .order("created_at", { ascending: false });
-
-      if (!data) return [];
+        .order("created_at", { ascending: false }).order("id");
+      const data = await fetchAllPages((from, to) => query.range(from, to));
 
       const operationIds = data.map((op: { id: string }) => op.id);
-      const { data: resourceData } = await supabase
+      const resourceData = await fetchInChunks<{ operation_id: string; resource: { name: string } | null }>(operationIds, (ids) => supabase
         .from("operation_resources")
         .select(`
           operation_id,
           resource:resources(name)
         `)
-        .in("operation_id", operationIds);
+        .in("operation_id", ids));
 
       const resourceMap = new Map<string, { count: number; names: string[] }>();
       resourceData?.forEach((item: { operation_id: string; resource: { name: string } | null }) => {
@@ -125,7 +110,7 @@ export const Operations: React.FC = () => {
         info.names.push(resourceName);
       });
 
-      return (data as unknown as OperationRow[]).map((op) => {
+      return data.map((op) => {
         const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
 
         return {
@@ -144,7 +129,7 @@ export const Operations: React.FC = () => {
           resources_count: resourceInfo.count,
           resource_names: resourceInfo.names,
         };
-      }) as Operation[];
+      });
     },
     enabled: !!profile?.tenant_id,
   });
@@ -190,7 +175,7 @@ export const Operations: React.FC = () => {
     return (
       <StatusBadge
         status={badgeStatus[status] || "pending"}
-        label={status.replaceAll("_", " ")}
+        label={status.replace(/_/g, " ")}
       />
     );
   }, []);

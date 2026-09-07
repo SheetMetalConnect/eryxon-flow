@@ -189,10 +189,13 @@ async function dispatchToWebhooks(
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || result.success !== true || (result.failed ?? 0) > 0) {
       return { success: false, error: result.error || 'Webhook dispatch failed' };
     }
 
+    if (!response.ok || result.success !== true || (result.failed ?? 0) > 0) {
+      return { success: false, error: typeof result.error === 'string' ? result.error : 'Webhook dispatch failed' };
+    }
     return { success: true, dispatched: result.dispatched || 0 };
   } catch (error) {
     return {
@@ -238,8 +241,8 @@ async function dispatchToMqtt(
 
     const result = await response.json();
 
-    if (!response.ok) {
-      return { success: false, error: result.error || 'MQTT publish failed' };
+    if (!response.ok || result.success !== true || (result.failed ?? 0) > 0) {
+      return { success: false, error: typeof result.error === 'string' ? result.error : 'MQTT publish failed' };
     }
 
     return { success: true, published: result.published || 0 };

@@ -69,6 +69,18 @@ describe('event-dispatch', () => {
   });
 
   describe('dispatchEvent', () => {
+    it.each([
+      { ok: false, success: false, failed: 0 },
+      { ok: true, success: false, failed: 0 },
+      { ok: true, success: true, failed: 1 },
+    ])('reports downstream rejection $ok/$success/$failed', async ({ ok, success, failed }) => {
+      mockFetch.mockResolvedValue({ ok, json: async () => ({ success, failed }) });
+      const { dispatchEvent } = await import('./event-dispatch');
+      const result = await dispatchEvent('tenant-1', 'job.created', { id: 'test' });
+      expect(result.success).toBe(false);
+      expect(result.errors).toHaveLength(2);
+    });
+
     it('returns error when no active session for webhooks', async () => {
       // Override to return no session
       mockGetSession.mockResolvedValue({

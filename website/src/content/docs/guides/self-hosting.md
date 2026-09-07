@@ -1,476 +1,148 @@
 ---
 title: "Self-Hosting Guide"
-description: "Production-ready self-hosting guide for Eryxon Flow MES"
+description: "Configure, deploy, and update a self-hosted Eryxon Flow installation"
 ---
 
-Deploy Eryxon Flow on your own infrastructure with full control.
-
-This guide is the authoritative production checklist. For the shortest setup path, see the [Deployment Guide](/guides/deployment/).
+The default application is a responsive website. Phone, tablet, and desktop use the
+same interface; installing it as a PWA is optional.
 
 > **Licensing.** Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1. The source is on GitHub — read it, modify it, self-host it. Free production use covers a **single production site** (one facility or workshop) for your own internal operations, and the software is provided **AS IS**. Multi-site management, or offering the app as a service, needs the commercial **Premium** edition — see [Editions & Pricing](/pricing/). Each released version converts to its Change License, GNU GPL v2.0 or later, four years after release.
 
-## Quick Start (Recommended)
-
-The fastest way to get production-ready deployment using our automated script.
-
-### Prerequisites
-
-- Node.js 20+
-- Git
-- A Supabase project ([supabase.com](https://supabase.com) - free tier available)
-- Your Supabase credentials
-
-### One-Command Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/SheetMetalConnect/eryxon-flow.git
-cd eryxon-flow
-
-# Create your .env file (the automated script requires it)
-cp .env.example .env
-# Edit .env and fill in your Supabase credentials (URL, anon key, project ID)
-
-# Set your database password
-export SUPABASE_DB_PASSWORD='your-database-password'
-
-# Run automated setup
-chmod +x scripts/automate_self_hosting.sh
-./scripts/automate_self_hosting.sh
-```
-
-The script will automatically:
-1. Install required dependencies (Node.js packages)
-2. Install Supabase CLI globally (if not present)
-3. Fix configuration issues
-4. Link your Supabase project
-5. Apply database migrations (schema + seed)
-6. Deploy all Edge Functions
-7. Run verification checks
-
-### Start Development Server
-
-```bash
-npm run dev
-# Open http://localhost:8080
-```
-
-### First User Setup
-
-1. Navigate to the application
-2. Click **Sign Up**
-3. Enter email and password
-4. **First user automatically becomes admin** with a new tenant
-
----
-
-## Manual Setup (Step by Step)
-
-Use this for custom configurations or troubleshooting.
-
-### 1. Create Supabase Project
-
-1. Go to [supabase.com](https://supabase.com) → **New Project**
-2. Save these credentials from **Settings** → **API**:
-   - **Project URL**: `https://yourproject.supabase.co`
-   - **Project ID**: The subdomain (e.g., `yourproject`)
-   - **Anon key**: Public key for frontend
-   - **Service role key**: Secret key for backend
-   - **Database password**: From project creation
-
-### 2. Configure Environment
-
-```bash
-# Copy example file
-cp .env.example .env
-```
-
-Edit `.env`:
-```bash
-VITE_SUPABASE_URL="https://yourproject.supabase.co"
-VITE_SUPABASE_PUBLISHABLE_KEY="your-anon-key"
-VITE_SUPABASE_PROJECT_ID="yourproject"
-
-# Optional: For database scripts
-SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
-SUPABASE_DB_PASSWORD="your-database-password"
-```
-
-### 3. Link Supabase Project
-
-```bash
-# Install Supabase CLI
-npm install -g supabase
-
-# Login and link
-supabase login
-supabase link --project-ref yourproject
-```
-
-### 4. Apply Database Schema
-
-```bash
-# Push all migrations
-supabase db push
-
-# Verify migrations applied
-supabase migration list
-```
-
-### 5. Run Seed SQL
-
-Creates storage buckets, RLS policies, and cron jobs:
-
-```bash
-# Option A: Using Supabase CLI
-supabase db execute --file supabase/seed.sql
-
-# Option B: Via Dashboard
-# Go to SQL Editor, paste seed.sql content, and execute
-```
-
-### 6. Deploy Edge Functions
-
-```bash
-# Deploy all functions
-supabase functions deploy
-
-# Set required secrets
-supabase secrets set \
-  SUPABASE_URL="https://yourproject.supabase.co" \
-  SUPABASE_SERVICE_ROLE_KEY="your-service-role-key" \
-  SELF_HOSTED_MODE="true"
-```
-
-> `SELF_HOSTED_MODE` indicates deployment mode to the `plan-mode` edge function (used for UI messaging only). It does **not** disable plan limits. Higher operation ceilings are achieved by setting the tenant's `plan` field in the database to `enterprise` with `null` limit columns — the app treats `null` as no limit. Valid plan values are: `free`, `pro`, `premium`, `enterprise`.
-
-### 7. Configure signup notification webhook
-
-The signup notification uses a Supabase Database Webhook instead of hardcoded SQL URLs. Configure this in Supabase Dashboard:
-
-1. Open **Database -> Webhooks**
-2. Create a webhook named `notify-new-signup`
-3. Table: `public.profiles`
-4. Event: `INSERT`
-5. Type: `Supabase Edge Function`
-6. Edge Function: `notify-new-signup`
-7. Filter: `record.role = 'admin' AND record.has_email_login = true`
-
-This is required only if you want admin signup email notifications.
-
-### 8. Install and Run
-
-```bash
-# Install dependencies
-npm ci
-
-# Development mode
-npm run dev
-
-# Production build
-npm run build
-npm run preview
-```
-
----
-
-## Docker Deployment (Production)
-
-### Using Pre-built Image
-
-```bash
-# Pull latest image
-docker pull ghcr.io/sheetmetalconnect/eryxon-flow:latest
-
-# Run container with your runtime VITE_* configuration
-docker run -d \
-  -p 80:80 \
-  --name eryxon-flow \
-  --restart unless-stopped \
-  --env-file .env \
-  ghcr.io/sheetmetalconnect/eryxon-flow:latest
-```
-
-The shipped image reads your `VITE_*` variables at container start and writes them to `/env.js`, so you can point the same image at your own Supabase project without rebuilding it.
-
-### Build Custom Image
-
-If you want your own image artifact or build-time defaults, you can still build one locally:
-
-```bash
-docker build \
-  --build-arg VITE_SUPABASE_URL="https://yourproject.supabase.co" \
-  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY="your-anon-key" \
-  --build-arg VITE_SUPABASE_PROJECT_ID="yourproject" \
-  -t eryxon-flow .
-
-docker run -d -p 80:80 --name eryxon-flow eryxon-flow
-```
-
-### Docker Compose (Recommended)
-
-The repository ships with a ready-to-use `docker-compose.yml`. This is the single self-hosted Docker entry point and it already reads `.env` through `env_file`.
-
-```bash
-docker compose up -d
-```
-
-To build your own image instead of using `ghcr.io/sheetmetalconnect/eryxon-flow:latest`, replace the `image` line in `docker-compose.yml` with a `build` block:
-
-```yaml
-services:
-  eryxon-flow:
-    # Replace this:
-    #   image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
-    # With this:
-    build:
-      context: .
-      args:
-        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
-        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY}
-        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID}
-    container_name: eryxon-flow
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-```
-
-Make sure the corresponding `VITE_SUPABASE_*` variables are set in your `.env` file (Docker Compose reads `.env` automatically).
-
-Then rebuild and start:
-```bash
-docker compose up -d --build
-```
-
-### Docker Compose with SSL (Production)
-
-The repo no longer uses a separate `docker-compose.prod.yml`. For HTTPS, stay on the shipped `docker-compose.yml` and enable the optional Caddy service that is already commented into that file:
-
-1. Uncomment the `caddy` service and the `volumes:` block in `docker-compose.yml`
-2. Change the `eryxon-flow` service from `ports: ["80:80"]` to `expose: ["80"]`
-3. Edit the included `Caddyfile`
-4. Start the stack with `docker compose up -d`
-
-The shipped `Caddyfile` supports two real deployment modes:
-
-- a public hostname with automatic Let's Encrypt certificates
-- a LAN-only rollout with Caddy `tls internal`, a `.local` host, and a trusted local root certificate for operator devices
-
-Use the section that matches your environment and replace the example domain, `LAN_HOST`, or `LAN_IP` values before you bring the stack up.
-
----
-
-## Cloudflare Pages Deployment
-
-Best for edge deployment with global CDN.
-
-1. **Connect Repository**
-   - Go to [Cloudflare Pages](https://dash.cloudflare.com/)
-   - **Create a project** → Connect your Git repository
-
-2. **Configure Build**
-   - **Build command**: `npm run build`
-   - **Output directory**: `dist`
-
-3. **Set Environment Variables**
-   ```bash
-   VITE_SUPABASE_URL=https://yourproject.supabase.co
-   VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-   VITE_SUPABASE_PROJECT_ID=yourproject
-   ```
-
-4. **Deploy**
-   - Cloudflare handles SSL, CDN, and global distribution automatically
-
----
-
-## Optional Enhancements
-
-### Email Notifications (Resend)
-
-Enable automated email invitations and admin signup notifications:
-
-```bash
-supabase secrets set \
-  RESEND_API_KEY="re_your_api_key" \
-  APP_URL="https://your-domain.com" \
-  EMAIL_FROM="Eryxon <noreply@your-domain.com>" \
-  SIGNUP_NOTIFY_EMAIL="admin@your-domain.com"
-```
-
-> `SIGNUP_NOTIFY_EMAIL` is the address that receives notifications when a new company signs up. Required for the `notify-new-signup` edge function to send emails.
-
-### Cloudflare Turnstile (CAPTCHA)
-
-Add bot protection to auth forms:
-
-1. Create widget at [Cloudflare Turnstile](https://dash.cloudflare.com/?to=/:account/turnstile)
-2. Add to `.env`:
-   ```bash
-   VITE_TURNSTILE_SITE_KEY="your-site-key"
-   ```
-3. Configure secret key in Supabase **Authentication** → **Captcha Protection**
-4. On Vercel, keep the repo `vercel.json` so SPA rewrites and CSP headers continue to allow `https://challenges.cloudflare.com`
-
-### Redis Caching (Upstash)
-
-Improve Edge Function performance:
-
-```bash
-supabase secrets set \
-  UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io" \
-  UPSTASH_REDIS_REST_TOKEN="your-token"
-```
-
-### 3D STEP Viewer & CAD Processing
-
-The built-in 3D STEP viewer works **out of the box** using browser-based WASM parsing (`occt-import-js`). No server-side CAD service is required.
-
-**How it works:** STEP/STP files uploaded to the `parts-cad` storage bucket are parsed client-side using WebAssembly. The viewer supports orbit controls, exploded view, wireframe mode, and measurement tools (distance, angle, radius).
-
-**CSP requirements:** The STEP parser needs specific Content Security Policy directives. These are already configured in the shipped `index.html` and `vercel.json`, but if your reverse proxy (Nginx, Caddy, Cloudflare) **adds its own CSP headers**, make sure they include:
-
-```
-script-src 'self' 'unsafe-eval' 'wasm-unsafe-eval' https://cdn.jsdelivr.net;
-worker-src 'self' blob:;
-```
-
-| Directive | Reason |
-|-----------|--------|
-| `'unsafe-eval'` | Emscripten embind (occt-import-js) uses `new Function()` |
-| `'wasm-unsafe-eval'` | Explicit WASM compilation permission |
-| `https://cdn.jsdelivr.net` | CDN host for the `occt-import-js` library |
-| `worker-src blob:` | occt-import-js creates Web Workers from blob URLs |
-
-> **Note:** The default Nginx and Caddy configs shipped with this repo do **not** set CSP headers (they rely on the `<meta>` tag in `index.html`), so you only need to worry about this if you add custom CSP rules at the proxy level.
-
-**Optional: Server-side CAD processing**
-
-For server-side geometry extraction and PMI (Product Manufacturing Information) data, configure an external CAD service:
-
-```bash
-VITE_CAD_SERVICE_URL="https://your-cad-service.example.com"
-VITE_CAD_SERVICE_API_KEY="your-api-key"
-```
-
-If not configured, browser-based processing is used automatically. The viewer supports three backend modes: `custom` (Eryxon3D Docker), `byob` (Bring Your Own Backend), and `frontend` (browser-only, the default).
-
-### MCP Server (Optional - Local Use Only)
-
-The MCP server is **NOT part of the deployment stack**. It's an optional local tool for Claude Desktop integration.
-
-**What it does:**
-- Allows Claude Desktop to interact with your database using natural language
-- Provides 50 tools for managing jobs, parts, operations via AI
-
-**Quick start:**
-```bash
-cd mcp-server
-npm install && npm run build
-export SUPABASE_URL="https://your-project.supabase.co"
-export SUPABASE_SERVICE_KEY="your-service-key"
-npm start
-```
-
-**Complete setup instructions:** See [MCP Setup Guide](/guides/mcp-setup) for:
-- Local development setup
-- Cloud deployment (Railway, Fly.io, Docker)
-- Claude Desktop configuration
-- All 55 available tools
-
-> **Note:** Your self-hosted application works perfectly without the MCP server. It's only for developers who want AI assistant integration via Claude Desktop.
-
----
-
-## Verification
-
-Run the verification script to check your setup:
-
-```bash
-bash scripts/verify-setup.sh
-```
-
-Checks:
-- Environment variables
-- Supabase connectivity
-- Database tables
-- Storage buckets (see note below)
-- Dependencies
-- Production build
-
-> **Note:** Storage bucket check may report FAIL (HTTP 400) even when buckets exist. This is expected because the buckets are private (`public: false`) and the verification script uses the Anon Key, which cannot list private buckets. Verify manually via SQL:
-> ```sql
-> SELECT * FROM storage.buckets;
-> ```
-> Required buckets: `parts-images`, `issues`, `parts-cad`, `batch-images`
-
----
-
-## Updating Your Deployment
-
-### Pull Latest Changes
-
-```bash
-git pull origin main
-npm ci
-```
-
-### Update Database
-
-```bash
-supabase db push
-supabase functions deploy
-```
-
-### Rebuild Application
-
-```bash
-npm run build
-
-# For Docker:
-docker compose build --no-cache
-docker compose up -d
-```
-
----
-
-## Backups and recovery
-
-When you self-host, your data lives on your infrastructure — so backups are yours to own. Two things hold the application's state:
-
-- **The database** — every job, part, operation, time entry, issue, and setting.
-- **Storage** — uploaded drawings, 3D models, and images.
-
-Back up both together so a restore is consistent. With a Supabase stack that means a regular database dump plus a copy of the storage volume; most teams run this nightly and keep a copy off-box (another server or object storage).
-
-A backup you've never restored is a hope, not a backup. The repository ships a **restore drill** (`scripts/restore-drill.sh`) that takes a fresh backup, restores it into a throwaway database and temp directory, and checks parity — row counts per entity and file counts with sample checksums — without ever touching your live data. Run it periodically so you know recovery actually works before you need it.
+## Before deploying
+
+You need a Supabase backend with Auth, PostgreSQL, Storage, Realtime, and Edge
+Functions, plus a host for the frontend. The frontend Docker image does not contain
+the Supabase stack. For source builds, use Node 22 and repository access; the source
+repository is private.
+
+Use a reviewed release and its matching schema and functions. Maintainers should
+follow [RELEASING.md](https://github.com/SheetMetalConnect/eryxon-flow/blob/main/RELEASING.md)
+for required checks, release publication, production inputs, and rollback. Merging
+to `main` does not deploy production.
+
+Before applying migrations, back up the target database and storage, verify the
+project reference, and run the tenant-reference audit described in the release
+runbook. Apply migrations, then matching Edge Functions, then the frontend. Do not
+reset a production database or repair migration history as a routine upgrade step.
 
 ```mermaid
 flowchart LR
-  DB[("Database")] --> BK["Nightly backup<br/>db dump + storage copy"]
-  ST[("Storage")] --> BK
-  BK --> OFF["Off-box copy"]
-  BK -. periodic .-> DR["Restore drill →<br/>throwaway target →<br/>verify parity"]
+  R[Reviewed release] --> V[Verify target and backup]
+  V --> M[Apply migrations]
+  M --> E[Deploy matching Edge Functions]
+  E --> F[Deploy frontend digest]
+  F --> T[Test authenticated workflows]
 ```
 
----
+## Frontend configuration
 
-## Security Checklist
+Copy `.env.example` to `.env` and configure the public frontend values:
 
-- [ ] `.env` file is in `.gitignore` (never commit)
-- [ ] Service role key is kept secret
-- [ ] Database password is strong (16+ characters)
-- [ ] RLS policies are applied (via migrations)
-- [ ] Storage bucket policies restrict access properly
-- [ ] HTTPS is enabled in production (use Caddy or Cloudflare)
+```dotenv
+VITE_SUPABASE_URL=https://yourproject.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-public-key
+VITE_SUPABASE_PROJECT_ID=yourproject
+```
 
----
+Keep database passwords, service-role keys, and integration credentials on the
+backend. Values prefixed with `VITE_` are exposed to the browser. Configure required
+Edge Function secrets, including `INTERNAL_SERVICE_SECRET`, on the verified backend
+before deployment. Configure Auth redirect URLs for the frontend's actual address.
 
-## Troubleshooting
+The container entrypoint generates `/env.js` from runtime `VITE_*` variables. This
+lets the same image connect to different Supabase backends. PWA support is an
+exception: it must be selected when the image is built.
 
-For deployment-specific issues (migrations, edge functions, storage, STEP viewer CSP), see the [Troubleshooting Guide](/guides/troubleshooting/).
+## Deploy a released image
+
+The repository includes `docker-compose.yml`, which reads `.env` and accepts an
+`ERYXON_IMAGE` override. Choose the immutable GHCR digest recorded in the intended
+GitHub release. The old `latest` tag is not updated by the release workflow.
+
+For a first deployment, set `ERYXON_IMAGE` in `.env` to the released reference in
+the form `ghcr.io/sheetmetalconnect/eryxon-flow@sha256:<digest>`, then run:
+
+```sh
+docker compose pull eryxon-flow
+docker compose up -d --wait eryxon-flow
+```
+
+Configure registry access if the selected image requires authentication. Package
+visibility is separate from repository visibility.
+
+The container health check uses `http://127.0.0.1/health`. Once it is healthy, test
+sign-in, operator switching, a production operation, issue reporting, and activity
+against the intended backend. HTTP readiness alone does not verify those workflows.
+
+For subsequent managed updates, use `scripts/deploy-image.sh` with the reviewed
+Compose configuration and the released digest, following `RELEASING.md`. The script
+records the selected image in `.release-image.env` and restores the previous image
+if readiness fails. A frontend rollback does not reverse database migrations.
+
+## Build a custom image
+
+Build from the reviewed source revision. This creates a regular responsive web
+image unless you explicitly enable PWA support:
+
+```sh
+docker build --tag eryxon-flow:custom .
+```
+
+To include PWA installation and service-worker support instead:
+
+```sh
+docker build --build-arg VITE_ENABLE_PWA=true --tag eryxon-flow:custom-pwa .
+```
+
+Other public build defaults, such as `VITE_SUPABASE_URL`, can also be passed with
+`--build-arg`; runtime `.env` values supply the deployment's backend configuration.
+Do not pass private backend credentials as frontend build arguments.
+
+To use a local custom image, set `ERYXON_IMAGE` to its local tag and start the Compose
+service without pulling it. Custom images are outside the managed release-digest
+workflow; retain the previous verified image for recovery.
+
+### Optional PWA verification
+
+`VITE_ENABLE_PWA` defaults to `false` and is read at build time. Setting it at
+container startup cannot enable PWA support in a regular web image. Rebuild when
+changing this option.
+
+An enabled build serves a manifest and registers `sw.js`. Test the browser's install
+action over HTTPS or localhost. Its shortcuts open the shared operator interface;
+old `/m` links remain supported. Cached assets allow the shell to render offline,
+but manufacturing data and production actions require a backend connection. Updates
+offer Reload or Later, with no forced reload during an active session.
+
+A disabled build serves a retirement worker at the old `sw.js` URL. When the browser
+checks for a worker update, it replaces the old caching worker and unregisters
+itself. It does not reload open pages or delete caches. The next navigation reaches
+the new web build; unrelated registrations remain intact.
+
+## HTTPS and backend connectivity
+
+For HTTPS, enable the optional Caddy service in `docker-compose.yml`, expose the app
+internally on port 80, and configure `Caddyfile` for your hostname. Public hostnames
+can use automatic certificates. LAN deployments can use `tls internal` if every
+operator device trusts the local certificate authority.
+
+Ensure the app's Content Security Policy allows the configured Supabase HTTP and
+WebSocket origins. Keep the shipped Nginx security headers and review any additional
+proxy policy. Test storage downloads, realtime updates, and the STEP viewer through
+the actual proxy address.
+
+The built-in STEP viewer parses files in the browser. Optional external CAD
+processing must use the backend proxy and backend credentials; never put a CAD
+service secret in a `VITE_` variable. See the
+[Troubleshooting Guide](/guides/troubleshooting/) for connectivity and viewer issues.
+
+## Backups and recovery
+
+Back up PostgreSQL and storage objects together, retaining a copy outside the
+application host. Verify recovery on a disposable target. The repository's
+[backup and restore drill](https://github.com/SheetMetalConnect/eryxon-flow/blob/main/docs/BACKUP_RESTORE_DRILL.md)
+describes the procedure and its prerequisites.
+
+Keep the previous release digest and its schema compatibility notes. Plan database
+recovery separately from frontend rollback, and verify authenticated workflows after
+either operation.

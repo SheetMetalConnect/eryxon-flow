@@ -14,11 +14,10 @@ vi.mock('@/integrations/supabase/client', () => ({
     from: () => ({
       select: () => mockFns.mockSelect(),
     }),
-    channel: () => ({
-      on: () => ({
-        subscribe: () => mockFns.mockSubscribe(),
-      }),
-    }),
+    channel: () => {
+      const channel = { on: () => channel, subscribe: () => mockFns.mockSubscribe() };
+      return channel;
+    },
     removeChannel: () => mockFns.mockRemoveChannel(),
   },
 }));

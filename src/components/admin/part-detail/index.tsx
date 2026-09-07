@@ -355,45 +355,39 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
 
           for (const stepPath of stepFiles) {
             try {
-              const { data: signedUrlData } = await supabase.storage
-                .from("parts-cad")
-                .createSignedUrl(stepPath, 3600);
+              const fileName = stepPath.split('/').pop() || 'model.step';
+              if (cadProcessingEnabled) {
+                const cadResult = await processAndStore(
+                  partId,
+                  { bucket: "parts-cad", path: stepPath, recordId: partId },
+                  fileName,
+                  {
+                    includeGeometry: true,
+                    includePMI: pmiEnabled,
+                    generateThumbnail: false,
+                  },
+                  { sourcePath: stepPath },
+                );
 
-              if (signedUrlData?.signedUrl) {
-                const fileName = stepPath.split('/').pop() || 'model.step';
-                if (cadProcessingEnabled) {
-                  const cadResult = await processAndStore(
-                    partId,
-                    signedUrlData.signedUrl,
-                    fileName,
-                    {
-                      includeGeometry: true,
-                      includePMI: pmiEnabled,
-                      generateThumbnail: false,
-                    },
-                    { sourcePath: stepPath },
-                  );
-
-                  if (cadResult.success && cadResult.pmi) {
-                    toast.success(t("parts.pmiExtracted"), {
-                      description: t("parts.pmiExtractedDesc", {
-                        count: cadResult.pmi.dimensions.length
-                      }),
-                    });
-                  }
-                } else {
-                  const pmiResult = await extractPMI(signedUrlData.signedUrl, fileName);
-
-                  if (!pmiResult.success || !pmiResult.pmi) {
-                    continue;
-                  }
-
+                if (cadResult.success && cadResult.pmi) {
                   toast.success(t("parts.pmiExtracted"), {
                     description: t("parts.pmiExtractedDesc", {
-                      count: pmiResult.pmi.dimensions.length
+                      count: cadResult.pmi.dimensions.length
                     }),
                   });
                 }
+              } else {
+                const pmiResult = await extractPMI({ bucket: "parts-cad", path: stepPath, recordId: partId }, fileName);
+
+                if (!pmiResult.success || !pmiResult.pmi) {
+                  continue;
+                }
+
+                toast.success(t("parts.pmiExtracted"), {
+                  description: t("parts.pmiExtractedDesc", {
+                    count: pmiResult.pmi.dimensions.length
+                  }),
+                });
               }
             } catch (pmiError) {
               logger.warn('PartDetailModal', 'PMI extraction failed', pmiError);

@@ -1,3 +1,4 @@
+import type { SearchResult } from '@/lib/search/types';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 
@@ -15,7 +16,7 @@ const mockProfile = {
 
 const mockUseProfile = vi.fn(() => mockProfile as any);
 vi.mock('@/hooks/useProfile', () => ({
-  useProfile: (...args: any[]) => mockUseProfile(...args),
+  useProfile: () => mockUseProfile(),
 }));
 
 // Mock search module
@@ -142,10 +143,10 @@ describe('useGlobalSearch', () => {
   });
 
   it('returns combined results from multiple search types', async () => {
-    const jobResults = [
+    const jobResults: SearchResult[] = [
       { id: 'j-1', type: 'job' as const, title: 'Job 1', subtitle: null, path: '/jobs/j-1' },
     ];
-    const partResults = [
+    const partResults: SearchResult[] = [
       { id: 'p-1', type: 'part' as const, title: 'Part 1', subtitle: null, path: '/parts/p-1' },
     ];
 
@@ -164,7 +165,7 @@ describe('useGlobalSearch', () => {
   });
 
   it('filters results by status when statuses filter provided', async () => {
-    const jobResults = [
+    const jobResults: SearchResult[] = [
       { id: 'j-1', type: 'job' as const, title: 'Job 1', subtitle: null, path: '/jobs/j-1', status: 'active' },
       { id: 'j-2', type: 'job' as const, title: 'Job 2', subtitle: null, path: '/jobs/j-2', status: 'completed' },
     ];

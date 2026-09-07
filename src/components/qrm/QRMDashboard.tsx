@@ -58,7 +58,7 @@ export function QRMDashboard() {
   });
 
   const { data: operations = [] } = useQuery({
-    queryKey: QueryKeys.operations.all(profile?.tenant_id || ""),
+    queryKey: [...QueryKeys.operations.all(profile?.tenant_id || ""), "qrm-active"],
     queryFn: async () => {
       if (!profile?.tenant_id) return [];
       const { data, error } = await supabase

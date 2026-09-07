@@ -1,13 +1,5 @@
-/**
- * Event Dispatch Module
- *
- * Provides a unified interface for dispatching events via webhooks and MQTT.
- * Used by sync operations and other event-producing components.
- */
-
-// ============================================================================
-// Types
-// ============================================================================
+import { internalEventHeaders } from "./event-auth.ts";
+import { getRuntimeEnv } from "./runtime-env.ts";
 
 export type SyncEventType =
   | "sync.jobs.completed"
@@ -40,7 +32,7 @@ export interface EventPayload {
   event: EventType;
   tenant_id: string;
   timestamp: string;
-  data: any;
+  data: unknown;
 }
 
 export interface SyncEventData {
@@ -55,96 +47,64 @@ export interface SyncEventData {
   external_ids?: string[];
 }
 
-// ============================================================================
-// Event Dispatch Functions
-// ============================================================================
-
-/**
- * Dispatch event to webhooks (non-blocking)
- *
- * Fires webhook dispatch asynchronously without waiting for completion.
- * Errors are logged but don't affect the calling operation.
- */
-export async function dispatchWebhookEvent(
+async function dispatchToChannel(
+  channel: "webhook-dispatch" | "mqtt-publish",
   tenantId: string,
   eventType: EventType,
-  data: any,
+  data: unknown,
+  requestId?: string,
 ): Promise<void> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY");
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.warn("[Events] Missing Supabase config for webhook dispatch");
-    return;
-  }
-
-  // Fire and forget - don't await
-  fetch(`${supabaseUrl}/functions/v1/webhook-dispatch`, {
+  const supabaseUrl = getRuntimeEnv("SUPABASE_URL");
+  if (!supabaseUrl) throw new Error("SUPABASE_URL is required for event dispatch");
+  const response = await fetch(`${supabaseUrl}/functions/v1/${channel}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${serviceRoleKey}`,
-    },
-    body: JSON.stringify({
-      tenant_id: tenantId,
-      event_type: eventType,
-      data,
-    }),
-  }).catch((err) => {
-    console.error("[Events] Failed to dispatch webhook:", err);
+    headers: internalEventHeaders(requestId),
+    body: JSON.stringify({ tenant_id: tenantId, event_type: eventType, data }),
+    signal: AbortSignal.timeout(15000),
   });
+  if (!response.ok) throw new Error(`${channel} returned HTTP ${response.status}`);
+  const result = await response.json();
+  if (result.success !== true || (result.failed ?? 0) > 0) {
+    throw new Error(`${channel} reported unsuccessful delivery`);
+  }
 }
 
-/**
- * Dispatch event to MQTT (non-blocking)
- *
- * Fires MQTT publish asynchronously without waiting for completion.
- */
-export async function dispatchMqttEvent(
+export function dispatchWebhookEvent(
   tenantId: string,
   eventType: EventType,
-  data: any,
+  data: unknown,
+  requestId?: string,
 ): Promise<void> {
-  const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY");
-
-  if (!supabaseUrl || !serviceRoleKey) {
-    console.warn("[Events] Missing Supabase config for MQTT dispatch");
-    return;
-  }
-
-  // Fire and forget - don't await
-  fetch(`${supabaseUrl}/functions/v1/mqtt-publish`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${serviceRoleKey}`,
-    },
-    body: JSON.stringify({
-      tenant_id: tenantId,
-      event_type: eventType,
-      data,
-    }),
-  }).catch((err) => {
-    console.error("[Events] Failed to dispatch MQTT event:", err);
-  });
+  return dispatchToChannel("webhook-dispatch", tenantId, eventType, data, requestId);
 }
 
-/**
- * Dispatch event to all configured channels (webhooks + MQTT)
- *
- * Non-blocking - fires both dispatchers without waiting.
- */
+export function dispatchMqttEvent(
+  tenantId: string,
+  eventType: EventType,
+  data: unknown,
+): Promise<void> {
+  return dispatchToChannel("mqtt-publish", tenantId, eventType, data);
+}
+
+// Event failure must not disguise a committed domain mutation as a failed mutation.
 export function dispatchEvent(
   tenantId: string,
   eventType: EventType,
-  data: any,
-): void {
-  // Dispatch to webhooks
-  dispatchWebhookEvent(tenantId, eventType, data);
-
-  // Dispatch to MQTT
-  dispatchMqttEvent(tenantId, eventType, data);
+  data: unknown,
+): Promise<void> {
+  const pending = Promise.allSettled([
+    dispatchWebhookEvent(tenantId, eventType, data),
+    dispatchMqttEvent(tenantId, eventType, data),
+  ]).then(results => {
+    for (const result of results) {
+      if (result.status === "rejected") console.error("[Events] Dispatch failed", result.reason);
+    }
+  });
+  const runtime = globalThis as typeof globalThis & {
+    EdgeRuntime?: { waitUntil(task: Promise<void>): void };
+  };
+  runtime.EdgeRuntime?.waitUntil(pending);
+  return pending;
 }
 
 // ============================================================================

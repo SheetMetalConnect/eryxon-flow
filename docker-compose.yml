@@ -11,14 +11,14 @@
 
 services:
   eryxon-flow:
-    image: ghcr.io/sheetmetalconnect/eryxon-flow:latest
+    image: ${ERYXON_IMAGE:-ghcr.io/sheetmetalconnect/eryxon-flow:0.10.0}
     container_name: eryxon-flow
     restart: unless-stopped
     ports:
       - "80:80"
     env_file: .env
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 10s
       retries: 3

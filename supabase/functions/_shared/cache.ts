@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "./runtime-env.ts";
 /**
  * Cache abstraction layer for Edge Functions
  *
@@ -40,8 +41,8 @@ export interface CacheConfig {
  */
 function getCacheConfig(): CacheConfig {
   return {
-    redisUrl: Deno.env.get('UPSTASH_REDIS_REST_URL'),
-    redisToken: Deno.env.get('UPSTASH_REDIS_REST_TOKEN'),
+    redisUrl: getRuntimeEnv('UPSTASH_REDIS_REST_URL'),
+    redisToken: getRuntimeEnv('UPSTASH_REDIS_REST_TOKEN'),
   };
 }
 

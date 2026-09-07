@@ -43,12 +43,31 @@ interface OperatorContextType {
 const OperatorContext = createContext<OperatorContextType | undefined>(undefined);
 
 export function OperatorProvider({ children }: { children: React.ReactNode }) {
-  const profile = useProfile();
+  const profileId = useProfile()?.id;
   const { tenant } = useTenant();
   const [activeOperator, setActiveOperator] = useState<ActiveOperator | null>(null);
   const [resumeOperator, setResumeOperator] = useState<ActiveOperator | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [lockReason, setLockReason] = useState<OperatorSessionLockReason>(null);
+  const sessionRevisionRef = useRef(0);
+  const serverQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const enqueueServerAction = useCallback(<T,>(action: () => Promise<T>): Promise<T> => {
+    const pending = serverQueueRef.current.then(action);
+    serverQueueRef.current = pending.then((): void => undefined, (): void => undefined);
+    return pending;
+  }, []);
+  const clearServerSession = useCallback(async () => {
+    try {
+      const { error } = await supabase.rpc("clear_operator_session");
+      if (error) throw error;
+    } catch (error) {
+      logger.error("OperatorContext", "Could not revoke the operator session", error);
+    }
+  }, []);
+  const revokeServerSession = useCallback(() => {
+    sessionRevisionRef.current += 1;
+    void enqueueServerAction(clearServerSession);
+  }, [clearServerSession, enqueueServerAction]);
   const verifiedAtRef = useRef<number | null>(null);
   const lastInteractionAtRef = useRef<number | null>(null);
 
@@ -60,14 +79,17 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
   const lockOperatorSession = useCallback((
     reason: Exclude<OperatorSessionLockReason, null>,
   ) => {
+    revokeServerSession();
     setActiveOperator(null);
     verifiedAtRef.current = null;
     lastInteractionAtRef.current = null;
     setLockReason(reason);
-  }, []);
+  }, [revokeServerSession]);
 
   // Restore only non-authorizing operator metadata after reload.
   useEffect(() => {
+    if (tenant?.id) revokeServerSession();
+    else sessionRevisionRef.current += 1;
     if (tenant?.id === undefined) {
       const resetTimeout = window.setTimeout(() => {
         setActiveOperator(null);
@@ -114,10 +136,12 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     }, 0);
 
     return () => clearTimeout(loadTimeout);
-  }, [tenant?.id]);
+  }, [tenant?.id, revokeServerSession]);
 
   useEffect(() => {
-    if (!profile) {
+    if (profileId) revokeServerSession();
+    else sessionRevisionRef.current += 1;
+    if (!profileId) {
       const clearTimeoutId = window.setTimeout(() => {
         setActiveOperator(null);
         setResumeOperator(null);
@@ -131,7 +155,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
       return () => clearTimeout(clearTimeoutId);
     }
     return;
-  }, [profile]);
+  }, [profileId, revokeServerSession]);
 
   useEffect(() => {
     if (!activeOperator) return;
@@ -182,74 +206,90 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     employeeId: string,
     pin: string
   ): Promise<VerifyPinResult> => {
-    try {
-      const { data, error } = await supabase.rpc("verify_operator_pin", {
-        p_employee_id: employeeId,
-        p_pin: pin,
-      });
-
-      if (error) {
-        logger.error('OperatorContext', 'PIN verification error', error);
-        return {
-          success: false,
-          error_code: "RPC_ERROR",
-          error_message: error.message,
-        };
-      }
-
-      const result = Array.isArray(data) ? data[0] : data;
-
-      if (!result) {
-        return {
-          success: false,
-          error_code: "NO_RESULT",
-          error_message: "Verification failed",
-        };
-      }
-
-      if (result.success) {
-        const operator: ActiveOperator = {
-          id: result.operator_id,
-          employee_id: result.employee_id,
-          full_name: result.full_name,
-          tenant_id: result.tenant_id,
-        };
-
-        const now = Date.now();
-        setActiveOperator(operator);
-        setResumeOperator(operator);
-        setLockReason(null);
-        verifiedAtRef.current = now;
-        lastInteractionAtRef.current = now;
-        sessionStorage.setItem(OPERATOR_RESUME_STORAGE_KEY, JSON.stringify(operator));
-
-        return { success: true, operator };
-      } else {
-        return {
-          success: false,
-          error_code: result.error_code,
-          error_message: result.error_message,
-          attempts_remaining: result.attempts_remaining,
-          locked_until: result.locked_until_ts ? new Date(result.locked_until_ts) : null,
-        };
-      }
-    } catch (err: unknown) {
-      logger.error('OperatorContext', 'Operator verification error', err);
-      return {
+    const revision = ++sessionRevisionRef.current;
+    return enqueueServerAction(async () => {
+      const sessionChanged = (): VerifyPinResult => ({
         success: false,
-        error_code: "EXCEPTION",
-        error_message: err instanceof Error ? err.message : "An unexpected error occurred",
-      };
-    }
-  }, []);
+        error_code: "SESSION_CHANGED",
+        error_message: "Please verify your PIN again",
+      });
+      if (revision !== sessionRevisionRef.current) return sessionChanged();
+      try {
+        const { data, error } = await supabase.rpc("verify_operator_pin", {
+          p_employee_id: employeeId,
+          p_pin: pin,
+        });
+
+        if (error) {
+          logger.error('OperatorContext', 'PIN verification error', error);
+          return {
+            success: false,
+            error_code: "RPC_ERROR",
+            error_message: error.message,
+          };
+        }
+
+        const result = Array.isArray(data) ? data[0] : data;
+
+        if (!result) {
+          return {
+            success: false,
+            error_code: "NO_RESULT",
+            error_message: "Verification failed",
+          };
+        }
+
+        if (revision !== sessionRevisionRef.current) {
+          // Clear this verification before the queue allows another PIN attempt.
+          if (result.success) await clearServerSession();
+          return sessionChanged();
+        }
+
+        if (result.success) {
+          const operator: ActiveOperator = {
+            id: result.operator_id,
+            employee_id: result.employee_id,
+            full_name: result.full_name,
+            tenant_id: result.tenant_id,
+          };
+
+          const now = Date.now();
+          setActiveOperator(operator);
+          setResumeOperator(operator);
+          setLockReason(null);
+          verifiedAtRef.current = now;
+          lastInteractionAtRef.current = now;
+          sessionStorage.setItem(OPERATOR_RESUME_STORAGE_KEY, JSON.stringify(operator));
+
+          return { success: true, operator };
+        } else {
+          return {
+            success: false,
+            error_code: result.error_code,
+            error_message: result.error_message,
+            attempts_remaining: result.attempts_remaining,
+            locked_until: result.locked_until_ts ? new Date(result.locked_until_ts) : null,
+          };
+        }
+      } catch (err: unknown) {
+        logger.error('OperatorContext', 'Operator verification error', err);
+        return {
+          success: false,
+          error_code: "EXCEPTION",
+          error_message: err instanceof Error ? err.message : "An unexpected error occurred",
+        };
+      }
+    });
+  }, [enqueueServerAction, clearServerSession]);
 
   const clearActiveOperator = useCallback(() => {
+    revokeServerSession();
     setActiveOperator(null);
     setLockReason(null);
     verifiedAtRef.current = null;
     lastInteractionAtRef.current = null;
     clearResumeOperator();
-  }, [clearResumeOperator]);
+  }, [clearResumeOperator, revokeServerSession]);
 
   return (
     <OperatorContext.Provider

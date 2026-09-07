@@ -32,8 +32,6 @@ export interface Batch {
   nesting_image_url: string | null;
   layout_image_url: string | null;
   parent_batch_id: string | null;
-  material_requirement_raised: boolean;
-  material_requirement_metadata: Record<string, unknown> | null;
   cell?: {
     id: string;
     name: string;

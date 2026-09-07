@@ -3,7 +3,7 @@ import { useAuthActions } from "@/hooks/useAuthActions";
 import { useLocation } from "react-router-dom";
 import AdminLayout from "@/components/AdminLayout";
 import { OperatorLayout } from "@/components/operator/OperatorLayout";
-import { OfflineBanner } from "@/components/mobile/OfflineBanner";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -31,8 +31,6 @@ export default function Layout({ children }: LayoutProps) {
     <OperatorLayout>{children}</OperatorLayout>
   );
 
-  // Shop-floor WiFi drops mid-shift; desktop terminals need the same
-  // unambiguous "writes will fail" signal the mobile shell already shows.
   return (
     <>
       <OfflineBanner />

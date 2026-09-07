@@ -1,44 +1,6 @@
-/**
- * Reusable Realtime Subscription Hook
- *
- * Provides a clean, consistent interface for subscribing to Supabase realtime changes.
- * Features:
- * 1. Automatic cleanup on unmount
- * 2. Proper tenant filtering
- * 3. Support for multiple table subscriptions
- * 4. Debounced callbacks to prevent cascade refetches
- * 5. Type-safe configuration
- *
- * @example
- * // Single table subscription with filter
- * useRealtimeSubscription({
- *   channelName: 'operations-updates',
- *   tables: [{
- *     table: 'operations',
- *     filter: `tenant_id=eq.${tenantId}`,
- *     event: '*',
- *   }],
- *   onDataChange: () => refetch(),
- *   enabled: !!tenantId,
- * });
- *
- * @example
- * // Multiple tables subscription
- * useRealtimeSubscription({
- *   channelName: 'production-updates',
- *   tables: [
- *     { table: 'operations', filter: `cell_id=eq.${cellId}` },
- *     { table: 'time_entries', filter: `tenant_id=eq.${tenantId}` },
- *   ],
- *   onDataChange: handleUpdate,
- *   debounceMs: 500,
- * });
- */
-
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { logger } from '@/lib/logger';
 
 export type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE' | '*';
 
@@ -68,143 +30,50 @@ export interface RealtimeSubscriptionOptions {
   includePayload?: boolean;
 }
 
-/**
- * Debounce function for callback
- */
-interface DebouncedCallback<T extends (...args: unknown[]) => void> {
-  (...args: Parameters<T>): void;
-  cancel: () => void;
-}
+export function useRealtimeSubscription({
+  channelName,
+  tables,
+  onDataChange,
+  enabled = true,
+  debounceMs = 100,
+  includePayload = false,
+}: RealtimeSubscriptionOptions): void {
+  const callbackRef = useRef(onDataChange);
+  useEffect(() => { callbackRef.current = onDataChange; }, [onDataChange]);
 
-function debounce<T extends (...args: unknown[]) => void>(
-  fn: T,
-  delay: number
-): DebouncedCallback<T> {
-  let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-  const debounced = (...args: Parameters<T>) => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-    timeoutId = setTimeout(() => {
-      fn(...args);
-      timeoutId = null;
-    }, delay);
-  };
-
-  debounced.cancel = () => {
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-      timeoutId = null;
-    }
-  };
-
-  return debounced;
-}
-
-/**
- * Hook for subscribing to realtime changes on Supabase tables
- */
-export function useRealtimeSubscription(options: RealtimeSubscriptionOptions): void {
-  const {
-    channelName,
-    tables,
-    onDataChange,
-    enabled = true,
-    debounceMs = 100,
-    includePayload = false,
-  } = options;
+  // Subscription identity depends on values, not freshly allocated caller arrays.
+  const tableKey = JSON.stringify(tables.map(({ table, filter, event = '*', schema = 'public' }) =>
+    ({ table, filter, event, schema }),
+  ));
 
   useEffect(() => {
-    if (!enabled || tables.length === 0) {
-      return;
-    }
+    const subscriptions: TableSubscription[] = JSON.parse(tableKey);
+    if (!enabled || subscriptions.length === 0) return;
 
-    const debouncedCallback = debounce(
-      (payload?: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-        onDataChange(payload);
-      },
-      debounceMs
-    );
-
-    logger.debug('Setting up realtime subscription', {
-      operation: 'useRealtimeSubscription',
-      channelName,
-      tables: tables.map((t) => t.table).join(', '),
-    });
-
-    let channel = supabase.channel(channelName);
-
-    tables.forEach(({ table, filter, event = '*', schema = 'public' }) => {
-      const config: {
-        event: RealtimeEvent;
-        schema: string;
-        table: string;
-        filter?: string;
-      } = {
-        event,
-        schema,
-        table,
+    let pending: ReturnType<typeof setTimeout> | undefined;
+    const channel = supabase.channel(channelName);
+    for (const { table, filter, event, schema } of subscriptions) {
+      const config = { table, schema, ...(filter ? { filter } : {}) };
+      const handleChange = (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
+        clearTimeout(pending);
+        pending = setTimeout(() => {
+          callbackRef.current(includePayload ? payload : undefined);
+        }, debounceMs);
       };
-
-      // Only add filter if provided - this is key for performance
-      if (filter) {
-        config.filter = filter;
+      switch (event) {
+        case 'INSERT': channel.on('postgres_changes', { ...config, event: 'INSERT' }, handleChange); break;
+        case 'UPDATE': channel.on('postgres_changes', { ...config, event: 'UPDATE' }, handleChange); break;
+        case 'DELETE': channel.on('postgres_changes', { ...config, event: 'DELETE' }, handleChange); break;
+        default: channel.on('postgres_changes', { ...config, event: '*' }, handleChange);
       }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase realtime .on() overload typing doesn't support dynamic table/event config
-      channel = (channel as any).on(
-        'postgres_changes',
-        config,
-        (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-          logger.debug('Realtime change received', {
-            operation: 'useRealtimeSubscription',
-            channelName,
-            table,
-            eventType: payload.eventType,
-          });
-
-          if (includePayload) {
-            debouncedCallback(payload);
-          } else {
-            debouncedCallback();
-          }
-        }
-      );
-    });
-
-    channel.subscribe((status) => {
-      if (status === 'SUBSCRIBED') {
-        logger.debug('Realtime subscription active', {
-          operation: 'useRealtimeSubscription',
-          channelName,
-        });
-      } else if (status === 'CHANNEL_ERROR') {
-        logger.error('Realtime subscription error', undefined, {
-          operation: 'useRealtimeSubscription',
-          channelName,
-        });
-      }
-    });
+    }
+    channel.subscribe();
 
     return () => {
-      debouncedCallback.cancel();
-      logger.debug('Cleaning up realtime subscription', {
-        operation: 'useRealtimeSubscription',
-        channelName,
-      });
-      if (typeof supabase.removeChannel === 'function') {
-        supabase.removeChannel(channel);
-      } else if (typeof (channel as { unsubscribe?: () => unknown }).unsubscribe === 'function') {
-        channel.unsubscribe();
-      } else {
-        logger.debug('Skipping realtime unsubscribe for mock channel without cleanup method', {
-          operation: 'useRealtimeSubscription',
-          channelName,
-        });
-      }
+      clearTimeout(pending);
+      void supabase.removeChannel(channel);
     };
-  }, [channelName, tables, enabled, debounceMs, includePayload, onDataChange]);
+  }, [channelName, tableKey, enabled, debounceMs, includePayload]);
 }
 
 /**

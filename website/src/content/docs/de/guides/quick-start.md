@@ -13,174 +13,49 @@ Eryxon Flow schnell einrichten.
 
 ## Voraussetzungen
 
-- Node.js 20+ ([Download](https://nodejs.org))
-- Ein Supabase-Konto (kostenloser Tarif reicht) - [Anmelden](https://supabase.com)
+- Node.js **22.12 oder neuer**
+- Zugriff auf das private Quellcode-Repository
+- Ein Supabase-Backend, das zur verwendeten Quellcodeversion passt
 
----
+Die [Self-Hosting-Anleitung](/guides/self-hosting/) beschreibt die Einrichtung des
+Backends, Migrationen, Funktions-Secrets und den Produktionsbetrieb. Dort steht die
+aktuelle Bereitstellungsfolge. Die folgenden Schritte starten ein lokales Frontend
+mit diesem vorbereiteten Backend.
 
-## Schritt 1: Supabase Einrichten
+## Lokal starten
 
-### 1.1 Projekt Erstellen
-
-1. Gehen Sie zu [supabase.com](https://supabase.com) → **New Project**
-2. Benennen Sie es `eryxon-flow`
-3. Speichern Sie Ihr Datenbank-Passwort
-4. Klicken Sie auf **Create**
-
-### 1.2 Ihre Schlüssel Abrufen
-
-Gehen Sie zu **Settings** → **API** und kopieren Sie:
-- **Project URL** (z.B. `https://abc123.supabase.co`)
-- **anon public key** (beginnt mit `eyJ...`)
-
-### 1.3 Datenbankschema Anwenden
-
-Verwenden Sie die Supabase CLI für Ihr Zielprojekt:
-
-```bash
-supabase link --project-ref YOUR_PROJECT_REF
-supabase db push
-```
-
-### 1.4 Seed-Daten Anwenden
-
-Die Seed-Datei richtet Speicherrichtlinien, RLS-Standardwerte und Cron-Jobs ein:
-
-```bash
-supabase db execute --file supabase/seed.sql
-```
-
-### 1.5 Speicher-Buckets Erstellen
-
-```bash
-supabase storage create parts-images
-supabase storage create issues
-supabase storage create parts-cad
-supabase storage create batch-images
-```
-
-### 1.6 Edge Functions Bereitstellen
-
-```bash
-supabase functions deploy
-```
-
-### 1.7 Edge Function Secrets Setzen
-
-Gehen Sie zu **Settings** → **API** und kopieren Sie den **service_role** Schlüssel, dann:
-
-```bash
-supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
-```
-
-Konfigurieren Sie den `notify-new-signup` Database Webhook nachdem die Migrationen angewendet wurden (siehe [Self-Hosting-Anleitung](/guides/self-hosting/)).
-
-> **Automatisierung bevorzugt?** Führen Sie `bash scripts/setup.sh` aus — es führt Sie interaktiv durch alles oben Genannte.
-
----
-
-## Schritt 2: Die Anwendung Starten
-
-```bash
+```sh
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
-
-npm install
-
+npm ci
 cp .env.example .env
 ```
 
-Bearbeiten Sie `.env`:
-```bash
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-VITE_SUPABASE_PROJECT_ID=your-project-id
+Tragen Sie die öffentlichen Frontend-Einstellungen Ihres Backends in `.env` ein:
+
+```dotenv
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-public-key
+VITE_SUPABASE_PROJECT_ID=your-project
 ```
 
-Starten Sie die App:
-```bash
+Werte mit dem Präfix `VITE_` sind im Browser sichtbar. Service-Role-Schlüssel und
+andere geheime Zugangsdaten gehören ausschließlich auf das Backend.
+
+```sh
 npm run dev
 ```
 
-Öffnen Sie **http://localhost:8080**
+Öffnen Sie [localhost:8080](http://localhost:8080) und melden Sie sich an. Wenn die
+Registrierung aktiviert ist, erstellen Sie Ihre Organisation zuerst über **Sign Up**.
 
----
+## Die Anwendung nutzen
 
-## Schritt 3: Ihr Konto Erstellen
+Administratoren verwalten Aufträge, Teile, Arbeitsgänge und Arbeitszellen.
+Bediener nutzen [Arbeitswarteschlange und Terminal](/guides/operator-manual/) auf
+Smartphone, Tablet und Desktop. Alle Bildschirmgrößen verwenden dieselbe responsive
+Oberfläche.
 
-1. Klicken Sie auf **Sign Up**
-2. Geben Sie E-Mail und Passwort ein
-3. Bestätigen Sie Ihre E-Mail (Posteingang prüfen)
-4. Sie sind jetzt Admin Ihrer Organisation!
-
----
-
-## Schritt 4: Erkunden (Optional)
-
-### Demo-Daten Laden
-
-Möchten Sie die App mit Beispieldaten sehen?
-
-1. Gehen Sie zu **Settings** in der Admin-Seitenleiste
-2. Klicken Sie auf **Create Demo Data**
-3. Erkunden Sie Beispiel-Aufträge, Teile und Arbeitsgänge
-
-### Schnelle Rundführung
-
-| Seite | Was sie tut |
-|-------|------------|
-| `/admin/dashboard` | Produktionsübersicht |
-| `/admin/jobs` | Fertigungsaufträge verwalten |
-| `/admin/jobs/new` | Neuen Auftrag erstellen |
-| `/operator/work-queue` | Aufgabenliste Werker |
-| `/operator/login` | Terminal-Anmeldung Werkstatt |
-| `/admin/config/stages` | Arbeitsstufen konfigurieren |
-
----
-
-## Was Nun?
-
-**Einrichtung & Deployment:**
-- [Deployment-Anleitung](/guides/deployment/) - Optionen für Produktions-Deployment
-- [Self-Hosting-Anleitung](/guides/self-hosting/) - Umgebungs- und Ausrolldetails
-- [MCP Server Setup](/guides/mcp-setup/) - KI-Assistenten-Integration einrichten
-
-**API & Integration:**
-- [REST API Übersicht](/architecture/connectivity-rest-api/) - Integrationsarchitektur
-- [REST API Referenz](/api/rest-api-reference/) - Vollständige Endpoint-Referenz
-- [API Payload Referenz](/api/payload-reference/) - Kopier-und-Einfüge-Payload-Beispiele
-- [MCP Demo-Anleitung](/api/mcp-demo-guide/) - Beispiele für KI-Assistenten-Nutzung
-- [Webhooks & MQTT](/architecture/connectivity-mqtt/) - Event-gesteuerte Integration
-- **Swagger/OpenAPI** - In der App verfügbar unter `/admin/api-docs` (Anmeldung erforderlich)
-
-**Architektur & Hilfe:**
-- [App-Architektur](/architecture/app-architecture/) - Systemdesign-Übersicht
-- [FAQ](/de/guides/faq) - Häufig gestellte Fragen
-
----
-
-## Häufige Probleme
-
-**Kann mich nicht registrieren?**
-- Prüfen Sie, ob Ihre Supabase URL in `.env` korrekt ist
-- Überprüfen Sie die E-Mail-Einstellungen im Supabase Auth-Dashboard
-
-**Datenbankfehler?**
-- Stellen Sie sicher, dass Sie das Schema-SQL ausgeführt haben
-- Prüfen Sie den SQL Editor auf Fehler
-
-**Seite lädt nicht?**
-- Vergewissern Sie sich, dass beide Umgebungsvariablen gesetzt sind
-- Prüfen Sie die Browser-Konsole auf Fehler
-
----
-
-## Hilfe Benötigt?
-
-- Beginnen Sie bei der [Dokumentations-Startseite](/)
-- Erstellen Sie ein Issue auf GitHub
-- Beteiligen Sie sich an unseren Community-Diskussionen
-
----
-
-*Viel Erfolg in der Fertigung!*
+Für den Produktionsbetrieb siehe [Deployment-Anleitung](/guides/deployment/).
+Die PWA-Installation ist optional und muss beim Build aktiviert werden; siehe
+[PWA-Konfiguration](/guides/self-hosting/#optional-pwa-verification).

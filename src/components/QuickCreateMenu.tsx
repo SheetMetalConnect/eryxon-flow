@@ -1,5 +1,5 @@
 "use client";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 
 import * as React from "react";
 import { useNavigate } from "react-router-dom";

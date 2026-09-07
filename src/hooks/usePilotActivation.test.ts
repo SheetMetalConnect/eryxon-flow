@@ -4,6 +4,7 @@ import { derivePilotActivation } from './usePilotActivation';
 describe('derivePilotActivation', () => {
   it('is not pilot-ready for a fresh single-admin tenant', () => {
     const r = derivePilotActivation({
+      pilotActivatedAt: null,
       pinOperatorCount: 0,
       profileOperatorCount: 0,
       pendingInviteCount: 0,
@@ -16,6 +17,7 @@ describe('derivePilotActivation', () => {
 
   it('counts a pending invite without marking pilot-ready', () => {
     const r = derivePilotActivation({
+      pilotActivatedAt: null,
       pinOperatorCount: 0,
       profileOperatorCount: 0,
       pendingInviteCount: 1,
@@ -28,6 +30,7 @@ describe('derivePilotActivation', () => {
 
   it('is not pilot-ready with an operator but no assignment', () => {
     const r = derivePilotActivation({
+      pilotActivatedAt: null,
       pinOperatorCount: 1,
       profileOperatorCount: 0,
       pendingInviteCount: 0,
@@ -40,6 +43,7 @@ describe('derivePilotActivation', () => {
 
   it('reaches the pilot-ready milestone with a PIN operator and an assignment', () => {
     const r = derivePilotActivation({
+      pilotActivatedAt: null,
       pinOperatorCount: 1,
       profileOperatorCount: 0,
       pendingInviteCount: 0,
@@ -52,6 +56,7 @@ describe('derivePilotActivation', () => {
 
   it('treats invited operator profiles as operators', () => {
     const r = derivePilotActivation({
+      pilotActivatedAt: null,
       pinOperatorCount: 0,
       profileOperatorCount: 1,
       pendingInviteCount: 0,

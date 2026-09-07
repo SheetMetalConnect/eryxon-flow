@@ -43,7 +43,7 @@ const job: TerminalJob = {
   },
 };
 
-const part = {
+const part: OperationWithDetails["part"] = {
   id: "part-cr-panel-a1",
   part_number: "CR-PANEL-A1",
   material: "RVS 316L",
@@ -71,7 +71,7 @@ const routing: Array<[string, string, number, string, string, string]> = [
   ["op-4", "Elektropolish", 40, "cell-finish", "Afwerking", "#10b981"],
   ["op-5", "Cleanroom inspectie", 50, "cell-qc", "Kwaliteitscontrole", "#6366f1"],
 ];
-const statusByOp: Record<string, string> = {
+const statusByOp: Record<string, OperationWithDetails["status"]> = {
   "op-1": "completed",
   "op-2": "completed",
   "op-3": "in_progress",
@@ -88,13 +88,14 @@ const estMinutesByOp: Record<string, number> = {
 };
 
 const operations: OperationWithDetails[] = routing.map(
-  ([id, name, sequence, cellId, cellName, color]) => ({
+  ([id, name, sequence, cellId, cellName, color]): OperationWithDetails => ({
     id,
     operation_name: name,
     operation_type: name.toLowerCase(),
     sequence,
     estimated_time: estMinutesByOp[id],
     actual_time: 0,
+    updated_at: null,
     status: statusByOp[id],
     completion_percentage: 0,
     notes: null,
@@ -104,9 +105,7 @@ const operations: OperationWithDetails[] = routing.map(
     cell: { id: cellId, name: cellName, color, sequence },
     part,
   }),
-  // Safe: DEV-only harness mirroring mockDataGenerator.ts; DetailPanel only
-  // reads the fields provided here, so the partial shape never hits a gap.
-) as unknown as OperationWithDetails[];
+);
 
 export default function TerminalScreenshot() {
   return (

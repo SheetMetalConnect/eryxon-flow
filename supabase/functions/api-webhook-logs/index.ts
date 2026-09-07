@@ -1,4 +1,3 @@
-// v1774629042
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 
@@ -28,11 +27,12 @@ serveApi(
     softDelete: false,
     queryModifier: async (query, ctx) => {
       // Filter logs to only show logs for webhooks belonging to this tenant
-      const { data: webhooks } = await ctx.supabase
+      const { data: webhooks, error } = await ctx.supabase
         .from('webhooks')
         .select('id')
         .eq('tenant_id', ctx.tenantId);
 
+      if (error) throw new Error(`Failed to filter webhook logs: ${error.message}`);
       if (!webhooks || webhooks.length === 0) {
         // Return empty query if tenant has no webhooks
         query = query.eq('webhook_id', '00000000-0000-0000-0000-000000000000'); // Will return no results
@@ -41,7 +41,7 @@ serveApi(
         query = query.in('webhook_id', webhookIds);
       }
 
-      return query;
+      return { query };
     },
     customHandlers: {
       // Webhook logs are read-only

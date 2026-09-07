@@ -1,284 +1,217 @@
 name: Release
 
-# Manual trigger for controlled releases.
-#
-# Production release execution must declare its intent under the biweekly
-# release-train rule. See:
-#   docs/2026-05-24-ery-88-release-cadence-repo-hygiene-and-trial-telemetry.md
-# Scheduled train is the default path; off-cycle production work is a
-# critical-hotfix exception only.
 on:
   workflow_dispatch:
     inputs:
-      release_type:
-        description: 'Release path under the ERY-88 cadence rule'
-        required: true
-        default: 'scheduled-train'
-        type: choice
-        options:
-          - scheduled-train
-          - critical-hotfix
-      train_date:
-        description: 'Scheduled train date YYYY-MM-DD (required for scheduled-train)'
-        required: false
-        default: ''
-        type: string
-      hotfix_reference:
-        description: 'Sanitized incident/issue reference, e.g. ERY-### (required for critical-hotfix)'
-        required: false
-        default: ''
-        type: string
+      deploy_production:
+        description: Deploy the released image to the configured production server
+        type: boolean
+        default: false
       run_migrations:
-        description: 'Run database migrations'
-        required: true
-        default: 'false'
+        description: Apply production database migrations before deploying
         type: boolean
+        default: false
       deploy_functions:
-        description: 'Deploy Edge Functions'
-        required: true
-        default: 'true'
+        description: Deploy production Edge Functions before deploying
         type: boolean
+        default: false
+      project_ref:
+        description: Expected Supabase project reference for database or function changes
+        type: string
+        default: ''
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+permissions:
+  contents: read
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
 
 jobs:
-  # Step 0: Enforce the release-train / hotfix declaration before anything runs.
-  # This gate makes train-vs-hotfix intent explicit and auditable in the run log.
-  # Cadence rule: docs/2026-05-24-ery-88-release-cadence-repo-hygiene-and-trial-telemetry.md
-  declare:
-    name: 0. Declare Release Path
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image: ${{ steps.version.outputs.image }}
     steps:
-      - name: Validate declaration
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Verify release target and version
+        id: version
         env:
-          RELEASE_TYPE: ${{ inputs.release_type }}
-          TRAIN_DATE: ${{ inputs.train_date }}
-          HOTFIX_REFERENCE: ${{ inputs.hotfix_reference }}
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY: ${{ inputs.deploy_production }}
+          MIGRATE: ${{ inputs.run_migrations }}
+          FUNCTIONS: ${{ inputs.deploy_functions }}
+          EXPECTED_PROJECT: ${{ inputs.project_ref }}
+          CONFIGURED_PROJECT: ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
         run: |
           set -euo pipefail
-          fail() { echo "::error::$1"; exit 1; }
+          test "$GITHUB_REF" = refs/heads/main || { echo '::error::Release must use main'; exit 1; }
+          if [ "$MIGRATE" = true ] || [ "$FUNCTIONS" = true ]; then
+            test "$DEPLOY" = true || { echo '::error::Backend changes require deploy_production'; exit 1; }
+            test -n "$EXPECTED_PROJECT" && test "$EXPECTED_PROJECT" = "$CONFIGURED_PROJECT" || { echo '::error::Supabase target mismatch'; exit 1; }
+          fi
+          version=$(node scripts/check-release.mjs)
+          trap 'rm -f release-check.err' EXIT
+          for endpoint in "git/ref/tags/v$version" "releases/tags/v$version"; do
+            if gh api "repos/$GITHUB_REPOSITORY/$endpoint" --silent 2>release-check.err; then
+              echo "::error::Version v$version already exists"; exit 1
+            elif ! grep -q '(HTTP 404)' release-check.err; then
+              cat release-check.err >&2; exit 1
+            fi
+          done
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
 
-          case "$RELEASE_TYPE" in
-            scheduled-train)
-              [ -n "$TRAIN_DATE" ] || fail "scheduled-train requires a train_date (YYYY-MM-DD)."
-              echo "$TRAIN_DATE" | grep -Eq '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' \
-                || fail "train_date must be YYYY-MM-DD, got: $TRAIN_DATE"
-              if [ -n "$HOTFIX_REFERENCE" ]; then
-                fail "Pick one path: hotfix_reference must be empty for a scheduled-train release."
-              fi
-              SUMMARY="Scheduled train — **$TRAIN_DATE**"
-              ;;
-            critical-hotfix)
-              [ -n "$HOTFIX_REFERENCE" ] || fail "critical-hotfix requires a hotfix_reference (sanitized incident/issue id)."
-              if [ -n "$TRAIN_DATE" ]; then
-                fail "Pick one path: train_date must be empty for a critical-hotfix release."
-              fi
-              SUMMARY="Critical hotfix — **$HOTFIX_REFERENCE**"
-              ;;
-            *)
-              fail "Unknown release_type: $RELEASE_TYPE"
-              ;;
-          esac
+  validate:
+    needs: prepare
+    uses: ./.github/workflows/ci.yml
 
-          {
-            echo "## Release path declaration"
-            echo ""
-            echo "- Path: $SUMMARY"
-            echo "- Triggered by: @${{ github.actor }}"
-            echo ""
-            echo "Cadence rule: \`docs/2026-05-24-ery-88-release-cadence-repo-hygiene-and-trial-telemetry.md\`"
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          echo "Release path OK: $RELEASE_TYPE"
-
-  # Step 1: Run all tests
-  test:
-    name: 1. Run Tests
+  build:
+    needs: [prepare, validate]
     runs-on: ubuntu-latest
-    needs: declare
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Type check
-        run: npx tsc --noEmit
-
-      - name: Build (verify)
-        run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL_PROD }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
-
-      - name: Run tests
-        run: npm run test:run
-
-  # Step 2: Run migrations (if enabled, requires approval)
-  migrate:
-    name: 2. Run Migrations
-    runs-on: ubuntu-latest
-    needs: test
-    if: ${{ inputs.run_migrations == true }}
-    environment: production  # Requires manual approval
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v2
-        with:
-          version: latest
-
-      - name: Link to production project
-        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Run migrations
-        run: supabase db push --linked
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-  # Step 3: Deploy Edge Functions (if enabled)
-  deploy-functions:
-    name: 3. Deploy Edge Functions
-    runs-on: ubuntu-latest
-    needs: [test, migrate]
-    if: |
-      always() &&
-      needs.test.result == 'success' &&
-      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
-      inputs.deploy_functions == true
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Supabase CLI
-        uses: supabase/setup-cli@v2
-        with:
-          version: latest
-
-      - name: Deploy Edge Functions
-        run: supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-  # Step 4: Build and push Docker image
-  build-and-push:
-    name: 4. Build & Push Docker Image
-    runs-on: ubuntu-latest
-    needs: [test, migrate, deploy-functions]
-    if: |
-      always() &&
-      needs.test.result == 'success' &&
-      (needs.migrate.result == 'success' || needs.migrate.result == 'skipped') &&
-      (needs.deploy-functions.result == 'success' || needs.deploy-functions.result == 'skipped')
     permissions:
       contents: read
       packages: write
     outputs:
-      version: ${{ steps.version.outputs.VERSION }}
-      image_name: ${{ steps.repo.outputs.name }}
+      digest: ${{ steps.image.outputs.digest }}
     steps:
       - uses: actions/checkout@v6
-
-      - name: Repository name to lowercase
-        id: repo
-        run: echo "name=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
-
-      - name: Get version
-        id: version
-        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Login to GHCR
-        uses: docker/login-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
+        id: image
         with:
           context: .
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}:latest
-            ${{ env.REGISTRY }}/${{ steps.repo.outputs.name }}:${{ steps.version.outputs.VERSION }}
+            ${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.version }}
+            ${{ needs.prepare.outputs.image }}:sha-${{ github.sha }}
           build-args: |
-            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL_PROD }}
-            VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY_PROD }}
+            APP_VERSION=${{ needs.prepare.outputs.version }}
+            APP_REVISION=${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  # Step 5: Deploy to Hetzner via SSH
-  deploy:
-    name: 5. Deploy to Hetzner
+  preflight:
+    needs: [prepare, build]
+    if: inputs.deploy_production
     runs-on: ubuntu-latest
-    needs: build-and-push
-    if: needs.build-and-push.result == 'success'
+    env:
+      ERYXON_IMAGE: ${{ needs.prepare.outputs.image }}@${{ needs.build.outputs.digest }}
+      DEPLOY_DIRECTORY: ${{ vars.DEPLOY_DIRECTORY }}
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.2.4
+      - name: Require deployment target before backend changes
+        env:
+          HOST: ${{ secrets.HETZNER_HOST }}
+          USER: ${{ secrets.HETZNER_USER }}
+          KEY: ${{ secrets.HETZNER_SSH_KEY }}
+          FINGERPRINT: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+        run: |
+          for key in HOST USER KEY FINGERPRINT DEPLOY_DIRECTORY; do
+            test -n "${!key}" || { echo "::error::Missing $key"; exit 1; }
+          done
+      - uses: appleboy/ssh-action@v1.2.4
         with:
           host: ${{ secrets.HETZNER_HOST }}
           username: ${{ secrets.HETZNER_USER }}
           key: ${{ secrets.HETZNER_SSH_KEY }}
+          fingerprint: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+          envs: ERYXON_IMAGE,DEPLOY_DIRECTORY
           script: |
-            cd /opt/eryxon-flow
-            
-            # Pull new image
-            docker compose pull
-            
-            # Restart services
-            docker compose up -d --remove-orphans
-            
-            # Cleanup old images
-            docker image prune -f
+            set -eu
+            cd "$DEPLOY_DIRECTORY"
+            test -f .env
+            test "$(docker compose --env-file .env config --images eryxon-flow)" = "$ERYXON_IMAGE"
+            docker pull "$ERYXON_IMAGE"
 
-
-  # Step 6: Create GitHub release
-  create-release:
-    name: 6. Create Release
+  backend:
+    needs: [prepare, build, preflight]
+    if: inputs.deploy_production && (inputs.run_migrations || inputs.deploy_functions)
     runs-on: ubuntu-latest
-    needs: [build-and-push, deploy]
-    if: needs.build-and-push.result == 'success' && needs.deploy.result == 'success'
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD_PROD }}
+      PROJECT_REF: ${{ inputs.project_ref }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Apply database migrations
+        if: inputs.run_migrations
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" && test -n "$SUPABASE_DB_PASSWORD"
+          echo "Migration target: $PROJECT_REF"
+          npx --no-install supabase link --project-ref "$PROJECT_REF"
+          npx --no-install supabase db push --linked
+      - name: Deploy Edge Functions
+        if: inputs.deploy_functions
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          echo "Function target: $PROJECT_REF"
+          npx --no-install supabase functions deploy --project-ref "$PROJECT_REF"
+
+  deploy:
+    needs: [prepare, build, preflight, backend]
+    if: >-
+      !cancelled() && inputs.deploy_production && needs.build.result == 'success' &&
+      needs.preflight.result == 'success' &&
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped')
+    runs-on: ubuntu-latest
+    env:
+      ERYXON_IMAGE: ${{ needs.prepare.outputs.image }}@${{ needs.build.outputs.digest }}
+      DEPLOY_DIRECTORY: ${{ vars.DEPLOY_DIRECTORY }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Require deployment target
+        env:
+          HOST: ${{ secrets.HETZNER_HOST }}
+          USER: ${{ secrets.HETZNER_USER }}
+          KEY: ${{ secrets.HETZNER_SSH_KEY }}
+          FINGERPRINT: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+        run: |
+          for key in HOST USER KEY FINGERPRINT DEPLOY_DIRECTORY; do
+            test -n "${!key}" || { echo "::error::Missing $key"; exit 1; }
+          done
+      - uses: appleboy/ssh-action@v1.2.4
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          fingerprint: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+          envs: ERYXON_IMAGE,DEPLOY_DIRECTORY
+          script_path: scripts/deploy-image.sh
+
+  publish:
+    needs: [prepare, build, deploy]
+    if: >-
+      !cancelled() && needs.build.result == 'success' &&
+      (needs.deploy.result == 'success' || (!inputs.deploy_production && needs.deploy.result == 'skipped'))
+    runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v3
+      - name: Prepare release notes
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          IMAGE: ${{ needs.prepare.outputs.image }}@${{ needs.build.outputs.digest }}
+          DEPLOYED: ${{ inputs.deploy_production }}
+        run: |
+          node scripts/check-release.mjs --notes > release-notes.md
+          printf '\nCommit: `%s`\n\nImage: `%s`\n\nProduction deployment: `%s`\n' "$GITHUB_SHA" "$IMAGE" "$DEPLOYED" >> release-notes.md
+      - uses: softprops/action-gh-release@v3
         with:
-          tag_name: v${{ needs.build-and-push.outputs.version }}
-          generate_release_notes: true
-          body: |
-            ## Release v${{ needs.build-and-push.outputs.version }}
-
-            **Release path (ERY-88 cadence):**
-            - Type: ${{ inputs.release_type }}
-            - Scheduled train date: ${{ inputs.train_date }}
-            - Hotfix reference: ${{ inputs.hotfix_reference }}
-
-            **What was deployed:**
-            - Migrations: ${{ inputs.run_migrations }}
-            - Edge Functions: ${{ inputs.deploy_functions }}
-
-            **Docker Image:**
-            ```
-            docker pull ghcr.io/${{ needs.build-and-push.outputs.image_name }}:${{ needs.build-and-push.outputs.version }}
-            ```
+          tag_name: v${{ needs.prepare.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          body_path: release-notes.md

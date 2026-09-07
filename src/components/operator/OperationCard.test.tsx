@@ -12,14 +12,14 @@ vi.mock("@/hooks/useProfile", () => ({
 }));
 
 vi.mock("@/hooks/useOperationIssues", () => ({
-  useOperationIssues: () => ({
+  useOperationIssues: (): { pendingCount: number; highestSeverity: null } => ({
     pendingCount: 0,
     highestSeverity: null,
   }),
 }));
 
 vi.mock("./OperationDetailModal", () => ({
-  default: () => null,
+  default: (): null => null,
 }));
 
 import OperationCard from "./OperationCard";

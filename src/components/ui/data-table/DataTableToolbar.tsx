@@ -7,10 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DataTableFacetedFilter } from "./DataTableFacetedFilter";
 import { DataTableViewOptions } from "./DataTableViewOptions";
-import {
+import type {
   DataTableFilterableColumn,
   DataTableSearchableColumn,
-} from "./DataTable";
+} from "./types";
 
 interface DataTableToolbarProps<TData> {
   table: Table<TData>;

@@ -1,3 +1,4 @@
+import { fetchAllPages } from "@/lib/db/pagination";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -52,19 +53,8 @@ interface PartData {
   stepFiles: string[];
   pdfFiles: string[];
   hasSTEP: boolean;
+  is_bullet_card: boolean | null;
   hasPDF: boolean;
-}
-
-interface PartRow {
-  id: string;
-  part_number: string;
-  material: string | null;
-  status: string;
-  parent_part_id: string | null;
-  file_paths: string[] | null;
-  job: { job_number: string } | null;
-  cell: { name: string; color: string } | null;
-  operations: { count: number }[];
 }
 
 export default function Parts() {
@@ -81,13 +71,11 @@ export default function Parts() {
 
   const { data: materials } = useQuery({
     queryKey: QueryKeys.config.materials(profile?.tenant_id ?? ''),
+    enabled: !!profile?.tenant_id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("parts")
-        .select("material")
-        .not("material", "is", null);
-
-      if (error) throw error;
+      const query = supabase.from("parts").select("material")
+        .eq("tenant_id", profile.tenant_id).not("material", "is", null).order("id");
+      const data = await fetchAllPages((from, to) => query.range(from, to));
 
       const uniqueMaterials = [...new Set(data.map((p) => p.material))];
       return uniqueMaterials.sort();
@@ -96,14 +84,11 @@ export default function Parts() {
 
   const { data: jobs } = useQuery({
     queryKey: QueryKeys.jobs.list(profile?.tenant_id ?? ''),
+    enabled: !!profile?.tenant_id,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("jobs")
-        .select("id, job_number")
-        .order("job_number");
-
-      if (error) throw error;
-      return data;
+      const query = supabase.from("jobs").select("id, job_number")
+        .eq("tenant_id", profile.tenant_id).order("job_number").order("id");
+      return fetchAllPages((from, to) => query.range(from, to));
     },
   });
 
@@ -113,23 +98,23 @@ export default function Parts() {
     refetch,
   } = useQuery({
     queryKey: QueryKeys.parts.all(profile?.tenant_id ?? ''),
+    enabled: !!profile?.tenant_id,
     queryFn: async () => {
       const query = supabase.from("parts").select(`
           *,
           job:jobs(job_number),
           cell:cells(name, color),
           operations(count)
-        `);
+        `).eq("tenant_id", profile.tenant_id).order("id");
 
-      const { data, error } = await query;
-      if (error) throw error;
+      const data = await fetchAllPages((from, to) => query.range(from, to));
 
       // Build children set from already-fetched data (no second query needed)
       const partsWithChildren = new Set(
-        (data as PartRow[])?.filter((p) => p.parent_part_id).map((p) => p.parent_part_id) || [],
+        data.filter((p) => p.parent_part_id).map((p) => p.parent_part_id) || [],
       );
 
-      return (data as PartRow[]).map((part) => {
+      return data.map((part) => {
         const files = part.file_paths || [];
         const stepFiles = files.filter((f: string) => {
           const ext = f.split(".").pop()?.toLowerCase();
@@ -150,7 +135,7 @@ export default function Parts() {
         };
       })
       // Rush parts first
-      .sort((a: any, b: any) => {
+      .sort((a, b) => {
         if (a.is_bullet_card && !b.is_bullet_card) return -1;
         if (!a.is_bullet_card && b.is_bullet_card) return 1;
         return 0;
@@ -219,7 +204,7 @@ export default function Parts() {
     return (
       <StatusBadge
         status={badgeStatus[status] || "pending"}
-        label={status.replaceAll("_", " ")}
+        label={status.replace(/_/g, " ")}
       />
     );
   }, []);
@@ -492,7 +477,7 @@ export default function Parts() {
           searchDebounce={200}
           columnVisibility={columnVisibility}
           onRowClick={(row) => setSelectedPartId(row.id)}
-          rowClassName={(row: any) => row.is_bullet_card ? "ring-1 ring-red-500/30 bg-red-500/5 animate-[pulse_3s_ease-in-out_1]" : ""}
+          rowClassName={(row) => row.is_bullet_card ? "ring-1 ring-red-500/30 bg-red-500/5 animate-[pulse_3s_ease-in-out_1]" : ""}
           maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
         />
       </div>

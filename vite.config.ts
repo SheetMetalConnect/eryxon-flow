@@ -1,4 +1,4 @@
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { visualizer } from "rollup-plugin-visualizer";
@@ -74,7 +74,9 @@ function applyCspBuildRewrites(): Plugin {
   };
 }
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig(({ mode }) => {
+  const pwaEnabled = loadEnv(mode, process.cwd(), "VITE_").VITE_ENABLE_PWA === "true";
+  return ({
   server: {
     host: "::",
     port: 8080,
@@ -82,12 +84,29 @@ export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     applyCspBuildRewrites(),
+    {
+      name: "eryxon:pwa",
+      transformIndexHtml: (html: string) => pwaEnabled ? html : html.replace(/\s*<link rel="manifest"[^>]*>/, ""),
+      generateBundle() {
+        if (pwaEnabled) return;
+        this.emitFile({
+          type: "asset",
+          fileName: "sw.js",
+          // Existing Workbox clients cannot reach the disabled app through its cached index.
+          source: `self.addEventListener("install", (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.registration.unregister());
+});
+`,
+        });
+      },
+    } satisfies Plugin,
     VitePWA({
-      // The ONLY service worker is the Workbox `generateSW` output written to
-      // dist/sw.js at build time (it precaches the app shell and handles the
-      // SKIP_WAITING message itself). Do not add a hand-written public/sw.js:
-      // generateSW overwrites it in dist/, so it would silently never ship.
-      //
+      disable: !pwaEnabled,
+      // Enabled builds generate the caching worker. Disabled builds serve the
+      // retirement worker above at the same URL so existing clients can upgrade.
       // Prompt the operator before activating a new SW: a Sonner toast in
       // src/components/PwaUpdatePrompt.tsx calls updateServiceWorker(true)
       // when the user clicks Reload. This prevents mid-shift forced reloads
@@ -179,4 +198,5 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-}));
+});
+});

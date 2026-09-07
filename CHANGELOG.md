@@ -2,6 +2,117 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.10.0] — 2026-09-07
+
+### Changed
+
+- Simplified English, Dutch, and German quick starts and the deployment entry page
+  around one maintained self-hosting guide. Corrected Node requirements and removed
+  the obsolete interactive provisioner, its unused verification companion, and
+  unsupported CLI setup recipes.
+- PR feedback snapshots now record requested reviewers and the commit covered by
+  each submitted review, and distinguish structural checks from completed feedback.
+- Database CI starts only PostgreSQL; clean migration replay, tenant isolation,
+  verified operator sessions, and concurrency checks retain the same coverage.
+- Updated deployment documentation for Node 22, explicit releases, immutable image
+  digests, and the default responsive web build. Custom Docker builds now accept
+  `VITE_ENABLE_PWA=true`; changing runtime configuration does not enable PWA support.
+  Removed the obsolete self-hosting script that rewrote configuration and repaired
+  migration history during setup. Operator routing and screen guidance now live in
+  the website manual; contributor documentation retains implementation patterns.
+- Community uses one responsive web interface for phones, tablets, and desktops.
+  Legacy `/m` links redirect to the shared operator routes, including operation
+  details and issue reporting. Removed duplicated mobile pages, shells, styling,
+  and unused native hooks. PWA installation and caching are now opt-in.
+- Production lifecycle actions now run in database transactions. Operation,
+  batch, membership, quantity, and timer changes use consistent row locking and
+  reject invalid transitions without leaving partial updates.
+- Releases use one manually dispatched workflow, stable SemVer, matching package
+  and lockfile versions, changelog notes, versioned images, and recorded digests.
+  Production deployment is optional, verifies its target, waits for health, and
+  restores the previous app image on failure. Removed the competing publisher
+  and disabled automatic Vercel production deployment from `main`; previews remain
+  available while migrations and frontend rollout are coordinated.
+- CI checks the referenced TypeScript projects, application tests and build,
+  all Edge entrypoint type checks and tests, documentation, clean database
+  migrations, tenant isolation, and
+  concurrent production actions. The former root `tsc --noEmit` checked no files.
+- Added a persistent PR feedback loop covering late comments, unresolved threads,
+  current-head checks, and changes during review. CodeRabbit is configured for
+  assertive incremental reviews; bot availability is verified per PR.
+- The GitHub repository is private. Dependency updates are enabled for the app,
+  documentation, MCP server, and Actions. Release and development instructions
+  describe the current GitHub plan's protection limits.
+- Upgraded the documentation toolchain to Astro 7 and compatible Starlight,
+  retaining Markdown diagrams and replacing imports of private package files.
+  Fixed MCP tenant updates and health checks, removed duplicate emitted tests,
+  and excluded development dependencies from its production image.
+- Removed route-barrel dependency cycles and moved shared CAD/table types out of
+  implementation modules. The application import graph now has no cycles.
+- Regenerated database types from the clean migration replay and removed the
+  divergent hand-maintained type tree and its implementation-mirroring tests.
+- Updated dependency resolutions, moved the Supabase CLI to development tooling,
+  and removed unused UI packages, wrappers, and the unused MQTT browser client.
+  Dependency audits are recorded with validation; they are not a security guarantee.
+
+### Fixed
+
+- Disabled PWA builds now serve a retiring worker at the existing URL so installed
+  clients can leave the old cached app. Retirement preserves open pages and caches;
+  the next navigation loads the regular web build.
+- Prevented browser writes from granting platform privileges, changing tenant
+  membership or subscription limits, and calling privileged maintenance RPCs.
+  Storage access and references between tenant-owned records now enforce tenant
+  ownership. Invitation signup validates the invitation instead of trusting
+  caller-supplied role and tenant metadata.
+- PIN verification now binds the employee to the authenticated terminal session.
+  Expired, cleared, forged, and other-session identities cannot drive production
+  actions. Time entries retain both the terminal account and the verified employee;
+  activity, operator indicators, and reports use the employee identity.
+- Authentication changes clear cached tenant data and ignore stale asynchronous
+  profile/session responses. Operator lock and sign-out revoke the PIN binding.
+- Terminal accounts with the operator role must verify an employee PIN before
+  production actions. The operator routes and legacy `/m` redirects no longer admit
+  an unverified operator profile, and the database rejects lifecycle writes without
+  a verified employee session unless the caller is an admin or the service API.
+- Self-hosted containers add the configured Supabase HTTP and WebSocket origins to
+  the Content Security Policy at start-up, so backends outside `*.supabase.co`
+  (a LAN address or custom domain) are reachable. Runtime configuration is written
+  as JSON, and an invalid backend URL stops the container instead of serving a
+  broken page.
+- Batch images selected before the batch exists upload to a tenant-scoped staging
+  path that the storage policies accept.
+- Restarting a timer on an operation already in progress no longer emits a second
+  `operation.started` event. Both the browser and the API emit it only on the
+  first transition out of `not_started`.
+- API query modifiers no longer execute the Supabase query before applying filters.
+  Bulk synchronization reports failed writes, CRUD endpoints restrict writable
+  fields and validate tenant references, and internal events require authentication.
+- Data tables refresh when rows or handlers change. Realtime subscriptions preserve
+  pending notifications across rerenders. List reads filter before pagination,
+  fetch complete ordered chunks, and use separate cache keys for distinct shapes.
+- Routing summaries batch related reads instead of issuing per-row requests.
+  Fixed CAD source/material contracts, preserved organization feature flags, and
+  corrected missing Edge storage exports and issue event callbacks.
+- Container health checks use the IPv4 listener explicitly, fixing false failures
+  when `localhost` resolves to IPv6.
+- Clean database setup tolerates the optional historical signup notification
+  trigger through a documented replay compatibility exception; existing applied
+  migrations and tenant trial dates are not rerun. Documentation type checking now passes after removing a dead script
+  and correcting component/DOM types.
+
+### Upgrade notes
+
+- Apply the three `20260907` migrations before deploying this frontend and its
+  Edge Functions. Back up the target first and run `scripts/audit-tenant-references.sql`
+  before rollout. Existing invalid cross-tenant references need explicit repair;
+  the migration does not silently delete or reassign records.
+- Set `INTERNAL_SERVICE_SECRET` consistently for internal event dispatchers.
+  Never expose it or a service-role key through a `VITE_` variable.
+- Existing terminal users must verify their PIN again. `/m` bookmarks remain valid.
+- Community retains its existing Business Source License 1.1. This release does
+  not change the license or move Premium functionality into Community.
+
 ## [0.9.2] — 2026-08-24
 
 ### Fixed

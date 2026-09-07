@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { useNavigate, useSearchParams, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
@@ -286,15 +286,13 @@ export default function BatchCreate() {
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: 'nesting' | 'layout') => {
+    const file = event.target.files?.[0];
+    if (!file || !profile?.tenant_id) return;
+
     try {
       setUploadingImage(true);
-      if (!event.target.files || event.target.files.length === 0) {
-        return;
-      }
-      const file = event.target.files[0];
       const fileExt = file.name.split('.').pop();
-      const fileName = `${id || 'temp'}/${type}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const filePath = `${profile.tenant_id}/${id || 'staging'}/${type}-${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('batch-images')

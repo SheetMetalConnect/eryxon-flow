@@ -178,7 +178,7 @@ describe('useException', () => {
   });
 
   it('fetches exception detail when id provided', async () => {
-    const mockException = {
+    const mockException: { id: string; status: string; tenant_id: string; expectation: null } = {
       id: 'exc-1',
       status: 'open',
       tenant_id: 'tenant-1',

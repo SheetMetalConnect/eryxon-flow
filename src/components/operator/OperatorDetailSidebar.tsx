@@ -54,7 +54,7 @@ export function OperatorDetailSidebar({
   return (
     <>
       {/* Collapse toggle */}
-      <div className="flex shrink-0 items-center justify-center border-b border-border py-1">
+      <div className="hidden shrink-0 items-center justify-center border-b border-border py-1 md:flex">
         <Button
           variant="ghost"
           size="sm"

@@ -36,6 +36,7 @@ vi.mock('react-router-dom', () => ({
 
 // Import after mocking
 import { AuthProvider, useAuth } from './AuthContext';
+import { queryClient } from '@/lib/queryClient';
 
 describe('AuthContext', () => {
   const mockUser = {
@@ -346,6 +347,52 @@ describe('AuthContext', () => {
       expect(result.current.profile).toBeNull();
       expect(result.current.tenant).toBeNull();
       expect(result.current.loading).toBe(false);
+    });
+  });
+
+  describe('identity boundaries', () => {
+    it('removes cached tenant data when the session signs out', async () => {
+      mockGetSession.mockResolvedValue({ data: { session: mockSession }, error: null });
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      queryClient.setQueryData(['private-record'], { tenant_id: mockProfile.tenant_id });
+
+      await act(async () => { await authStateChangeCallback?.('SIGNED_OUT', null); });
+
+      expect(queryClient.getQueryData(['private-record'])).toBeUndefined();
+      expect(result.current.user).toBeNull();
+    });
+
+    it('ignores a profile response that arrives after sign-out', async () => {
+      let resolveProfile!: (value: { data: typeof mockProfile; error: null }) => void;
+      const pendingProfile = new Promise<{ data: typeof mockProfile; error: null }>(resolve => {
+        resolveProfile = resolve;
+      });
+      mockGetSession.mockResolvedValue({ data: { session: mockSession }, error: null });
+      mockSignOut.mockResolvedValue({ error: null });
+      mockFrom.mockReturnValue({ select: () => ({ eq: () => ({ maybeSingle: () => pendingProfile }) }) });
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      await waitFor(() => expect(mockFrom).toHaveBeenCalledWith('profiles'));
+
+      await act(async () => { await result.current.signOut(); });
+      await act(async () => { resolveProfile({ data: mockProfile, error: null }); });
+
+      expect(result.current.profile).toBeNull();
+      expect(result.current.tenant).toBeNull();
+      expect(result.current.user).toBeNull();
+      expect(mockRpc).not.toHaveBeenCalledWith('get_tenant_info');
+    });
+
+    it('forwards invitation tokens for server-side authorization', async () => {
+      mockSignUp.mockResolvedValue({ data: { user: null }, error: null });
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      await waitFor(() => expect(result.current.loading).toBe(false));
+      await act(async () => {
+        await result.current.signUp('invite@example.com', 'test-password', { invitation_token: 'test-invitation' });
+      });
+      expect(mockSignUp).toHaveBeenCalledWith(expect.objectContaining({
+        options: expect.objectContaining({ data: expect.objectContaining({ invitation_token: 'test-invitation' }) }),
+      }));
     });
   });
 

@@ -78,9 +78,9 @@ export async function triggerWebhook(
 
     const result = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || result.success !== true || (result.failed ?? 0) > 0) {
       logger.error('Webhooks', 'Webhook dispatch failed', result);
-      return { success: false, error: result.error || 'Webhook dispatch failed' };
+      return { success: false, error: typeof result.error === 'string' ? result.error : 'Webhook dispatch failed' };
     }
 
     return { success: true };

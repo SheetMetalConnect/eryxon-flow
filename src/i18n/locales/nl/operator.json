@@ -1,5 +1,7 @@
 {
   "workQueue": {
+    "operationNotFound": "Deze bewerking is niet meer beschikbaar.",
+    "scanInputHint": "Scan met een aangesloten scanner of voer een order-, onderdeel- of bewerkingscode in.",
     "filtersAndControls": "Filters & besturing",
     "statistics": "Statistieken",
     "total": "Totaal",

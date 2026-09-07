@@ -89,7 +89,7 @@ export const viewerThemes = {
   },
 } as const;
 
-export type ViewerThemePalette = typeof viewerThemes.light;
+export type ViewerThemePalette = (typeof viewerThemes)[keyof typeof viewerThemes];
 
 /** @deprecated Use viewerThemes[resolvedTheme] instead — kept for back-compat */
 export const viewerColors = viewerThemes.light;

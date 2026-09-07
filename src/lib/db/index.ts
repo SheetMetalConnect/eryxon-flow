@@ -4,10 +4,11 @@
 export {
   fetchOperationsWithDetails,
   fetchOperationLookupDetails,
+  fetchOperationDetails,
   startTimeTracking,
   completeOperation,
 } from './operations';
-export type { OperationWithDetails } from './operations';
+export type { OperationWithDetails, OperationBatchContext } from './operations';
 
 export {
   stopTimeTracking,

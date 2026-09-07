@@ -194,16 +194,13 @@ async function startHttp(): Promise<void> {
     return true;
   };
 
-  // Health check endpoint. Probes database connectivity so orchestrators
-  // (Docker healthcheck, uptime monitors) catch a broken Supabase link
-  // instead of reporting a healthy-but-useless server. The probe is a
-  // HEAD-style count on a small always-present table.
+  // Use a tenant-owned table because the scoped client filters by tenant_id.
   app.get("/health", async (_req, res) => {
     let database: "ok" | "error" = "ok";
     let databaseError: string | undefined;
     try {
       const { error } = await supabaseClient
-        .from("tenants")
+        .from("jobs")
         .select("id", { count: "exact", head: true })
         .limit(1);
       if (error) {

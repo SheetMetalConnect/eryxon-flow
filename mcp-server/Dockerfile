@@ -12,7 +12,7 @@ RUN npm ci
 # Build TypeScript
 COPY tsconfig.json ./
 COPY src/ ./src/
-RUN npm run build
+RUN npm run build && npm prune --omit=dev
 
 # Production image
 FROM node:22-alpine

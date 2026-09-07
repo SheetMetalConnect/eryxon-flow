@@ -25,7 +25,8 @@ import {
   UserCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
+import { readReturnTo } from "@/routes/launchTargets";
 import { logger } from "@/lib/logger";
 
 export default function TerminalLogin() {
@@ -106,7 +107,7 @@ export default function TerminalLogin() {
       const result = await verifyAndSwitchOperator(employeeId.trim(), pin);
 
       if (result.success) {
-        const from = (location.state as { from?: string })?.from;
+        const from = readReturnTo(location.state);
         navigate(from || ROUTES.OPERATOR.WORK_QUEUE);
       } else {
         setErrorCode(result.error_code || null);

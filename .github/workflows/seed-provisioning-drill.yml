@@ -91,12 +91,6 @@ jobs:
           DB_URL: ${{ steps.db.outputs.db_url }}
         run: |
           set -euo pipefail
-          # The runbook applies seed via `supabase db execute < seed.sql`, which
-          # connects as `postgres`. On both hosted Supabase and this local stack,
-          # `postgres` is a non-superuser that does NOT own storage.objects (owned
-          # by supabase_storage_admin) — so CREATE POLICY raises 42501. We assert
-          # that here so a future stack change that makes postgres an owner/super
-          # would surface as a fidelity failure rather than a silent false pass.
           psql "$DB_URL" -v ON_ERROR_STOP=1 <<'SQL' 2>&1 | tee artifacts/role-check.log
           SELECT current_user AS seed_role,
                  (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) AS is_superuser,

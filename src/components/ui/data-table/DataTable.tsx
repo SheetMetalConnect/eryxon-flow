@@ -26,11 +26,12 @@ import {
 } from "@/components/ui/table";
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableToolbar } from "./DataTableToolbar";
+import type { DataTableFilterableColumn, DataTableSearchableColumn } from "./types";
 import { cn } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
 
-const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
-  const search = filterValue.toLowerCase();
+const globalFilterFn: FilterFn<unknown> = (row, columnId, filterValue) => {
+  const search = String(filterValue).toLowerCase();
 
   // Search through all column values
   const rowValues = row.getAllCells().map(cell => {
@@ -43,7 +44,7 @@ const globalFilterFn: FilterFn<any> = (row, columnId, filterValue) => {
   return rowValues.some(value => value.toLowerCase().includes(search));
 };
 
-interface MemoizedRowProps<TData> {
+interface DataRowProps<TData> {
   row: Row<TData>;
   onRowClick?: (row: TData) => void;
   rowClassName?: (row: TData) => string;
@@ -52,15 +53,14 @@ interface MemoizedRowProps<TData> {
   index: number;
 }
 
-const MemoizedRow = React.memo(
-  <TData,>({
+const DataRow = <TData,>({
     row,
     onRowClick,
     rowClassName,
     compact,
     striped,
     index,
-  }: MemoizedRowProps<TData>) => (
+  }: DataRowProps<TData>) => (
     <TableRow
       data-state={row.getIsSelected() && "selected"}
       className={cn(
@@ -79,43 +79,9 @@ const MemoizedRow = React.memo(
         </TableCell>
       ))}
     </TableRow>
-  ),
-  (prevProps, nextProps) => {
-    // Check basic row identity
-    if (prevProps.row.id !== nextProps.row.id) return false;
-    if (prevProps.row.getIsSelected() !== nextProps.row.getIsSelected()) return false;
-    if (prevProps.index !== nextProps.index) return false;
-    if (prevProps.compact !== nextProps.compact) return false;
-    if (prevProps.striped !== nextProps.striped) return false;
-    // Re-render when column definitions change (e.g. async data in cell closures)
-    const prevCells = prevProps.row.getVisibleCells();
-    const nextCells = nextProps.row.getVisibleCells();
-    if (prevCells.length !== nextCells.length) return false;
-    for (let i = 0; i < prevCells.length; i++) {
-      if (prevCells[i].column.columnDef.cell !== nextCells[i].column.columnDef.cell) return false;
-    }
-    return true;
-  }
-) as <TData>(props: MemoizedRowProps<TData>) => React.ReactElement;
+  );
 
-(MemoizedRow as unknown as { displayName: string }).displayName = "MemoizedRow";
-
-export interface DataTableFilterOption {
-  label: string;
-  value: string;
-  icon?: React.ComponentType<{ className?: string }>;
-}
-
-export interface DataTableFilterableColumn {
-  id: string;
-  title: string;
-  options: DataTableFilterOption[];
-}
-
-export interface DataTableSearchableColumn {
-  id: string;
-  title: string;
-}
+export type { DataTableFilterOption, DataTableFilterableColumn, DataTableSearchableColumn } from "./types";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -187,7 +153,7 @@ export function DataTable<TData, TValue>({
 
   const debouncedGlobalFilter = useDebounce(globalFilter, searchDebounce);
 
-  const table = useReactTable({
+  const table = useReactTable<TData>({
     data,
     columns,
     state: {
@@ -276,7 +242,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row, index) => (
-                <MemoizedRow
+                <DataRow
                   key={row.id}
                   row={row}
                   onRowClick={onRowClick}

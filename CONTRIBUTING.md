@@ -9,21 +9,22 @@ report from your shop floor, or a new feature.
 ## Quick start
 
 ```bash
-npm install && npm run dev   # App dev server at localhost:8080
+npm ci && npm run dev   # App dev server at localhost:8080
 npm run build                # Must pass before any PR
 npm run test:run             # Vitest suite — must stay green
 npm run lint                 # ESLint — zero errors required
+npm run typecheck            # Check all referenced TypeScript projects
 ```
 
 The marketing/docs website lives in `website/` with its own `package.json`
-(`cd website && npm install && npm run dev`).
+(`cd website && npm ci && npm run dev`).
 
 ## Project layout
 
 | Path | What lives there |
 |------|-------------------|
 | `src/` | React 18 + TypeScript app (Vite, Tailwind, shadcn/ui) |
-| `src/pages/operator`, `src/pages/mobile` | Operator terminal (desktop + touch PWA) |
+| `src/pages/operator` | Shared responsive operator interface |
 | `src/pages/admin` | Admin surfaces |
 | `supabase/functions/` | Deno edge functions (REST API), shared code in `_shared/` |
 | `supabase/migrations/` | Database schema + RLS policies |
@@ -44,7 +45,7 @@ The marketing/docs website lives in `website/` with its own `package.json`
   `docs/CONVENTIONS.md`). Extract before you exceed.
 - **Design system**: solid surfaces, hairline borders, design tokens — no
   gradients, no glass effects. See `docs/DESIGN_SYSTEM.md`.
-- This is a public repository: keep issues and PRs free of customer names,
+- This is a private repository: keep issues and PRs free of customer names,
   credentials, and commercial details.
 
 ## Translations
@@ -63,9 +64,12 @@ vulnerabilities.
 
 ## Releases
 
-The app ships on a biweekly release train. Features merge to `main` any time;
-production releases are executed on train dates via the Release workflow.
-Hotfixes outside the train are reserved for critical production issues.
+See [Releasing](./RELEASING.md) for versioning, validation, and current deployment limits.
+
+Use focused feature branches and pull requests. Merge after reviewing the diff
+and relevant checks. Releases are explicit decisions, independent of feature
+merges; dispatch the Release workflow from `main` after updating the version and
+changelog. Do not create the tag first: the workflow creates it after validation.
 
 ## License
 

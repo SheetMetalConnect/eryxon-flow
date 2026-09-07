@@ -211,7 +211,7 @@ export function edgeLog(
 /** Minimal Supabase client surface this module depends on. */
 export interface ActivityLogWriter {
   from(table: string): {
-    insert(row: unknown): Promise<{ error: unknown }>;
+    insert(row: unknown): PromiseLike<{ error: unknown }>;
   };
 }
 

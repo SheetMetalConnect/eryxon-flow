@@ -100,6 +100,15 @@ describe('webhooks', () => {
   });
 
   describe('triggerWebhook', () => {
+    it.each([
+      { success: false, failed: 0 },
+      { success: true, failed: 1 },
+    ])('reports unsuccessful HTTP 200 delivery', async (body) => {
+      mockFetch.mockResolvedValueOnce({ ok: true, json: async () => body });
+      const { triggerWebhook } = await import('./webhooks');
+      expect((await triggerWebhook('tenant-1', 'job.created', {})).success).toBe(false);
+    });
+
     it('returns error when no active session', async () => {
       const { supabase } = await import('@/integrations/supabase/client');
       vi.mocked(supabase.auth.getSession).mockResolvedValueOnce({

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
@@ -6,10 +6,7 @@ import { queryClient } from "@/lib/queryClient";
 import { prefetchCommonData } from "@/lib/cacheInvalidation";
 import { registerPushNotifications } from "@/native";
 
-// SECURITY NOTE: The role field here is for UI convenience only (showing/hiding UI elements).
-// All actual authorization is enforced server-side via Row Level Security (RLS) policies
-// using the has_role() function that queries the user_roles table.
-// Client-side role checks provide ZERO security - they can be bypassed by attackers.
+// UI roles are informational; database policies enforce authorization.
 interface Profile {
   id: string;
   tenant_id: string;
@@ -49,7 +46,7 @@ interface AuthContextType {
   tenant: TenantInfo | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
-  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string }) => Promise<{ error: Error | null; data?: unknown }>;
+  signUp: (email: string, password: string, userData: Partial<Profile> & { company_name?: string; invitation_token?: string }) => Promise<{ error: Error | null; data?: unknown }>;
   signOut: () => Promise<void>;
   switchTenant: (tenantId: string) => Promise<void>;
   refreshTenant: () => Promise<void>;
@@ -64,6 +61,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [tenant, setTenant] = useState<TenantInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const authRevision = useRef(0);
+  const activeUserId = useRef<string | null>(null);
+
+  const updateSession = (nextSession: Session | null) => {
+    const nextUserId = nextSession?.user.id ?? null;
+    if (activeUserId.current !== nextUserId || nextUserId === null) {
+      authRevision.current += 1;
+      activeUserId.current = nextUserId;
+      queryClient.clear();
+      setProfile(null);
+      setTenant(null);
+      setLoading(nextUserId !== null);
+    }
+    setSession(nextSession);
+    setUser(nextSession?.user ?? null);
+  };
 
   useEffect(() => {
     // `SIGNED_IN` fires on first login *and* on every token refresh and on
@@ -87,30 +100,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             failureReason: 'token_refresh_failed',
           });
           supabase.auth.signOut();
-          setSession(null);
-          setUser(null);
-          setProfile(null);
-          setTenant(null);
-          setLoading(false);
+          updateSession(null);
           lastRegisteredUserId = null;
           return;
         }
 
-        setSession(session);
-        setUser(session?.user ?? null);
+        updateSession(session);
 
         if (session?.user) {
           setTimeout(() => {
             fetchProfile(session.user.id);
           }, 0);
-          // First fresh sign-in inside a Capacitor WebView triggers an
-          // APNs / FCM permission prompt and registers the device token.
-          // Skipped on TOKEN_REFRESHED, on USER_UPDATED, on tab restore, and
-          // when the user id hasn't changed since we last registered.
-          // No-op on the web (returns null). Backend dispatch isn't wired
-          // yet — see docs/IOS.md "Remaining iOS-only gaps" — but the
-          // token is logged so an admin can verify the handshake before
-          // flipping APNs on.
+          // Register once per identity; the Community web adapter is a no-op.
           if (
             event === 'SIGNED_IN' &&
             session.user.id !== lastRegisteredUserId
@@ -134,7 +135,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
+    const initialRevision = authRevision.current;
     supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (authRevision.current !== initialRevision) return;
       if (error) {
         // Pilot-critical auth lifecycle event (ERY-51).
         logger.error('Failed to recover session, signing out', error, {
@@ -144,16 +147,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           failureReason: 'session_recovery_failed',
         });
         supabase.auth.signOut();
-        setSession(null);
-        setUser(null);
-        setProfile(null);
-        setTenant(null);
-        setLoading(false);
+        updateSession(null);
         return;
       }
 
-      setSession(session);
-      setUser(session?.user ?? null);
+      updateSession(session);
 
       if (session?.user) {
         logger.info('Session recovered', {
@@ -170,10 +168,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      authRevision.current += 1;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchProfile = async (userId: string) => {
+    const revision = authRevision.current;
+    const isCurrent = () => revision === authRevision.current && userId === activeUserId.current;
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -181,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq("id", userId)
         .maybeSingle();
 
+      if (!isCurrent()) return;
       if (error) throw error;
 
       if (!data) {
@@ -196,7 +200,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         onboarding_completed: data.onboarding_completed ?? false,
         onboarding_step: data.onboarding_step ?? 0,
       });
-      await fetchTenant();
+      await fetchTenant(revision);
+      if (!isCurrent()) return;
       prefetchCommonData(queryClient, data.tenant_id, {
         fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
         fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
@@ -205,14 +210,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       logger.error('AuthContext', 'Error fetching profile', error);
     } finally {
-      setLoading(false);
+      if (isCurrent()) setLoading(false);
     }
   };
 
-  const fetchTenant = async () => {
+  const fetchTenant = async (revision = authRevision.current) => {
     try {
       const { data, error } = await supabase.rpc("get_tenant_info");
 
+      if (revision !== authRevision.current) return;
       if (error) throw error;
 
       if (data && data.length > 0) {
@@ -259,6 +265,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         entityId: tenantId,
       });
 
+      authRevision.current += 1;
+      queryClient.clear();
       await fetchTenant();
       window.location.reload();
     } catch (error) {
@@ -302,7 +310,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (
     email: string,
     password: string,
-    userData: Partial<Profile> & { company_name?: string }
+    userData: Partial<Profile> & { company_name?: string; invitation_token?: string }
   ) => {
     try {
       const username = email.split('@')[0];
@@ -318,6 +326,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             role: userData.role || "operator",
             tenant_id: userData.tenant_id,
             company_name: userData.company_name,
+            invitation_token: userData.invitation_token,
             // Default hosted alpha to trial; can be overridden via invite metadata
             tenant_status: 'trial',
           },
@@ -330,9 +339,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setProfile(null);
-    setTenant(null);
+    updateSession(null);
+    try {
+      const { error } = await supabase.rpc("clear_operator_session");
+      if (error) throw error;
+    } catch (error) {
+      logger.error("AuthContext", "Could not revoke the operator session", error);
+    }
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
   return (

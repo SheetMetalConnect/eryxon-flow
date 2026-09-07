@@ -1,3 +1,4 @@
+import { getRuntimeEnv } from "./runtime-env.ts";
 /**
  * Security utilities for Edge Functions
  */
@@ -363,7 +364,7 @@ export function escapeHtml(str: string): string {
  * ALLOWED_ORIGIN environment variable to their frontend domain.
  */
 export function getCorsHeaders(): Record<string, string> {
-  const allowedOrigin = Deno.env.get('ALLOWED_ORIGIN') || 'http://localhost:5173';
+  const allowedOrigin = getRuntimeEnv('ALLOWED_ORIGIN') || 'http://localhost:5173';
 
   return {
     'Access-Control-Allow-Origin': allowedOrigin,

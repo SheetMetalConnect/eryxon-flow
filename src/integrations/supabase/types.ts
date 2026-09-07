@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
-  }
   public: {
     Tables: {
       activity_log: {
@@ -123,15 +118,7 @@ export type Database = {
           name?: string
           tenant_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "api_keys_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       api_usage_logs: {
         Row: {
@@ -330,51 +317,6 @@ export type Database = {
           },
         ]
       }
-      batch_assignments: {
-        Row: {
-          assigned_at: string
-          batch_id: string
-          completed_at: string | null
-          id: string
-          operation_id: string
-          quantity_assigned: number
-          quantity_completed: number
-        }
-        Insert: {
-          assigned_at?: string
-          batch_id: string
-          completed_at?: string | null
-          id?: string
-          operation_id: string
-          quantity_assigned?: number
-          quantity_completed?: number
-        }
-        Update: {
-          assigned_at?: string
-          batch_id?: string
-          completed_at?: string | null
-          id?: string
-          operation_id?: string
-          quantity_assigned?: number
-          quantity_completed?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "batch_assignments_batch_id_fkey"
-            columns: ["batch_id"]
-            isOneToOne: false
-            referencedRelation: "batches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "batch_assignments_operation_id_fkey"
-            columns: ["operation_id"]
-            isOneToOne: false
-            referencedRelation: "operations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       batch_operations: {
         Row: {
           batch_id: string
@@ -433,33 +375,30 @@ export type Database = {
       batch_requirements: {
         Row: {
           batch_id: string
-          created_at: string | null
+          created_at: string
           id: string
           material_name: string
           quantity: number
           status: string | null
-          tenant_id: string | null
-          updated_at: string | null
+          tenant_id: string
         }
         Insert: {
           batch_id: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           material_name: string
-          quantity: number
+          quantity?: number
           status?: string | null
-          tenant_id?: string | null
-          updated_at?: string | null
+          tenant_id: string
         }
         Update: {
           batch_id?: string
-          created_at?: string | null
+          created_at?: string
           id?: string
           material_name?: string
           quantity?: number
           status?: string | null
-          tenant_id?: string | null
-          updated_at?: string | null
+          tenant_id?: string
         }
         Relationships: [
           {
@@ -467,83 +406,6 @@ export type Database = {
             columns: ["batch_id"]
             isOneToOne: false
             referencedRelation: "operation_batches"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "batch_requirements_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      batches: {
-        Row: {
-          batch_number: string
-          created_at: string
-          id: string
-          job_id: string | null
-          material_id: string | null
-          notes: string | null
-          priority: number
-          produced_quantity: number
-          quantity: number
-          scrap_quantity: number
-          status: string
-          tenant_id: string
-          updated_at: string
-        }
-        Insert: {
-          batch_number: string
-          created_at?: string
-          id?: string
-          job_id?: string | null
-          material_id?: string | null
-          notes?: string | null
-          priority?: number
-          produced_quantity?: number
-          quantity?: number
-          scrap_quantity?: number
-          status?: string
-          tenant_id: string
-          updated_at?: string
-        }
-        Update: {
-          batch_number?: string
-          created_at?: string
-          id?: string
-          job_id?: string | null
-          material_id?: string | null
-          notes?: string | null
-          priority?: number
-          produced_quantity?: number
-          quantity?: number
-          scrap_quantity?: number
-          status?: string
-          tenant_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "batches_job_id_fkey"
-            columns: ["job_id"]
-            isOneToOne: false
-            referencedRelation: "jobs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "batches_material_id_fkey"
-            columns: ["material_id"]
-            isOneToOne: false
-            referencedRelation: "materials"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "batches_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
@@ -638,6 +500,7 @@ export type Database = {
           name: string
           sequence: number
           show_capacity_warning: boolean | null
+          sync_hash: string | null
           synced_at: string | null
           tenant_id: string
           updated_at: string | null
@@ -661,6 +524,7 @@ export type Database = {
           name: string
           sequence: number
           show_capacity_warning?: boolean | null
+          sync_hash?: string | null
           synced_at?: string | null
           tenant_id: string
           updated_at?: string | null
@@ -684,6 +548,7 @@ export type Database = {
           name?: string
           sequence?: number
           show_capacity_warning?: boolean | null
+          sync_hash?: string | null
           synced_at?: string | null
           tenant_id?: string
           updated_at?: string | null
@@ -1359,6 +1224,7 @@ export type Database = {
       issues: {
         Row: {
           affected_quantity: number | null
+          causes_standstill: boolean
           corrective_action: string | null
           created_at: string | null
           created_by: string
@@ -1387,6 +1253,7 @@ export type Database = {
         }
         Insert: {
           affected_quantity?: number | null
+          causes_standstill?: boolean
           corrective_action?: string | null
           created_at?: string | null
           created_by: string
@@ -1415,6 +1282,7 @@ export type Database = {
         }
         Update: {
           affected_quantity?: number | null
+          causes_standstill?: boolean
           corrective_action?: string | null
           created_at?: string | null
           created_by?: string
@@ -1443,13 +1311,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "issues_current_cell_id_fkey"
-            columns: ["current_cell_id"]
-            isOneToOne: false
-            referencedRelation: "cells"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "issues_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -1457,11 +1318,32 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "issues_current_cell_id_fkey"
+            columns: ["current_cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_current_cell_tenant_fkey"
+            columns: ["tenant_id", "current_cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
+            referencedColumns: ["tenant_id", "id"]
+          },
+          {
             foreignKeyName: "issues_intended_next_cell_id_fkey"
             columns: ["intended_next_cell_id"]
             isOneToOne: false
             referencedRelation: "cells"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "issues_intended_next_cell_tenant_fkey"
+            columns: ["tenant_id", "intended_next_cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
+            referencedColumns: ["tenant_id", "id"]
           },
           {
             foreignKeyName: "issues_reported_by_id_fkey"
@@ -1488,8 +1370,6 @@ export type Database = {
       }
       jobs: {
         Row: {
-          actual_duration: number | null
-          completed_at: string | null
           created_at: string | null
           current_cell_id: string | null
           customer: string | null
@@ -1510,10 +1390,7 @@ export type Database = {
           metadata: Json | null
           notes: string | null
           package_count: number | null
-          paused_at: string | null
-          resumed_at: string | null
           search_vector: unknown
-          started_at: string | null
           status: Database["public"]["Enums"]["job_status"] | null
           sync_hash: string | null
           synced_at: string | null
@@ -1523,8 +1400,6 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
-          actual_duration?: number | null
-          completed_at?: string | null
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
@@ -1545,10 +1420,7 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           package_count?: number | null
-          paused_at?: string | null
-          resumed_at?: string | null
           search_vector?: unknown
-          started_at?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           sync_hash?: string | null
           synced_at?: string | null
@@ -1558,8 +1430,6 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
-          actual_duration?: number | null
-          completed_at?: string | null
           created_at?: string | null
           current_cell_id?: string | null
           customer?: string | null
@@ -1580,10 +1450,7 @@ export type Database = {
           metadata?: Json | null
           notes?: string | null
           package_count?: number | null
-          paused_at?: string | null
-          resumed_at?: string | null
           search_vector?: unknown
-          started_at?: string | null
           status?: Database["public"]["Enums"]["job_status"] | null
           sync_hash?: string | null
           synced_at?: string | null
@@ -2190,6 +2057,7 @@ export type Database = {
           cell_id: string
           completed_at: string | null
           completed_by: string | null
+          completed_by_shop_floor_operator_id: string | null
           created_at: string
           created_by: string | null
           estimated_time: number | null
@@ -2198,15 +2066,15 @@ export type Database = {
           id: string
           layout_image_url: string | null
           material: string | null
-          material_requirement_metadata: Json | null
-          material_requirement_raised: boolean | null
           nesting_image_url: string | null
           nesting_metadata: Json | null
           notes: string | null
           operations_count: number
           parent_batch_id: string | null
+          production_mode: Database["public"]["Enums"]["batch_production_mode"]
           started_at: string | null
           started_by: string | null
+          started_by_shop_floor_operator_id: string | null
           status: Database["public"]["Enums"]["batch_status"]
           tenant_id: string
           thickness_mm: number | null
@@ -2219,6 +2087,7 @@ export type Database = {
           cell_id: string
           completed_at?: string | null
           completed_by?: string | null
+          completed_by_shop_floor_operator_id?: string | null
           created_at?: string
           created_by?: string | null
           estimated_time?: number | null
@@ -2227,15 +2096,15 @@ export type Database = {
           id?: string
           layout_image_url?: string | null
           material?: string | null
-          material_requirement_metadata?: Json | null
-          material_requirement_raised?: boolean | null
           nesting_image_url?: string | null
           nesting_metadata?: Json | null
           notes?: string | null
           operations_count?: number
           parent_batch_id?: string | null
+          production_mode?: Database["public"]["Enums"]["batch_production_mode"]
           started_at?: string | null
           started_by?: string | null
+          started_by_shop_floor_operator_id?: string | null
           status?: Database["public"]["Enums"]["batch_status"]
           tenant_id: string
           thickness_mm?: number | null
@@ -2248,6 +2117,7 @@ export type Database = {
           cell_id?: string
           completed_at?: string | null
           completed_by?: string | null
+          completed_by_shop_floor_operator_id?: string | null
           created_at?: string
           created_by?: string | null
           estimated_time?: number | null
@@ -2256,15 +2126,15 @@ export type Database = {
           id?: string
           layout_image_url?: string | null
           material?: string | null
-          material_requirement_metadata?: Json | null
-          material_requirement_raised?: boolean | null
           nesting_image_url?: string | null
           nesting_metadata?: Json | null
           notes?: string | null
           operations_count?: number
           parent_batch_id?: string | null
+          production_mode?: Database["public"]["Enums"]["batch_production_mode"]
           started_at?: string | null
           started_by?: string | null
+          started_by_shop_floor_operator_id?: string | null
           status?: Database["public"]["Enums"]["batch_status"]
           tenant_id?: string
           thickness_mm?: number | null
@@ -2286,6 +2156,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "operation_batches_completed_by_shop_floor_operator_id_fkey"
+            columns: ["completed_by_shop_floor_operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "operation_batches_created_by_fkey"
             columns: ["created_by"]
             isOneToOne: false
@@ -2304,6 +2181,13 @@ export type Database = {
             columns: ["started_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_batches_started_by_shop_floor_operator_id_fkey"
+            columns: ["started_by_shop_floor_operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
             referencedColumns: ["id"]
           },
           {
@@ -2576,6 +2460,8 @@ export type Database = {
           setup_time: number | null
           started_at: string | null
           status: Database["public"]["Enums"]["task_status"] | null
+          status_before_hold: Database["public"]["Enums"]["task_status"] | null
+          sync_hash: string | null
           synced_at: string | null
           tenant_id: string
           updated_at: string | null
@@ -2610,6 +2496,8 @@ export type Database = {
           setup_time?: number | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["task_status"] | null
+          status_before_hold?: Database["public"]["Enums"]["task_status"] | null
+          sync_hash?: string | null
           synced_at?: string | null
           tenant_id: string
           updated_at?: string | null
@@ -2644,6 +2532,8 @@ export type Database = {
           setup_time?: number | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["task_status"] | null
+          status_before_hold?: Database["public"]["Enums"]["task_status"] | null
+          sync_hash?: string | null
           synced_at?: string | null
           tenant_id?: string
           updated_at?: string | null
@@ -2676,6 +2566,52 @@ export type Database = {
             columns: ["cell_id"]
             isOneToOne: false
             referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      operator_sessions: {
+        Row: {
+          expires_at: string
+          operator_id: string
+          session_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          expires_at: string
+          operator_id: string
+          session_id: string
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          expires_at?: string
+          operator_id?: string
+          session_id?: string
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operator_sessions_operator_id_fkey"
+            columns: ["operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_sessions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operator_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -2733,6 +2669,81 @@ export type Database = {
           },
           {
             foreignKeyName: "operators_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      part_placements: {
+        Row: {
+          id: string
+          location_id: string
+          metadata: Json
+          operation_id: string | null
+          part_id: string
+          placed_at: string
+          placed_by: string | null
+          placed_by_operator_id: string | null
+          removed_at: string | null
+          tenant_id: string
+        }
+        Insert: {
+          id?: string
+          location_id: string
+          metadata?: Json
+          operation_id?: string | null
+          part_id: string
+          placed_at?: string
+          placed_by?: string | null
+          placed_by_operator_id?: string | null
+          removed_at?: string | null
+          tenant_id: string
+        }
+        Update: {
+          id?: string
+          location_id?: string
+          metadata?: Json
+          operation_id?: string | null
+          part_id?: string
+          placed_at?: string
+          placed_by?: string | null
+          placed_by_operator_id?: string | null
+          removed_at?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "part_placements_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "storage_locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "part_placements_part_id_fkey"
+            columns: ["part_id"]
+            isOneToOne: false
+            referencedRelation: "parts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "part_placements_placed_by_fkey"
+            columns: ["placed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "part_placements_placed_by_operator_id_fkey"
+            columns: ["placed_by_operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "part_placements_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -2951,6 +2962,77 @@ export type Database = {
           },
         ]
       }
+      resource_cell_memberships: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          cell_id: string
+          created_at: string
+          id: string
+          is_primary: boolean
+          metadata: Json
+          resource_id: string
+          revoked_at: string | null
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          cell_id: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          metadata?: Json
+          resource_id: string
+          revoked_at?: string | null
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          cell_id?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean
+          metadata?: Json
+          resource_id?: string
+          revoked_at?: string | null
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resource_cell_memberships_assigned_by_fkey"
+            columns: ["assigned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_cell_memberships_cell_id_fkey"
+            columns: ["cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_cell_memberships_resource_id_fkey"
+            columns: ["resource_id"]
+            isOneToOne: false
+            referencedRelation: "resources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resource_cell_memberships_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       resources: {
         Row: {
           active: boolean | null
@@ -2966,6 +3048,7 @@ export type Database = {
           metadata: Json | null
           name: string
           status: string | null
+          sync_hash: string | null
           synced_at: string | null
           tenant_id: string
           type: string
@@ -2985,6 +3068,7 @@ export type Database = {
           metadata?: Json | null
           name: string
           status?: string | null
+          sync_hash?: string | null
           synced_at?: string | null
           tenant_id: string
           type: string
@@ -3004,6 +3088,7 @@ export type Database = {
           metadata?: Json | null
           name?: string
           status?: string | null
+          sync_hash?: string | null
           synced_at?: string | null
           tenant_id?: string
           type?: string
@@ -3056,6 +3141,69 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "scrap_reasons_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      storage_locations: {
+        Row: {
+          active: boolean
+          capacity: number
+          cell_id: string | null
+          code: string
+          col_index: number | null
+          created_at: string
+          id: string
+          label: string | null
+          metadata: Json
+          row_index: number | null
+          sort_order: number
+          tenant_id: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          capacity?: number
+          cell_id?: string | null
+          code: string
+          col_index?: number | null
+          created_at?: string
+          id?: string
+          label?: string | null
+          metadata?: Json
+          row_index?: number | null
+          sort_order?: number
+          tenant_id: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          capacity?: number
+          cell_id?: string | null
+          code?: string
+          col_index?: number | null
+          created_at?: string
+          id?: string
+          label?: string | null
+          metadata?: Json
+          row_index?: number | null
+          sort_order?: number
+          tenant_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storage_locations_cell_id_fkey"
+            columns: ["cell_id"]
+            isOneToOne: false
+            referencedRelation: "cells"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_locations_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -3242,102 +3390,78 @@ export type Database = {
           tenant_id?: string
           updated_at?: string | null
         }
+        Relationships: []
+      }
+      sync_imports: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_count: number | null
+          entity_type: string
+          error_count: number | null
+          errors: Json | null
+          id: string
+          metadata: Json | null
+          operation: string
+          record_count: number | null
+          skipped_count: number | null
+          source: string | null
+          started_at: string | null
+          status: string | null
+          sync_hash: string | null
+          tenant_id: string
+          total_records: number | null
+          updated_count: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_count?: number | null
+          entity_type: string
+          error_count?: number | null
+          errors?: Json | null
+          id?: string
+          metadata?: Json | null
+          operation?: string
+          record_count?: number | null
+          skipped_count?: number | null
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          sync_hash?: string | null
+          tenant_id: string
+          total_records?: number | null
+          updated_count?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_count?: number | null
+          entity_type?: string
+          error_count?: number | null
+          errors?: Json | null
+          id?: string
+          metadata?: Json | null
+          operation?: string
+          record_count?: number | null
+          skipped_count?: number | null
+          source?: string | null
+          started_at?: string | null
+          status?: string | null
+          sync_hash?: string | null
+          tenant_id?: string
+          total_records?: number | null
+          updated_count?: number | null
+        }
         Relationships: [
           {
-            foreignKeyName: "substeps_operation_id_fkey"
-            columns: ["operation_id"]
+            foreignKeyName: "sync_imports_tenant_id_fkey"
+            columns: ["tenant_id"]
             isOneToOne: false
-            referencedRelation: "operations"
+            referencedRelation: "tenants"
             referencedColumns: ["id"]
           },
         ]
-      }
-      storage_locations: {
-        Row: {
-          id: string
-          tenant_id: string
-          cell_id: string | null
-          code: string
-          label: string | null
-          row_index: number | null
-          col_index: number | null
-          capacity: number
-          sort_order: number
-          active: boolean
-          metadata: Json
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          cell_id?: string | null
-          code: string
-          label?: string | null
-          row_index?: number | null
-          col_index?: number | null
-          capacity?: number
-          sort_order?: number
-          active?: boolean
-          metadata?: Json
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          cell_id?: string | null
-          code?: string
-          label?: string | null
-          row_index?: number | null
-          col_index?: number | null
-          capacity?: number
-          sort_order?: number
-          active?: boolean
-          metadata?: Json
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      part_placements: {
-        Row: {
-          id: string
-          tenant_id: string
-          part_id: string
-          location_id: string
-          operation_id: string | null
-          placed_by: string | null
-          placed_by_operator_id: string | null
-          placed_at: string
-          removed_at: string | null
-          metadata: Json
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          part_id: string
-          location_id: string
-          operation_id?: string | null
-          placed_by?: string | null
-          placed_by_operator_id?: string | null
-          placed_at?: string
-          removed_at?: string | null
-          metadata?: Json
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          part_id?: string
-          location_id?: string
-          operation_id?: string | null
-          placed_by?: string | null
-          placed_by_operator_id?: string | null
-          placed_at?: string
-          removed_at?: string | null
-          metadata?: Json
-        }
-        Relationships: []
       }
       tenants: {
         Row: {
@@ -3372,6 +3496,7 @@ export type Database = {
           next_operator_number: number | null
           onboarding_completed_at: string | null
           payment_failed_at: string | null
+          pilot_ready_at: string | null
           plan: Database["public"]["Enums"]["subscription_plan"]
           preferred_payment_method:
             | Database["public"]["Enums"]["payment_provider"]
@@ -3426,6 +3551,7 @@ export type Database = {
           next_operator_number?: number | null
           onboarding_completed_at?: string | null
           payment_failed_at?: string | null
+          pilot_ready_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           preferred_payment_method?:
             | Database["public"]["Enums"]["payment_provider"]
@@ -3480,6 +3606,7 @@ export type Database = {
           next_operator_number?: number | null
           onboarding_completed_at?: string | null
           payment_failed_at?: string | null
+          pilot_ready_at?: string | null
           plan?: Database["public"]["Enums"]["subscription_plan"]
           preferred_payment_method?:
             | Database["public"]["Enums"]["payment_provider"]
@@ -3514,6 +3641,7 @@ export type Database = {
           notes: string | null
           operation_id: string
           operator_id: string
+          shop_floor_operator_id: string | null
           start_time: string
           tenant_id: string
           time_type: string
@@ -3527,6 +3655,7 @@ export type Database = {
           notes?: string | null
           operation_id: string
           operator_id: string
+          shop_floor_operator_id?: string | null
           start_time?: string
           tenant_id: string
           time_type?: string
@@ -3540,6 +3669,7 @@ export type Database = {
           notes?: string | null
           operation_id?: string
           operator_id?: string
+          shop_floor_operator_id?: string | null
           start_time?: string
           tenant_id?: string
           time_type?: string
@@ -3550,6 +3680,13 @@ export type Database = {
             columns: ["operator_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "time_entries_shop_floor_operator_id_fkey"
+            columns: ["shop_floor_operator_id"]
+            isOneToOne: false
+            referencedRelation: "operators"
             referencedColumns: ["id"]
           },
           {
@@ -3764,6 +3901,19 @@ export type Database = {
         Args: { p_exception_id: string }
         Returns: undefined
       }
+      add_batch_operations: {
+        Args: {
+          p_batch_id: string
+          p_operation_ids: string[]
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
+      assert_production_actor: {
+        Args: { p_operator_id?: string; p_tenant_id: string }
+        Returns: undefined
+      }
+      assert_tenant_admin: { Args: { p_tenant_id: string }; Returns: undefined }
       auto_close_stale_attendance: { Args: never; Returns: number }
       can_create_job: { Args: { p_tenant_id: string }; Returns: boolean }
       can_create_parts: {
@@ -3798,6 +3948,11 @@ export type Database = {
           message: string
           table_name: string
         }[]
+      }
+      clear_operator_session: { Args: never; Returns: undefined }
+      close_production_timer: {
+        Args: { p_ended_at: string; p_entry_id: string }
+        Returns: number
       }
       create_invitation: {
         Args: {
@@ -4080,10 +4235,10 @@ export type Database = {
           actual_hours: number
           cell_id: string
           cell_name: string
-          description: string
           estimated_hours: number
+          notes: string
           operation_id: string
-          operation_number: string
+          operation_name: string
           sequence: number
           status: string
         }[]
@@ -4151,6 +4306,7 @@ export type Database = {
         Args: { p_api_key_id?: string; p_tenant_id: string }
         Returns: number
       }
+      invoke_pilot_alert_evaluator: { Args: never; Returns: undefined }
       is_demo_mode: { Args: { p_tenant_id: string }; Returns: boolean }
       is_root_admin: { Args: never; Returns: boolean }
       list_all_tenants: {
@@ -4214,6 +4370,16 @@ export type Database = {
         }
         Returns: string
       }
+      log_storage_operation: {
+        Args: {
+          p_file_path: string
+          p_file_size_bytes: number
+          p_metadata?: Json
+          p_operation: string
+          p_tenant_id: string
+        }
+        Returns: undefined
+      }
       mark_all_notifications_read: { Args: never; Returns: number }
       mark_notification_read: {
         Args: { p_notification_id: string }
@@ -4227,6 +4393,22 @@ export type Database = {
         Args: { p_notes?: string; p_operator_id: string }
         Returns: boolean
       }
+      owns_storage_object: {
+        Args: { p_bucket: string; p_name: string }
+        Returns: boolean
+      }
+      production_profile_id: {
+        Args: { p_operator_id: string }
+        Returns: string
+      }
+      production_shop_floor_id: {
+        Args: { p_operator_id: string }
+        Returns: string
+      }
+      refresh_production_job: {
+        Args: { p_job_id: string; p_tenant_id: string }
+        Returns: undefined
+      }
       regenerate_mcp_token: {
         Args: { p_endpoint_id: string }
         Returns: {
@@ -4234,6 +4416,26 @@ export type Database = {
           endpoint_name: string
           token: string
           token_prefix: string
+        }[]
+      }
+      report_hosted_trial_summary: {
+        Args: {
+          p_expiring_window_days?: number
+          p_new_trial_window_days?: number
+        }
+        Returns: {
+          expiring_window_days: number
+          generated_at: string
+          new_trial_window_days: number
+          new_trials_in_window: number
+          trial_to_active_transitions: number
+          trial_to_cancelled_transitions: number
+          trials_activated: number
+          trials_converted_active: number
+          trials_expiring_soon: number
+          trials_lapsed_unconverted: number
+          trials_live: number
+          trials_not_yet_activated: number
         }[]
       }
       reset_monthly_parts_counters: {
@@ -4263,6 +4465,13 @@ export type Database = {
         Args: { p_tenant_id: string }
         Returns: {
           inserted_count: number
+          message: string
+        }[]
+      }
+      seed_demo_operator_assignment: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          assignment_id: string
           message: string
         }[]
       }
@@ -4296,9 +4505,32 @@ export type Database = {
         }
         Returns: string
       }
+      time_entry_action: {
+        Args: { p_action: string; p_tenant_id: string; p_time_entry_id: string }
+        Returns: Json
+      }
       toggle_notification_pin: {
         Args: { p_notification_id: string }
         Returns: boolean
+      }
+      transition_batch: {
+        Args: {
+          p_action: string
+          p_batch_id: string
+          p_operator_id?: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
+      transition_operation: {
+        Args: {
+          p_action: string
+          p_notes?: string
+          p_operation_id: string
+          p_operator_id?: string
+          p_tenant_id: string
+        }
+        Returns: Json
       }
       unlock_operator: { Args: { p_operator_id: string }; Returns: boolean }
       update_mcp_server_health: {
@@ -4360,6 +4592,7 @@ export type Database = {
     Enums: {
       app_role: "operator" | "admin"
       assignment_status: "assigned" | "accepted" | "in_progress" | "completed"
+      batch_production_mode: "manual" | "automated"
       batch_status:
         | "draft"
         | "ready"
@@ -4381,7 +4614,6 @@ export type Database = {
         | "accounting"
         | "crm"
         | "inventory"
-        | "shipping"
         | "analytics"
         | "other"
       integration_status: "draft" | "published" | "deprecated" | "archived"
@@ -4413,12 +4645,7 @@ export type Database = {
         | "cancelled"
       payment_transaction_type: "charge" | "refund" | "chargeback" | "dispute"
       subscription_plan: "free" | "pro" | "premium" | "enterprise"
-      subscription_status:
-        | "active"
-        | "cancelled"
-        | "suspended"
-        | "trial"
-        | "expired"
+      subscription_status: "active" | "cancelled" | "suspended" | "trial"
       task_status: "not_started" | "in_progress" | "completed" | "on_hold"
       waitlist_status: "pending" | "approved" | "rejected" | "converted"
     }
@@ -4436,12 +4663,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4465,11 +4692,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4490,11 +4717,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4515,11 +4742,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4532,11 +4759,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4550,6 +4777,7 @@ export const Constants = {
     Enums: {
       app_role: ["operator", "admin"],
       assignment_status: ["assigned", "accepted", "in_progress", "completed"],
+      batch_production_mode: ["manual", "automated"],
       batch_status: [
         "draft",
         "ready",
@@ -4573,7 +4801,6 @@ export const Constants = {
         "accounting",
         "crm",
         "inventory",
-        "shipping",
         "analytics",
         "other",
       ],
@@ -4609,13 +4836,7 @@ export const Constants = {
       ],
       payment_transaction_type: ["charge", "refund", "chargeback", "dispute"],
       subscription_plan: ["free", "pro", "premium", "enterprise"],
-      subscription_status: [
-        "active",
-        "cancelled",
-        "suspended",
-        "trial",
-        "expired",
-      ],
+      subscription_status: ["active", "cancelled", "suspended", "trial"],
       task_status: ["not_started", "in_progress", "completed", "on_hold"],
       waitlist_status: ["pending", "approved", "rejected", "converted"],
     },

@@ -21,7 +21,7 @@ ARG VITE_APP_TITLE
 ARG VITE_DEFAULT_LANGUAGE
 ARG VITE_DOCS_URL
 ARG VITE_CAD_SERVICE_URL
-ARG VITE_CAD_SERVICE_API_KEY
+ARG VITE_ENABLE_PWA=false
 
 # Set as environment variables for Vite build
 ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL
@@ -32,18 +32,22 @@ ENV VITE_APP_TITLE=$VITE_APP_TITLE
 ENV VITE_DEFAULT_LANGUAGE=$VITE_DEFAULT_LANGUAGE
 ENV VITE_DOCS_URL=$VITE_DOCS_URL
 ENV VITE_CAD_SERVICE_URL=$VITE_CAD_SERVICE_URL
-ENV VITE_CAD_SERVICE_API_KEY=$VITE_CAD_SERVICE_API_KEY
+ENV VITE_ENABLE_PWA=$VITE_ENABLE_PWA
 
 # Build the app
 RUN npm run build
 
 # Production stage
 FROM nginx:alpine
+RUN apk add --no-cache jq
+ARG APP_VERSION=0.0.0-dev
+ARG APP_REVISION=local
 
 # OCI image labels
 LABEL org.opencontainers.image.title="Eryxon Flow"
 LABEL org.opencontainers.image.description="Source-available planning and shop floor execution for job shops"
-LABEL org.opencontainers.image.version="0.6.0-dev"
+LABEL org.opencontainers.image.version="${APP_VERSION}"
+LABEL org.opencontainers.image.revision="${APP_REVISION}"
 LABEL org.opencontainers.image.source="https://github.com/SheetMetalConnect/eryxon-flow"
 LABEL org.opencontainers.image.vendor="Eryxon"
 LABEL org.opencontainers.image.licenses="BUSL-1.1"
@@ -54,9 +58,11 @@ COPY nginx-security-headers.conf /etc/nginx/conf.d/security-headers.conf
 
 # Copy built assets from builder
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist/index.html /etc/eryxon/index.html
 
 # Copy entrypoint script for runtime env injection
 COPY docker-entrypoint.sh /docker-entrypoint.sh
+COPY docker-runtime-config.sh /docker-runtime-config.sh
 RUN chmod +x /docker-entrypoint.sh
 
 # Expose port 80
@@ -64,6 +70,6 @@ EXPOSE 80
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1/health || exit 1
 
 CMD ["/docker-entrypoint.sh"]

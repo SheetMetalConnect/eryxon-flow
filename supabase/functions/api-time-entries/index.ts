@@ -49,7 +49,7 @@ serveApi(
         query = query.lte('start_time', endDate);
       }
 
-      return query;
+      return { query };
     },
   })
 );

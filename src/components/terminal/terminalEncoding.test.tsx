@@ -1,8 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { getTerminalOperationType } from "./terminalEncoding";
 
-const baseJob = {
-  status: "in_buffer" as const,
+const baseJob: Parameters<typeof getTerminalOperationType>[0] = {
   currentOp: "",
   operationType: null,
   batchContext: null,

@@ -1,3 +1,4 @@
+import type { PilotLogLevel } from "./observability.ts";
 /**
  * ERY-93: scheduled-execution core for the ERY-43 pilot alert evaluator.
  *
@@ -22,7 +23,6 @@ import {
   type AlertThresholds,
   type AlertTransport,
   type EvaluationContext,
-  type PilotLogLevel,
   type PilotSignalEvent,
 } from "./alerting.ts";
 

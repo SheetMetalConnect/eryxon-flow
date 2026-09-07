@@ -18,7 +18,7 @@ import { describe, it, expect, vi } from 'vitest';
 // before the import graph evaluates, so Deno exists in time.
 vi.hoisted(() => {
   (globalThis as unknown as { Deno: unknown }).Deno = {
-    env: { get: (_key: string) => undefined },
+    env: { get: (_key: string): undefined => undefined },
   };
 });
 

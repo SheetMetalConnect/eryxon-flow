@@ -50,7 +50,7 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 
 ## Code Conventions
 
-- TypeScript strict, `@/` path aliases
+- TypeScript project references, `@/` path aliases; run `npm run typecheck` (strict mode is not yet enabled)
 - shadcn/ui components, Tailwind CSS only
 - i18n keys for all UI text (EN, NL, DE) — never hardcode
 - Sonner for toasts, Supabase client for API calls
@@ -146,3 +146,24 @@ troubleshooting, glossary) → **the website**, not this table.
 - [supabase-db.md](supabase-db.md) — Migrations, RLS, Edge Functions, schema
 - [tech-stack.md](tech-stack.md) — Dependencies, build config, architecture
 - [repo-ops.md](repo-ops.md) — Issues, PRs, branches, releases
+
+## PR feedback loop
+
+Every PR interaction must include a fresh check of its current head, CI checks,
+requested reviewers, submitted review commits, all inline review threads (including
+resolved and outdated threads), and edited PR discussion comments. Use
+`npm run pr:review -- <PR> --repo SheetMetalConnect/eryxon-flow`; paginate all responses.
+Never infer completion from a prior green run or an earlier review snapshot.
+
+After pushing a fix, wait for the new checks and reviewer/bot feedback, fetch again,
+and address each actionable point. Resolve a thread only after verifying the fix;
+explain a declined suggestion with technical evidence. Do not silently dismiss
+reviews or mark every thread resolved. Require reviewer completion evidence tied to the current head. A CodeRabbit summary
+or skipped review is not evidence that the current head was reviewed. Report missing
+coverage explicitly; successful CI or elapsed time does not establish completion.
+
+Immediately before merging, rerun the feedback check against the reviewed head and
+fingerprint. If either changes, repeat the loop. Merge with `gh pr merge --match-head-commit`
+and recheck the PR after merge for late feedback; any late actionable finding gets
+a follow-up fix and PR. Report the commit, check results, open items, and actual
+review coverage honestly. Never say “review complete” while feedback is unprocessed.

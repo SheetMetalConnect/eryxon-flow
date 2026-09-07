@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ExternalLink,
-  Github,
+  Code2,
   Star,
   Users,
   CheckCircle2,
@@ -309,7 +309,7 @@ export default function IntegrationDetailModal({
                     window.open(integration.github_repo_url, "_blank")
                   }
                 >
-                  <Github className="w-5 h-5 mr-3" />
+                  <Code2 className="w-5 h-5 mr-3" />
                   <div className="text-left">
                     <div className="font-semibold">GitHub Repository</div>
                     <div className="text-xs text-muted-foreground">

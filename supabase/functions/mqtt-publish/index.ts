@@ -1,5 +1,6 @@
+import { authorizeEventRequest } from "../_shared/event-auth.ts";
 import { createClient } from "@supabase/supabase-js";
-import { sanitizeError, constantTimeCompare } from "../_shared/security.ts";
+import { sanitizeError } from "../_shared/security.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 import {
   REQUEST_ID_HEADER,
@@ -245,21 +246,14 @@ Deno.serve(async (req) => {
   );
 
   try {
-    // Verify internal service-to-service authentication
-    const internalSecret = Deno.env.get('INTERNAL_SERVICE_SECRET');
-    if (internalSecret) {
-      const authHeader = req.headers.get('authorization');
-      const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : '';
-      if (!constantTimeCompare(token, internalSecret)) {
-        return new Response(
-          JSON.stringify({ success: false, error: 'Unauthorized' }),
-          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId } }
-        );
-      }
-    }
-
     const body = await req.json();
     const { tenant_id, event_type, data, context } = body;
+    if (!await authorizeEventRequest(req, tenant_id, supabase)) {
+      return new Response(JSON.stringify({ success: false, error: 'Unauthorized' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json', [REQUEST_ID_HEADER]: requestId },
+      });
+    }
 
     if (!tenant_id || !event_type || !data) {
       return new Response(

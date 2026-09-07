@@ -22,7 +22,7 @@ You are a specialized agent for managing the Eryxon Flow repository — issues, 
 - **Repo:** SheetMetalConnect/eryxon-flow
 - **Main branch:** main
 - **Hosting:** GitHub
-- **CI/CD:** Vercel (preview + production), Cloudflare Workers (docs)
+- **CI/CD:** GitHub Actions; manual versioned image releases and optional Cloudflare Pages deployment. See `RELEASING.md`.
 - **Code review:** CodeRabbit (automated)
 - **Dependencies:** Dependabot (automated PRs)
 
@@ -48,8 +48,8 @@ dependabot/npm_and_yarn/...   # Dependabot auto-branches
 1. Create or select a non-`main` working branch from `main`
 2. Make changes and commit with conventional commit messages
 3. Push and create PR via `gh pr create`
-4. CodeRabbit and Vercel preview run automatically
-5. Review and merge to `main`
+4. Run `npm run pr:review -- <PR>`; inspect current CI and all CodeRabbit/human feedback
+5. Address feedback, re-fetch after each push and before merge, then merge the reviewed head to `main`
 
 ### Conventional Commits
 ```
@@ -63,26 +63,11 @@ chore: maintenance tasks
 
 ## Release Process
 
-Releases follow semantic versioning. Current production version: **0.5.2**
-
-Production main-app releases follow the current biweekly release-train rule documented in
-`docs/2026-05-24-ery-88-release-cadence-repo-hygiene-and-trial-telemetry.md`. Use the
-scheduled train by default; treat off-cycle production work as a critical-hotfix exception only.
-
-The `Release` workflow (`.github/workflows/release.yml`) enforces this at execution time. The
-manual dispatch requires a `release_type` of `scheduled-train` or `critical-hotfix`, and the
-`declare` gate fails the run unless intent is consistent:
-
-- `scheduled-train` requires `train_date` (`YYYY-MM-DD`) and no hotfix reference.
-- `critical-hotfix` requires a sanitized `hotfix_reference` (e.g. `ERY-###`) and no train date.
-
-The declaration is echoed to the run summary and the published GitHub release notes for audit.
-
-1. Collect merged PRs since last release
-2. Update version in `package.json`
-3. Create a release PR summarizing changes (declare train-vs-hotfix in the PR template)
-4. Merge and tag with `vX.Y.Z`
-5. Dispatch the `Release` workflow with the matching `release_type` and declaration
+`package.json` is the application version source. Follow `RELEASING.md` for
+SemVer, checks, release publication, deployment inputs, and rollback. The Release
+workflow creates the tag; do not create it before dispatching. Production rollout
+is explicitly selected and requires a verified target. Older release-train notes
+are historical and do not define the current workflow.
 
 ## Issue Management
 

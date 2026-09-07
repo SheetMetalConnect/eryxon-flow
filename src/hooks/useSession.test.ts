@@ -3,7 +3,6 @@ import { describe, it, expect, vi } from "vitest";
 
 vi.mock("@/contexts/AuthContext", () => ({
   useAuth: () => ({
-    profile: null, tenant: null, loading: false,
     user: { id: "u1", email: "test@test.com" },
     session: { access_token: "tok-123", refresh_token: "ref-456" },
     signIn: vi.fn(), signUp: vi.fn(), signOut: vi.fn(),

@@ -62,7 +62,11 @@ describe("uploadIssueAttachments", () => {
             : index === 1
               ? new File(["two"], "two.png", { type: "image/png" })
               : null,
-      } as FileList,
+        *[Symbol.iterator]() {
+          yield this[0];
+          yield this[1];
+        },
+      },
     });
 
     expect(upload).toHaveBeenCalledTimes(2);

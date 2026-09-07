@@ -13,7 +13,7 @@ import type { UnifiedClient, QueryResult, CountResult, SelectOptions } from "../
  * boundary (the DirectSupabaseClient methods) is lost the moment a tool
  * handler calls `supabase.from()` directly. This re-applies that boundary:
  *   - select / delete  → chained `.eq('tenant_id', tenantId)`
- *   - update           → chained `.eq('tenant_id', tenantId)`
+ *   - update           → tenant filter and tenant stamped into payload
  *   - insert / upsert   → `tenant_id` stamped into the payload
  * Only used when TENANT_ID is configured; otherwise the raw client is returned.
  */
@@ -40,7 +40,7 @@ export function createTenantScopedClient(
               }
               if (p === "update") {
                 return (values: any, ...rest: any[]) =>
-                  orig.call(b, values, ...rest).eq("tenant_id", tenantId);
+                  orig.call(b, stamp(values), ...rest).eq("tenant_id", tenantId);
               }
               if (p === "insert" || p === "upsert") {
                 return (values: any, ...rest: any[]) => orig.call(b, stamp(values), ...rest);
@@ -184,7 +184,7 @@ export class DirectSupabaseClient implements UnifiedClient {
     try {
       let query = this.client
         .from(table)
-        .update(data)
+        .update(this.enforcedTenantId ? { ...data, tenant_id: this.enforcedTenantId } : data)
         .eq('id', id);
       if (this.enforcedTenantId) query = query.eq('tenant_id', this.enforcedTenantId);
       const { data: result, error } = await query.select();

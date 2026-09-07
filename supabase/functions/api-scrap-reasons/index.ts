@@ -1,4 +1,3 @@
-// v1774628746
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
 import type { HandlerContext } from "@shared/handler.ts";
@@ -21,12 +20,14 @@ async function handleCustomDelete(
   }
 
   // Check if scrap reason is referenced by operation_quantities
-  const { data: references } = await supabase
+  const { data: references, error: referenceError } = await supabase
     .from('operation_quantities')
     .select('id')
     .eq('scrap_reason_id', reasonId)
+    .eq('tenant_id', tenantId)
     .limit(1);
 
+  if (referenceError) throw new Error(`Failed to check scrap reason usage: ${referenceError.message}`);
   if (references && references.length > 0) {
     throw new ConflictError(
       'Cannot delete scrap reason that is referenced by operation quantities. Set active=false instead.'
@@ -73,7 +74,7 @@ serveApi(
         query = query.eq('active', true);
       }
 
-      return query;
+      return { query };
     },
   })
 );

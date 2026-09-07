@@ -1,55 +1,35 @@
-# Database Migrations
+# Database migrations
 
-## Applying Migrations
+Active migrations live directly in [supabase/migrations](../supabase/migrations/).
+The CLI applies those files in timestamp order. The `archive/` subdirectory holds
+historical migrations from before schema consolidation; do not apply them to a
+current installation.
 
-This project stores migrations in the `archive/` subdirectory for organizational purposes.
+## Contributing a schema change
 
-### Latest Migration: Seed Functions (2025-11-22)
+Create a new timestamped migration with the lockfile-installed Supabase CLI. Use
+`YYYYMMDDHHMMSS_description.sql` and keep each change focused. Preserve already
+released migrations so existing installations and fresh replays share the same
+history.
 
-**File:** `20251122000000_add_seed_functions.sql`
+Before deployment, replay the full migration sequence on a disposable local
+Supabase stack and run the database checks in
+[RELEASING.md](../RELEASING.md#required-checks). Those checks cover tenant isolation,
+PIN sessions, lifecycle transactions, and concurrency. Regenerate
+[src/integrations/supabase/types.ts](../src/integrations/supabase/types.ts) from the
+tested schema when its public contract changes.
 
-This migration adds essential seed functions for demo data:
-- `seed_default_scrap_reasons()` - Seeds standard scrap/rejection codes
-- `seed_demo_operators()` - Creates 4 demo operator profiles
-- `seed_demo_resources()` - Creates 9 sample resources (molds, tooling, fixtures, materials)
-- `get_part_routing()` - Returns routing sequence for parts (used by QRM metrics)
+Production target verification, backups, rollout order, and recovery are documented
+in [the release runbook](../RELEASING.md#optional-production-rollout). Do not bypass
+migration history by pasting an archived script into a production SQL editor.
 
-### How to Apply
+## Historical context
 
-#### Option 1: Supabase Dashboard (Recommended)
-1. Go to your Supabase project dashboard
-2. Navigate to **SQL Editor**
-3. Copy the contents of `20251122000000_add_seed_functions.sql`
-4. Paste and run the SQL
+The [January 2026 baseline](../supabase/migrations/20260121175020_remote_schema.sql)
+and [post-schema setup](../supabase/migrations/20260127230000_post_schema_setup.sql)
+consolidated the earlier schema and initialization work.
 
-#### Option 2: Supabase CLI
-```bash
-# If you have the Supabase CLI installed
-supabase db push
-
-# Or apply specific migration
-cat supabase/migrations/20251122000000_add_seed_functions.sql | supabase db execute
-```
-
-### Using the Seed Functions
-
-After applying the migration, you can seed your tenant with demo data:
-
-```sql
--- Seed scrap reasons
-SELECT * FROM seed_default_scrap_reasons('your-tenant-id');
-
--- Seed demo operators
-SELECT * FROM seed_demo_operators('your-tenant-id');
-
--- Seed demo resources
-SELECT * FROM seed_demo_resources('your-tenant-id');
-```
-
-**Note:** These functions are also called automatically when you import sample data through the onboarding wizard in the UI.
-
-### Migration History
-
-All applied migrations are stored in `archive/` for reference. The migrations are numbered chronologically:
-- Format: `YYYYMMDDHHMMSS_description.sql`
-- Example: `20251122000000_add_seed_functions.sql`
+The archived [November 2025 seed-functions migration](../supabase/migrations/archive/20251122000000_add_seed_functions.sql)
+records the introduction of scrap-reason, demo-operator, and demo-resource seeding,
+and part-routing queries. It is historical context, not an additional installation
+step; current definitions and permissions come from the active migration sequence.

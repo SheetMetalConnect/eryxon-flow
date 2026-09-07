@@ -52,6 +52,7 @@ export default function MyActivity() {
   const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
+  const actorColumn = activeOperator ? "shop_floor_operator_id" : "operator_id";
   const [entries, setEntries] = useState<TimeEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [days] = useState(7);
@@ -65,7 +66,7 @@ export default function MyActivity() {
       setEntries([]);
       setLoading(Boolean(operatorId));
     });
-  }, [operatorId]);
+  }, [operatorId, actorColumn]);
 
   const loadActivity = useCallback(async () => {
     if (!operatorId) {
@@ -79,7 +80,7 @@ export default function MyActivity() {
     const requestedOperatorId = operatorId;
     setLoading(true);
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("time_entries")
       .select(`
         *,
@@ -93,9 +94,11 @@ export default function MyActivity() {
           cell:cells!inner(name, color)
         )
       `)
-      .eq("operator_id", requestedOperatorId)
+      .eq(actorColumn, requestedOperatorId)
       .gte("start_time", startDate.toISOString())
       .order("start_time", { ascending: false });
+    if (actorColumn === "operator_id") query = query.is("shop_floor_operator_id", null);
+    const { data, error } = await query;
 
     if (
       requestIdRef.current !== requestId ||
@@ -110,7 +113,7 @@ export default function MyActivity() {
       setEntries((data as TimeEntry[]) || []);
     }
     setLoading(false);
-  }, [days, operatorId]);
+  }, [days, operatorId, actorColumn]);
 
   useEffect(() => {
     if (!operatorId) return;

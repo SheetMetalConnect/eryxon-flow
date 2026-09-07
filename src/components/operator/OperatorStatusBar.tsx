@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/popover";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Square } from "lucide-react";
-import { ROUTES } from "@/routes";
+import { ROUTES } from "@/routes/constants";
 import { stopTimeTracking } from "@/lib/database";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
@@ -121,6 +121,7 @@ export function OperatorStatusBar() {
   const profile = useProfile();
   const { activeOperator } = useOperator();
   const operatorId = activeOperator?.id || profile?.id;
+  const actorColumn = activeOperator ? "shop_floor_operator_id" : "operator_id";
   const operatorName = activeOperator?.full_name || profile?.full_name || "";
   const navigate = useNavigate();
 
@@ -140,7 +141,7 @@ export function OperatorStatusBar() {
 
     let ignore = false;
     const load = async () => {
-      const { data } = await supabase
+      let query = supabase
         .from("time_entries")
         .select(`
           id, start_time, operation_id,
@@ -152,8 +153,10 @@ export function OperatorStatusBar() {
             )
           )
         `)
-        .eq("operator_id", operatorId)
+        .eq(actorColumn, operatorId)
         .is("end_time", null);
+      if (actorColumn === "operator_id") query = query.is("shop_floor_operator_id", null);
+      const { data } = await query;
 
       if (ignore) return;
 
@@ -198,12 +201,12 @@ export function OperatorStatusBar() {
       .channel(`status-bar-${operatorId}`)
       .on("postgres_changes", {
         event: "*", schema: "public", table: "time_entries",
-        filter: `operator_id=eq.${operatorId}`,
+        filter: `${actorColumn}=eq.${operatorId}`,
       }, () => void load())
       .subscribe();
 
     return () => { ignore = true; supabase.removeChannel(channel); };
-  }, [operatorId]);
+  }, [operatorId, actorColumn]);
 
   // Tick elapsed time
   useEffect(() => {
