@@ -15,177 +15,47 @@ Get Eryxon Flow up and running.
 
 ## Prerequisites
 
-- Node.js 20+ ([download](https://nodejs.org))
-- A Supabase account (free tier works) - [sign up](https://supabase.com)
+- Node.js **22.12 or newer**
+- Access to the private source repository
+- A Supabase backend configured for the source revision you will run
 
----
+For backend setup, migrations, function secrets, and production hosting, follow the
+[Self-Hosting Guide](/guides/self-hosting/). It contains the maintained deployment
+sequence. The steps below start a local frontend against that prepared backend.
 
-## Step 1: Set Up Supabase
+## Run locally
 
-### 1.1 Create Project
-
-1. Go to [supabase.com](https://supabase.com) → **New Project**
-2. Name it `eryxon-flow`
-3. Save your database password
-4. Click **Create**
-
-### 1.2 Get Your Keys
-
-Go to **Settings** → **API** and copy:
-- **Project URL** (e.g., `https://abc123.supabase.co`)
-- **anon public key** (starts with `eyJ...`)
-
-### 1.3 Apply Database Schema
-
-Use the Supabase CLI against your target project:
-
-```bash
-supabase link --project-ref YOUR_PROJECT_REF
-supabase db push
-```
-
-### 1.4 Apply Seed Data
-
-The seed file sets up storage policies, RLS defaults, and cron jobs:
-
-```bash
-supabase db execute --file supabase/seed.sql
-```
-
-### 1.5 Create Storage Buckets
-
-```bash
-supabase storage create parts-images
-supabase storage create issues
-supabase storage create parts-cad
-supabase storage create batch-images
-```
-
-### 1.6 Deploy Edge Functions
-
-```bash
-supabase functions deploy
-```
-
-### 1.7 Set Edge Function Secrets
-
-Go to **Settings** → **API** and copy the **service_role** key, then:
-
-```bash
-supabase secrets set SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co SUPABASE_SERVICE_ROLE_KEY=YOUR_SERVICE_ROLE_KEY
-```
-
-Configure the `notify-new-signup` Database Webhook after migrations are applied (see [Self-Hosting Guide](/guides/self-hosting/)).
-
-> **Prefer automation?** Run `bash scripts/setup.sh` instead — it walks through all of the above interactively.
-
----
-
-## Step 2: Run the Application
-
-```bash
-
+```sh
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
-
-
-npm install
-
-
+npm ci
 cp .env.example .env
 ```
 
-Edit `.env`:
-```bash
-VITE_SUPABASE_URL=https://your-project-id.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-anon-key
-VITE_SUPABASE_PROJECT_ID=your-project-id
+Edit `.env` with your backend's public frontend settings:
+
+```dotenv
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your-public-key
+VITE_SUPABASE_PROJECT_ID=your-project
 ```
 
-Start the app:
-```bash
+Values prefixed with `VITE_` are visible in the browser. Keep service-role keys and
+other private credentials on the backend.
+
+```sh
 npm run dev
 ```
 
-Open **http://localhost:8080**
+Open [localhost:8080](http://localhost:8080) and sign in. If account registration is
+enabled, use **Sign Up** to create your organization first.
 
----
+## Start using the app
 
-## Step 3: Create Your Account
+Administrators manage jobs, parts, operations, and work cells. Operators use the
+[Work Queue and Terminal](/guides/operator-manual/) on phones, tablets, and desktops.
+There is one responsive interface across device sizes.
 
-1. Click **Sign Up**
-2. Enter email and password
-3. Verify email (check inbox)
-4. You're now admin of your organization!
-
----
-
-## Step 4: Explore (Optional)
-
-### Load Demo Data
-
-Want to see the app with sample data?
-
-1. Go to **Settings** in the admin sidebar
-2. Click **Create Demo Data**
-3. Explore sample jobs, parts, and operations
-
-### Quick Tour
-
-| Page | What it does |
-|------|--------------|
-| `/admin/dashboard` | Production overview |
-| `/admin/jobs` | Manage manufacturing jobs |
-| `/admin/jobs/new` | Create new job |
-| `/operator/work-queue` | Operator task list |
-| `/operator/login` | Shop floor terminal login |
-| `/admin/config/stages` | Configure workflow stages |
-
----
-
-## What's Next?
-
-**Setup & Deployment:**
-- [Deployment Guide](/guides/deployment/) - Production deployment options
-- [Self-Hosting Guide](/guides/self-hosting/) - Environment and rollout details
-- [MCP Server Setup](/guides/mcp-setup/) - AI assistant integration setup
-
-**API & Integration:**
-- [REST API Overview](/architecture/connectivity-rest-api/) - Integration architecture
-- [REST API Reference](/api/rest-api-reference/) - Complete endpoint reference
-- [API Payload Reference](/api/payload-reference/) - Copy-paste payload examples
-- [MCP Demo Guide](/api/mcp-demo-guide/) - AI assistant usage examples
-- [Webhooks & MQTT](/architecture/connectivity-mqtt/) - Event-driven integration
-- **Swagger/OpenAPI** - Available in the app at `/admin/api-docs` (requires login)
-
-**Architecture & Help:**
-- [App Architecture](/architecture/app-architecture/) - System design overview
-- [FAQ](/guides/faq) - Frequently asked questions
-
----
-
-## Common Issues
-
-**Can't sign up?**
-- Check your Supabase URL is correct in `.env`
-- Verify email settings in Supabase Auth dashboard
-
-**Database errors?**
-- Make sure you ran the schema SQL
-- Check the SQL Editor for any errors
-
-**Page not loading?**
-- Verify both environment variables are set
-- Check browser console for errors
-
----
-
-## Need Help?
-
-- Start from the [documentation home](/)
-- Open an issue on GitHub
-- Join our community discussions
-
----
-
-*Happy manufacturing!*
+For production rollout, see the [Deployment Guide](/guides/deployment/). PWA
+installation is optional and must be enabled at build time; see
+[PWA configuration](/guides/self-hosting/#optional-pwa-verification).

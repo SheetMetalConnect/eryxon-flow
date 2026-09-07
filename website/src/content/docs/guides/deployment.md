@@ -11,133 +11,36 @@ This page is the shortest setup route. For the full production checklist, see th
 
 Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1 — free to self-host for a single workshop. Multi-site use needs the commercial **Premium** edition; see [Editions & Pricing](/pricing/).
 
-## Quick Start (Automated)
+## Production deployment
 
-The fastest way to deploy Eryxon Flow:
+Follow the [Self-Hosting Guide](/guides/self-hosting/) for backend preparation,
+public frontend settings, released Docker images, HTTPS, verification, and recovery.
+That guide is the maintained setup sequence; the frontend image does not include
+the Supabase backend.
 
-```bash
-chmod +x scripts/setup.sh
-./scripts/setup.sh
-```
+Use the reviewed release's image digest and matching migrations and Edge Functions.
+A merge to `main` does not deploy production. Maintainers with repository access
+should use [RELEASING.md](https://github.com/SheetMetalConnect/eryxon-flow/blob/main/RELEASING.md)
+for release publication, rollout inputs, and rollback.
 
-This interactive script handles all setup steps. For manual setup, continue reading.
+## Local development and custom builds
 
-## Prerequisites
+The [Quick Start](/guides/quick-start/) covers local development with Node.js 22.12
+or newer and a prepared backend. Use `npm ci` to install locked dependencies.
 
-- Node.js 20+
-- [Supabase CLI](https://supabase.com/docs/guides/cli)
-- A [Supabase](https://supabase.com) project
+For a custom Docker image, follow
+[Build a custom image](/guides/self-hosting/#build-a-custom-image). The default build
+is a regular responsive website. Optional PWA support requires
+`VITE_ENABLE_PWA=true` at build time; setting it on an existing container does not
+change the build.
 
-## Step 1: Supabase Setup
+## Verify the deployment
 
-### Create Project
-1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Note your **Project URL**, **anon key**, and **service role key** from Settings > API
+Check sign-in, PIN operator switching, queue selection, an operation's time tracking,
+issue reporting, and activity against the intended backend. Include phone, tablet,
+and desktop screens. Container health confirms HTTP readiness; these checks verify
+the authenticated workflows.
 
-### Apply Database Schema
-```bash
-cp .env.example .env
-# Fill in VITE_SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY,
-# and VITE_SUPABASE_PROJECT_ID
-
-supabase link --project-ref <your-project-ref>
-supabase db push
-```
-
-### Set Up Storage & Cron Jobs
-```bash
-# Apply via SQL Editor in Supabase Dashboard, or:
-supabase db execute < supabase/seed.sql
-```
-
-This creates storage buckets (`parts-images`, `issues`, `parts-cad`, `batch-images`) and schedules cron jobs.
-
-### Deploy Edge Functions
-```bash
-supabase functions deploy
-```
-
-### Set Edge Function Secrets
-```bash
-supabase secrets set \
-  SUPABASE_URL=<your-project-url> \
-  SUPABASE_SERVICE_ROLE_KEY=<your-service-role-key>
-```
-
-Optional secrets:
-| Secret | Purpose |
-|--------|---------|
-| RESEND_API_KEY | Email invitations via Resend |
-| APP_URL | Base URL for invitation links |
-| EMAIL_FROM | Sender email for invitations |
-| CRON_SECRET | Auth for monthly-reset-cron |
-| SELF_HOSTED_MODE | Set to "true" for self-hosted mode |
-
-## Step 2: Deploy Frontend
-
-### Option A: Local Development
-```bash
-npm ci
-npm run dev
-```
-
-### Option B: Cloudflare Pages
-1. Connect your Git repository to Cloudflare Pages
-2. Build command: `npm run build`
-3. Output directory: `dist`
-4. Add environment variables in Cloudflare Pages settings
-
-### Option C: Docker
-```bash
-docker build \
-  --build-arg VITE_SUPABASE_URL=<url> \
-  --build-arg VITE_SUPABASE_PUBLISHABLE_KEY=<key> \
-  --build-arg VITE_SUPABASE_PROJECT_ID=<project-id> \
-  -t eryxon-flow .
-
-docker run -p 80:80 eryxon-flow
-```
-
-### Option D: Docker Compose + Optional Caddy HTTPS
-
-Self-hosting uses a single `docker-compose.yml` as the Docker path. If you want HTTPS, enable the optional `caddy` service that already ships in that file and edit the included `Caddyfile` for either a public hostname or a LAN-only rollout.
-
-```bash
-# In docker-compose.yml: uncomment the optional `caddy` service and the
-# `volumes:` block at the bottom, then change the eryxon-flow service from
-# `ports: ["80:80"]` to `expose: ["80"]` so Caddy terminates TLS.
-# Edit the included Caddyfile to match your public domain or LAN host.
-docker compose up -d
-```
-
-> **Database Webhook required.** After edge functions are deployed, configure the
-> `notify-new-signup` Database Webhook in Supabase so new-company signups trigger
-> the notification function. See [Self-Hosting Guide](/guides/self-hosting/) Step 7.
-
-## Step 3: First Login
-
-1. Navigate to your deployment URL
-2. Click "Sign Up" to create the first admin account
-3. The first user automatically becomes admin with their own tenant
-
-## Optional: Cloudflare Turnstile (CAPTCHA)
-
-Turnstile is optional. Without it, auth works but without bot protection.
-
-To enable:
-1. Create a Turnstile widget at [Cloudflare Dashboard](https://dash.cloudflare.com/?to=/:account/turnstile)
-2. Set `VITE_TURNSTILE_SITE_KEY` in your environment
-3. Configure the Turnstile secret key in Supabase Dashboard > Auth > Captcha
-4. On Vercel, keep the repo `vercel.json` so SPA rewrites and CSP headers continue to allow `https://challenges.cloudflare.com`
-
-## Verification
-
-Run the verification script to check your setup:
-```bash
-chmod +x scripts/verify-setup.sh
-./scripts/verify-setup.sh
-```
-
-## Full Documentation
-
-See the [Self-Hosting Guide](/guides/self-hosting/) for the complete rollout, troubleshooting, and environment notes.
+For a PWA-enabled build, also follow
+[PWA verification](/guides/self-hosting/#optional-pwa-verification). For deployment
+problems, see the [Troubleshooting Guide](/guides/troubleshooting/).

@@ -6,6 +6,10 @@ All notable changes to Eryxon Flow are documented here.
 
 ### Changed
 
+- Simplified English, Dutch, and German quick starts and the deployment entry page
+  around one maintained self-hosting guide. Corrected Node requirements and removed
+  the obsolete interactive provisioner, its unused verification companion, and
+  unsupported CLI setup recipes.
 - PR feedback snapshots now record requested reviewers and the commit covered by
   each submitted review, and distinguish structural checks from completed feedback.
 - Database CI starts only PostgreSQL; clean migration replay, tenant isolation,
