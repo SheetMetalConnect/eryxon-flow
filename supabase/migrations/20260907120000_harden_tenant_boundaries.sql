@@ -430,8 +430,15 @@ REVOKE ALL ON FUNCTION public.increment_api_usage(uuid, uuid) FROM PUBLIC, anon,
 GRANT EXECUTE ON FUNCTION public.increment_api_usage(uuid, uuid) TO service_role;
 REVOKE ALL ON FUNCTION public.reset_monthly_parts_counters() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.reset_monthly_parts_counters() TO service_role;
-REVOKE ALL ON FUNCTION public.log_storage_operation(uuid, text, text, bigint, jsonb) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.log_storage_operation(uuid, text, text, bigint, jsonb) TO service_role;
+-- Hosted databases provisioned before the consolidated baseline do not have this function.
+DO $$
+BEGIN
+  IF to_regprocedure('public.log_storage_operation(uuid, text, text, bigint, jsonb)') IS NOT NULL THEN
+    REVOKE ALL ON FUNCTION public.log_storage_operation(uuid, text, text, bigint, jsonb) FROM PUBLIC, anon, authenticated;
+    GRANT EXECUTE ON FUNCTION public.log_storage_operation(uuid, text, text, bigint, jsonb) TO service_role;
+  END IF;
+END;
+$$;
 
 CREATE OR REPLACE FUNCTION "public"."handle_new_user"() RETURNS "trigger"
     LANGUAGE "plpgsql" SECURITY DEFINER

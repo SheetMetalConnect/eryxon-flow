@@ -13,6 +13,3 @@ trim_trailing_whitespace = false
 
 [*.sql]
 indent_size = 4
-
-[Makefile]
-indent_style = tab

@@ -80,12 +80,9 @@ Agents should consult these docs for context:
 ## Tooling
 
 ```bash
-make dev              # Start dev server
-make build            # Production build
-make test             # Run tests
-make deps-graph       # Regenerate dependency graph
-make deps-circular    # Check for circular dependencies
-make new-endpoint NAME=api-widgets    # Scaffold new Edge Function
-make new-adr NUM=006 TITLE=my-title   # Create new ADR from template
-make check            # Full health check (build + test + lint + circular deps)
+npm run dev             # Start dev server
+npm run build           # Production build
+npm run test:run        # Run tests
+npm run deps:graph      # Regenerate docs/dependency-graph.json
+npm run deps:circular   # Check for circular dependencies
 ```

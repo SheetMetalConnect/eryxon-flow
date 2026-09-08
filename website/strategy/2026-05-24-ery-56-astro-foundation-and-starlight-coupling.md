@@ -3,7 +3,7 @@
 Date: 2026-05-24
 Owner: Engineer
 Issue: ERY-56 (Slice 1 of the ERY-53 execution path)
-Inputs: ERY-52 canonical UX spec (`docs/website/canonical-astro-website-ux-spec.md`), ERY-53 technical brief
+Inputs: ERY-52 canonical UX spec (`website/strategy/canonical-astro-website-ux-spec.md`), ERY-53 technical brief
 
 ## What this slice delivers
 

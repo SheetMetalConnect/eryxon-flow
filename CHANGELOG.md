@@ -4,22 +4,14 @@ All notable changes to Eryxon Flow are documented here.
 
 ## [0.10.0] — 2026-09-07
 
+Eryxon Flow 0.10.0 is a hardening release. Operators get one responsive interface
+on every device, production changes are transactional, tenant and PIN boundaries are
+enforced in the database, and self-hosters get a release workflow with versioned
+images and clear upgrade steps. No new licence terms and no Premium functionality
+moved into Community.
+
 ### Changed
 
-- Simplified English, Dutch, and German quick starts and the deployment entry page
-  around one maintained self-hosting guide. Corrected Node requirements and removed
-  the obsolete interactive provisioner, its unused verification companion, and
-  unsupported CLI setup recipes.
-- PR feedback snapshots now record requested reviewers and the commit covered by
-  each submitted review, and distinguish structural checks from completed feedback.
-- Database CI starts only PostgreSQL; clean migration replay, tenant isolation,
-  verified operator sessions, and concurrency checks retain the same coverage.
-- Updated deployment documentation for Node 22, explicit releases, immutable image
-  digests, and the default responsive web build. Custom Docker builds now accept
-  `VITE_ENABLE_PWA=true`; changing runtime configuration does not enable PWA support.
-  Removed the obsolete self-hosting script that rewrote configuration and repaired
-  migration history during setup. Operator routing and screen guidance now live in
-  the website manual; contributor documentation retains implementation patterns.
 - Community uses one responsive web interface for phones, tablets, and desktops.
   Legacy `/m` links redirect to the shared operator routes, including operation
   details and issue reporting. Removed duplicated mobile pages, shells, styling,
@@ -33,10 +25,24 @@ All notable changes to Eryxon Flow are documented here.
   restores the previous app image on failure. Removed the competing publisher
   and disabled automatic Vercel production deployment from `main`; previews remain
   available while migrations and frontend rollout are coordinated.
+- Updated deployment documentation for Node 22, explicit releases, immutable image
+  digests, and the default responsive web build. Custom Docker builds now accept
+  `VITE_ENABLE_PWA=true`; changing runtime configuration does not enable PWA support.
+  Removed the obsolete self-hosting script that rewrote configuration and repaired
+  migration history during setup. Operator routing and screen guidance now live in
+  the website manual; contributor documentation retains implementation patterns.
+- Simplified English, Dutch, and German quick starts and the deployment entry page
+  around one maintained self-hosting guide. Corrected Node requirements and removed
+  the obsolete interactive provisioner, its unused verification companion, and
+  unsupported CLI setup recipes.
 - CI checks the referenced TypeScript projects, application tests and build,
   all Edge entrypoint type checks and tests, documentation, clean database
   migrations, tenant isolation, and
   concurrent production actions. The former root `tsc --noEmit` checked no files.
+- Database CI starts only PostgreSQL; clean migration replay, tenant isolation,
+  verified operator sessions, and concurrency checks retain the same coverage.
+- PR feedback snapshots now record requested reviewers and the commit covered by
+  each submitted review, and distinguish structural checks from completed feedback.
 - Added a persistent PR feedback loop covering late comments, unresolved threads,
   current-head checks, and changes during review. CodeRabbit is configured for
   assertive incremental reviews; bot availability is verified per PR.
