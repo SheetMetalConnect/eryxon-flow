@@ -8,7 +8,6 @@ authorRole: "Eryxon Flow"
 category: "Shop Floor"
 tags: ["operators", "shop floor"]
 ctaIntent: "trial"
-featured: true
 relatedLinks:
   - label: "Operator Terminal"
     href: "/features/operator-terminal/"

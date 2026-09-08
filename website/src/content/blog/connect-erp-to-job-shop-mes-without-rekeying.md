@@ -8,7 +8,6 @@ authorRole: "Eryxon Flow"
 category: "Integration"
 tags: ["ERP", "integration"]
 ctaIntent: "docs"
-featured: true
 relatedLinks:
   - label: "ERP Integration"
     href: "/features/erp-integration/"

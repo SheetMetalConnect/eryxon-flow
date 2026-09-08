@@ -4,9 +4,8 @@ description: "v0.7 tightens the shop-floor loop: parts that know where they go n
 pubDate: 2026-06-22
 author: "Eryxon"
 authorRole: "Eryxon Flow"
-category: "Development"
+category: "Product"
 tags: ["v0.7", "operator terminal", "issue reporting", "planning"]
-featured: true
 heroImage: "/social/blog/eryxon-flow-v0-7-what-we-are-building/og.svg"
 ctaIntent: "trial"
 relatedLinks:

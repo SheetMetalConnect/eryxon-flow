@@ -7,7 +7,6 @@ author: "Eryxon"
 authorRole: "Eryxon Flow"
 category: "Operations"
 tags: ["job shop", "workflow"]
-featured: true
 ctaIntent: "docs"
 relatedLinks:
   - label: "Getting started overview"
