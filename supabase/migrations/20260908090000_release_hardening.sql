@@ -217,7 +217,7 @@ $$;
 
 -- Database-side webhook dispatch authenticates with the same internal secret as the
 -- Edge Functions. Store it with: SELECT vault.create_secret('<secret>', 'internal_service_secret');
--- and the project URL with: SELECT vault.create_secret('https://<project>.supabase.co', 'supabase_url');
+-- and the project URL with: SELECT vault.create_secret('https://<project>.supabase.co', 'project_url');
 CREATE OR REPLACE FUNCTION public.dispatch_webhook(p_tenant_id uuid, p_event_type text, p_data jsonb)
 RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
@@ -225,10 +225,10 @@ DECLARE
   v_url text;
   v_secret text;
 BEGIN
-  SELECT decrypted_secret INTO v_url FROM vault.decrypted_secrets WHERE name = 'supabase_url' LIMIT 1;
+  SELECT decrypted_secret INTO v_url FROM vault.decrypted_secrets WHERE name = 'project_url' LIMIT 1;
   SELECT decrypted_secret INTO v_secret FROM vault.decrypted_secrets WHERE name = 'internal_service_secret' LIMIT 1;
   IF NULLIF(v_url, '') IS NULL OR NULLIF(v_secret, '') IS NULL THEN
-    RAISE WARNING 'dispatch_webhook: vault secrets supabase_url and internal_service_secret are required; skipped %', p_event_type;
+    RAISE WARNING 'dispatch_webhook: vault secrets project_url and internal_service_secret are required; skipped %', p_event_type;
     RETURN;
   END IF;
   PERFORM net.http_post(

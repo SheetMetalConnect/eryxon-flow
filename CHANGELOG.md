@@ -133,7 +133,7 @@ moved into Community.
   the migration does not silently delete or reassign records.
 - Set `INTERNAL_SERVICE_SECRET` consistently for internal event dispatchers and
   store the same value plus the project URL as the vault secrets
-  `internal_service_secret` and `supabase_url` (see `20260908090000`). Never expose
+  `internal_service_secret` and `project_url` (see `20260908090000`). Never expose
   either secret or a service-role key through a `VITE_` variable.
 - Existing terminal users must verify their PIN again. `/m` bookmarks remain valid.
 - Community retains its existing Business Source License 1.1. This release does
