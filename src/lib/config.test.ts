@@ -44,7 +44,7 @@ describe('isSelfHosted', () => {
   });
 
   it('returns false when Supabase URL ends in .supabase.co (hosted SaaS)', async () => {
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://vatgianzotsurljznsry.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example-project.supabase.co');
     const isSelfHosted = await loadIsSelfHosted();
     expect(isSelfHosted()).toBe(false);
   });
@@ -69,7 +69,7 @@ describe('isSelfHosted', () => {
 
   it('runtime env takes precedence over import.meta.env for Supabase URL', async () => {
     // import.meta.env says hosted, but runtime env says local
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://vatgianzotsurljznsry.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example-project.supabase.co');
     (window as any).__ERYXON_ENV__ = {
       VITE_SUPABASE_URL: 'http://localhost:54321',
     };
@@ -78,7 +78,7 @@ describe('isSelfHosted', () => {
   });
 
   it('explicit VITE_SELF_HOSTED=true overrides a .supabase.co URL', async () => {
-    vi.stubEnv('VITE_SUPABASE_URL', 'https://vatgianzotsurljznsry.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://example-project.supabase.co');
     (window as any).__ERYXON_ENV__ = { VITE_SELF_HOSTED: 'true' };
     const isSelfHosted = await loadIsSelfHosted();
     expect(isSelfHosted()).toBe(true);

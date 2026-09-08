@@ -9,7 +9,7 @@
 #   ./scripts/test-api-automated.sh
 #
 # Environment (reads from test.env if present):
-#   SUPABASE_URL    — e.g. https://vatgianzotsurljznsry.supabase.co
+#   SUPABASE_URL    — e.g. https://your-project.supabase.co
 #   API_KEY         — e.g. ery_live_xxxxx
 #
 # Options:

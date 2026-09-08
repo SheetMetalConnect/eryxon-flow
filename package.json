@@ -28,6 +28,7 @@
     "test:db": "bash scripts/test-db.sh",
     "test:release": "node --test scripts/deploy-image.test.mjs scripts/check-release.test.mjs scripts/check-pr-review.test.mjs scripts/docker-runtime-config.test.mjs",
     "pr:review": "node scripts/check-pr-review.mjs",
+    "deploy:hosted": "bash scripts/deploy-hosted.sh",
     "typecheck:edge": "deno check --config supabase/functions/deno.json supabase/functions/*/index.ts"
   },
   "dependencies": {

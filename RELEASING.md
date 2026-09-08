@@ -121,10 +121,23 @@ review invalid existing records before rollout. Apply migrations, then matching
 Edge Functions, then the frontend. A frontend rollback does not undo a migration.
 Production health confirms HTTP readiness, not every authenticated workflow.
 
-Vercel Git previews remain enabled; automatic deployment of `main` is disabled in
-`vercel.json`, so merging cannot publish a frontend ahead of its required schema.
-If using Vercel for production, deploy/promote explicitly only after verifying the
-matching backend. See [Vercel Git deployment controls](https://vercel.com/docs/project-configuration/git-configuration).
+## Hosted rollout (Supabase + Vercel)
+
+The hosted frontend runs on Vercel. Git previews remain enabled; automatic deployment
+of `main` is disabled in `vercel.json`, so merging cannot publish a frontend ahead of
+its required schema. After the release is published, roll out from the repository:
+
+```sh
+npx supabase login            # once
+npx supabase link --project-ref <ref>   # once; stored in supabase/.temp (ignored)
+npx vercel login              # once
+npm run deploy:hosted
+```
+
+`deploy:hosted` always runs from the repository root and applies, in order, pending
+migrations, all Edge Functions, and a Vercel production deployment. It prints the
+Supabase and Vercel targets first. Never run `vercel` from a parent directory: the
+CLI links and uploads whatever directory it is started in.
 
 The separate Cloudflare Pages workflow is manual, runs CI, and fails if required
 credentials are missing. It publishes the frontend only; coordinate its backend
