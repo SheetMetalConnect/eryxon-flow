@@ -100,10 +100,6 @@
       "setupPrepEnabledDescription": "Laat operators setup of machinevoorbereiding apart van productie registreren.",
       "setupRequired": "Setup vereisen voor productie",
       "setupRequiredDescription": "Blokkeer productiestart totdat setup/voorbereiding op de bewerking is vastgelegd."
-    },
-    "planning": {
-      "title": "Planning Integratie",
-      "description": "Koppel FrePPLe of Odoo MRP om werkorders te synchroniseren — beschikbaar in Premium."
     }
   },
   "settings": {
@@ -580,7 +576,7 @@
     },
     "license": {
       "title": "Licentie (BSL 1.1)",
-      "tldr": "Bekijk en pas de broncode aan en host de Community-editie gratis voor één productielocatie. Meerdere locaties of gebruik als gehoste dienst vereisen een commerciële (Premium-)licentie.",
+      "tldr": "Bekijk en pas de broncode aan en host de Community-editie gratis voor één productielocatie. Meerdere locaties of gebruik als gehoste dienst vereisen een commerciële licentie.",
       "allowed": "Toegestaan",
       "notAllowed": "Vereist een commerciële licentie",
       "allowedItems": {

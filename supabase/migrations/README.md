@@ -46,10 +46,6 @@ With a test trigger present, both versions produced identical defaults, limits,
 and trial dates, suppressed webhook calls during the backfill, and reenabled the
 trigger for the next update. The transaction rolled back all fixtures and changes.
 
-## Archive
-
-The `archive/` directory contains 84 pre-consolidation migrations (Nov-Dec 2025) preserved for historical reference. These are NOT executed by `supabase db push` — only files in the root `migrations/` directory are applied.
-
 ## Deployment
 
 Follow [RELEASING.md](../../RELEASING.md) for a verified target, backups, migration

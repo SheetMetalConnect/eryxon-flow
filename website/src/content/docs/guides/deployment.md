@@ -9,7 +9,7 @@ description: "Application deployment guide for Eryxon Flow."
 
 This page is the shortest setup route. For the full production checklist, see the [Self-Hosting Guide](/guides/self-hosting/).
 
-Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1 — free to self-host for a single workshop. Multi-site use needs the commercial **Premium** edition; see [Editions & Pricing](/pricing/).
+Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1 — free to self-host for a single workshop. Multi-site use needs a commercial licence; see [Editions & Pricing](/pricing/).
 
 ## Production deployment
 

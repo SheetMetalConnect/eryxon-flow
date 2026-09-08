@@ -6,7 +6,7 @@ description: "Configure, deploy, and update a self-hosted Eryxon Flow installati
 The default application is a responsive website. Phone, tablet, and desktop use the
 same interface; installing it as a PWA is optional.
 
-> **Licensing.** Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1. The source is on GitHub — read it, modify it, self-host it. Free production use covers a **single production site** (one facility or workshop) for your own internal operations, and the software is provided **AS IS**. Multi-site management, or offering the app as a service, needs the commercial **Premium** edition — see [Editions & Pricing](/pricing/). Each released version converts to its Change License, GNU GPL v2.0 or later, four years after release.
+> **Licensing.** Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1. The source is on GitHub — read it, modify it, self-host it. Free production use covers a **single production site** (one facility or workshop) for your own internal operations, and the software is provided **AS IS**. Multi-site use, or offering the app as a service, needs a commercial licence — see [Editions & Pricing](/pricing/). Each released version converts to its Change License, GNU GPL v2.0 or later, four years after release.
 
 ## Before deploying
 

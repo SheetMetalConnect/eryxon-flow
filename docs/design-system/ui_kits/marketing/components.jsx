@@ -53,7 +53,7 @@ function Hero() {
       <div className="mk-hero-trust">
         <span>Trusted by metal fabricators across the EU</span>
         <div className="mk-trust-logos">
-          {['Acme Fab', 'Demar Laser', 'P&G Metaal', 'Singeling', 'Van Enkhuizen', 'Goma'].map(n => (
+          {['Acme Fab', 'Nordkant Laser', 'Plaatwerk Noord', 'Staalwerk', 'Van Enkhuizen', 'Coatline'].map(n => (
             <span key={n} className="mk-trust-logo">{n}</span>
           ))}
         </div>
@@ -350,7 +350,7 @@ function Testimonial() {
           <p>"We were running the floor off three whiteboards and an Excel sheet a planner updated by hand. Eryxon Flow killed the whiteboards in week one. The operators stopped asking 'what's next' — they just look at the tablet."</p>
           <footer>
             <span className="mk-quote-name">Luc Vermeer</span>
-            <span className="mk-quote-role">Operations manager · Demar Laser</span>
+            <span className="mk-quote-role">Operations manager · Nordkant Laser</span>
           </footer>
         </blockquote>
         <div className="mk-quote-stats">

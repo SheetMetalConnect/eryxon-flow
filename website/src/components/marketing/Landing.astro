@@ -178,22 +178,6 @@ const arrow =
       </CtaButton>
     </div>
 
-    <!-- Tier 2 — Premium (sold direct, SLA, contact sales) — featured -->
-    <div class="mk-tier is-featured">
-      <span class="mk-tier-flag">{p.plans.premium.flag}</span>
-      <div class="mk-tier-name">{p.plans.premium.name}</div>
-      <div class="mk-tier-price">{p.plans.premium.price}</div>
-      <div class="mk-tier-sub">{p.plans.premium.sub}</div>
-      <ul class="mk-tier-features">
-        {p.plans.premium.features.map((f: PlanFeature) => (
-          <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
-        ))}
-      </ul>
-      <CtaButton href="https://vanenkhuizen.com" ctaId="home_pricing_premium_contact" surface="homepage_pricing" kind="external_site" variant="primary" locale={locale} external>
-        {p.plans.premium.cta}
-      </CtaButton>
-    </div>
-
     <!-- Tier 3 — Community self-hosted (source-available, BSL 1.1, single site) -->
     <div class="mk-tier">
       <div class="mk-tier-name">{p.plans.community.name}</div>

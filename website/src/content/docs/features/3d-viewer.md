@@ -11,18 +11,7 @@ The 3D STEP viewer lets you view CAD models directly in the browser. Upload a ST
 
 ## How it works
 
-The viewer is **browser-first**: by default it parses and renders the STEP file in the operator's browser, so a self-hosted install needs no extra CAD infrastructure. This browser viewer — full geometry plus measurements — is part of the free **Community** edition.
-
-Advanced 3D (nesting, unfold, and annotations) and server-side processing — tessellation and PMI, the GD&T annotations baked into the model — are part of the commercial **Premium** edition, which runs the CAD service alongside the app.
-
-```mermaid
-flowchart LR
-  STEP["STEP file on a part"] --> Q{"CAD service (Premium)?"}
-  Q -->|Community| BR["Browser viewer<br/>geometry + measurements"]
-  Q -->|Premium| SV["Server: tessellation + PMI"] --> BR2["Browser viewer<br/>geometry + PMI overlays"]
-```
-
-That split is deliberate: lightweight viewing for everyone, richer inspection for shops that need it.
+The viewer parses and renders the STEP file in the operator's browser, so a self-hosted install needs no extra CAD infrastructure: full geometry plus measurements, with PMI overlays when the model carries them.
 
 ## Features
 
@@ -111,9 +100,3 @@ Click the **Fit View** button in the toolbar.
 - Verify the file opens correctly in desktop CAD software
 - Try re-exporting as STEP AP214
 - If the file is very large, try splitting the assembly
-
-## Advanced CAD integration (Premium)
-
-The built-in Community viewer handles geometry visualization and measurements for most shop floor use cases. Advanced requirements — nesting, unfold, annotations, PMI (GD&T annotations from the model), server-side tessellation, or CAD format conversion — are part of the commercial Premium edition, which runs a CAD backend service alongside the app.
-
-Premium is sold direct by [Sheet Metal Connect e.U.](https://vanenkhuizen.com) — [get in touch](mailto:office@vanenkhuizen.com) to discuss your requirements.

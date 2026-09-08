@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, Workflow, MapPin, ArrowRight } from 'lucide-react';
+import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, MapPin, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -597,22 +597,6 @@ export default function OrganizationSettings() {
             </div>
           )}
         </CardContent>
-      </Card>
-
-      <Card className="glass-card">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Workflow className="h-5 w-5" />
-            <CardTitle>{t('organizationSettings.planning.title')}</CardTitle>
-            <div className="ml-auto flex items-center gap-1.5">
-              <Crown className="h-3.5 w-3.5 text-amber-500" />
-              <span className="text-xs font-medium text-amber-500">Premium</span>
-            </div>
-          </div>
-          <CardDescription>
-            {t('organizationSettings.planning.description')}
-          </CardDescription>
-        </CardHeader>
       </Card>
 
       <Card className="glass-card">

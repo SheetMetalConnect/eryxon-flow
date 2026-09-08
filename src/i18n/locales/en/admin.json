@@ -100,10 +100,6 @@
       "setupPrepEnabledDescription": "Allow operators to log setup or machine preparation separately from production.",
       "setupRequired": "Require setup before production",
       "setupRequiredDescription": "Block production start until setup/prep has been recorded on the operation."
-    },
-    "planning": {
-      "title": "Planning Integration",
-      "description": "Connect FrePPLe or Odoo MRP to sync work orders — available in Premium."
     }
   },
   "settings": {
@@ -429,7 +425,7 @@
     },
     "license": {
       "title": "License (BSL 1.1)",
-      "tldr": "Read and modify the source, and self-host the Community edition free for a single production site. Multi-site use, or offering it as a hosted service, needs a commercial (Premium) license.",
+      "tldr": "Read and modify the source, and self-host the Community edition free for a single production site. Multi-site use, or offering it as a hosted service, needs a commercial license.",
       "allowed": "Allowed",
       "notAllowed": "Needs a commercial license",
       "allowedItems": {

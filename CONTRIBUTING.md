@@ -75,4 +75,4 @@ changelog. Do not create the tag first: the workflow creates it after validation
 
 By contributing, you agree that your contributions are licensed under the
 [Business Source License 1.1](./LICENSE), and that Sheet Metal Connect e.U.
-may also license your contributions under the commercial (Premium) terms.
+may also license your contributions under the commercial terms.

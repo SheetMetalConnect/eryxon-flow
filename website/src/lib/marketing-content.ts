@@ -11,8 +11,6 @@
  * (Luke's hard rule), and no pricing figures (kept out of the repo). COSS model:
  *   Hosted demo   — the Community edition, hosted by us, free, 30 days, usage limits.
  *   Community     — self-hosted, source-available (BSL 1.1), single site, free, as-is.
- *   Premium       — commercial, sold direct (SLA): connectors, add-ons, monitoring,
- *                   multi-site + hub, advanced workflows, whitelabel. Hosted or on-prem.
  */
 import type { Locale } from "@/lib/locale";
 
@@ -61,8 +59,6 @@ export interface PricingCopy {
   plans: {
     /** Tier 1 — hosted demo of the Community edition, free, 30 days, usage limits. CTA links to the app. */
     demo: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
-    /** Tier 2 — Premium, sold direct (SLA). Contact sales, no pricing figures. Featured. */
-    premium: { head: string; name: string; flag: string; price: string; sub: string; features: PlanFeature[]; cta: string };
     /** Tier 3 — Community, self-hosted, source-available (BSL 1.1), single site. CTA = guide + consulting. */
     community: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; ctaGuide: string; ctaConsulting: string };
   };
@@ -79,7 +75,7 @@ const LANDING: Record<Locale, LandingCopy> = {
   en: {
     title: "Eryxon Flow — source-available MES for job shops",
     description:
-      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly, from the tablet on the floor to the planner's desk. Self-host the Community edition free, try the hosted demo, or go Premium for multi-site, connectors, and support.",
+      "Eryxon Flow tracks jobs through cutting, bending, welding, and assembly, from the tablet on the floor to the planner's desk. Self-host the Community edition free, or try the hosted demo.",
     hero: {
       h1: "Keep a grip on every job, floor to planning.",
       lead: "Track every job through cutting, bending, welding, and assembly. Operators work a tablet at the machine; planners see it the moment it changes. No more spreadsheets and whiteboards.",
@@ -91,14 +87,14 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "What you get",
       h2: "Everything a high-mix, low-volume shop needs.",
-      lead: "One system, from the tablet at the machine to the planner's dashboard. The full shop-floor core is there from day one — Premium adds ERP connectors, multi-site, and support when you're ready.",
+      lead: "One system, from the tablet at the machine to the planner's dashboard. The full shop-floor core is there from day one.",
       items: [
         { title: "Tablets at the machine", body: "A work queue per cell on a tablet at the machine. Big buttons for gloved hands, with status, due date, and running time you can read from a metre away." },
         { title: "Job & part tracking", body: "Follow every job through cutting, bending, welding, assembly, and finishing — its route across cells, the load on each one, and what's still on the bench." },
-        { title: "3D part viewer", body: "Open the part in 3D right in the browser — measure it, pull it apart, nothing to install. Premium adds nesting and unfolding." },
+        { title: "3D part viewer", body: "Open the part in 3D right in the browser — measure it, pull it apart, nothing to install." },
         { title: "An API your ERP can drive", body: "Push jobs in, get results back, no double entry. Webhooks fire the moment anything changes on the floor." },
         { title: "Source-available", body: "The source is on GitHub — read it, modify it, self-host the Community edition free for a single workshop. Business Source License; each release turns GPL after four years." },
-        { title: "One site or many", body: "Community runs a single workshop; Premium manages many sites from one hub, each shop's data kept apart. English, Dutch, and German built in." },
+        { title: "One site or many", body: "One workshop per installation, with each tenant's data kept apart. English, Dutch, and German built in." },
       ],
     },
     how: {
@@ -119,13 +115,13 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Pricing",
       h2: "Three ways to run it.",
-      lead: "Self-host the Community edition free, try the hosted 30-day demo, or go Premium for multi-site and support.",
+      lead: "Self-host the Community edition free, or try the hosted 30-day demo.",
       allLink: "See full pricing →",
     },
     rollout: {
       eyebrow: "Hosted & support",
       h2: "Rather not run it yourself?",
-      lead: "Premium is hosted or on-prem with an SLA, plus ERP connectors, multi-site management, and whitelabeling. Sold direct — get in touch to scope it for your shop.",
+      lead: "Need help with rollout, an ERP integration or a multi-site licence? Get in touch and we scope it for your shop.",
       cta: "Contact sales",
     },
     cta: {
@@ -139,7 +135,7 @@ const LANDING: Record<Locale, LandingCopy> = {
   nl: {
     title: "Eryxon Flow — source-available MES voor de metaalbewerking",
     description:
-      "Eryxon Flow houdt je orders bij door snijden, kanten, lassen en assemblage — van de tablet op de vloer tot het bureau van de planner. Host de Community-editie gratis zelf, probeer de gehoste demo, of ga Premium voor meerdere locaties, koppelingen en support.",
+      "Eryxon Flow houdt je orders bij door snijden, kanten, lassen en assemblage — van de tablet op de vloer tot het bureau van de planner. Host de Community-editie gratis zelf, of probeer de gehoste demo.",
     hero: {
       h1: "Grip op je orders, van de vloer tot de planning.",
       lead: "Eryxon Flow volgt elke order door snijden, kanten, lassen en assemblage. De operator werkt op een tablet aan de machine, de planner ziet het meteen op zijn scherm. De broncode staat op GitHub. Geen Excel, geen whiteboard.",
@@ -151,14 +147,14 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "Wat je krijgt",
       h2: "Alles wat een maakbedrijf met enkelstuks en kleine series nodig heeft.",
-      lead: "Geen prijs per gebruiker in de Community-editie. De volledige werkvloer-kern vanaf dag één — Premium voegt ERP-koppelingen, meerdere locaties en support toe wanneer je die nodig hebt.",
+      lead: "Geen prijs per gebruiker in de Community-editie. De volledige werkvloer-kern vanaf dag één.",
       items: [
         { title: "Tablets aan de machine", body: "Een wachtrij per cel, zoals een kanbanbord. Knoppen van 56 pixels, dus je raakt ze met werkhandschoenen. Status, deadline en doorlooptijd lees je van een meter afstand af." },
         { title: "Order- en onderdeelvolging", body: "Je ziet elke order door snijden, kanten, lassen, assemblage en afwerking heen. De route per cel, WIP-limieten en hoeveel werk er nog op de plank ligt." },
-        { title: "3D STEP-viewer", body: "CAD in de browser, niks te installeren. Meten en exploded views, direct in het orderscherm van de operator. Premium voegt nesten en uitslaan toe." },
+        { title: "3D STEP-viewer", body: "CAD in de browser, niks te installeren. Meten en exploded views, direct in het orderscherm van de operator." },
         { title: "REST API en webhooks", body: "Filteren, pagineren, zoeken en een webhook bij elke stap. Gebouwd om je ERP en de werkvloer aan elkaar te knopen, niet om alles met de hand in te kloppen." },
         { title: "Source-available", body: "De broncode staat op GitHub — inzien, aanpassen en de Community-editie gratis zelf hosten voor één werkplaats. Business Source License; elke release wordt na vier jaar GPL." },
-        { title: "Eén locatie of meer", body: "Community draait één werkplaats; Premium beheert meerdere vestigingen vanuit één hub, met de data van elke werkplaats apart. NL, DE en EN zitten er standaard in." },
+        { title: "Eén locatie of meer", body: "Eén werkplaats per installatie, met de data van elke tenant apart. NL, DE en EN zitten er standaard in." },
       ],
     },
     how: {
@@ -179,13 +175,13 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Prijzen",
       h2: "Drie manieren om het te draaien.",
-      lead: "Host de Community-editie gratis zelf, probeer de gehoste demo, of ga Premium voor meerdere locaties en support.",
+      lead: "Host de Community-editie gratis zelf, of probeer de gehoste demo.",
       allLink: "Bekijk alle prijzen →",
     },
     rollout: {
       eyebrow: "Hosting & support",
       h2: "Liever niet zelf draaien?",
-      lead: "Premium is gehost of on-prem met een SLA, plus ERP-koppelingen, beheer van meerdere locaties en whitelabeling. Rechtstreeks bij ons — neem contact op om het voor jouw bedrijf op maat te maken.",
+      lead: "Hulp nodig bij de uitrol, een ERP-koppeling of een licentie voor meerdere locaties? Neem contact op, dan maken we het voor jouw bedrijf op maat.",
       cta: "Neem contact op",
     },
     cta: {
@@ -199,7 +195,7 @@ const LANDING: Record<Locale, LandingCopy> = {
   de: {
     title: "Eryxon Flow — source-available MES für die Metallbearbeitung",
     description:
-      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage, vom Tablet in der Werkstatt bis zum Schreibtisch des Planers. Hoste die Community-Edition kostenlos selbst, teste die gehostete Demo oder wähle Premium für mehrere Standorte, Konnektoren und Support.",
+      "Eryxon Flow verfolgt Aufträge durch Schneiden, Kanten, Schweißen und Montage, vom Tablet in der Werkstatt bis zum Schreibtisch des Planers. Hoste die Community-Edition kostenlos selbst oder teste die gehostete Demo.",
     hero: {
       h1: "Jeden Auftrag im Griff, von der Werkstatt bis zur Planung.",
       lead: "Eryxon Flow verfolgt jeden Auftrag durch Schneiden, Kanten, Schweißen und Montage. Der Werker arbeitet am Tablet an der Maschine, der Planer sieht es sofort auf seinem Bildschirm. Der Quellcode liegt auf GitHub. Kein Excel, kein Whiteboard.",
@@ -211,14 +207,14 @@ const LANDING: Record<Locale, LandingCopy> = {
     features: {
       eyebrow: "Was du bekommst",
       h2: "Alles, was ein Einzel- und Kleinserienbetrieb braucht.",
-      lead: "Kein Preis pro Nutzer in der Community-Edition. Der volle Werkstatt-Kern ab Tag eins — Premium ergänzt ERP-Konnektoren, mehrere Standorte und Support, wenn du sie brauchst.",
+      lead: "Kein Preis pro Nutzer in der Community-Edition. Der volle Werkstatt-Kern ab Tag eins.",
       items: [
         { title: "Tablets an der Maschine", body: "Eine Arbeitsliste je Zelle, wie ein Kanban-Board. Schaltflächen mit 56 Pixeln, also auch mit Arbeitshandschuhen bedienbar. Status, Termin und Laufzeit liest du aus einem Meter Entfernung ab." },
         { title: "Auftrags- und Teileverfolgung", body: "Du siehst jeden Auftrag durch Schneiden, Kanten, Schweißen, Montage und Finish. Die Route je Zelle, WIP-Limits und wie viel Arbeit noch ansteht." },
-        { title: "3D-STEP-Viewer", body: "CAD im Browser, nichts zu installieren. Messen und Explosionsansichten, direkt im Auftragsfenster des Werkers. Premium ergänzt Schachteln und Abwicklung." },
+        { title: "3D-STEP-Viewer", body: "CAD im Browser, nichts zu installieren. Messen und Explosionsansichten, direkt im Auftragsfenster des Werkers." },
         { title: "REST-API und Webhooks", body: "Filtern, Paginieren, Suchen und ein Webhook bei jedem Schritt. Gebaut, um dein ERP und die Werkstatt zu verbinden, nicht um alles von Hand einzutippen." },
         { title: "Source-available", body: "Der Quellcode liegt auf GitHub — einsehen, anpassen und die Community-Edition kostenlos selbst hosten, für eine Werkstatt. Business Source License; jede Version wird nach vier Jahren GPL." },
-        { title: "Ein Standort oder viele", body: "Community betreibt eine Werkstatt; Premium verwaltet mehrere Standorte aus einem Hub, die Daten jedes Betriebs getrennt. NL, DE und EN ab Werk." },
+        { title: "Ein Standort oder viele", body: "Eine Werkstatt pro Installation, die Daten jedes Mandanten getrennt. NL, DE und EN ab Werk." },
       ],
     },
     how: {
@@ -239,13 +235,13 @@ const LANDING: Record<Locale, LandingCopy> = {
     pricing: {
       eyebrow: "Preise",
       h2: "Drei Wege, es zu betreiben.",
-      lead: "Hoste die Community-Edition kostenlos selbst, teste die gehostete Demo oder wähle Premium für mehrere Standorte und Support.",
+      lead: "Hoste die Community-Edition kostenlos selbst oder teste die gehostete Demo.",
       allLink: "Alle Preise ansehen →",
     },
     rollout: {
       eyebrow: "Hosting & Support",
       h2: "Lieber nicht selbst betreiben?",
-      lead: "Premium ist gehostet oder on-prem mit einem SLA, dazu ERP-Konnektoren, Mehr-Standort-Verwaltung und Whitelabeling. Direkt von uns — melde dich, um es für deinen Betrieb zuzuschneiden.",
+      lead: "Hilfe bei der Einführung, einer ERP-Anbindung oder einer Lizenz für mehrere Standorte? Melde dich, dann schneiden wir es auf deinen Betrieb zu.",
       cta: "Kontakt aufnehmen",
     },
     cta: {
@@ -260,39 +256,33 @@ const LANDING: Record<Locale, LandingCopy> = {
 const PRICING: Record<Locale, PricingCopy> = {
   en: {
     title: "Pricing — Eryxon Flow",
-    description: "Self-host the Community edition free, try the hosted 30-day demo, or go Premium for multi-site, connectors, and support.",
-    hero: { eyebrow: "Pricing", h1: "Community is free. Premium when you scale.", lead: "Self-host the Community edition free for a single workshop, or try the hosted 30-day demo. Premium adds multi-site, connectors, monitoring, and an SLA — sold direct." },
+    description: "Self-host the Community edition free, or try the hosted 30-day demo.",
+    hero: { eyebrow: "Pricing", h1: "Community is free.", lead: "Self-host the Community edition free for a single workshop, or try the hosted 30-day demo. Running several sites, or offering it as a service, needs a commercial licence; get in touch." },
     plans: {
       demo: { head: "Hosted demo", name: "Hosted demo", price: "Free", period: "· 30 days", sub: "A hosted Community instance to try on your own shop floor. No install, no card. Usage limits apply during the demo.", cta: "Start free demo",
         features: [{ text: "Hosted by us, runs in minutes" }, { text: "The Community edition, 30-day demo" }, { text: "Up to 100 jobs and 500 parts per month" }, { text: "2 GB storage, 100 API requests per day" }, { text: "The full shop-floor core" }] },
-      premium: { head: "Premium", name: "Premium", flag: "SLA included", price: "Contact sales", sub: "Everything in Community, plus the tools multi-site operations need. Hosted or on-prem, sold direct by us.", cta: "Contact sales",
-        features: [{ text: "All ERP connectors and add-ons" }, { text: "Multi-site management and central hub" }, { text: "Monitoring and advanced workflows" }, { text: "Whitelabeling to your brand" }, { text: "SLA — hosted or on-prem" }] },
       community: { head: "Community · self-hosted", name: "Community", price: "Free", period: "· single site", sub: "Run it yourself on your own infrastructure, for a single workshop. Source-available under the BSL.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
         features: [{ text: "Source on GitHub — read, modify, self-host" }, { text: "One production site, no seat limits" }, { text: "The full shop-floor core" }, { text: "REST API and webhooks" }, { text: "Provided as-is, community support" }] },
     },
   },
   nl: {
     title: "Prijzen — Eryxon Flow",
-    description: "Host de Community-editie gratis zelf, probeer de gehoste demo van 30 dagen, of ga Premium voor meerdere locaties, koppelingen en support.",
-    hero: { eyebrow: "Prijzen", h1: "Community is gratis. Premium als je opschaalt.", lead: "Host de Community-editie gratis voor één werkplaats, of probeer de gehoste demo van 30 dagen. Premium voegt meerdere locaties, koppelingen, monitoring en een SLA toe — rechtstreeks bij ons." },
+    description: "Host de Community-editie gratis zelf, of probeer de gehoste demo van 30 dagen.",
+    hero: { eyebrow: "Prijzen", h1: "Community is gratis.", lead: "Host de Community-editie gratis voor één werkplaats, of probeer de gehoste demo van 30 dagen. Meerdere locaties of aanbieden als dienst vraagt een commerciële licentie; neem contact op." },
     plans: {
       demo: { head: "Gehoste demo", name: "Gehoste demo", price: "Gratis", period: "· 30 dagen", sub: "Een gehoste Community-instance om op je eigen werkvloer uit te proberen. Niks installeren, geen creditcard. Tijdens de demo gelden gebruikslimieten.", cta: "Gratis uitproberen",
         features: [{ text: "Door ons gehost, binnen enkele minuten klaar" }, { text: "De Community-editie, demo van 30 dagen" }, { text: "Tot 100 orders en 500 onderdelen per maand" }, { text: "2 GB opslag, 100 API-verzoeken per dag" }, { text: "De volledige werkvloer-kern" }] },
-      premium: { head: "Premium", name: "Premium", flag: "Inclusief SLA", price: "Neem contact op", sub: "Alles uit Community, plus wat je nodig hebt voor meerdere locaties. Gehost of on-prem, rechtstreeks bij ons.", cta: "Neem contact op",
-        features: [{ text: "Alle ERP-koppelingen en add-ons" }, { text: "Beheer van meerdere locaties en centrale hub" }, { text: "Monitoring en geavanceerde workflows" }, { text: "Whitelabeling in jouw huisstijl" }, { text: "SLA — gehost of on-prem" }] },
       community: { head: "Community · zelf gehost", name: "Community", price: "Gratis", period: "· één locatie", sub: "Draai het zelf op je eigen infrastructuur, voor één werkplaats. Source-available onder de BSL.", ctaGuide: "Lees de zelf-hosten-gids", ctaConsulting: "Hulp bij de installatie",
         features: [{ text: "Broncode op GitHub — inzien, aanpassen, zelf hosten" }, { text: "Eén productielocatie, geen limiet op gebruikers" }, { text: "De volledige werkvloer-kern" }, { text: "REST API en webhooks" }, { text: "Geleverd as-is, community-support" }] },
     },
   },
   de: {
     title: "Preise — Eryxon Flow",
-    description: "Hoste die Community-Edition kostenlos selbst, teste die gehostete 30-Tage-Demo oder wähle Premium für mehrere Standorte, Konnektoren und Support.",
-    hero: { eyebrow: "Preise", h1: "Community ist kostenlos. Premium, wenn du skalierst.", lead: "Hoste die Community-Edition kostenlos für eine Werkstatt oder teste die gehostete 30-Tage-Demo. Premium ergänzt mehrere Standorte, Konnektoren, Monitoring und ein SLA — direkt von uns." },
+    description: "Hoste die Community-Edition kostenlos selbst oder teste die gehostete 30-Tage-Demo.",
+    hero: { eyebrow: "Preise", h1: "Community ist kostenlos.", lead: "Hoste die Community-Edition kostenlos für eine Werkstatt oder teste die gehostete 30-Tage-Demo. Mehrere Standorte oder das Anbieten als Dienst brauchen eine kommerzielle Lizenz; melde dich." },
     plans: {
       demo: { head: "Gehostete Demo", name: "Gehostete Demo", price: "Kostenlos", period: "· 30 Tage", sub: "Eine gehostete Community-Instanz zum Testen auf deiner eigenen Werkstatt. Keine Installation, keine Karte. Während der Demo gelten Nutzungslimits.", cta: "Kostenlos testen",
         features: [{ text: "Von uns gehostet, in wenigen Minuten startklar" }, { text: "Die Community-Edition, 30-Tage-Demo" }, { text: "Bis zu 100 Aufträge und 500 Teile pro Monat" }, { text: "2 GB Speicher, 100 API-Anfragen pro Tag" }, { text: "Der volle Werkstatt-Kern" }] },
-      premium: { head: "Premium", name: "Premium", flag: "Inklusive SLA", price: "Kontakt aufnehmen", sub: "Alles aus Community, plus die Werkzeuge für den Mehr-Standort-Betrieb. Gehostet oder on-prem, direkt von uns.", cta: "Kontakt aufnehmen",
-        features: [{ text: "Alle ERP-Konnektoren und Add-ons" }, { text: "Verwaltung mehrerer Standorte und zentraler Hub" }, { text: "Monitoring und fortgeschrittene Workflows" }, { text: "Whitelabeling in deinem Markenauftritt" }, { text: "SLA — gehostet oder on-prem" }] },
       community: { head: "Community · selbst gehostet", name: "Community", price: "Kostenlos", period: "· ein Standort", sub: "Betreibe es selbst auf deiner eigenen Infrastruktur, für eine Werkstatt. Source-available unter der BSL.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
         features: [{ text: "Quellcode auf GitHub — einsehen, anpassen, selbst hosten" }, { text: "Ein Produktionsstandort, kein Nutzerlimit" }, { text: "Der volle Werkstatt-Kern" }, { text: "REST-API und Webhooks" }, { text: "Bereitgestellt wie besehen, Community-Support" }] },
     },

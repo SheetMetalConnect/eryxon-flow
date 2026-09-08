@@ -47,7 +47,6 @@ Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). Se
 
 **Integration**
 - REST API with 30+ endpoints (jobs, parts, operations, time entries, webhooks)
-- FrePPLe / Odoo MRP planning connectors — Premium
 - ERP sync with incremental change detection
 - MQTT connectivity with retry, circuit breaker, dead letter queue
 - Webhook notifications for lifecycle events
@@ -130,12 +129,12 @@ Agent instructions live in [`.agents/`](.agents/) and are shared by every tool: 
 
 **Business Source License 1.1** (source-available)
 
-- **Community** — free to self-host for a single production site (one workshop); read, modify, and run the source
-- Read and modify the source, and use it for any non-production purpose, at no charge
-- **Premium** (multi-site, offering it as a service, and the commercial add-ons) needs a commercial license — see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)
+- Free to self-host for a single production site (one workshop); read, modify, and run the source
+- Any non-production use is free
+- Running it across several sites, or offering it to others as a service, needs a commercial license — see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)
 - Each released version converts to its Change License (GNU GPL v2.0 or later) four years after release
 
-See [LICENSE](LICENSE) for full terms, and [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md) for Premium.
+See [LICENSE](LICENSE) for the full terms.
 
 ## Contributing & Security
 

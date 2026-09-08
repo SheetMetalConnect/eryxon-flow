@@ -390,7 +390,7 @@
     },
     "license": {
       "title": "Lizenz (BSL 1.1)",
-      "tldr": "Quellcode einsehen und anpassen und die Community-Edition kostenlos für einen Produktionsstandort selbst hosten. Mehrere Standorte oder der Betrieb als gehosteter Dienst brauchen eine kommerzielle (Premium-)Lizenz.",
+      "tldr": "Quellcode einsehen und anpassen und die Community-Edition kostenlos für einen Produktionsstandort selbst hosten. Mehrere Standorte oder der Betrieb als gehosteter Dienst brauchen eine kommerzielle Lizenz.",
       "allowed": "Erlaubt",
       "notAllowed": "Braucht eine kommerzielle Lizenz",
       "allowedItems": {
@@ -554,10 +554,6 @@
       "setupPrepEnabledDescription": "Operatoren koennen Ruesten oder Maschinenvorbereitung getrennt von Produktion buchen.",
       "setupRequired": "Ruesten vor Produktion verlangen",
       "setupRequiredDescription": "Blockiert den Produktionsstart, bis Ruesten/Vorbereitung fuer den Vorgang erfasst wurde."
-    },
-    "planning": {
-      "title": "Planungsintegration",
-      "description": "Verbinden Sie FrePPLe oder Odoo MRP, um Fertigungsaufträge zu synchronisieren — verfügbar in Premium."
     },
     "title": "Organisationseinstellungen",
     "subtitle": "Verwalten Sie das Profil und die Einstellungen Ihrer Organisation",
