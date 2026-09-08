@@ -77,13 +77,13 @@ export function createBatchLifecycleService(
         [`${eventAction}_at`]: timestamp,
       };
       const context = batch.cellId ? { cell: batch.cellId } : undefined;
-      await eventDispatcher.dispatch(tenantId, {
-        eventType: `batch.${eventAction}`,
-        data: { ...common, operations: operations.length, total_minutes: result.total_minutes, distribution: result.operations },
-        context,
-      });
-      for (const operation of operations) {
-        await eventDispatcher.dispatch(tenantId, {
+      const results = await Promise.allSettled([
+        eventDispatcher.dispatch(tenantId, {
+          eventType: `batch.${eventAction}`,
+          data: { ...common, operations: operations.length, total_minutes: result.total_minutes, distribution: result.operations },
+          context,
+        }),
+        ...operations.map((operation) => eventDispatcher.dispatch(tenantId, {
           eventType: `operation.${eventAction}`,
           data: {
             ...common,
@@ -98,7 +98,10 @@ export function createBatchLifecycleService(
             actual_time: operation.actualTime,
           },
           context,
-        });
+        })),
+      ]);
+      for (const outcome of results) {
+        if (outcome.status === "rejected") console.error("Committed batch event dispatch failed", outcome.reason);
       }
     } catch (error) {
       console.error("Committed batch event dispatch failed", error);

@@ -1055,22 +1055,30 @@ const batchCompleteOperations: ToolHandler = async (args, supabase) => {
       return structuredResponse({ completed: 0, message: "No pending operations found" });
     }
 
-    const now = new Date().toISOString();
-    const updatePayload: any = {
-      status: "completed",
-      completed_at: now,
-      completion_percentage: completion_percentage ?? 100,
-      updated_at: now,
-    };
-    if (notes) updatePayload.notes = notes;
-
-    const { data: completed, error: updateError } = await supabase
+    const { data: targets, error: targetError } = await supabase
       .from("operations")
-      .update(updatePayload)
-      .in("id", operationIds)
-      .select("id, operation_name");
+      .select("id, tenant_id, operation_name")
+      .in("id", operationIds);
+    if (targetError) throw targetError;
 
-    if (updateError) throw updateError;
+    const completed: { id: string; operation_name: string }[] = [];
+    for (const target of targets ?? []) {
+      const { error: transitionError } = await supabase.rpc("transition_operation", {
+        p_tenant_id: target.tenant_id,
+        p_operation_id: target.id,
+        p_action: "finish",
+        p_notes: notes ?? null,
+      });
+      if (transitionError) throw transitionError;
+      completed.push({ id: target.id, operation_name: target.operation_name });
+    }
+    if (completion_percentage != null && completion_percentage !== 100) {
+      const { error: percentageError } = await supabase
+        .from("operations")
+        .update({ completion_percentage })
+        .in("id", completed.map((operation) => operation.id));
+      if (percentageError) throw percentageError;
+    }
 
     return structuredResponse(
       {

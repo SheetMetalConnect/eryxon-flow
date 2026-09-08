@@ -77,8 +77,9 @@ describe('production lifecycle RPC adapters', () => {
     });
     await startTimeTracking('operation', 'operator', 'tenant');
     expect(writes()).toHaveLength(1);
+    if (previousStatus === 'not_started') await vi.waitFor(() => expect(dispatchOperationStarted).toHaveBeenCalledWith('tenant', expect.objectContaining({ operation_id: 'operation', operator_name: 'Employee' })));
+    await new Promise(resolve => setTimeout(resolve, 0));
     expect(dispatchOperationStarted).toHaveBeenCalledTimes(previousStatus === 'not_started' ? 1 : 0);
-    if (previousStatus === 'not_started') expect(dispatchOperationStarted).toHaveBeenCalledWith('tenant', expect.objectContaining({ operation_id: 'operation', operator_name: 'Employee' }));
   });
 
   it('surfaces a rejected transaction without follow-up writes', async () => {

@@ -91,6 +91,24 @@ moved into Community.
 - Restarting a timer on an operation already in progress no longer emits a second
   `operation.started` event. Both the browser and the API emit it only on the
   first transition out of `not_started`.
+- Part images keep uploading and displaying under the tenant-scoped storage
+  policies, and organisation settings that toggle whitelabeling save again.
+- Operations follow their state machine again: pause needs an operation in
+  progress, resume needs a paused one, and completion needs a started one. The
+  service API may close a PIN operator's timer, admins can close timers of
+  deactivated accounts, and the CRUD endpoints no longer accept lifecycle columns
+  (`status`, timestamps, `actual_time`); the MCP batch completion uses the
+  transactional RPC.
+- Opening the app in a second tab no longer revokes the PIN session of the first.
+  Operator actions return as soon as the database commits; webhook and MQTT
+  delivery no longer holds up the terminal or serialises batch events.
+- Job and part status refreshes only rewrite rows whose derived state changes,
+  so a timer action no longer fans out an activity row, webhook and realtime
+  update per part of the job.
+- Database-side webhook dispatch authenticates with the `internal_service_secret`
+  vault secret, and Edge Functions without `INTERNAL_SERVICE_SECRET` fall back to
+  the service-role key instead of silently dropping events. Dashboard and
+  booked-hours views name the verified employee instead of the terminal account.
 - API query modifiers no longer execute the Supabase query before applying filters.
   Bulk synchronization reports failed writes, CRUD endpoints restrict writable
   fields and validate tenant references, and internal events require authentication.
@@ -113,8 +131,10 @@ moved into Community.
   Edge Functions. Back up the target first and run `scripts/audit-tenant-references.sql`
   before rollout. Existing invalid cross-tenant references need explicit repair;
   the migration does not silently delete or reassign records.
-- Set `INTERNAL_SERVICE_SECRET` consistently for internal event dispatchers.
-  Never expose it or a service-role key through a `VITE_` variable.
+- Set `INTERNAL_SERVICE_SECRET` consistently for internal event dispatchers and
+  store the same value plus the project URL as the vault secrets
+  `internal_service_secret` and `project_url` (see `20260908090000`). Never expose
+  either secret or a service-role key through a `VITE_` variable.
 - Existing terminal users must verify their PIN again. `/m` bookmarks remain valid.
 - Community retains its existing Business Source License 1.1. This release does
   not change the license or move Premium functionality into Community.
