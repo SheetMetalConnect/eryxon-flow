@@ -4,7 +4,6 @@
 .agents
 .codex
 .gemini
-.opentrace
 .research
 .vscode
 node_modules

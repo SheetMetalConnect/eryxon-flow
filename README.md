@@ -68,47 +68,17 @@ npm ci
 npm run dev             # http://localhost:8080
 ```
 
-Requires: Node.js 22 and a [Supabase](https://supabase.com) backend. Cloning this private repository requires access.
-
-## Architecture
-
-```
-React 18 + Vite + Tailwind + shadcn/ui
-         |
-    Supabase Client
-         |
-PostgreSQL + Auth + RLS + Realtime + Storage
-         |
-    Edge Functions (Deno) ── 30+ REST API endpoints
-         |
-    Webhooks + MQTT + MCP Server
-```
+Requires Node.js 22 and a [Supabase](https://supabase.com) backend.
 
 | Layer | Tech |
 |-------|------|
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
 | Backend | Supabase (PostgreSQL 17, Edge Functions, Realtime) |
 | 3D Viewer | Three.js with browser-side STEP parsing |
-| Deployment | Vercel (frontend), Supabase (backend), Docker (self-hosted) |
+| Deployment | Docker (self-hosted), Vercel + Supabase (hosted) |
 | API | REST with API key auth, rate limiting, webhook dispatch |
 
-## Responsive web and optional PWA
-
-The default build is a regular responsive website. Phone, tablet, and desktop use the same operator interface.
-
-Set `VITE_ENABLE_PWA=true` at build time to enable the install manifest and service worker. For Docker, pass `--build-arg VITE_ENABLE_PWA=true` when building a custom image; setting it on an already-built container does not enable PWA support.
-
-With PWA enabled, use your browser's install action or Safari's **Add to Home Screen**. The service worker caches the app shell and fonts; manufacturing data and production actions require a backend connection. A new version offers **Reload** or **Later**, so an update does not interrupt a shift. A disabled build retires the old app worker on its next update without forcing open pages to reload.
-
-### Regenerating PWA icons
-
-If you change the brand mark, edit `public/pwa-icon.svg` and rerun:
-
-```bash
-npm run pwa:assets
-```
-
-This regenerates `pwa-{64,192,512}.png`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`, and `favicon.ico` from the SVG source.
+The app is a responsive web app for phones, tablets and desktops. Installable PWA support is off by default; build with `VITE_ENABLE_PWA=true` to enable it.
 
 ## Self-Hosting
 
@@ -150,36 +120,11 @@ Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website
 | Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
 | Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
 
-Developer deployment checks and PWA verification: [docs/DEPLOY_AND_TEST.md](docs/DEPLOY_AND_TEST.md). Versioning and publication: [RELEASING.md](RELEASING.md).
+Contributor docs live in [`docs/`](docs/): [Architecture](docs/ARCHITECTURE.md), [API Catalog](docs/API_CATALOG.md), [Routes](docs/ROUTE_MAP.md), [Hooks](docs/HOOK_MAP.md), [Conventions](docs/CONVENTIONS.md), [ADRs](docs/decisions/). Versioning and publication: [RELEASING.md](RELEASING.md).
 
 ## AI Agent Support
 
-This repo is optimized for AI coding assistants:
-
-| Tool | Config File |
-|------|-------------|
-| Claude Code | [CLAUDE.md](CLAUDE.md) |
-| GitHub Copilot | [.github/copilot-instructions.md](.github/copilot-instructions.md) |
-| Cursor | [.cursorrules](.cursorrules) |
-| Codex / Windsurf / Cline | [AGENTS.md](AGENTS.md) |
-
-Specialized sub-agents in [.agents/](.agents/) for database, tech stack, and repo operations.
-
-### Knowledge Graph (OpenTrace)
-
-The codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace) for AI-assisted development.
-
-```bash
-pip install opentraceai          # One-time install
-opentraceai index .              # Index the codebase (~3s)
-opentraceai stats                # View what's indexed
-```
-
-Claude Code commands: `/explore <name>`, `/graph-status`, `/interrogate <question>`. Agents: `@opentrace`, `@code-explorer`, `@dependency-analyzer`, `@find-usages`, `@explain-service`.
-
-**Product docs** (how the app works — operator/admin flows, features, glossary, self-hosting) live on the website: <https://eryxon.eu/guides/concepts/>.
-
-**Developer docs** (in `docs/`): [Architecture](docs/ARCHITECTURE.md) | [API Catalog](docs/API_CATALOG.md) | [Routes](docs/ROUTE_MAP.md) | [Hooks](docs/HOOK_MAP.md) | [Conventions](docs/CONVENTIONS.md) | [Troubleshooting](docs/TROUBLESHOOTING.md) | [ADRs](docs/decisions/) | [MCP Setup](docs/AI_AGENT_SETUP.md)
+Agent instructions live in [`.agents/`](.agents/) and are shared by every tool: [CLAUDE.md](CLAUDE.md), [AGENTS.md](AGENTS.md) (Codex, Windsurf, Cline), [.cursorrules](.cursorrules), [.github/copilot-instructions.md](.github/copilot-instructions.md).
 
 ## License
 

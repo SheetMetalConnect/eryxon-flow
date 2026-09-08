@@ -6,10 +6,6 @@ personality = "friendly"
 url = "https://mcp.supabase.com/mcp?project_ref=vatgianzotsurljznsry"
 bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
 
-[mcp_servers.opentrace-oss]
-command = "uvx"
-args = ["opentraceai", "mcp"]
-
 [features]
 multi_agent = true
 

@@ -22,7 +22,6 @@ test.env
 supabase/.temp/
 supabase/.branches/
 .vercel
-.opentrace/
 .claude/settings.local.json
 .claude/worktrees/
 .worktrees/

@@ -83,34 +83,6 @@ High code quality is non-negotiable on this repo. Apply these on every change:
 - **Test before and after:** Run `npm run test:run` before starting and after every commit.
 - **Use focused hooks:** Import `useProfile`, `useTenant`, `useSession` instead of `useAuth` for new code. Only use `useAuth` when you need multiple concerns (e.g., both profile and tenant).
 
-## Knowledge Graph (OpenTrace)
-
-This codebase is indexed into a queryable knowledge graph via [OpenTrace](https://github.com/opentrace/opentrace). The current local index reports 1,019 functions, 45 classes, 822 files, 144 directories, 143 packages, and 3,341 graph edges (CALLS, IMPORTS, DEFINED_IN, DEPENDS_ON).
-
-**Re-index after structural changes:**
-```bash
-opentraceai index .    # ~3 seconds, writes to .opentrace/index.db
-```
-
-**How agents should use it:**
-- Prefer graph queries over `Glob`/`Grep` for structural and relationship questions
-- Always trace 2nd and 3rd order effects before answering "is it safe to change X?"
-- Use `traverse_graph` with incoming direction to map blast radius of any change
-- The MCP server exposes 5 tools: `get_stats`, `search_graph`, `list_nodes`, `get_node`, `traverse_graph`
-
-**Codex skills:**
-- `$explore-code` — general codebase exploration
-- `$source-command-explore <name>` — quick exploration of any component
-- `$source-command-graph-status` — overview of what's indexed
-- `$source-command-interrogate <question>` — read-only codebase Q&A
-
-**Codex subagents:**
-- `opentrace` — general-purpose (default catch-all)
-- `code-explorer` — browse files, directories, structure
-- `dependency-analyzer` — blast radius and impact analysis
-- `find-usages` — caller/reference lookups
-- `explain-service` — top-down service walkthroughs
-
 ## Documentation policy — product docs live on the website
 
 There is **no product documentation in the repo `docs/` folder.** Anything explaining how
