@@ -54,7 +54,7 @@ Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). Se
 
 **Platform**
 - Multi-language (English, Dutch, German)
-- Multi-tenant SaaS with row-level security
+- Tenant isolation with row-level security; a self-hosted installation serves one workshop
 - Self-hostable via Docker Compose
 
 ## Quick Start

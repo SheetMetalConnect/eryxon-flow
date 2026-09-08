@@ -5,6 +5,8 @@ project=$(sed -n 's/^project_id *= *"\([^"]*\)".*/\1/p' supabase/config.toml)
 project=${project:-$(basename "$PWD")}
 container="supabase_db_$project"
 printf 'Testing local database container: %s\n' "$container"
+# The disposable database plays the hosted role: tests create several tenants.
+docker exec -i "$container" psql -X -U postgres -d postgres -q -c "SELECT vault.create_secret('true','hosted_mode') WHERE NOT EXISTS (SELECT 1 FROM vault.secrets WHERE name='hosted_mode')" >/dev/null
 test_log=$(mktemp)
 trap 'rm -f "$test_log"' EXIT
 for test_file in supabase/tests/*.sql; do

@@ -2,6 +2,36 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.10.1] — 2026-09-08
+
+### Changed
+
+- A self-hosted installation now serves one workshop, as the licence describes.
+  The first sign-up creates the workshop with no trial and no quotas (plan
+  `enterprise`); the database refuses a second workshop and the sign-in page hides
+  registration once one exists. The hosted service marks itself with the vault
+  secret `hosted_mode` and keeps plans, trials and quotas.
+- Removed every mention of a Premium edition from the app, README, licence notes
+  and website; the commercial licence applies to multi-site use and offering the
+  app as a service. Real customer names in design-kit demo data were replaced, and
+  the archived pre-consolidation migrations and QA screenshots left the tree.
+- Removed the OpenTrace tooling, the Makefile and one-off bootstrap scripts;
+  `npm run deploy:hosted` rolls out migrations, Edge Functions and the Vercel
+  frontend in order from the repository root.
+
+### Fixed
+
+- `dispatch_webhook` is no longer executable by anonymous or authenticated API
+  clients; only the database triggers and the service role can emit signed events.
+- MCP batch completion starts unstarted operations before finishing them, keeps
+  completion notes, and reports how far a batch got on failure.
+
+### Upgrade notes
+
+- Apply `20260908110000` before deploying this frontend. On the hosted project run
+  `SELECT vault.create_secret('true', 'hosted_mode');` first; self-hosted
+  installations need nothing and keep their existing workshop.
+
 ## [0.10.0] — 2026-09-07
 
 Eryxon Flow 0.10.0 is a hardening release. Operators get one responsive interface
@@ -109,10 +139,6 @@ moved into Community.
   vault secret, and Edge Functions without `INTERNAL_SERVICE_SECRET` fall back to
   the service-role key instead of silently dropping events. Dashboard and
   booked-hours views name the verified employee instead of the terminal account.
-- `dispatch_webhook` is no longer executable by anonymous or authenticated API
-  clients; only the database triggers and the service role can emit signed events.
-  The MCP batch completion starts unstarted operations before finishing them,
-  keeps completion notes, and reports how far a batch got on failure.
 - API query modifiers no longer execute the Supabase query before applying filters.
   Bulk synchronization reports failed writes, CRUD endpoints restrict writable
   fields and validate tenant references, and internal events require authentication.

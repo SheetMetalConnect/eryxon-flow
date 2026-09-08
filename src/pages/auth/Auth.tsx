@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
@@ -43,6 +44,16 @@ export default function Auth() {
     if (!redirectTarget) return;
     navigate(redirectTarget, { replace: true });
   }, [navigate, redirectTarget]);
+
+  const [acceptsSignups, setAcceptsSignups] = useState(true);
+  useEffect(() => {
+    supabase.rpc("instance_accepts_signups").then(({ data }) => {
+      if (data === false) {
+        setAcceptsSignups(false);
+        setIsLogin(true);
+      }
+    });
+  }, []);
 
   if (redirectTarget) return null;
 
@@ -255,7 +266,7 @@ export default function Auth() {
           </Button>
         </div>
 
-        <div className="pt-2 text-center">
+        {acceptsSignups ? <div className="pt-2 text-center">
           <button
             type="button"
             onClick={() => {
@@ -267,7 +278,7 @@ export default function Auth() {
           >
             {isLogin ? t("auth.noAccount") : t("auth.haveAccount")}
           </button>
-        </div>
+        </div> : <p className="pt-2 text-center text-sm text-muted-foreground">{t("auth.singleWorkshop")}</p>}
       </form>
 
       {isLogin && (

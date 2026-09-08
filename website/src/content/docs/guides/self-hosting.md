@@ -8,12 +8,20 @@ same interface; installing it as a PWA is optional.
 
 > **Licensing.** Self-hosting runs the free **Community** edition, source-available under the Business Source License 1.1. The source is on GitHub — read it, modify it, self-host it. Free production use covers a **single production site** (one facility or workshop) for your own internal operations, and the software is provided **AS IS**. Multi-site use, or offering the app as a service, needs a commercial licence — see [Editions & Pricing](/pricing/). Each released version converts to its Change License, GNU GPL v2.0 or later, four years after release.
 
+## One workshop per installation
+
+A self-hosted installation serves a single workshop. The first account that signs up
+creates the workshop and becomes its admin; everyone else joins through an invitation
+from that admin. The database refuses a second workshop, and the sign-in page hides
+registration once the workshop exists. The workshop has no trial and no usage quotas.
+The hosted service at app.eryxon.eu runs many workshops with plans and trials; that
+behaviour is switched on there with a vault secret and is off everywhere else.
+
 ## Before deploying
 
 You need a Supabase backend with Auth, PostgreSQL, Storage, Realtime, and Edge
 Functions, plus a host for the frontend. The frontend Docker image does not contain
-the Supabase stack. For source builds, use Node 22 and repository access; the source
-repository is private.
+the Supabase stack. For source builds, use Node 22.
 
 Use a reviewed release and its matching schema and functions. Maintainers should
 follow [RELEASING.md](https://github.com/SheetMetalConnect/eryxon-flow/blob/main/RELEASING.md)
