@@ -1057,35 +1057,45 @@ const batchCompleteOperations: ToolHandler = async (args, supabase) => {
 
     const { data: targets, error: targetError } = await supabase
       .from("operations")
-      .select("id, tenant_id, operation_name")
+      .select("id, tenant_id, operation_name, status")
       .in("id", operationIds);
     if (targetError) throw targetError;
 
+    // Each transition is its own transaction; a failure reports how far the batch got.
     const completed: { id: string; operation_name: string }[] = [];
     for (const target of targets ?? []) {
-      const { error: transitionError } = await supabase.rpc("transition_operation", {
-        p_tenant_id: target.tenant_id,
-        p_operation_id: target.id,
-        p_action: "finish",
-        p_notes: notes ?? null,
-      });
-      if (transitionError) throw transitionError;
+      const actions = target.status === "not_started" ? ["start", "finish"] : ["finish"];
+      for (const action of actions) {
+        const { error: transitionError } = await supabase.rpc("transition_operation", {
+          p_tenant_id: target.tenant_id,
+          p_operation_id: target.id,
+          p_action: action,
+        });
+        if (transitionError) {
+          throw new Error(
+            `${target.operation_name}: ${transitionError.message} (${completed.length} of ${targets?.length ?? 0} operations completed)`,
+          );
+        }
+      }
       completed.push({ id: target.id, operation_name: target.operation_name });
     }
-    if (completion_percentage != null && completion_percentage !== 100) {
-      const { error: percentageError } = await supabase
+    const patch: Record<string, unknown> = {};
+    if (notes) patch.notes = notes;
+    if (completion_percentage != null && completion_percentage !== 100) patch.completion_percentage = completion_percentage;
+    if (completed.length > 0 && Object.keys(patch).length > 0) {
+      const { error: patchError } = await supabase
         .from("operations")
-        .update({ completion_percentage })
+        .update(patch)
         .in("id", completed.map((operation) => operation.id));
-      if (percentageError) throw percentageError;
+      if (patchError) throw patchError;
     }
 
     return structuredResponse(
       {
-        completed: completed?.length || 0,
+        completed: completed.length,
         operations: completed,
       },
-      `Completed ${completed?.length || 0} operations`,
+      `Completed ${completed.length} operations`,
     );
   } catch (error) {
     return errorResponse(error);

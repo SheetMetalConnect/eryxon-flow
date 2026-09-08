@@ -42,6 +42,7 @@ SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000
 SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000001'',''resume'',auth.uid())',current_setting('test.tenant')),'22023');
 SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000002'',''pause'',auth.uid())',current_setting('test.tenant')),'22023');
 SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000002'',''complete'',auth.uid())',current_setting('test.tenant')),'22023');
+SELECT pg_temp.expect_error(format('SELECT dispatch_webhook(%L::uuid,''forged.event'',''{}''::jsonb)',current_setting('test.tenant')),'42501');
 SELECT pg_temp.assert_true((SELECT status='in_progress' AND current_cell_id='d2000000-0000-0000-0000-000000000001' FROM jobs WHERE id='d3000000-0000-0000-0000-000000000001'),'start propagates job state and location');
 SELECT set_config('test.timer',(SELECT id::text FROM time_entries WHERE operator_id=auth.uid() AND end_time IS NULL),true);
 SELECT time_entry_action(current_setting('test.tenant')::uuid,current_setting('test.timer')::uuid,'pause');

@@ -109,6 +109,10 @@ moved into Community.
   vault secret, and Edge Functions without `INTERNAL_SERVICE_SECRET` fall back to
   the service-role key instead of silently dropping events. Dashboard and
   booked-hours views name the verified employee instead of the terminal account.
+- `dispatch_webhook` is no longer executable by anonymous or authenticated API
+  clients; only the database triggers and the service role can emit signed events.
+  The MCP batch completion starts unstarted operations before finishing them,
+  keeps completion notes, and reports how far a batch got on failure.
 - API query modifiers no longer execute the Supabase query before applying filters.
   Bulk synchronization reports failed writes, CRUD endpoints restrict writable
   fields and validate tenant references, and internal events require authentication.
