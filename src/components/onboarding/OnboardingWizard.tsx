@@ -15,7 +15,6 @@ import AnimatedBackground from '@/components/AnimatedBackground';
 import { logger } from '@/lib/logger';
 
 const STEP_ICONS = [Users, CreditCard, Database, Rocket];
-type TenantPlan = Exclude<PlanType, 'self_hosted'>;
 
 export function OnboardingWizard() {
   const navigate = useNavigate();
@@ -85,28 +84,6 @@ export function OnboardingWizard() {
 
   const handlePlanSelect = async (plan: PlanType) => {
     setSelectedPlan(plan);
-
-    // Update tenant plan (not profile)
-    if (profile?.tenant_id) {
-      try {
-        const tenantPlan: TenantPlan = plan === 'self_hosted' ? 'enterprise' : plan;
-        const { error: tenantError } = await supabase
-          .from('tenants')
-          .update({ plan: tenantPlan })
-          .eq('id', profile.tenant_id);
-
-        if (tenantError) {
-          logger.error('OnboardingWizard', 'Error updating tenant plan', tenantError);
-          toast.error(t('onboarding.planUpdateFailed'));
-          return;
-        }
-      } catch (error) {
-        logger.error('OnboardingWizard', 'Error updating tenant plan', error);
-        toast.error(t('onboarding.planUpdateFailed'));
-        return;
-      }
-    }
-
     await updateOnboardingProgress(3);
     setCurrentStep(3);
   };

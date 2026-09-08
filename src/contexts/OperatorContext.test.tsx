@@ -75,7 +75,7 @@ describe("OperatorContext", () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     expect(result.current.activeOperator).toBeNull();
-    expect(mockRpc).toHaveBeenCalledWith("clear_operator_session");
+    expect(mockRpc).not.toHaveBeenCalledWith("clear_operator_session");
     expect(result.current.resumeOperator).toEqual({
       id: "operator-1",
       employee_id: "EMP001",

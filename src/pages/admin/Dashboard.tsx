@@ -55,6 +55,7 @@ interface ActiveWork {
   operator: {
     full_name: string;
   };
+  shop_floor_operator: { full_name: string } | null;
   operation: {
     operation_name: string;
     part: {
@@ -153,6 +154,7 @@ export default function Dashboard() {
           id,
           start_time,
           operator:profiles!inner(full_name),
+          shop_floor_operator:operators(full_name),
           operation:operations!inner(
             operation_name,
             part:parts!inner(
@@ -430,7 +432,7 @@ export default function Dashboard() {
     try {
       await adminStopTimeTracking(selectedWork.id);
       toast.success(t("dashboard.clockingStopped"), { description: t("dashboard.clockingStoppedDescription", {
-          operator: selectedWork.operator.full_name,
+          operator: (selectedWork.shop_floor_operator ?? selectedWork.operator).full_name,
           operation: selectedWork.operation.operation_name,
         }) });
       setStopDialogOpen(false);
@@ -697,7 +699,7 @@ export default function Dashboard() {
                       onClick={() => handleRowClick(work)}
                     >
                       <TableCell className="font-medium">
-                        {work.operator.full_name}
+                        {(work.shop_floor_operator ?? work.operator).full_name}
                       </TableCell>
                       <TableCell>{work.operation.operation_name}</TableCell>
                       <TableCell>
@@ -745,7 +747,7 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">{t("dashboard.operator")}</p>
                   <p className="font-medium flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    {selectedWork.operator.full_name}
+                    {(selectedWork.shop_floor_operator ?? selectedWork.operator).full_name}
                   </p>
                 </div>
                 <div>

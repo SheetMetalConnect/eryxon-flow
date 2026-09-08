@@ -454,7 +454,7 @@ export async function startTimeTracking(
   if (error) throw error;
   if (!data || typeof data !== "object" || Array.isArray(data)
       || data.changed !== true || data.previous_status !== "not_started") return;
-  await dispatchCommittedOperation(operationId, tenantId, operatorId, "start",
+  void dispatchCommittedOperation(operationId, tenantId, operatorId, "start",
     typeof data.operator_name === "string" ? data.operator_name : undefined);
 }
 
@@ -467,7 +467,7 @@ export async function completeOperation(operationId: string, tenantId: string, o
   });
   if (error) throw error;
   if (data && typeof data === "object" && !Array.isArray(data) && data.changed === false) return;
-  await dispatchCommittedOperation(operationId, tenantId, operatorId, "complete",
+  void dispatchCommittedOperation(operationId, tenantId, operatorId, "complete",
     data && typeof data === "object" && !Array.isArray(data) && typeof data.operator_name === "string" ? data.operator_name : undefined);
 }
 

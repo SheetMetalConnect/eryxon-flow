@@ -2,9 +2,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { constantTimeCompare } from "./security.ts";
 import { getRuntimeEnv } from "./runtime-env.ts";
 
+function serviceRoleKey(): string {
+  return getRuntimeEnv("SUPABASE_SERVICE_ROLE_KEY") ?? getRuntimeEnv("SUPABASE_SERVICE_KEY") ?? "";
+}
+
+// Deployments without INTERNAL_SERVICE_SECRET fall back to the service-role key.
 export function internalEventHeaders(requestId?: string): Record<string, string> {
-  const secret = getRuntimeEnv("INTERNAL_SERVICE_SECRET");
-  if (!secret) throw new Error("INTERNAL_SERVICE_SECRET is required for internal event dispatch");
+  const secret = getRuntimeEnv("INTERNAL_SERVICE_SECRET") || serviceRoleKey();
+  if (!secret) throw new Error("INTERNAL_SERVICE_SECRET or the service-role key is required for internal event dispatch");
   return {
     "Content-Type": "application/json",
     Authorization: `Bearer ${secret}`,
@@ -22,6 +27,8 @@ export async function authorizeEventRequest(
   if (!token || !tenantId) return false;
   const internalSecret = getRuntimeEnv("INTERNAL_SERVICE_SECRET");
   if (internalSecret && constantTimeCompare(token, internalSecret)) return true;
+  const serviceKey = serviceRoleKey();
+  if (serviceKey && constantTimeCompare(token, serviceKey)) return true;
 
   const { data: { user }, error } = await supabase.auth.getUser(token);
   if (error || !user) return false;

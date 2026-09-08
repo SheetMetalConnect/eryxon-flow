@@ -88,8 +88,7 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
 
   // Restore only non-authorizing operator metadata after reload.
   useEffect(() => {
-    if (tenant?.id) revokeServerSession();
-    else sessionRevisionRef.current += 1;
+    sessionRevisionRef.current += 1;
     if (tenant?.id === undefined) {
       const resetTimeout = window.setTimeout(() => {
         setActiveOperator(null);
@@ -136,11 +135,10 @@ export function OperatorProvider({ children }: { children: React.ReactNode }) {
     }, 0);
 
     return () => clearTimeout(loadTimeout);
-  }, [tenant?.id, revokeServerSession]);
+  }, [tenant?.id]);
 
   useEffect(() => {
-    if (profileId) revokeServerSession();
-    else sessionRevisionRef.current += 1;
+    sessionRevisionRef.current += 1;
     if (!profileId) {
       const clearTimeoutId = window.setTimeout(() => {
         setActiveOperator(null);

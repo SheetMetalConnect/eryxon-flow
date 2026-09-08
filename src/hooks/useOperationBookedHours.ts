@@ -49,6 +49,7 @@ interface TimeEntryRow {
   start_time: string;
   end_time: string | null;
   operator?: { full_name: string | null } | { full_name: string | null }[] | null;
+  shop_floor_operator?: { full_name: string | null } | { full_name: string | null }[] | null;
 }
 
 const EMPTY_PLAN: PlannedVsBooked = {
@@ -77,7 +78,7 @@ export function useOperationBookedHours(
       const { data: rows, error } = await supabase
         .from("time_entries")
         .select(
-          "id, operation_id, operator_id, duration, start_time, end_time, operator:profiles!time_entries_operator_id_fkey(full_name)",
+          "id, operation_id, operator_id, duration, start_time, end_time, operator:profiles!time_entries_operator_id_fkey(full_name), shop_floor_operator:operators!time_entries_shop_floor_operator_id_fkey(full_name)",
         )
         .eq("operation_id", operationId)
         .order("start_time", { ascending: false });
@@ -119,7 +120,8 @@ export function useOperationBookedHours(
 
       const baseEntries: BookedTimeEntry[] = [];
       const entries = ((rows ?? []) as TimeEntryRow[]).map((row) => {
-        const operator = Array.isArray(row.operator) ? row.operator[0] : row.operator;
+        const one = <T,>(value: T | T[] | null | undefined) => (Array.isArray(value) ? value[0] : value);
+        const operator = one(row.shop_floor_operator) ?? one(row.operator);
         const entry: BookedTimeEntry = {
           operation_id: row.operation_id,
           duration: row.duration,
