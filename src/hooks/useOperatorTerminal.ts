@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useOperator } from "@/contexts/OperatorContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,10 +17,11 @@ import {
   completeOperation,
   type OperationWithDetails,
   type OperationBatchContext,
-} from "@/lib/database";
+} from "@/lib/db";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
+import { productionErrorMessage } from "@/lib/errors";
 import { TerminalJob } from "@/types/terminal";
 import {
   buildOperationScanLabel,
@@ -38,6 +39,7 @@ import {
   type OperatorTerminalSchedule,
   type OperatorTerminalWorkModeSettings,
 } from "@/features/operator-terminal/workModes";
+import { getSequentialReleaseSetting, isReleased } from "@/features/operator-terminal/release";
 
 interface Cell {
   id: string;
@@ -159,6 +161,7 @@ export function useOperatorTerminal() {
   const [producedByOperation, setProducedByOperation] = useState<Map<string, number>>(
     new Map(),
   );
+  const [locationByPart, setLocationByPart] = useState<Map<string, string>>(new Map());
 
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [stepUrl, setStepUrl] = useState<string | null>(null);
@@ -168,6 +171,7 @@ export function useOperatorTerminal() {
     DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
   );
   const [workModeSettingsLoaded, setWorkModeSettingsLoaded] = useState(false);
+  const [sequentialRelease, setSequentialRelease] = useState(false);
   const [workingHoursSchedule, setWorkingHoursSchedule] = useState<OperatorTerminalSchedule>({
     openingTime: null,
     closingTime: null,
@@ -215,7 +219,7 @@ export function useOperatorTerminal() {
     try {
       setLoading(true);
 
-      const [opsData, cellsData, tenantData, quantitiesData] = await Promise.all([
+      const [opsData, cellsData, tenantData, quantitiesData, placementsData, slotsData] = await Promise.all([
         fetchOperationLookupDetails(profile.tenant_id),
         supabase
           .from("cells")
@@ -225,7 +229,7 @@ export function useOperatorTerminal() {
           .order("sequence"),
         supabase
           .from("tenants")
-          .select("feature_flags, factory_opening_time, factory_closing_time, timezone")
+          .select("feature_flags, factory_opening_time, factory_closing_time, timezone, location_tracking_enabled")
           .eq("id", profile.tenant_id)
           .single(),
         // Good parts reported per operation — summed client-side to avoid a
@@ -234,7 +238,28 @@ export function useOperatorTerminal() {
           .from("operation_quantities")
           .select("operation_id, quantity_good")
           .eq("tenant_id", profile.tenant_id),
+        supabase
+          .from("part_placements")
+          .select("part_id, location_id")
+          .eq("tenant_id", profile.tenant_id)
+          .is("removed_at", null),
+        supabase
+          .from("storage_locations")
+          .select("id, code")
+          .eq("tenant_id", profile.tenant_id),
       ]);
+
+      const slotCode = new Map((slotsData.data ?? []).map((slot) => [slot.id, slot.code]));
+      setLocationByPart(
+        tenantData.data?.location_tracking_enabled
+          ? new Map(
+              (placementsData.data ?? []).flatMap((row) => {
+                const code = slotCode.get(row.location_id);
+                return code ? [[row.part_id, code] as const] : [];
+              }),
+            )
+          : new Map(),
+      );
 
       const producedMap = new Map<string, number>();
       for (const row of quantitiesData.data ?? []) {
@@ -255,6 +280,7 @@ export function useOperatorTerminal() {
         tenantData.data?.feature_flags,
       );
       setWorkModeSettings(tenantSettings);
+      setSequentialRelease(getSequentialReleaseSetting(tenantData.data?.feature_flags));
       setWorkingHoursSchedule({
         openingTime: tenantData.data?.factory_opening_time ?? null,
         closingTime: tenantData.data?.factory_closing_time ?? null,
@@ -292,6 +318,16 @@ export function useOperatorTerminal() {
           event: "*",
           schema: "public",
           table: "time_entries",
+          filter: `tenant_id=eq.${profile.tenant_id}`,
+        },
+        () => void loadData(),
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "part_placements",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
         () => void loadData(),
@@ -407,11 +443,10 @@ export function useOperatorTerminal() {
           return lp.endsWith(".step") || lp.endsWith(".stp");
         }) || false;
 
-      let status: TerminalJob["status"] = "expected";
+      const released = isReleased(op, lookupOperations);
+      let status: TerminalJob["status"] = released ? "in_buffer" : "expected";
       if (op.status === "in_progress") status = "in_progress";
       else if (op.status === "on_hold") status = "on_hold";
-      else if (op.status === "not_started") status = "in_buffer";
-      else if (op.status === "completed") status = "expected";
 
       // A clocked-on operation reads as in progress — unless it's parked under a
       // Yellow Card (on_hold), which must win so the standstill stays visible.
@@ -447,6 +482,8 @@ export function useOperatorTerminal() {
           ? op.part.job.due_date
           : new Date().toISOString(),
         status,
+        released,
+        startBlocked: sequentialRelease && !released,
         hasPdf,
         hasModel,
         filePaths: Array.isArray(op.part.file_paths) ? op.part.file_paths : [],
@@ -468,6 +505,7 @@ export function useOperatorTerminal() {
         cncProgramName: typeof op.part.cnc_program_name === "string" ? op.part.cnc_program_name : null,
         isBulletCard: Boolean(op.part.is_bullet_card),
         plannedStart: typeof op.planned_start === "string" ? op.planned_start : null,
+        locationCode: locationByPart.get(op.part.id) ?? null,
         batchContext: op.batch_context
           ? {
               batchId: op.batch_context.batch_id,
@@ -480,7 +518,7 @@ export function useOperatorTerminal() {
           : null,
       };
     },
-    [operatorId, selectedTerminalMode, workModeSettings, workingHoursActive, producedByOperation],
+    [operatorId, selectedTerminalMode, workModeSettings, workingHoursActive, producedByOperation, lookupOperations, sequentialRelease, locationByPart],
   );
 
   const allJobs = useMemo(
@@ -502,15 +540,8 @@ export function useOperatorTerminal() {
     // Parked Yellow Card (on_hold) operations stay visible at the cell, not lost.
     .filter((job) => job.status === "in_progress" || job.status === "on_hold")
     .sort(bulletFirst);
-  const notStartedJobs = filteredJobs
-    .filter((job) => job.status === "in_buffer" || job.status === "expected")
-    .sort(bulletFirst);
-  const inBufferJobs = notStartedJobs
-    .slice(0, 5)
-    .map((job) => ({ ...job, status: "in_buffer" as const }));
-  const expectedJobs = notStartedJobs
-    .slice(5)
-    .map((job) => ({ ...job, status: "expected" as const }));
+  const inBufferJobs = filteredJobs.filter((job) => job.status === "in_buffer").sort(bulletFirst);
+  const expectedJobs = filteredJobs.filter((job) => job.status === "expected").sort(bulletFirst);
 
   const selectedJob = allJobs.find((job) => job.id === selectedJobId) || null;
 
@@ -682,8 +713,10 @@ export function useOperatorTerminal() {
   }, [selectedJob, processCAD, t]);
 
   /* ── Actions ── */
+  const actionInFlight = useRef(false);
   const handleStart = async () => {
-    if (!selectedJob || !operatorId || !profile?.tenant_id) return;
+    if (!selectedJob || !operatorId || !profile?.tenant_id || actionInFlight.current) return;
+    actionInFlight.current = true;
     try {
       if (selectedBatchPrompt && !selectedBatchPrompt.mode) {
         toast.error(t("terminal.batchFlow.chooseMode"));
@@ -723,6 +756,11 @@ export function useOperatorTerminal() {
         return;
       }
 
+      if (selectedJob.startBlocked) {
+        toast.error(t("production.errors.notReleased"));
+        return;
+      }
+
       if (selectedJob.modeSummary?.readiness === "blocked_setup") {
         toast.error(t("terminal.workModes.errors.setupRequired"));
         return;
@@ -733,6 +771,12 @@ export function useOperatorTerminal() {
         return;
       }
 
+      // One operator, one running timer: switch instead of failing with the
+      // database's "stop active work" error.
+      const clockedElsewhere = allJobs.find(
+        (job) => job.isCurrentUserClocked && job.operationId !== selectedJob.operationId,
+      );
+      if (clockedElsewhere) await stopTimeTracking(clockedElsewhere.operationId, operatorId);
       await startTimeTracking(
         selectedJob.operationId,
         operatorId,
@@ -741,11 +785,15 @@ export function useOperatorTerminal() {
           ? buildOperatorTerminalModeNote(currentTerminalMode)
           : undefined,
       );
-      toast.success(t("notifications.success"));
-    } catch (error: unknown) {
-      toast.error(
-        error instanceof Error ? error.message : t("notifications.failed"),
+      toast.success(
+        clockedElsewhere
+          ? t("production.switchedFrom", { operation: `${clockedElsewhere.jobCode} ${clockedElsewhere.currentOp}` })
+          : t("notifications.success"),
       );
+    } catch (error: unknown) {
+      toast.error(productionErrorMessage(error, t));
+    } finally {
+      actionInFlight.current = false;
     }
   };
 
@@ -772,7 +820,7 @@ export function useOperatorTerminal() {
       toast.success(t("production.operationPaused"));
     } catch (error: unknown) {
       toast.error(
-        error instanceof Error ? error.message : t("notifications.failed"),
+        productionErrorMessage(error, t),
       );
     }
   };
@@ -795,7 +843,7 @@ export function useOperatorTerminal() {
       setSelectedJobId(null);
     } catch (error: unknown) {
       toast.error(
-        error instanceof Error ? error.message : t("notifications.failed"),
+        productionErrorMessage(error, t),
       );
     }
   };

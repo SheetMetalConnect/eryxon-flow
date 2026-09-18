@@ -75,7 +75,7 @@ export function BatchVisuals({ batch }: BatchVisualsProps) {
             <Button variant="ghost" size="sm" asChild disabled={uploadingImage}>
               <span>
                 <Upload className="h-4 w-4 mr-1" />
-                {uploadingImage ? "..." : t("Add")}
+                {uploadingImage ? "..." : t("batches.add")}
               </span>
             </Button>
           </Label>
@@ -105,7 +105,7 @@ export function BatchVisuals({ batch }: BatchVisualsProps) {
         ) : (
           <div className="flex flex-col items-center justify-center p-8 border rounded-md border-dashed text-muted-foreground gap-2">
             <ImageIcon className="h-8 w-8 opacity-50" />
-            <p className="text-sm">{t("No nesting image available")}</p>
+            <p className="text-sm">{t("batches.noNestingImage")}</p>
           </div>
         )}
       </CardContent>

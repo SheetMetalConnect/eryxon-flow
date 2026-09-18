@@ -13,7 +13,6 @@
     "stages": "Fertigungsstufen",
     "apiKeys": "API-Schlüssel",
     "webhooks": "Webhooks",
-    "apiDocs": "API-Dokumentation",
     "myActivity": "Meine Aktivität",
     "myIssues": "Meine Probleme",
     "jobsManagement": "Auftragsverwaltung",
@@ -42,10 +41,6 @@
     "capacity": "Kapazität",
     "cells": "Zellen",
     "calendar": "Kalender",
-    "mcpSetup": "MCP-Einrichtung",
-    "mcpKeys": "MCP-Schlüssel",
-    "mcpServer": "MCP-Server",
-    "mqttPublishers": "MQTT-Publisher",
     "dataImport": "Datenimport",
     "backToAdmin": "Zurück zur Admin",
     "operatorViews": "Bedieneransichten",
@@ -53,6 +48,8 @@
       "overview": "ÜBERSICHT",
       "operations": "ARBEITSGÄNGE",
       "data": "DATEN"
-    }
+    },
+    "mcp": "MCP-Server",
+    "apiReference": "API-Referenz"
   }
 }

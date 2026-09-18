@@ -20,6 +20,7 @@ test.env
 
 # Tool state
 supabase/.temp/
+.mcp.json
 supabase/.branches/
 .vercel
 .claude/settings.local.json

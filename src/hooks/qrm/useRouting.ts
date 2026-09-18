@@ -1,11 +1,3 @@
-/**
- * Routing Hooks
- *
- * Provides routing visualization for parts and jobs.
- * Shows the flow of operations through cells.
- *
- * SRP: Only handles routing-related functionality
- */
 
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,10 +13,6 @@ function unwrap<T>(value: T | T[] | null | undefined): T | null {
   return value;
 }
 
-/**
- * Shared type for cell routing data
- * cell_name is nullable to let UI/localization layer render translated fallback
- */
 interface CellRoutingData {
   cell_id: string;
   cell_name: string | null;
@@ -34,10 +22,6 @@ interface CellRoutingData {
   completed_operations: number;
 }
 
-/**
- * Helper to group operations by cell
- * Returns null for missing cell names - UI should provide localized fallback
- */
 function groupOperationsByCell(
   operations: Array<{
     cell_id: string;
@@ -74,13 +58,6 @@ function groupOperationsByCell(
   return Array.from(cellMap.values()).sort((a, b) => a.sequence - b.sequence);
 }
 
-/**
- * Hook to fetch part routing
- *
- * @param partId - The part ID to fetch routing for
- * @param tenantId - Tenant ID for RLS filtering and realtime subscription scope
- * @returns Routing data, loading state, error, and refetch function
- */
 export function usePartRouting(
   partId: string | null,
   tenantId: string | null
@@ -91,7 +68,6 @@ export function usePartRouting(
 
   const fetchRouting = useCallback(async () => {
     if (!partId) {
-      // Only update state if routing is not already empty to prevent re-render loops
       setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
@@ -125,11 +101,7 @@ export function usePartRouting(
       setRouting(routingData);
     } catch (err) {
       setError(err as Error);
-      logger.error("Failed to fetch part routing", err, {
-        operation: "usePartRouting",
-        entityType: "part",
-        entityId: partId,
-      });
+      logger.error("usePartRouting", "Failed to fetch part routing", err);
     } finally {
       setLoading(false);
     }
@@ -139,14 +111,12 @@ export function usePartRouting(
 
   useEffect(() => {
     if (!partId) {
-      // Only update state if routing is not already empty to prevent re-render loops
       setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
     fetchRouting();
 
-    // Use tenant_id filter for RLS compliance; client-side filter by part_id
     if (tenantId) {
       const channel = supabase
         .channel(`part-routing-${partId}`)
@@ -159,7 +129,6 @@ export function usePartRouting(
             filter: `tenant_id=eq.${tenantId}`,
           },
           (payload: RealtimePostgresChangesPayload<{ part_id?: string }>) => {
-            // Client-side filter: only refetch if event matches our part
             const record = payload.new as { part_id?: string } | undefined;
             const oldRecord = payload.old as { part_id?: string } | undefined;
             if (record?.part_id === partId || oldRecord?.part_id === partId) {
@@ -169,10 +138,7 @@ export function usePartRouting(
         )
         .subscribe((status) => {
           if (status === "CHANNEL_ERROR") {
-            logger.error("Realtime subscription error", undefined, {
-              operation: "usePartRouting",
-              channelName: `part-routing-${partId}`,
-            });
+            logger.error("usePartRouting", `Realtime subscription error on part-routing-${partId}`);
           }
         });
 
@@ -185,13 +151,6 @@ export function usePartRouting(
   return { routing, loading, error, refetch: fetchRouting };
 }
 
-/**
- * Hook to fetch job routing
- *
- * @param jobId - The job ID to fetch routing for
- * @param tenantId - Tenant ID for RLS filtering (required)
- * @returns Routing data, loading state, error, and refetch function
- */
 export function useJobRouting(jobId: string | null, tenantId: string | null) {
   const [routing, setRouting] = useState<JobRouting>([]);
   const [loading, setLoading] = useState(false);
@@ -199,7 +158,6 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
   const fetchRouting = useCallback(async () => {
     if (!jobId || !tenantId) {
-      // Only update state if routing is not already empty to prevent re-render loops
       setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
@@ -241,12 +199,7 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
       setRouting(routingData);
     } catch (err) {
       setError(err as Error);
-      logger.error("Failed to fetch job routing", err, {
-        operation: "useJobRouting",
-        entityType: "job",
-        entityId: jobId,
-        tenantId,
-      });
+      logger.error("useJobRouting", "Failed to fetch job routing", err);
     } finally {
       setLoading(false);
     }
@@ -256,14 +209,12 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
 
   useEffect(() => {
     if (!jobId || !tenantId) {
-      // Only update state if routing is not already empty to prevent re-render loops
       setRouting(prev => prev.length === 0 ? prev : []);
       return;
     }
 
     fetchRouting();
 
-    // Filter by tenant_id for RLS compliance
     const channel = supabase
       .channel(`job-routing-${jobId}`)
       .on(
@@ -280,10 +231,7 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
       )
       .subscribe((status) => {
         if (status === "CHANNEL_ERROR") {
-          logger.error("Realtime subscription error", undefined, {
-            operation: "useJobRouting",
-            channelName: `job-routing-${jobId}`,
-          });
+          logger.error("useJobRouting", `Realtime subscription error on job-routing-${jobId}`);
         }
       });
 
@@ -295,14 +243,6 @@ export function useJobRouting(jobId: string | null, tenantId: string | null) {
   return { routing, loading, error, refetch: fetchRouting };
 }
 
-/**
- * Hook to fetch routing for multiple jobs efficiently
- * Note: This hook does not use realtime subscriptions to avoid excessive updates
- *
- * @param jobIds - Array of job IDs to fetch routing for
- * @param tenantId - Tenant ID for RLS filtering (required)
- * @returns Map of routing by job ID
- */
 export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null) {
   const [routings, setRoutings] = useState<Record<string, JobRouting>>({});
   const [loading, setLoading] = useState(false);
@@ -389,12 +329,7 @@ export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null
       setRoutings(result);
     } catch (err) {
       setError(err as Error);
-      logger.error("Failed to fetch multiple jobs routing", err, {
-        operation: "useMultipleJobsRouting",
-        entityType: "job",
-        jobCount: jobIds.length,
-        tenantId,
-      });
+      logger.error("useMultipleJobsRouting", "Failed to fetch multiple jobs routing", err);
     } finally {
       setLoading(false);
     }

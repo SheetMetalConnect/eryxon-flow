@@ -30,7 +30,7 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
 
 - **Operators** get a touch-friendly work queue: pull work by stage, log time, view STEP and PDF files, and report issues from the floor.
 - **Admins** get real-time visibility: who is working on what, issue approvals, due-date overrides, and stage/material configuration.
-- **Technical evaluators** get an API-first system: 24 REST endpoints, webhooks, MQTT, an MCP server, and pluggable planning adapters (FrePPLe, Odoo). It self-hosts on Supabase.
+- **Technical evaluators** get an API- and MCP-native system. The UI, the REST API and the MCP server call the same Postgres functions and row-level security rules, and every change fires the same signed webhooks. An MCP client such as Claude can plan, release, start, report and query production with the guards an operator has. It self-hosts on Supabase.
 
 ## What It Does
 
@@ -94,7 +94,7 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via 24 [REST API](/architecture/connectivity-rest-api) endpoints (Beta). Eryxon sends completion events back via [webhooks (Beta) or MQTT (Beta)](/architecture/connectivity-mqtt) — the MQTT client adds retry, circuit breaker, and dead-letter logging. The [MCP server](/guides/mcp-setup) (Live) enables AI/automation integration with Claude Desktop and other AI tools, with stdio for local clients and Streamable HTTP for trusted self-hosted deployments.
+**100% API-driven.** Your ERP pushes jobs, parts, and tasks via the [REST API](/api/rest-api-reference/). Eryxon sends completion events back via [signed webhooks](/architecture/connectivity-webhooks). The [MCP server](/guides/mcp-setup) (Live) enables AI/automation integration with Claude Desktop and other AI tools, with stdio for local clients and Streamable HTTP for trusted self-hosted deployments.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.
@@ -103,7 +103,7 @@ Request a signed upload URL from the API, upload STEP and PDF files directly to 
 Include JSON payloads on jobs, parts, and tasks for your specific needs—tooling requirements, mold numbers, machine settings, material specifications, anything your shop needs to track.
 
 ### ERP & Planning Integrations
-Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems. Or build your own using our GitHub starter kits with example code and documentation. Eryxon Flow also ships pluggable **Beta** planning adapters for **FrePPLe** and **Odoo MRP** — see the [scheduling feature page](/features/scheduling/) for status details.
+Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems, or build your own against the [REST API](/api/rest-api-reference/) and [payload reference](/api/payload-reference/). See [ERP Integration](/features/erp-integration/).
 
 ### Assembly Tracking
 Parts can have parent-child relationships. Visual grouping shows assemblies with nested components. Non-blocking dependency warnings remind operators when child parts should be complete before starting assembly tasks—but they can override if needed.
@@ -119,7 +119,7 @@ Operators create issues (NCRs) from active tasks with description, severity, and
 *   **No purchasing.** Tasks can be marked as external (subcontract work) and status tracked via API, but no PO management or vendor transactions.
 *   **No BOM management.** We track what to produce, not item details or inventory. Parts can have parent-child links for assembly visualization, but not multi-level BOMs that do not live in production.
 *   **Simple scheduling.** A built-in capacity-based scheduler can auto-allocate operations across cells, respecting factory calendar and working days. It's not an APS optimizer—dates can also come from your ERP, and admins can manually override due dates at any time.
-*   **No reports.** Real-time stat panels only. No built-in historical analytics—but all data accessible via [REST API](/architecture/connectivity-rest-api) or [MCP server](/guides/mcp-setup) for your own reporting and AI-powered insights.
+*   **No reports.** Real-time stat panels only. No built-in historical analytics—but all data accessible via [REST API](/api/rest-api-reference/) or [MCP server](/guides/mcp-setup) for your own reporting and AI-powered insights.
 
 ---
 
@@ -130,4 +130,4 @@ Operators create issues (NCRs) from active tasks with description, severity, and
 *   **Auth:** JWT-based with role-based access control
 *   **Files:** Supabase Storage with signed URLs
 *   **STEP Viewer:** occt-import-js for client-side STEP parsing + Three.js rendering
-*   **Integration:** [REST API](/architecture/connectivity-rest-api), [webhooks](/architecture/connectivity-mqtt), [MCP server](/guides/mcp-setup)
+*   **Integration:** [REST API](/api/rest-api-reference/), [webhooks](/architecture/connectivity-webhooks), [MCP server](/guides/mcp-setup)

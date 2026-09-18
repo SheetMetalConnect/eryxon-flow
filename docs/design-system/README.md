@@ -20,7 +20,7 @@ This system covers every Eryxon surface in one shared visual language.
 | **eryxon.eu — Marketing / docs** | Desktop | Light | [`SheetMetalConnect/eryx-site`](https://github.com/SheetMetalConnect/eryx-site) |
 | **Future Eryxon products** (connectors, UNS tools, visualisers, schedulers) | varies | follows the system | — |
 
-**Eryxon Flow** is the flagship: a Manufacturing Execution System (MES) for high-mix, low-volume job shops — sheet metal, machine shops, custom fabrication. It tracks jobs through cutting, bending, welding, assembly, finishing; runs on touch-friendly operator terminals; and includes a 3D STEP viewer, capacity planning (QRM / WIP dashboards), MQTT/UMH connectivity, and a 30+ endpoint REST API.
+**Eryxon Flow** is the flagship: a Manufacturing Execution System (MES) for high-mix, low-volume job shops — sheet metal, machine shops, custom fabrication. It tracks jobs through cutting, bending, welding, assembly, finishing; runs on touch-friendly operator terminals; and includes a 3D STEP viewer, capacity planning (QRM / WIP dashboards), webhooks, an MCP server and a 30+ endpoint REST API.
 
 > **License copy reminder.** Eryxon Flow is **source-available under the
 > Business Source License 1.1 (BSL 1.1)**. Say "source-available", "Business

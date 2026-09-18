@@ -32,7 +32,7 @@ All API endpoints use proper REST status codes:
 | **402 Payment Required** | Quota exceeded | Plan limits reached | `{"error": "Job limit exceeded (50/50)"}` |
 | **403 Forbidden** | Access denied | Tenant isolation violation | `{"error": "Access denied to this resource"}` |
 | **404 Not Found** | Resource doesn't exist | Job/part/operation ID not found | `{"error": "Job with ID xxx not found"}` |
-| **409 Conflict** | Resource conflict | Duplicate job_number, state violations | `{"error": "Job number JOB-001 already exists"}` |
+| **409 Conflict** | Resource conflict or refused transition | Duplicate job_number; a production rule refused the change (message is the rule text) | `{"error": {"code": "CONFLICT", "message": "Stop active work before starting another operation"}}` |
 | **422 Unprocessable Entity** | **Validation error** | Well-formed but invalid data | See [Validation Errors](#validation-error-format) below |
 | **429 Too Many Requests** | Rate limit exceeded | Too many API calls | `{"error": "Rate limit exceeded"}` |
 
@@ -170,8 +170,8 @@ When validation fails (422), you'll receive detailed field-level errors:
 |------|------|-------------|---------|
 | `VALIDATION_ERROR` | 422 | Field validation failed | Missing required field |
 | `UNAUTHORIZED` | 401 | Authentication failed | Invalid API key |
-| `NOT_FOUND` | 404 | Resource doesn't exist | Job ID not found |
-| `CONFLICT` | 409 | Resource conflict | Duplicate job_number |
+| `NOT_FOUND` | 404 | Resource doesn't exist in your workshop | `Operation not found` |
+| `CONFLICT` | 409 | Duplicate record or a production rule refused the transition | `Previous operation must be completed first` |
 | `QUOTA_EXCEEDED` | 402 | Plan limit reached | Job limit: 50/50 |
 | `BAD_REQUEST` | 400 | Malformed request | Invalid JSON |
 | `FORBIDDEN` | 403 | Access denied | Wrong tenant |
@@ -476,71 +476,9 @@ POST /api-operations
 
 ---
 
-## Job Lifecycle APIs
+## Job and part status
 
-**Base URL:** `/functions/v1/api-job-lifecycle`
-
-### Start Job
-```bash
-POST /api-job-lifecycle/start?id=<job-id>
-```
-
-**What it does:**
-- Changes status from `not_started` or `on_hold` → `in_progress`
-- Sets `started_at` timestamp (first time only)
-- Clears `paused_at`
-- Triggers `job.started` webhook
-
-### Stop/Pause Job
-```bash
-POST /api-job-lifecycle/stop?id=<job-id>
-```
-
-**What it does:**
-- Changes status from `in_progress` → `on_hold`
-- Sets `paused_at` timestamp
-- Triggers `job.stopped` webhook
-
-### Complete Job
-```bash
-POST /api-job-lifecycle/complete?id=<job-id>
-```
-
-**What it does:**
-- Changes status from `in_progress` → `completed`
-- Sets `completed_at` timestamp
-- Calculates and stores `actual_duration` (in minutes)
-- Triggers `job.completed` webhook
-
-### Resume Job
-```bash
-POST /api-job-lifecycle/resume?id=<job-id>
-```
-
-**What it does:**
-- Changes status from `on_hold` → `in_progress`
-- Sets `resumed_at` timestamp
-- Clears `paused_at`
-- Triggers `job.resumed` webhook
-
-**Example Response:**
-```json
-{
-  "success": true,
-  "data": {
-    "job": {
-      "id": "uuid",
-      "job_number": "JOB-2026-001",
-      "status": "in_progress",
-      "started_at": "2026-01-15T10:00:00Z",
-      "completed_at": null
-    },
-    "operation": "start",
-    "previous_status": "not_started",
-    "new_status": "in_progress"
-  }
-}
-```
+Job and part status (`not_started`, `in_progress`, `completed`) and their current cell are derived from the operations by the database (`refresh_production_job`) after every operation transition. There is no endpoint that sets them; drive the operations below and read the job back.
 
 ---
 
@@ -594,6 +532,15 @@ POST /api-operation-lifecycle/complete?id=<operation-id>
 - **Ends all active time entries**
 - Calculates final `actual_time`
 - Triggers `operation.completed` webhook
+
+**Rules** (enforced by `transition_operation`; a refusal is `409 CONFLICT` with the rule as `error.message`):
+- An operator can run one timer at a time: `Stop active work before starting another operation`.
+- An open standstill issue blocks a start: `Resolve the active standstill before restarting`.
+- With the workshop setting *Sequential release* on: `Previous operation must be completed first`.
+- `complete` requires the operation to be started and its timers stopped; `pause` needs an operation in progress; `resume` needs a paused one.
+- Unknown operation: `404 NOT_FOUND`.
+
+Every response carries `previous_status` and `new_status`; the operation object reflects the committed state.
 
 **Example Response:**
 ```json
@@ -809,183 +756,15 @@ PATCH /api-substeps?id=<substep-id>
 
 ## Webhook Events
 
-Eryxon automatically sends webhooks to registered endpoints for the following events:
+Webhooks are configured with `api-webhooks` (`name`, HTTPS `url`, `events`, `secret_key`, `active`). Events are named `<entity>.<action>` and derived in the database: `job`, `part`, `operation`, `batch`, `issue` × `created` / `updated` / `started` / `paused` / `resumed` / `completed` / `resolved` / `deleted` where applicable, plus `production.reported`, `production.deleted` and `sync.*.completed`. Every delivery carries `X-Eryxon-Event` and `X-Eryxon-Signature: t=<unix>,v1=<hmac>` (HMAC-SHA256 of `<t>.<body>` with the secret). Delivery records are readable through `api-webhook-deliveries`.
 
-### Job Events
-- `job.created` - New job created via API
-- `job.started` - Job started
-- `job.stopped` - Job paused/stopped
-- `job.resumed` - Job resumed from pause
-- `job.completed` - Job completed
-- `job.updated` - Job fields updated
-
-### Part Events
-- `part.created` - New part created
-- `part.updated` - Part fields updated
-- `part.started` - Work started on part
-- `part.completed` - Part completed
-
-### Operation Events
-- `operation.started` - Operation started (operator begins work)
-- `operation.paused` - Operation paused
-- `operation.resumed` - Operation resumed
-- `operation.completed` - Operation completed
-
-### Batch Events
-- `batch.started` - Batch started
-- `batch.completed` - Batch completed
-
-### Issue/NCR Events
-- `issue.created` - General issue created
-- `ncr.created` - NCR (Non-Conformance Report) created
-- `ncr.verified` - NCR corrective action verified
-
-### Step Events
-- `step.added` - Substep added to operation
-- `step.completed` - Substep marked as completed
-
-### Webhook Payload Example
-
-```json
-{
-  "event_type": "job.completed",
-  "timestamp": "2026-01-15T16:30:00Z",
-  "tenant_id": "uuid",
-  "data": {
-    "job_id": "uuid",
-    "job_number": "JOB-2026-001",
-    "customer": "ACME Corp",
-    "previous_status": "in_progress",
-    "new_status": "completed",
-    "started_at": "2026-01-15T10:00:00Z",
-    "completed_at": "2026-01-15T16:30:00Z",
-    "actual_duration": 390
-  }
-}
-```
-
-### Webhook Security
-
-All webhooks include HMAC-SHA256 signatures for authenticity verification:
-
-**Headers:**
-- `X-Eryxon-Signature` - HMAC-SHA256 signature of the payload
-- `X-Eryxon-Event` - Event type (e.g., `job.completed`)
-- `Content-Type: application/json`
-
-**Verification (Node.js example):**
-```javascript
-const crypto = require('crypto');
-
-function verifyWebhook(payload, signature, secret) {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = hmac.update(payload).digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(digest)
-  );
-}
-```
-
-### Managing Webhooks
-
-**Create Webhook:**
-```bash
-POST /api-webhooks
-{
-  "url": "https://your-erp.com/webhooks/eryxon",
-  "events": ["job.created", "job.completed", "ncr.created"],
-  "active": true
-}
-```
-
-**List Webhooks:**
-```bash
-GET /api-webhooks?event_type=job.completed&active=true
-```
-
-**Update Webhook:**
-```bash
-PATCH /api-webhooks?id=<webhook-id>
-{
-  "active": false
-}
-```
+The full catalogue, payload shape, signature verification and retry behaviour are on [Webhooks](/architecture/connectivity-webhooks/).
 
 ---
 
 ## MCP Server Integration
 
-The Model Context Protocol (MCP) server enables AI assistants and automation tools to interact with Eryxon Flow.
-
-### Available MCP Tools
-
-#### Fetch Operations
-- `fetch_jobs` - List jobs with filters
-- `fetch_parts` - List parts with filters
-- `fetch_tasks` - List tasks with filters
-- `fetch_issues` - List issues with filters
-- `fetch_ncrs` - List NCRs with filters
-- `get_dashboard_stats` - Get aggregated statistics
-
-#### Job Lifecycle
-- `start_job` - Start a job
-- `stop_job` - Stop/pause a job
-- `complete_job` - Complete a job
-- `resume_job` - Resume a paused job
-- `update_job` - Update job fields
-- `create_job` - Create new job
-
-#### Operation Lifecycle
-- `start_operation` - Start an operation
-- `pause_operation` - Pause an operation
-- `complete_operation` - Complete an operation
-- `update_operation` - Update operation fields
-
-#### NCR Management
-- `create_ncr` - Create Non-Conformance Report
-- `fetch_ncrs` - List NCRs with filtering
-
-#### Substep Management
-- `add_substep` - Add substep to operation
-- `complete_substep` - Mark substep as completed
-
-### MCP Server Setup
-
-```bash
-cd mcp-server
-npm install
-npm run build
-
-# Set environment variables
-export SUPABASE_URL="https://your-project.supabase.co"
-export SUPABASE_SERVICE_KEY="your-service-key"
-
-# Run the server
-npm start
-```
-
-### Example MCP Tool Usage
-
-```javascript
-// Using Claude Desktop or other MCP client
-{
-  "name": "start_job",
-  "arguments": {
-    "id": "uuid-of-job"
-  }
-}
-
-// Response
-{
-  "content": [
-    {
-      "type": "text",
-      "text": "Job started successfully:\n{\n  \"id\": \"uuid\",\n  \"status\": \"in_progress\",\n  \"started_at\": \"2026-01-15T10:00:00Z\"\n}"
-    }
-  ]
-}
-```
+The MCP server exposes the same capabilities as this API to AI agents, calling the same database functions. See the [MCP Server Reference](/api/mcp-server-reference/) for the tool list and the [MCP Server Setup Guide](/guides/mcp-setup/) for deployment.
 
 ---
 

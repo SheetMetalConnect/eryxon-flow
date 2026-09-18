@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { startBatchTimeTracking, stopBatchTimeTracking } from "@/lib/database";
+import { startBatchTimeTracking, stopBatchTimeTracking } from "@/lib/db";
 import { QueryKeys } from "@/lib/queryClient";
 
 /**

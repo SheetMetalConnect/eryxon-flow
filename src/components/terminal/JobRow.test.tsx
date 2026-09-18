@@ -8,6 +8,8 @@ vi.mock("./TerminalCellInfo", () => ({
 }));
 
 const baseJob: TerminalJob = {
+  released: true,
+  startBlocked: false,
   id: "job-1",
   jobCode: "JOB-001",
   description: "PART-001",

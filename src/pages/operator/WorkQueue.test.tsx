@@ -8,7 +8,7 @@ const mocks = vi.hoisted(() => ({ detail: vi.fn(), list: vi.fn(), translate: (ke
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: mocks.translate, i18n: { language: "en" } }) }));
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ id: 'user-1', tenant_id: 'tenant-1' }) }));
 vi.mock('@/contexts/OperatorContext', () => ({ useOperator: (): { activeOperator: null } => ({ activeOperator: null }) }));
-vi.mock('@/lib/database', () => ({ fetchOperationDetails: mocks.detail, fetchOperationsWithDetails: mocks.list, fetchOperationLookupDetails: mocks.list }));
+vi.mock('@/lib/db', () => ({ fetchOperationDetails: mocks.detail, fetchOperationsWithDetails: mocks.list, fetchOperationLookupDetails: mocks.list }));
 vi.mock('@/components/operator/OperationDetailModal', () => ({ default: ({ operation, initialIssueOpen }: { operation: { id: string }; initialIssueOpen: boolean }) => <div role="dialog">{operation.id}:{String(initialIssueOpen)}</div> }));
 vi.mock('@/components/operator/OperationCard', () => ({ default: (): null => null }));
 vi.mock('@/integrations/supabase/client', () => ({ supabase: { channel: () => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() }), removeChannel: vi.fn() } }));

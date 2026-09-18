@@ -207,34 +207,3 @@ export async function authenticateAndSetContext(
 
   return authResult;
 }
-
-/**
- * Extract bearer token from request
- */
-export function extractBearerToken(authHeader: string | null): string | null {
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return null;
-  }
-  return authHeader.substring(7);
-}
-
-/**
- * Validate API key format without authentication
- */
-export function isValidApiKeyFormat(apiKey: string): boolean {
-  return apiKey.startsWith("ery_live_") || apiKey.startsWith("ery_test_");
-}
-
-/**
- * Check if API key is a test key
- */
-export function isTestKey(apiKey: string): boolean {
-  return apiKey.startsWith("ery_test_");
-}
-
-/**
- * Check if API key is a production key
- */
-export function isLiveKey(apiKey: string): boolean {
-  return apiKey.startsWith("ery_live_");
-}

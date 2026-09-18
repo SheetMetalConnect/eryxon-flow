@@ -1,4 +1,3 @@
-import { dispatchEvent } from "@shared/events.ts";
 import { serveApi } from "@shared/handler.ts";
 import type { HandlerContext } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
@@ -140,15 +139,6 @@ serveApi(
     ...issuesCrudConfig,
     customHandlers: {
       get: handleGet,
-    },
-    onCreated: async (ctx, issue) => {
-      await dispatchEvent(ctx.tenantId, "issue.created", {
-        issue_id: issue.id,
-        operation_id: issue.operation_id,
-        severity: issue.severity,
-        description: issue.description,
-        created_at: issue.created_at,
-      });
     },
   }),
 );

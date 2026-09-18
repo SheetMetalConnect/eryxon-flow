@@ -22,7 +22,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Square } from "lucide-react";
 import { ROUTES } from "@/routes/constants";
-import { stopTimeTracking } from "@/lib/database";
+import { stopTimeTracking } from "@/lib/db";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -286,7 +286,7 @@ export function OperatorStatusBar() {
 
           {statusData.state === "idle" && (
             <span className="text-[10px] font-medium text-amber-500/70 hidden sm:inline">
-              — {t("terminal.status.notClockedOn", "niet ingeklokt")}
+              — {t("terminal.status.notClockedOn")}
             </span>
           )}
         </div>
@@ -307,7 +307,7 @@ export function OperatorStatusBar() {
             )}
             {statusData.state === "stale" && (
               <span className="text-[10px] text-amber-500/70">
-                — {t("terminal.status.longRunning", "lang actief")}
+                — {t("terminal.status.longRunning")}
               </span>
             )}
           </div>

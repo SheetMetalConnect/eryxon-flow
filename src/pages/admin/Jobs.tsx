@@ -302,13 +302,13 @@ export default function Jobs() {
     },
     {
       id: "flow",
-      header: t("qrm.flow", "Flow"),
+      header: t("qrm.flow"),
       cell: ({ row }) => <CompactOperationsFlow routing={row.original.routing} loading={false} />,
       size: 140,
     },
     {
       id: "details",
-      header: t("jobs.details", "Details"),
+      header: t("jobs.details"),
       cell: ({ row }) => {
         const job = row.original;
         return (
@@ -329,7 +329,7 @@ export default function Jobs() {
     },
     {
       id: "files",
-      header: t("jobs.files", "Files"),
+      header: t("jobs.files"),
       cell: ({ row }) => {
         const job = row.original;
         if (!job.hasSTEP && !job.hasPDF) {
@@ -500,7 +500,7 @@ export default function Jobs() {
     <div className="p-4 space-y-4">
       <AdminPageHeader
         title={t("jobs.title")}
-        description={t("jobs.subtitle", "Manage all jobs, track progress, and monitor deadlines")}
+        description={t("jobs.subtitle")}
         action={{
           label: t("jobs.createJob"),
           onClick: () => navigate(ROUTES.ADMIN.JOBS_NEW),
@@ -510,10 +510,10 @@ export default function Jobs() {
 
       <PageStatsRow
         stats={[
-          { label: t("jobs.totalJobs", "Total Jobs"), value: jobStats.total, icon: Briefcase, color: "primary" },
-          { label: t("jobs.inProgress", "In Progress"), value: jobStats.active, icon: PlayCircle, color: "warning" },
-          { label: t("jobs.completedJobs", "Completed"), value: jobStats.completed, icon: CheckCircle2, color: "success" },
-          { label: t("jobs.overdueJobs", "Overdue"), value: jobStats.overdue, icon: AlertCircle, color: jobStats.overdue > 0 ? "error" : "muted" },
+          { label: t("jobs.totalJobs"), value: jobStats.total, icon: Briefcase, color: "primary" },
+          { label: t("jobs.inProgress"), value: jobStats.active, icon: PlayCircle, color: "warning" },
+          { label: t("jobs.completedJobs"), value: jobStats.completed, icon: CheckCircle2, color: "success" },
+          { label: t("jobs.overdueJobs"), value: jobStats.overdue, icon: AlertCircle, color: jobStats.overdue > 0 ? "error" : "muted" },
         ]}
       />
 

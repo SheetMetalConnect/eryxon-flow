@@ -17,7 +17,7 @@ export function OfflineBanner({ className }: { className?: string }) {
       )}
     >
       <CloudOff className="h-3.5 w-3.5" />
-      <span>{t("mobile.offline", "You're offline — changes won't save")}</span>
+      <span>{t("mobile.offline")}</span>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import type { TerminalJob } from "@/types/terminal";
-import type { OperationWithDetails } from "@/lib/database";
+import type { OperationWithDetails } from "@/lib/db";
 import { describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@/test/utils";
 import { DetailPanel } from "./DetailPanel";
@@ -22,10 +22,6 @@ vi.mock("./AssemblyDependencies", () => ({
 
 vi.mock("./CncProgramQrCode", () => ({
   CncProgramQrCode: () => <div>qr</div>,
-}));
-
-vi.mock("./JobFlowProgress", () => ({
-  JobFlowProgress: () => <div>flow</div>,
 }));
 
 vi.mock("@/components/operator/IssueForm", () => ({
@@ -76,6 +72,8 @@ vi.mock("@/integrations/supabase/client", () => ({
 }));
 
 const baseJob: TerminalJob = {
+  released: true,
+  startBlocked: false,
   id: "job-1",
   jobCode: "JOB-001",
   description: "PART-001",

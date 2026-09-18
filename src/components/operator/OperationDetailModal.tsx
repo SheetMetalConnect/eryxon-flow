@@ -4,8 +4,9 @@ import {
   startTimeTracking,
   stopTimeTracking,
   completeOperation,
-} from "@/lib/database";
+} from "@/lib/db";
 import { useProfile } from "@/hooks/useProfile";
+import { productionErrorMessage } from "@/lib/errors";
 import { useOperator } from "@/contexts/OperatorContext";
 import {
   Sheet,
@@ -148,20 +149,8 @@ export default function OperationDetailModal({
 
   const handleStartTiming = async () => {
     if (!operatorId || !profile?.tenant_id) return;
-
-    const canProceed = await checkAssemblyDependencies();
-    if (!canProceed) return;
-
-    setLoading(true);
-    try {
-      await startTimeTracking(operation.id, operatorId, profile.tenant_id);
-      toast.success(t("operations.timeTrackingStarted"));
-      onUpdate();
-    } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("operations.failedToStartTimeTracking"));
-    } finally {
-      setLoading(false);
-    }
+    if (!(await checkAssemblyDependencies())) return;
+    await handleStartAnyway();
   };
 
   const handleStartAnyway = async () => {
@@ -174,7 +163,7 @@ export default function OperationDetailModal({
       toast.success(t("operations.timeTrackingStarted"));
       onUpdate();
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("operations.failedToStartTimeTracking"));
+      toast.error(productionErrorMessage(error, t, "operations.failedToStartTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -189,7 +178,7 @@ export default function OperationDetailModal({
       toast.success(t("operations.timeTrackingStopped"));
       onUpdate();
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("operations.failedToStopTimeTracking"));
+      toast.error(productionErrorMessage(error, t, "operations.failedToStopTimeTracking"));
     } finally {
       setLoading(false);
     }
@@ -205,7 +194,7 @@ export default function OperationDetailModal({
       onUpdate();
       onOpenChange(false);
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("operations.failedToComplete"));
+      toast.error(productionErrorMessage(error, t, "operations.failedToComplete"));
     } finally {
       setLoading(false);
     }

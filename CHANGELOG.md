@@ -2,6 +2,116 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.11.0] — 2026-09-18
+
+Eryxon Flow 0.11.0 is the agent-ready release. Everything an operator or planner
+can do in the app can be done through the REST API and the MCP server, on the
+same database rules, with the same events. Webhooks are the one outbound path
+and were rebuilt for production use. The MQTT publisher is gone.
+
+### Added
+
+- **MCP server 3.0** on the MCP specification of 2026-07-28 (stateless core,
+  Streamable HTTP or stdio, cache hints, standard `Mcp-*` headers, multi
+  round-trip requests). 113 tools with titles, annotations and output schemas
+  cover jobs, parts, routing and files, operations and their lifecycle, time
+  entries, output and scrap, issues and standstills, batches, substeps, cells,
+  resources, materials, operators and assignments, the factory calendar,
+  webhooks, workshop settings, locations, notifications, activity and QRM
+  metrics. A coverage test asserts every REST endpoint and RPC has a tool.
+  Lifecycle tools call `transition_operation`, so timers, job state and the
+  sequential-release rule apply to agents too. No support for earlier protocol
+  versions.
+- **Sequential release** (Organization settings). When enabled, an operation can
+  only start after every earlier operation on the same part is completed. The
+  rule lives in the database, so terminal, API and MCP behave the same. Off by
+  default.
+- **Webhooks, rebuilt.** One database trigger emits every event (36 names:
+  `job|part|operation.{created,updated,started,paused,resumed,completed,deleted}`,
+  batches, issues, production reports, ERP sync summaries). Payload
+  `{id, event, occurred_at, tenant_id, data}`; signature
+  `X-Eryxon-Signature: t=<unix>,v1=<hmac-sha256>`; five attempts with backoff;
+  a delivery log with status, latency and error; test send and redeliver from
+  the admin page; https only; private targets blocked unless
+  `WEBHOOK_ALLOW_PRIVATE_TARGETS=true`; endpoints auto-disable after 25
+  consecutive failures. Secrets are shown once.
+- **Drop-off locations in the demo wizard.** The onboarding asks whether the
+  workshop uses drop-off slots and seeds slots and placements per cell. The work
+  queue shows the slot a part is in, and the Location tab shows free slots at
+  the next cell.
+- Admin: move an operation to another cell and change its sequence; the
+  Operations list marks operations waiting on an earlier step.
+- One MCP page (`/admin/mcp`) generates the server `.env`, the `claude mcp add`
+  command and the `mcpServers` JSON from the chosen actor and transport. The API
+  keys page creates, lists and revokes keys through the Edge Function only.
+
+### Changed
+
+- The terminal's **In Buffer** and **Expected** sections follow the routing: In
+  Buffer lists operations whose predecessors are completed, Expected lists the
+  ones still waiting upstream. Before, the split was the first five not-started
+  rows versus the rest.
+- Starting an operation while clocked on another one stops the running timer
+  and starts the new one. The toast names the operation that was stopped.
+- Business-rule errors from the production lifecycle are shown as translated
+  messages. The REST API returns them as `409 CONFLICT` with the rule text, and
+  `404` for a missing record.
+- Admin hold and complete go through `transition_operation`; the admin "start"
+  button (which set a status without a timer) is gone.
+- Faster admin pages: the entry bundle went from 819 kB to 435 kB, NL/DE
+  catalogs load on demand, the icon picker no longer pulls in the whole icon
+  set, the dashboard loads its queries in one round and debounces realtime
+  refreshes, assignments load in three queries instead of one per part. Twenty
+  foreign-key indexes and rewritten RLS policies (`(select auth.uid())`) speed
+  up list queries.
+- Database privileges: `anon` can execute eight pre-login functions and nothing
+  else; trigger and maintenance functions are no longer callable by signed-in
+  users; the six functions without a fixed `search_path` have one; new
+  functions default to no `EXECUTE` for `PUBLIC`.
+- The website is the documentation. Repo `docs/` keeps only contributor
+  material; stale guides, hand-maintained route and hook maps, design-system
+  screenshots and finished plans were deleted. `.env.example` lists exactly the
+  variables the app reads. `npm ci && npx supabase start && npm run dev` is the
+  local setup.
+
+### Fixed
+
+- The English interface showed Dutch labels in the terminal's due-date column.
+- Hardcoded fallback strings were removed from the UI; every label resolves from
+  the EN/NL/DE catalogs, and tests keep the catalogs in sync and every key
+  resolvable.
+- Double-clicking Start no longer fires the request twice.
+- The in-app documentation links pointed at pages that did not exist.
+
+### Removed
+
+- The MQTT publisher (admin page, Edge Function, tables). It never opened an
+  MQTT connection and was never tested. Use webhooks and bridge to a broker
+  outside the app.
+- The in-app Swagger page and its 1.3 MB bundle; the REST reference lives on the
+  website and `/openapi.json` is still served.
+- The per-key MCP tables, endpoints and health rows the server never read, and
+  the sidebar status dot and toasts fed by them.
+- The browser-side event dispatcher and the API-side event emitters; the
+  database trigger is the single source of webhook events.
+- Unused error, barrel, logger and cache modules, dead components, hooks and
+  pages, duplicated Edge Function helpers, the Cloudflare app-deploy path and
+  the seed-provisioning drill workflow.
+
+### Upgrade notes
+
+- Apply the `20260918*` migrations in order before deploying this frontend and
+  the Edge Functions: sequential release, admin indexes, function privileges,
+  RLS initplan, drop MQTT, webhooks, drop MCP key tables. There is no
+  compatibility layer: webhook consumers must switch to the new payload and
+  signature, MCP clients must speak protocol 2026-07-28, and API clients must
+  handle `409` for rule violations.
+- The MCP server reads `MCP_BEARER`, `MCP_ACTOR_ID`, `TENANT_ID`,
+  `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; generate the `.env` from
+  `/admin/mcp`.
+- Hosted project: enable leaked-password protection in Authentication settings
+  (not a code change).
+
 ## [0.10.1] — 2026-09-08
 
 ### Changed

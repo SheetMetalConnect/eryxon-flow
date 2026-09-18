@@ -18,16 +18,16 @@ export function OperationBatchTab({ batch }: { batch: BatchContext }) {
     : "";
 
   const rows: Array<{ label: string; value: string }> = [
-    { label: t("terminal.batchPanel.type", "Type"), value: isNest ? "Nest" : "Batch" },
-    { label: t("terminal.batchPanel.status", "Status"), value: status },
+    { label: t("terminal.batchPanel.type"), value: isNest ? "Nest" : "Batch" },
+    { label: t("terminal.batchPanel.status"), value: status },
     {
-      label: t("terminal.batchPanel.operations", "Operations"),
+      label: t("terminal.batchPanel.operations"),
       value: String(batch.operationsCount),
     },
   ];
   if (batch.parentBatchNumber) {
     rows.push({
-      label: t("terminal.batchPanel.parent", "Parent batch"),
+      label: t("terminal.batchPanel.parent"),
       value: batch.parentBatchNumber,
     });
   }
@@ -42,10 +42,7 @@ export function OperationBatchTab({ batch }: { batch: BatchContext }) {
       </div>
 
       <p className="text-sm leading-6 text-muted-foreground">
-        {t(
-          "terminal.batchPanel.intro",
-          "This operation runs as part of a batch — it moves through production together with the other parts on it.",
-        )}
+        {t("terminal.batchPanel.intro")}
       </p>
 
       <dl className="divide-y divide-border overflow-hidden rounded-lg border border-border">

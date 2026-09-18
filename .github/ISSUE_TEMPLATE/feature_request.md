@@ -16,7 +16,7 @@ labels: enhancement
 - [ ] Frontend (components/pages)
 - [ ] Edge Functions (API)
 - [ ] Database (migrations/RLS)
-- [ ] Integrations (ERP/MQTT/MCP)
+- [ ] Integrations (ERP/webhooks/MCP)
 
 ## Design Considerations
 <!-- Multi-tenant? i18n? Mobile? Any ADR implications? -->

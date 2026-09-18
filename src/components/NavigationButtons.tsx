@@ -24,8 +24,8 @@ export function NavigationButtons() {
         size="sm"
         onClick={() => navigate(1)}
         className="h-7 w-7 p-0"
-        title={t("common.goForward", "Go Forward")}
-        aria-label={t("common.goForward", "Go Forward")}
+        title={t("common.goForward")}
+        aria-label={t("common.goForward")}
       >
         <ChevronRight className="h-4 w-4" />
       </Button>

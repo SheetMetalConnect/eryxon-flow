@@ -1,562 +1,241 @@
-import { useState, useEffect, useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ColumnDef } from "@tanstack/react-table";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { Copy, Plus, RefreshCw, RotateCcw, Send, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useProfile } from "@/hooks/useProfile";
+import { productionErrorMessage } from "@/lib/errors";
+import { DOCS_URL } from "@/lib/config";
+import { WEBHOOK_EVENTS, WEBHOOK_EVENT_GROUPS } from "@/lib/webhookEvents";
+import type { Tables } from "@/integrations/supabase/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useProfile } from "@/hooks/useProfile";
-import { Plus, Trash2, RefreshCw } from "lucide-react";
-import { format } from "date-fns";
-import { useTranslation } from "react-i18next";
-import { logger } from "@/lib/logger";
 import { DataTable } from "@/components/ui/data-table/DataTable";
-import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
 
-const AVAILABLE_EVENTS = [
-  { id: 'batch.started', label: 'Batch Started', description: 'When a batch enters in_progress via operator or machine monitoring' },
-  { id: 'batch.completed', label: 'Batch Completed', description: 'When a batch completes via operator or machine monitoring' },
-  { id: 'job.created', label: 'Job Created', description: 'When a new job is created via API' },
-  { id: 'job.started', label: 'Job Started', description: 'When a job changes to in_progress' },
-  { id: 'job.stopped', label: 'Job Stopped', description: 'When a job is put on hold' },
-  { id: 'job.completed', label: 'Job Completed', description: 'When a job is marked complete' },
-  { id: 'job.resumed', label: 'Job Resumed', description: 'When a paused job is resumed' },
-  { id: 'operation.started', label: 'Operation Started', description: 'When an operator starts an operation' },
-  { id: 'operation.paused', label: 'Operation Paused', description: 'When an operation is paused' },
-  { id: 'operation.resumed', label: 'Operation Resumed', description: 'When a paused operation is resumed' },
-  { id: 'operation.completed', label: 'Operation Completed', description: 'When an operation is marked complete' },
-  { id: 'issue.created', label: 'Issue Created', description: 'When a quality issue or NCR is reported' },
-];
+type Webhook = Omit<Tables<"webhooks">, "secret_key">;
+type Delivery = Pick<Tables<"webhook_deliveries">, "id" | "webhook_id" | "event" | "status" | "status_code" | "attempts" | "latency_ms" | "error" | "created_at"> & { webhook: { name: string } | null };
 
-interface Webhook {
-  id: string;
-  url: string;
-  events: string[];
-  created_at: string;
-  active: boolean;
-}
-
-interface WebhookLog {
-  id: string;
-  webhook_id: string;
-  event_type: string;
-  payload: Record<string, unknown>;
-  status_code: number | null;
-  error_message: string | null;
-  created_at: string;
-  webhook?: { url: string };
-}
+const newSecret = () => Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
 
 export default function ConfigWebhooks() {
   const { t } = useTranslation();
-  const profile = useProfile();
-  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
-  const [webhookLogs, setWebhookLogs] = useState<WebhookLog[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [logsLoading, setLogsLoading] = useState(false);
+  const tenantId = useProfile()?.tenant_id;
+  const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
+  const [form, setForm] = useState({ name: "", url: "", events: [] as string[] });
+  const [createdSecret, setCreatedSecret] = useState<string | null>(null);
 
-  const fetchWebhooks = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('webhooks')
-      .select('*')
-      .eq('tenant_id', profile?.tenant_id)
-      .order('created_at', { ascending: false });
+  const refresh = () => queryClient.invalidateQueries({ queryKey: ["webhooks"] });
+  const fail = (error: unknown) => toast.error(productionErrorMessage(error, t, "webhooks.failed"));
 
-    if (error) {
-      toast.error(t('webhooks.error'), { description: t('webhooks.failedToFetch') });
-    } else {
-      setWebhooks(data || []);
-    }
-    setLoading(false);
+  const webhooks = useQuery({
+    queryKey: ["webhooks", tenantId],
+    enabled: Boolean(tenantId),
+    queryFn: async () => {
+      const { data, error } = await supabase.from("webhooks")
+        .select("id, tenant_id, name, url, events, active, consecutive_failures, disabled_reason, last_delivery_at, last_status_code, created_at, updated_at")
+        .eq("tenant_id", tenantId!).order("created_at", { ascending: false });
+      if (error) throw error;
+      return data as Webhook[];
+    },
+  });
+
+  const deliveries = useQuery({
+    queryKey: ["webhooks", "deliveries", tenantId],
+    enabled: Boolean(tenantId),
+    refetchInterval: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("webhook_deliveries")
+        .select("id, webhook_id, event, status, status_code, attempts, latency_ms, error, created_at, webhook:webhooks(name)")
+        .eq("tenant_id", tenantId!).order("created_at", { ascending: false }).limit(200);
+      if (error) throw error;
+      return data as Delivery[];
+    },
+  });
+
+  const create = useMutation({
+    mutationFn: async () => {
+      const secret = newSecret();
+      const { error } = await supabase.from("webhooks").insert({ tenant_id: tenantId!, name: form.name.trim(), url: form.url.trim(), events: form.events, secret_key: secret });
+      if (error) throw error;
+      return secret;
+    },
+    onSuccess: (secret) => { setCreatedSecret(secret); setForm({ name: "", url: "", events: [] }); refresh(); },
+    onError: fail,
+  });
+  const update = useMutation({
+    mutationFn: async ({ id, ...patch }: Partial<Webhook> & { id: string }) => {
+      const { error } = await supabase.from("webhooks").update(patch).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: refresh, onError: fail,
+  });
+  const remove = useMutation({
+    mutationFn: async (id: string) => { const { error } = await supabase.from("webhooks").delete().eq("id", id); if (error) throw error; },
+    onSuccess: () => { toast.success(t("webhooks.deleted")); refresh(); }, onError: fail,
+  });
+  const sendTest = useMutation({
+    mutationFn: async (id: string) => { const { error } = await supabase.rpc("webhook_send_test", { p_webhook_id: id }); if (error) throw error; },
+    onSuccess: () => { toast.success(t("webhooks.testSent")); setTimeout(() => void deliveries.refetch(), 3000); }, onError: fail,
+  });
+  const redeliver = useMutation({
+    mutationFn: async (id: string) => { const { error } = await supabase.rpc("webhook_redeliver", { p_delivery_id: id }); if (error) throw error; },
+    onSuccess: () => { toast.success(t("webhooks.redelivered")); setTimeout(() => void deliveries.refetch(), 3000); }, onError: fail,
+  });
+
+  const submit = () => {
+    if (!form.name.trim()) return toast.error(t("webhooks.nameRequired"));
+    if (!form.url.trim().startsWith("https://")) return toast.error(t("webhooks.mustBeHttps"));
+    if (form.events.length === 0) return toast.error(t("webhooks.selectAtLeastOne"));
+    create.mutate();
   };
 
-  const fetchWebhookLogs = async () => {
-    setLogsLoading(true);
+  const webhookColumns = useMemo<ColumnDef<Webhook>[]>(() => [
+    { accessorKey: "name", header: t("webhooks.name"), cell: ({ row }) => (
+      <div><div className="font-medium">{row.original.name}</div><code className="text-xs text-muted-foreground">{row.original.url}</code></div>
+    ) },
+    { accessorKey: "events", header: t("webhooks.events"), cell: ({ row }) => (
+      <div className="flex max-w-md flex-wrap gap-1">{row.original.events.map((e) => <Badge key={e} variant="outline" className="text-xs">{e}</Badge>)}</div>
+    ) },
+    { id: "health", header: t("webhooks.lastDelivery"), cell: ({ row }) => {
+      const w = row.original;
+      if (!w.last_delivery_at) return <span className="text-sm text-muted-foreground">{t("webhooks.never")}</span>;
+      const ok = w.last_status_code != null && w.last_status_code >= 200 && w.last_status_code < 300;
+      return (
+        <div className="text-sm">
+          <Badge variant={ok ? "default" : "destructive"}>{w.last_status_code ?? t("webhooks.noResponse")}</Badge>
+          <span className="ml-2 text-muted-foreground">{format(new Date(w.last_delivery_at), "MMM d, HH:mm")}</span>
+          {w.consecutive_failures > 0 ? <div className="text-xs text-destructive">{t("webhooks.consecutiveFailures", { count: w.consecutive_failures })}</div> : null}
+        </div>
+      );
+    } },
+    { accessorKey: "active", header: t("webhooks.status"), cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <Switch checked={row.original.active} onCheckedChange={(active) => update.mutate({ id: row.original.id, active, consecutive_failures: 0, disabled_reason: null })} aria-label={t("webhooks.active")} />
+        {row.original.disabled_reason ? <span className="text-xs text-destructive">{row.original.disabled_reason}</span> : null}
+      </div>
+    ) },
+    { id: "actions", header: "", cell: ({ row }) => (
+      <div className="flex justify-end gap-1">
+        <Button variant="ghost" size="sm" onClick={() => sendTest.mutate(row.original.id)} title={t("webhooks.sendTest")}><Send className="h-4 w-4" /></Button>
+        <Button variant="ghost" size="sm" onClick={() => { if (window.confirm(t("webhooks.deleteConfirm"))) remove.mutate(row.original.id); }} title={t("webhooks.delete")}><Trash2 className="h-4 w-4" /></Button>
+      </div>
+    ) },
+  ], [t, update, sendTest, remove]);
 
-    const { data: tenantWebhooks } = await supabase
-      .from('webhooks')
-      .select('id')
-      .eq('tenant_id', profile?.tenant_id);
-
-    if (!tenantWebhooks || tenantWebhooks.length === 0) {
-      setWebhookLogs([]);
-      setLogsLoading(false);
-      return;
-    }
-
-    const webhookIds = tenantWebhooks.map(w => w.id);
-
-    const { data, error } = await supabase
-      .from('webhook_logs')
-      .select(`
-        id,
-        webhook_id,
-        event_type,
-        payload,
-        status_code,
-        error_message,
-        created_at,
-        webhook:webhooks(url)
-      `)
-      .in('webhook_id', webhookIds)
-      .order('created_at', { ascending: false })
-      .limit(100);
-
-    if (error) {
-      logger.error('Webhooks', 'Error fetching webhook logs', error);
-      toast.error(t('webhooks.error'), { description: t('webhooks.failedToFetchLogs') });
-    } else {
-      setWebhookLogs((data || []) as WebhookLog[]);
-    }
-    setLogsLoading(false);
-  };
-
-  useEffect(() => {
-    if (profile?.tenant_id) {
-      const loadTimeout = window.setTimeout(() => {
-        void fetchWebhooks();
-        void fetchWebhookLogs();
-      }, 0);
-      return () => clearTimeout(loadTimeout);
-    }
-    return;
-  }, [profile?.tenant_id]);
-
-  const generateSecretKey = () => {
-    return Array.from(crypto.getRandomValues(new Uint8Array(32)))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-  };
-
-  const createWebhook = async () => {
-    if (!webhookUrl.trim() || !webhookUrl.startsWith('https://')) {
-      toast.error(t('webhooks.error'), { description: t('webhooks.enterValidUrl') });
-      return;
-    }
-
-    if (selectedEvents.length === 0) {
-      toast.error(t('webhooks.error'), { description: t('webhooks.selectAtLeastOne') });
-      return;
-    }
-
-    const secretKey = generateSecretKey();
-
-    const { error } = await supabase
-      .from('webhooks')
-      .insert({
-        tenant_id: profile?.tenant_id,
-        url: webhookUrl,
-        events: selectedEvents,
-        secret_key: secretKey,
-        active: true
-      });
-
-    if (error) {
-      toast.error(t('webhooks.error'), { description: t('webhooks.failedToCreate') });
-    } else {
-      toast.success(t('webhooks.success'), { description: t('webhooks.created') });
-      setDialogOpen(false);
-      setWebhookUrl("");
-      setSelectedEvents([]);
-      fetchWebhooks();
-    }
-  };
-
-  const deleteWebhook = async (webhookId: string) => {
-    const { error } = await supabase
-      .from('webhooks')
-      .delete()
-      .eq('id', webhookId);
-
-    if (error) {
-      toast.error(t('webhooks.error'), { description: t('webhooks.failedToDelete') });
-    } else {
-      toast.success(t('webhooks.success'), { description: t('webhooks.deleted') });
-      fetchWebhooks();
-    }
-  };
-
-  const toggleWebhook = async (webhookId: string, currentStatus: boolean) => {
-    const { error } = await supabase
-      .from('webhooks')
-      .update({ active: !currentStatus })
-      .eq('id', webhookId);
-
-    if (error) {
-      toast.error(t('webhooks.error'), { description: t('webhooks.failedToUpdate') });
-    } else {
-      fetchWebhooks();
-    }
-  };
-
-  const webhookColumns: ColumnDef<Webhook>[] = useMemo(() => [
-    {
-      accessorKey: "url",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('webhooks.url')} />
-      ),
-      cell: ({ row }) => (
-        <code className="text-sm">{row.getValue("url")}</code>
-      ),
-    },
-    {
-      accessorKey: "events",
-      header: t('webhooks.events'),
-      cell: ({ row }) => {
-        const events = row.getValue("events") as string[];
-        return (
-          <div className="flex gap-1 flex-wrap">
-            {events.map((event) => (
-              <Badge key={event} variant="outline" className="text-xs">
-                {event}
-              </Badge>
-            ))}
-          </div>
-        );
-      },
-    },
-    {
-      accessorKey: "created_at",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('webhooks.created')} />
-      ),
-      cell: ({ row }) => format(new Date(row.getValue("created_at")), 'MMM d, yyyy'),
-    },
-    {
-      accessorKey: "active",
-      header: t('webhooks.status'),
-      cell: ({ row }) => {
-        const active = row.getValue("active") as boolean;
-        return (
-          <Badge variant={active ? "default" : "secondary"}>
-            {active ? t('webhooks.active') : t('webhooks.disabled')}
-          </Badge>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: t('webhooks.actions'),
-      cell: ({ row }) => {
-        const webhook = row.original;
-        return (
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleWebhook(webhook.id, webhook.active)}
-            >
-              {webhook.active ? t('webhooks.disable') : t('webhooks.enable')}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => deleteWebhook(webhook.id)}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-    },
-  ], [t, deleteWebhook, toggleWebhook]);
-
-  const logColumns: ColumnDef<WebhookLog>[] = useMemo(() => [
-    {
-      accessorKey: "event_type",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Event" />
-      ),
-      cell: ({ row }) => (
-        <Badge variant="outline">{row.getValue("event_type")}</Badge>
-      ),
-    },
-    {
-      accessorKey: "status_code",
-      header: "Status",
-      cell: ({ row }) => {
-        const statusCode = row.getValue("status_code") as number | null;
-        return statusCode ? (
-          <Badge variant={statusCode >= 200 && statusCode < 300 ? "default" : "destructive"}>
-            {statusCode}
-          </Badge>
-        ) : (
-          <Badge variant="destructive">Failed</Badge>
-        );
-      },
-    },
-    {
-      accessorKey: "webhook.url",
-      id: "webhook_url",
-      header: "Webhook",
-      cell: ({ row }) => (
-        <span className="text-sm text-muted-foreground">
-          {row.original.webhook?.url || 'Unknown'}
-        </span>
-      ),
-    },
-    {
-      accessorKey: "error_message",
-      header: "Error",
-      cell: ({ row }) => {
-        const error = row.getValue("error_message") as string | null;
-        return error ? (
-          <span className="text-sm text-destructive">{error}</span>
-        ) : null;
-      },
-    },
-    {
-      accessorKey: "created_at",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title="Time" />
-      ),
-      cell: ({ row }) => format(new Date(row.getValue("created_at")), 'MMM d, HH:mm:ss'),
-    },
-  ], []);
+  const deliveryColumns = useMemo<ColumnDef<Delivery>[]>(() => [
+    { accessorKey: "created_at", header: t("webhooks.time"), cell: ({ row }) => format(new Date(row.original.created_at), "MMM d, HH:mm:ss") },
+    { accessorKey: "event", header: t("webhooks.event"), cell: ({ row }) => <Badge variant="outline">{row.original.event}</Badge> },
+    { id: "webhook", header: t("webhooks.endpoint"), cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.webhook?.name ?? "—"}</span> },
+    { accessorKey: "status", header: t("webhooks.status"), cell: ({ row }) => (
+      <Badge variant={row.original.status === "delivered" ? "default" : "destructive"}>{row.original.status_code ?? t("webhooks.noResponse")}</Badge>
+    ) },
+    { id: "timing", header: t("webhooks.attempts"), cell: ({ row }) => <span className="text-sm text-muted-foreground">{row.original.attempts}× · {row.original.latency_ms ?? "–"} ms</span> },
+    { accessorKey: "error", header: t("webhooks.error"), cell: ({ row }) => <span className="line-clamp-2 max-w-xs text-xs text-destructive">{row.original.error}</span> },
+    { id: "redeliver", header: "", cell: ({ row }) => (
+      <Button variant="ghost" size="sm" onClick={() => redeliver.mutate(row.original.id)} title={t("webhooks.redeliver")}><RotateCcw className="h-4 w-4" /></Button>
+    ) },
+  ], [t, redeliver]);
 
   return (
-    <div className="p-6 space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-          {t('webhooks.title')}
-        </h1>
-        <p className="text-muted-foreground text-lg">{t('webhooks.description')}</p>
-      </div>
-
-      <hr className="title-divider" />
-
-      <div className="flex justify-end">
+    <div className="space-y-6 p-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold">{t("webhooks.title")}</h1>
+          <p className="text-muted-foreground">{t("webhooks.description")}</p>
+        </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={fetchWebhookLogs}>
-            <RefreshCw className="mr-2 h-4 w-4" />
-            {t('webhooks.refreshLogs')}
-          </Button>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-            <DialogTrigger asChild>
-              <Button className="cta-button">
-                <Plus className="mr-2 h-4 w-4" />
-                {t('webhooks.addWebhook')}
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="glass-card sm:max-w-lg overflow-hidden flex flex-col">
-              <DialogHeader className="shrink-0">
-                <DialogTitle>{t('webhooks.createWebhook')}</DialogTitle>
-                <DialogDescription>
-                  {t('webhooks.configureWebhook')}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="webhook-url">{t('webhooks.webhookUrl')}</Label>
-                  <Input
-                    id="webhook-url"
-                    type="url"
-                    placeholder={t('webhooks.urlPlaceholder')}
-                    value={webhookUrl}
-                    onChange={(e) => setWebhookUrl(e.target.value)}
-                  />
-                  <p className="text-sm text-muted-foreground">{t('webhooks.mustBeHttps')}</p>
-                </div>
-                <div className="space-y-2">
-                  <Label>{t('webhooks.events')}</Label>
-                  <div className="border rounded-lg p-3 space-y-3">
-                    {AVAILABLE_EVENTS.map((event) => (
-                      <div key={event.id} className="flex items-start space-x-2">
-                        <Checkbox
-                          id={event.id}
-                          checked={selectedEvents.includes(event.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedEvents([...selectedEvents, event.id]);
-                            } else {
-                              setSelectedEvents(selectedEvents.filter(e => e !== event.id));
-                            }
-                          }}
-                          className="mt-0.5"
-                        />
-                        <div>
-                          <Label htmlFor={event.id} className="cursor-pointer font-medium">
-                            {event.label}
-                          </Label>
-                          <p className="text-xs text-muted-foreground">{event.description}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="shrink-0 border-t pt-4">
-                <Button onClick={createWebhook} className="w-full">
-                  {t('webhooks.createWebhook')}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
+          <Button variant="outline" size="sm" onClick={() => void deliveries.refetch()}><RefreshCw className="mr-2 h-4 w-4" />{t("webhooks.refresh")}</Button>
+          <Button size="sm" onClick={() => setDialogOpen(true)}><Plus className="mr-2 h-4 w-4" />{t("webhooks.add")}</Button>
         </div>
       </div>
 
-      <Tabs defaultValue="webhooks" className="w-full">
+      <Tabs defaultValue="endpoints">
         <TabsList>
-          <TabsTrigger value="webhooks">{t('webhooks.webhooks')}</TabsTrigger>
-          <TabsTrigger value="logs">{t('webhooks.deliveryLogs')}</TabsTrigger>
-          <TabsTrigger value="docs">{t('webhooks.documentation')}</TabsTrigger>
+          <TabsTrigger value="endpoints">{t("webhooks.endpoints")}</TabsTrigger>
+          <TabsTrigger value="deliveries">{t("webhooks.deliveries")}</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="webhooks" className="space-y-6">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>{t('webhooks.configuredWebhooks')}</CardTitle>
-              <CardDescription>
-                {t('webhooks.webhooksDescription')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DataTable
-                columns={webhookColumns}
-                data={webhooks || []}
-                loading={loading}
-                searchPlaceholder={t('webhooks.searchWebhooks') || "Search webhooks..."}
-                pageSize={10}
-                emptyMessage={t('webhooks.noWebhooks')}
-                showToolbar={false}
-              />
-            </CardContent>
-          </Card>
-
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Webhook Payload Format</CardTitle>
-              <CardDescription>Example of webhook POST request</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <pre className="text-sm bg-muted p-4 rounded overflow-x-auto">
-                {`{
-  "event": "operation.completed",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "tenant_id": "uuid",
-  "data": {
-    "operation_id": "uuid",
-    "operation_name": "Laser cutting",
-    "part_number": "P-001",
-    "job_number": "J-2024-001",
-    "completed_at": "2024-01-15T10:30:00Z",
-    "actual_time": 50
-  }
-}`}
-              </pre>
-              <p className="text-sm text-muted-foreground mt-4">
-                All requests include an <code>X-Eryxon-Signature</code> header with HMAC signature for verification.
+        <TabsContent value="endpoints">
+          <Card>
+            <CardContent className="pt-6">
+              <DataTable columns={webhookColumns} data={webhooks.data ?? []} loading={webhooks.isLoading} showToolbar={false} pageSize={10} emptyMessage={t("webhooks.noWebhooks")} />
+              <p className="mt-4 text-sm text-muted-foreground">
+                {t("webhooks.docsHint")} <a className="underline" href={`${DOCS_URL}/architecture/connectivity-webhooks/`} target="_blank" rel="noopener noreferrer">{t("webhooks.docsLink")}</a>
               </p>
             </CardContent>
           </Card>
         </TabsContent>
-
-        <TabsContent value="logs" className="space-y-4">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>{t('webhooks.webhookDeliveryLogs')}</CardTitle>
-              <CardDescription>{t('webhooks.recentAttempts')}</CardDescription>
-            </CardHeader>
+        <TabsContent value="deliveries">
+          <Card>
+            <CardHeader><CardTitle>{t("webhooks.deliveries")}</CardTitle><CardDescription>{t("webhooks.deliveriesDescription")}</CardDescription></CardHeader>
             <CardContent>
-              <DataTable
-                columns={logColumns}
-                data={webhookLogs || []}
-                loading={logsLoading}
-                searchPlaceholder="Search logs..."
-                pageSize={20}
-                emptyMessage={t('webhooks.noDeliveries')}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="docs" className="space-y-4">
-          <Card className="glass-card">
-            <CardHeader>
-              <CardTitle>Webhook Documentation</CardTitle>
-              <CardDescription>How to set up and verify webhooks</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-2">Available Events</h3>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Job Lifecycle</h4>
-                    <ul className="space-y-2 text-sm">
-                      <li><code className="bg-muted px-2 py-1 rounded">batch.started</code> - When a batch enters in_progress via operator or machine monitoring</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">batch.completed</code> - When a batch completes via operator or machine monitoring</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">job.created</code> - When a new job is created via API</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">job.started</code> - When a job changes to in_progress</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">job.stopped</code> - When a job is put on hold</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">job.completed</code> - When a job is marked complete</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">job.resumed</code> - When a paused job is resumed</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Operation Lifecycle</h4>
-                    <ul className="space-y-2 text-sm">
-                      <li><code className="bg-muted px-2 py-1 rounded">operation.started</code> - When an operator starts an operation</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">operation.paused</code> - When an operation is paused</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">operation.resumed</code> - When a paused operation is resumed</li>
-                      <li><code className="bg-muted px-2 py-1 rounded">operation.completed</code> - When an operation is marked complete</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-medium text-muted-foreground mb-2">Quality & Issues</h4>
-                    <ul className="space-y-2 text-sm">
-                      <li><code className="bg-muted px-2 py-1 rounded">issue.created</code> - When a quality issue or NCR is reported</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Signature Verification</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  All webhook requests include an X-Eryxon-Signature header with HMAC-SHA256 signature.
-                  Verify the signature to ensure the request came from Eryxon Flow:
-                </p>
-                <pre className="text-xs bg-muted p-4 rounded overflow-x-auto">
-                  {`// Node.js example
-const crypto = require('crypto');
-
-function verifyWebhook(payload, signature, secret) {
-  const expectedSignature = 'sha256=' + crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
-}`}
-                </pre>
-              </div>
-
-              <div>
-                <h3 className="font-semibold mb-2">Best Practices</h3>
-                <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground">
-                  <li>Always verify the signature before processing webhooks</li>
-                  <li>Respond with 200 status code quickly (within 10 seconds)</li>
-                  <li>Use HTTPS endpoints only</li>
-                  <li>Implement retry logic for processing failures</li>
-                  <li>Log webhook payloads for debugging</li>
-                </ul>
-              </div>
+              <DataTable columns={deliveryColumns} data={deliveries.data ?? []} loading={deliveries.isLoading} searchPlaceholder={t("webhooks.searchDeliveries")} pageSize={25} emptyMessage={t("webhooks.noDeliveries")} />
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setCreatedSecret(null); }}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          {createdSecret ? (
+            <>
+              <DialogHeader><DialogTitle>{t("webhooks.secretTitle")}</DialogTitle><DialogDescription>{t("webhooks.secretOnce")}</DialogDescription></DialogHeader>
+              <div className="flex items-center gap-2">
+                <code className="flex-1 break-all rounded bg-muted p-2 text-xs">{createdSecret}</code>
+                <Button variant="outline" size="sm" onClick={() => { void navigator.clipboard.writeText(createdSecret); toast.success(t("webhooks.copied")); }}><Copy className="h-4 w-4" /></Button>
+              </div>
+              <Button onClick={() => setDialogOpen(false)}>{t("common.done")}</Button>
+            </>
+          ) : (
+            <>
+              <DialogHeader><DialogTitle>{t("webhooks.add")}</DialogTitle><DialogDescription>{t("webhooks.addDescription")}</DialogDescription></DialogHeader>
+              <div className="space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="webhook-name">{t("webhooks.name")}</Label>
+                  <Input id="webhook-name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder={t("webhooks.namePlaceholder")} />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="webhook-url">{t("webhooks.url")}</Label>
+                  <Input id="webhook-url" type="url" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} placeholder="https://" />
+                  <p className="text-xs text-muted-foreground">{t("webhooks.mustBeHttps")}</p>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label>{t("webhooks.events")}</Label>
+                    <Button variant="link" size="sm" className="h-auto p-0" onClick={() => setForm({ ...form, events: form.events.length === WEBHOOK_EVENTS.length ? [] : [...WEBHOOK_EVENTS] })}>
+                      {form.events.length === WEBHOOK_EVENTS.length ? t("webhooks.selectNone") : t("webhooks.selectAll")}
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border p-3 text-sm">
+                    {WEBHOOK_EVENT_GROUPS.map((group) => (
+                      <div key={group} className="space-y-1">
+                        <div className="text-xs font-semibold uppercase text-muted-foreground">{group}</div>
+                        {WEBHOOK_EVENTS.filter((e) => e.startsWith(`${group}.`)).map((event) => (
+                          <label key={event} className="flex cursor-pointer items-center gap-2">
+                            <Checkbox checked={form.events.includes(event)} onCheckedChange={(checked) => setForm({ ...form, events: checked ? [...form.events, event] : form.events.filter((e) => e !== event) })} />
+                            <code className="text-xs">{event.slice(group.length + 1)}</code>
+                          </label>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <Button className="w-full" onClick={submit} disabled={create.isPending}>{t("webhooks.create")}</Button>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

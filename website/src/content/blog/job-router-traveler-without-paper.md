@@ -10,10 +10,10 @@ tags: ["job shop", "workflow"]
 ctaIntent: "docs"
 relatedLinks:
   - label: "Getting started overview"
-    href: "/getting-started/introduction/overview/"
+    href: "/introduction/"
     note: "set up your first work order"
   - label: "Deployment guide"
-    href: "/guides/deployment/"
+    href: "/guides/self-hosting/"
 ---
 
 **A paper traveler is the document that follows a job around the shop:** which operations it

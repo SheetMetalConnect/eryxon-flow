@@ -106,16 +106,13 @@ verify_jwt = false
 [functions.api-upload-url]
 verify_jwt = false
 
-[functions.api-webhook-logs]
+[functions.api-webhook-deliveries]
 verify_jwt = false
 
 [functions.api-webhooks]
 verify_jwt = false
 
 [functions.monthly-reset-cron]
-verify_jwt = false
-
-[functions.mqtt-publish]
 verify_jwt = false
 
 [functions.pilot-alert-evaluator]

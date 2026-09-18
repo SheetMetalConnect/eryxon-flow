@@ -300,7 +300,20 @@
     "scrap": "Ausschuss",
     "selectReason": "Grund auswählen...",
     "selectScrapReason": "Wählen Sie für jeden Ausschusseintrag einen Grund",
-    "totalScrap": "Ausschuss gesamt"
+    "totalScrap": "Ausschuss gesamt",
+    "errors": {
+      "activeElsewhere": "Du bist noch auf einem anderen Arbeitsgang eingestempelt. Beende ihn zuerst.",
+      "alreadyCompleted": "Dieser Arbeitsgang ist bereits abgeschlossen.",
+      "notPaused": "Nur ein pausierter Arbeitsgang kann fortgesetzt werden.",
+      "notInProgress": "Nur ein laufender Arbeitsgang kann pausiert werden.",
+      "standstill": "Behebe zuerst den aktiven Stillstand, bevor du neu startest.",
+      "operatorRequired": "Wähle zuerst einen Bediener.",
+      "notStarted": "Starte den Arbeitsgang, bevor du ihn abschließt.",
+      "timersOpen": "Stoppe alle laufenden Timer, bevor du abschließt.",
+      "notFound": "Arbeitsgang nicht gefunden.",
+      "notReleased": "Der vorherige Arbeitsgang dieses Teils ist noch nicht abgeschlossen."
+    },
+    "switchedFrom": "{{operation}} gestoppt und diesen gestartet."
   },
   "terminalLogin": {
     "welcome": "BEDIENER-TERMINAL",

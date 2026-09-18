@@ -65,7 +65,8 @@
       "title": "Benötigt Aufmerksamkeit",
       "overHours": "Über geplante Stunden",
       "minutesOver": "Minuten über"
-    }
+    },
+    "wipeConfirm": "Alle Demodaten löschen? Das kann nicht rückgängig gemacht werden."
   },
   "settings": {
     "title": "Einstellungen",
@@ -521,7 +522,7 @@
     },
     "integrations": {
       "label": "Integrationen",
-      "description": "API-Schlüssel, Webhooks, MQTT und Daten-Import/Export"
+      "description": "API-Schlüssel, Webhooks und Daten-Import/Export"
     },
     "issues": {
       "label": "Probleme",
@@ -574,6 +575,10 @@
       "autoStopTracking": "Zeiterfassung automatisch stoppen",
       "autoStopDescription": "Alle aktiven Zeiteinträge bei Betriebsschluss automatisch stoppen",
       "autoStopWarning": "Aktive Zeiteinträge werden täglich um {{time}} automatisch gestoppt"
+    },
+    "sequentialRelease": {
+      "title": "Reihenfolge erzwingen",
+      "description": "Ein Arbeitsgang kann erst starten, wenn alle vorherigen Arbeitsgänge desselben Teils abgeschlossen sind. Aus: das Terminal zeigt die Reihenfolge, Bediener dürfen aber jeden Arbeitsgang starten."
     }
   },
   "stuckTimeEntries": {
@@ -694,7 +699,10 @@
       "notPlaced": "Noch nicht abgelegt",
       "notPlacedHint": "Erfassen Sie, wo Sie dieses Teil abgelegt haben, damit der nächste Bediener es findet.",
       "record": "Ort erfassen",
-      "move": "In anderen Platz verschieben"
+      "move": "In anderen Platz verschieben",
+      "nextCellFull": "— alle Fächer voll",
+      "nextCellFree_one": "— {{count}} freies Fach",
+      "nextCellFree_other": "— {{count}} freie Fächer"
     }
   },
   "timeTracking": {

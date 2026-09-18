@@ -209,7 +209,7 @@ export default function MyIssues() {
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-sm text-muted-foreground">
-            {t("myIssues.loading", "Loading issues")}
+            {t("myIssues.loading")}
           </p>
         </div>
       </OperatorPanel>
@@ -222,10 +222,7 @@ export default function MyIssues() {
         <OperatorPageHeader
           eyebrow={t("navigation.myIssues")}
           title={t("myIssues.title")}
-          description={t(
-            "myIssues.description",
-            "Track operator-reported issues with clear severity, review status, and supporting photos without leaving the shop-floor flow.",
-          )}
+          description={t("myIssues.description")}
           meta={
             activeOperator ? (
               <OperatorStatusChip
@@ -238,25 +235,25 @@ export default function MyIssues() {
 
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <OperatorStatCard
-            label={t("myIssues.openIssues", "Open issues")}
+            label={t("myIssues.openIssues")}
             value={pendingCount}
             icon={Clock3}
             tone="warning"
           />
           <OperatorStatCard
-            label={t("myIssues.resolvedIssues", "Resolved")}
+            label={t("myIssues.resolvedIssues")}
             value={resolvedCount}
             icon={CheckCircle2}
             tone="success"
           />
           <OperatorStatCard
-            label={t("myIssues.highSeverity", "High severity")}
+            label={t("myIssues.highSeverity")}
             value={criticalCount}
             icon={ShieldAlert}
             tone="danger"
           />
           <OperatorStatCard
-            label={t("myIssues.lastReported", "Last reported")}
+            label={t("myIssues.lastReported")}
             value={latestIssueDate || "-"}
             icon={AlertCircle}
           />
@@ -378,20 +375,20 @@ export default function MyIssues() {
                   ) : null}
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {t("issues.currentLocation", "Current location")}
+                      {t("issues.currentLocation")}
                     </div>
                     <div className="mt-1 text-sm text-foreground">
                       {selectedIssue.current_cell?.name ||
-                        t("issues.noLocationCaptured", "Not captured")}
+                        t("issues.noLocationCaptured")}
                     </div>
                   </div>
                   <div>
                     <div className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      {t("issues.intendedNextLocation", "Intended next location")}
+                      {t("issues.intendedNextLocation")}
                     </div>
                     <div className="mt-1 text-sm text-foreground">
                       {selectedIssue.intended_next_cell?.name ||
-                        t("issues.noLocationCaptured", "Not captured")}
+                        t("issues.noLocationCaptured")}
                     </div>
                   </div>
                 </div>

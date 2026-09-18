@@ -16,7 +16,7 @@ export function PwaUpdatePrompt() {
 const UPDATE_CHECK_INTERVAL_MS = 20 * 60 * 1000;
 
 function PwaUpdatePromptInner(): null {
-  const { t } = useTranslation("common");
+  const { t } = useTranslation();
   const timer = useRef<ReturnType<typeof setInterval>>();
   useEffect(() => () => clearInterval(timer.current), []);
   const {

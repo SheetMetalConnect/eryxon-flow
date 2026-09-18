@@ -46,6 +46,8 @@ import { toast } from "sonner";
 import { STEPViewer } from "@/components/STEPViewerLazy";
 import { PDFViewer } from "@/components/PDFViewerLazy";
 import { useProfile } from "@/hooks/useProfile";
+import { completeOperation, holdOperation } from "@/lib/db";
+import { productionErrorMessage } from "@/lib/errors";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
 import { logger } from '@/lib/logger';
@@ -167,40 +169,17 @@ export default function OperationDetailModal({
     enabled: !!profile?.tenant_id,
   });
 
-  const updateStatusMutation = useMutation({
-    mutationFn: async (newStatus: "not_started" | "in_progress" | "completed" | "on_hold") => {
-      const { error } = await supabase
-        .from("operations")
-        .update({ status: newStatus })
-        .eq("id", operationId);
-
-      if (error) throw error;
-    },
-    onMutate: async (newStatus) => {
-      await queryClient.cancelQueries({ queryKey: QueryKeys.operations.detail(operationId) });
-      const previous = queryClient.getQueryData(QueryKeys.operations.detail(operationId));
-      queryClient.setQueryData(QueryKeys.operations.detail(operationId), (old: Record<string, unknown> | undefined) =>
-        old ? { ...old, status: newStatus } : old
-      );
-      return { previous };
-    },
-    onError: (error: Error, _newStatus, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(QueryKeys.operations.detail(operationId), context.previous);
-      }
-      toast.error(t("notifications.error"), {
-        description: error.message,
-      });
-    },
-    onSettled: () => {
+  const lifecycleMutation = useMutation({
+    mutationFn: (action: "hold" | "complete") =>
+      action === "hold"
+        ? holdOperation(operationId, profile!.tenant_id)
+        : completeOperation(operationId, profile!.tenant_id),
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QueryKeys.operations.detail(operationId) });
       onUpdate();
+      toast.success(t("notifications.updated"), { description: t("operations.statusUpdatedDesc") });
     },
-    onSuccess: () => {
-      toast.success(t("notifications.updated"), {
-        description: t("operations.statusUpdatedDesc"),
-      });
-    },
+    onError: (error: unknown) => toast.error(productionErrorMessage(error, t)),
   });
 
   const updateBulletCardMutation = useMutation({
@@ -237,7 +216,19 @@ export default function OperationDetailModal({
   const [planHours, setPlanHours] = useState("");
   const [planStart, setPlanStart] = useState("");
   const [planEnd, setPlanEnd] = useState("");
+  const [planCell, setPlanCell] = useState("");
+  const [planSequence, setPlanSequence] = useState("");
   const [planDirty, setPlanDirty] = useState(false);
+
+  const { data: cells } = useQuery({
+    queryKey: QueryKeys.cells.active(profile?.tenant_id ?? ""),
+    queryFn: async () => {
+      const { data, error } = await supabase.from("cells").select("id, name").eq("tenant_id", profile!.tenant_id).eq("active", true).order("sequence");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.tenant_id,
+  });
 
   useEffect(() => {
     if (!operation) return;
@@ -245,6 +236,8 @@ export default function OperationDetailModal({
     setPlanHours(minutes ? (minutes / 60).toFixed(2) : "");
     setPlanStart(toDateTimeLocal(operation.planned_start));
     setPlanEnd(toDateTimeLocal(operation.planned_end));
+    setPlanCell(operation.cell_id ?? "");
+    setPlanSequence(String(operation.sequence ?? 1));
     setPlanDirty(false);
   }, [operation]);
 
@@ -258,6 +251,8 @@ export default function OperationDetailModal({
             : Math.round(hoursNum * 60),
         planned_start: planStart ? new Date(planStart).toISOString() : null,
         planned_end: planEnd ? new Date(planEnd).toISOString() : null,
+        cell_id: planCell || undefined,
+        sequence: Number.parseInt(planSequence, 10) || undefined,
       },
       {
         onSuccess: () => {
@@ -431,18 +426,18 @@ export default function OperationDetailModal({
               <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4 overflow-x-auto">
                 <TabsTrigger value="details" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
                   <Settings2 className="h-4 w-4 mr-1.5" />
-                  {t("common.details", "Details")}
+                  {t("common.details")}
                 </TabsTrigger>
                 {resourcesCount > 0 && (
                   <TabsTrigger value="resources" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
                     <Wrench className="h-4 w-4 mr-1.5" />
-                    {t("operations.resources", "Resources")} ({resourcesCount})
+                    {t("operations.resources")} ({resourcesCount})
                   </TabsTrigger>
                 )}
                 {filesCount > 0 && (
                   <TabsTrigger value="files" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
                     <Paperclip className="h-4 w-4 mr-1.5" />
-                    {t("parts.files", "Files")} ({filesCount})
+                    {t("parts.files")} ({filesCount})
                   </TabsTrigger>
                 )}
               </TabsList>
@@ -467,13 +462,13 @@ export default function OperationDetailModal({
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 border">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.material", "Material")}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.material")}</p>
                     <p className="mt-1 font-semibold text-sm truncate">
                       {operation?.parts?.material || "-"}
                     </p>
                   </div>
                   <div className="p-3 rounded-lg bg-muted/50 border">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.quantity", "Quantity")}</p>
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("parts.quantity")}</p>
                     <p className="mt-1 font-semibold text-sm">
                       {operation?.parts?.quantity || "-"}
                     </p>
@@ -481,15 +476,15 @@ export default function OperationDetailModal({
                 </div>
 
                 <div className="border rounded-lg p-4 bg-muted/20">
-                  <h4 className="text-xs text-muted-foreground uppercase tracking-wide mb-2">{t("operations.context", "Context")}</h4>
+                  <h4 className="text-xs text-muted-foreground uppercase tracking-wide mb-2">{t("operations.context")}</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm font-medium">#{operation?.parts?.part_number}</p>
-                      <p className="text-xs text-muted-foreground">{t("parts.partNumber", "Part Number")}</p>
+                      <p className="text-xs text-muted-foreground">{t("parts.partNumber")}</p>
                     </div>
                     <div>
                       <p className="text-sm font-medium">{operation?.parts?.jobs?.customer}</p>
-                      <p className="text-xs text-muted-foreground">{t("jobs.customer", "Customer")}</p>
+                      <p className="text-xs text-muted-foreground">{t("jobs.customer")}</p>
                     </div>
                   </div>
                 </div>
@@ -502,6 +497,28 @@ export default function OperationDetailModal({
                   </div>
                   <p className="text-xs text-muted-foreground">{t("qrm.plannedHoursDesc")}</p>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-2">
+                      <Label htmlFor="plan-cell" className="text-xs text-muted-foreground">{t("operations.cell")}</Label>
+                      <Select value={planCell} onValueChange={(v) => { setPlanCell(v); setPlanDirty(true); }} disabled={operation?.status === "completed"}>
+                        <SelectTrigger id="plan-cell" className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {cells?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="plan-sequence" className="text-xs text-muted-foreground">{t("operations.sequence")}</Label>
+                      <Input
+                        id="plan-sequence"
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={planSequence}
+                        onChange={(e) => { setPlanSequence(e.target.value); setPlanDirty(true); }}
+                        disabled={operation?.status === "completed"}
+                        className="mt-1"
+                      />
+                    </div>
                     <div>
                       <Label htmlFor="plan-hours" className="text-xs text-muted-foreground">
                         {t("qrm.plannedHours")} ({t("qrm.hours")})
@@ -676,16 +693,15 @@ export default function OperationDetailModal({
                     <Switch
                       id="qrm-yellow-card"
                       checked={operation?.status === "on_hold"}
-                      disabled={operation?.status === "completed" || updateStatusMutation.isPending}
-                      onCheckedChange={(checked) =>
-                        updateStatusMutation.mutate(checked ? "on_hold" : "in_progress")
-                      }
+                      disabled={operation?.status !== "in_progress" || lifecycleMutation.isPending}
+                      title={operation?.status === "on_hold" ? t("operations.holdClearsAtTerminal") : undefined}
+                      onCheckedChange={() => lifecycleMutation.mutate("hold")}
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label className="text-sm font-medium mb-2 block">{t("operations.assignedOperator", "Assigned Operator")}</Label>
+                  <Label className="text-sm font-medium mb-2 block">{t("operations.assignedOperator")}</Label>
                   <Select
                     value={operation?.assigned_operator_id || "unassigned"}
                     onValueChange={(value) =>
@@ -693,11 +709,11 @@ export default function OperationDetailModal({
                     }
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("operations.selectOperator", "Select operator")} />
+                      <SelectValue placeholder={t("operations.selectOperator")} />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="unassigned">
-                        <span className="text-muted-foreground">{t("operations.unassigned", "Unassigned")}</span>
+                        <span className="text-muted-foreground">{t("operations.unassigned")}</span>
                       </SelectItem>
                       {operators?.map((op) => (
                         <SelectItem key={op.id} value={op.id}>
@@ -713,39 +729,21 @@ export default function OperationDetailModal({
 
                 {operation?.notes && (
                   <div>
-                    <Label className="text-sm font-medium mb-2 block">{t("jobs.notes", "Notes")}</Label>
+                    <Label className="text-sm font-medium mb-2 block">{t("jobs.notes")}</Label>
                     <p className="text-sm bg-muted/30 p-3 rounded-lg border">
                       {operation.notes}
                     </p>
                   </div>
                 )}
 
-                <div className="flex flex-wrap gap-2 pt-4 border-t">
-                  {operation?.status !== "completed" && (
-                    <>
-                      {operation?.status === "not_started" && (
-                        <Button
-                          size="sm"
-                          onClick={() => updateStatusMutation.mutate("in_progress")}
-                          className="gap-1.5"
-                        >
-                          <Play className="h-4 w-4" />
-                          {t("operations.start", "Start")}
-                        </Button>
-                      )}
-                      {operation?.status === "in_progress" && (
-                        <Button
-                          size="sm"
-                          onClick={() => updateStatusMutation.mutate("completed")}
-                          className="gap-1.5"
-                        >
-                          <CheckCircle className="h-4 w-4" />
-                          {t("operations.complete", "Complete")}
-                        </Button>
-                      )}
-                    </>
-                  )}
-                </div>
+                {operation?.status === "in_progress" && (
+                  <div className="flex flex-wrap gap-2 pt-4 border-t">
+                    <Button size="sm" onClick={() => lifecycleMutation.mutate("complete")} disabled={lifecycleMutation.isPending} className="gap-1.5">
+                      <CheckCircle className="h-4 w-4" />
+                      {t("operations.complete")}
+                    </Button>
+                  </div>
+                )}
               </TabsContent>
 
               {resourcesCount > 0 && (
@@ -802,7 +800,7 @@ export default function OperationDetailModal({
                     <div>
                       <Label className="text-sm font-medium mb-2 block flex items-center gap-2">
                         <Box className="h-4 w-4 text-primary" />
-                        {t("parts.cadFiles", "CAD Files")} ({stepFiles.length})
+                        {t("parts.cadFiles")} ({stepFiles.length})
                       </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {stepFiles.map((file: string, idx: number) => (
@@ -824,7 +822,7 @@ export default function OperationDetailModal({
                     <div>
                       <Label className="text-sm font-medium mb-2 block flex items-center gap-2">
                         <FileText className="h-4 w-4 text-destructive" />
-                        {t("parts.documents", "Documents")} ({pdfFiles.length})
+                        {t("parts.documents")} ({pdfFiles.length})
                       </Label>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {pdfFiles.map((file: string, idx: number) => (

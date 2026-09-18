@@ -87,7 +87,7 @@ vi.mock("@/components/qrm/QRMDashboard", () => ({
   QRMDashboard: () => React.createElement("div", { "data-testid": "qrm-dashboard" }),
 }));
 
-vi.mock("@/lib/database", () => ({
+vi.mock("@/lib/db", () => ({
   adminStopTimeTracking: vi.fn(),
   stopAllActiveTimeEntries: vi.fn(),
 }));

@@ -1,358 +1,64 @@
 ---
 title: MCP Server Demo Guide
-description: Step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
+description: Scenarios that show what an AI agent can do in Eryxon Flow through the MCP server.
 ---
 
-This guide provides step-by-step instructions for demonstrating the Eryxon Flow MCP Server capabilities.
-
-:::tip[Setup Required]
-Before running demos, ensure your MCP server is properly configured. See the [MCP Server Setup Guide](/guides/mcp-setup) for deployment instructions.
-:::
-
-## Prerequisites
-
-Before the demo, ensure you have:
-
-1. **Environment Variables Set**
-   ```bash
-   export SUPABASE_URL="https://your-project.supabase.co"
-   export SUPABASE_SERVICE_KEY="your-service-key"
-   ```
-
-2. **Server Built and Ready**
-   ```bash
-   cd mcp-server
-   npm install
-   npm run build
-   ```
-
-3. **Sample Data** - Ensure your Supabase database has some sample jobs, parts, and operations for demonstration.
-
-## Quick Start
-
-### Start the MCP Server
-
-```bash
-npm start
-# or for development with hot reload:
-npm run dev
-```
-
-You should see:
-```
-Eryxon Flow MCP Server
-Loaded 50 tools from 9 modules
-Eryxon Flow MCP Server running on stdio
-```
-
-**Tool Modules:**
-- Jobs (7 tools) - Job lifecycle and management
-- Parts (2 tools) - Part tracking
-- Operations (5 tools) - Operation workflow
-- Tasks (2 tools) - Task management
-- Issues (8 tools) - Quality issues and NCRs
-- Substeps (5 tools) - Operation substeps
-- Dashboard (3 tools) - Production metrics
-- Scrap (7 tools) - Scrap tracking and analytics
-- Agent Batch (11 tools) - Batch operations for AI agents
-
-### Configure Claude Desktop
-
-Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
-
-```json
-{
-  "mcpServers": {
-    "eryxon-flow": {
-      "command": "node",
-      "args": ["/path/to/eryxon-flow/mcp-server/dist/index.js"],
-      "env": {
-        "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_KEY": "your-service-key"
-      }
-    }
-  }
-}
-```
-
-:::note[Need Help?]
-For complete setup instructions including cloud deployment options, see the [MCP Server Setup Guide](/guides/mcp-setup).
-:::
-
----
-
-## Demo Scenarios
-
-### Scenario 1: Basic Job Management 
-**Objective**: Show basic CRUD operations for manufacturing jobs.
-
-1. **Fetch Current Jobs**
-   ```
-   "Show me all jobs currently in progress"
-   ```
-   The AI will use `fetch_jobs` with `status: "in_progress"`.
-
-2. **Create a New Job**
-   ```
-   "Create a new job for customer 'Acme Corp' with job number 'JOB-2026-0042' due next Friday"
-   ```
-   Uses `create_job` tool.
-
-3. **Update Job Priority**
-   ```
-   "Change job JOB-2026-0042 to high priority"
-   ```
-   Uses `update_job` tool.
-
-4. **Start the Job**
-   ```
-   "Start job JOB-2026-0042"
-   ```
-   Uses `start_job` tool.
-
----
-
-### Scenario 2: Production Dashboard 
-**Objective**: Demonstrate real-time production metrics.
-
-1. **Get Dashboard Stats**
-   ```
-   "Show me the current production dashboard stats"
-   ```
-   Uses `get_dashboard_stats`.
-
-2. **View QRM Capacity**
-   ```
-   "What's our current cell capacity utilization?"
-   ```
-   Uses `get_qrm_data`.
-
-3. **Production Metrics**
-   ```
-   "Show me production metrics for the last 7 days"
-   ```
-   Uses `get_production_metrics`.
-
----
-
-### Scenario 3: Quality Analytics 
-**Objective**: Demonstrate quality issue analytics and insights.
-
-1. **Get Issue Analytics by Severity**
-   ```
-   "Show me issue analytics for the last 30 days grouped by severity"
-   ```
-   Uses `get_issue_analytics` with `days: 30`, `group_by: "severity"`.
-
-2. **Analyze Issue Trends**
-   ```
-   "What are the quality issue trends over the past week?"
-   ```
-   Uses `get_issue_trends` with `days: 7`, `interval: "daily"`.
-
-3. **Root Cause Analysis**
-   ```
-   "Analyze the most common root causes for issues in the last 90 days"
-   ```
-   Uses `get_root_cause_analysis` with `days: 90`, `min_occurrences: 2`.
-
-4. **Get Quality Improvement Suggestions**
-   ```
-   "Give me suggestions to improve quality based on recent patterns"
-   ```
-   Uses `suggest_quality_improvements` with analysis of issue patterns.
-
----
-
-### Scenario 4: Rush Order Handling 
-**Objective**: Demonstrate agent batch operations for handling urgent orders.
-
-1. **Prioritize a Rush Job**
-   ```
-   "We have a rush order from customer 'Premium Parts Inc'.
-   Prioritize job JOB-2026-0035, mark all parts as bullet cards,
-   and add a note about the customer's deadline."
-   ```
-   Uses `prioritize_job`.
-
-2. **Check Resource Availability**
-   ```
-   "What machines are available to work on this rush job?"
-   ```
-   Uses `check_resource_availability`.
-
-3. **Get Parts Due Soon**
-   ```
-   "What parts are due in the next 3 days?"
-   ```
-   Uses `get_parts_due_soon`.
-
-4. **Suggest Reschedule**
-   ```
-   "Suggest a reschedule plan to accommodate this rush order"
-   ```
-   Uses `suggest_reschedule`.
-
----
-
-### Scenario 5: Operations Management
-**Objective**: Show granular operation control.
-
-1. **Fetch Operations**
-   ```
-   "Show me all operations for job JOB-2026-0035"
-   ```
-   Uses `fetch_operations`.
-
-2. **Start an Operation**
-   ```
-   "Start the laser cutting operation"
-   ```
-   Uses `start_operation`.
-
-3. **Complete Multiple Operations**
-   ```
-   "Complete operations OP-001 and OP-002"
-   ```
-   Uses `batch_complete_operations`.
-
-4. **Assign Resources**
-   ```
-   "Assign Machine #3 to operations OP-003 and OP-004"
-   ```
-   Uses `assign_resource_to_operations`.
-
----
-
-### Scenario 7: Quality & NCR Management 
-**Objective**: Demonstrate issue tracking and NCR workflow.
-
-1. **Fetch Open Issues**
-   ```
-   "Show me all critical issues that are currently open"
-   ```
-   Uses `fetch_issues` with severity: "critical", status: "open".
-
-2. **Create an NCR**
-   ```
-   "Create a Non-Conformance Report for operation OP-005:
-   - Title: 'Dimensional out of tolerance'
-   - Severity: high
-   - Category: process
-   - Description: 'Part dimensions exceed tolerance by 0.5mm'"
-   ```
-   Uses `create_ncr`.
-
-3. **Update Issue Status**
-   ```
-   "Mark issue ISS-001 as resolved"
-   ```
-   Uses `update_issue`.
-
----
-
-## Demo Tips
-
-### Before the Demo
-
-- [ ] Verify all environment variables are set correctly
-- [ ] Test the server starts without errors
-- [ ] Ensure sample data exists in the database
-- [ ] Have Claude Desktop configured and connected
-- [ ] Test a few basic queries to warm up the connection
-
-### During the Demo
-
-1. **Start Simple** - Begin with basic fetch operations to show the connection works
-2. **Build Complexity** - Progress to more complex scenarios
-3. **Show Real Data** - Always use real database data, never mock data
-4. **Highlight Analytics** - Quality analytics and scrap analysis tools provide production insights
-5. **Demonstrate Batch Operations** - Show efficiency gains from batch tools
-
-### Common Questions & Answers
-
-**Q: How does authentication work?**
-A: The MCP server uses a Supabase service key for database access. In production, you would also implement MCP authentication keys for per-tenant access control.
-
-**Q: Can this integrate with our existing ERP?**
-A: Yes! The ERP sync tools support bidirectional synchronization with any external system. Just map your external IDs and sources.
-
-**Q: How is data security handled?**
-A: All data access goes through Supabase with Row-Level Security (RLS). The MCP server respects tenant boundaries.
-
----
-
-## Troubleshooting
-
-### Server Won't Start
-
-```bash
-# Check environment variables
-echo $SUPABASE_URL
-echo $SUPABASE_SERVICE_KEY
-
-# Rebuild
-npm run build
-
-# Check for errors
-npm start 2>&1 | head -20
-```
-
-### Tools Not Appearing in Claude
-
-1. Restart Claude Desktop
-2. Check the MCP configuration file syntax
-3. Verify the path to `dist/index.js` is correct
-4. Check Claude Desktop logs
-
-### Database Connection Errors
-
-```bash
-# Test Supabase connection
-node -e "
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-supabase.from('jobs').select('count').single().then(console.log);
-"
-```
-
----
-
-## Tool Reference Quick Card
-
-| Category | Tools | Key Use Case |
-|----------|-------|--------------|
-| **Jobs** | fetch_jobs, create_job, update_job, start_job, stop_job, complete_job, resume_job | Full job lifecycle |
-| **Parts** | fetch_parts, update_part | Part tracking |
-| **Operations** | fetch_operations, start_operation, pause_operation, complete_operation, update_operation | Operation control |
-| **Tasks** | fetch_tasks, update_task | Task assignment |
-| **Issues** | fetch_issues, create_ncr, fetch_ncrs, update_issue, get_issue_analytics, get_issue_trends, get_root_cause_analysis, suggest_quality_improvements | Quality tracking & analytics |
-| **Substeps** | fetch_substeps, add_substep, complete_substep, update_substep, delete_substep | Granular tracking |
-| **Dashboard** | get_dashboard_stats, get_qrm_data, get_production_metrics | Real-time metrics |
-| **Scrap** | fetch_scrap_reasons, report_scrap, get_scrap_analytics, get_scrap_trends, get_yield_metrics, get_scrap_pareto, get_quality_score | Scrap tracking & yield analysis |
-| **Batch Ops** | 16 tools for bulk operations | Efficiency |
-
----
-
-## Next Steps After Demo
-
-1. **Production Deployment** - Deploy to Railway, Fly.io, or Docker
-2. **Authentication** - Configure API keys for multi-tenant access
-3. **ERP Integration** - Map your external system IDs
-4. **Monitoring** - Set up MCP activity monitoring in the admin UI
-
----
-
-## See Also
-
-**Setup & Deployment:**
-- [MCP Server Setup Guide](/guides/mcp-setup) - Complete deployment and configuration
-- [Self-Hosting Guide](/guides/self-hosting) - Self-hosted Eryxon Flow setup
-
-**API & Integration:**
-- [REST API Documentation](/architecture/connectivity-rest-api) - Complete API reference
-- [Connectivity Overview](/architecture/connectivity-overview) - Integration architecture
-- [Webhooks & MQTT](/architecture/connectivity-mqtt) - Event-driven integration
-
-**Architecture:**
-- [App Architecture](/architecture/app-architecture) - System design overview
+Set the server up first: [MCP Server Setup](/guides/mcp-setup/). Tool names below are the ones the agent uses; the full list is in the [MCP Server Reference](/api/mcp-server-reference/).
+
+## Scenario 1: an order from scratch
+
+1. "Create job JOB-2026-0042 for customer Acme, due next Friday." → `create_job`
+2. "Add part BRACKET-01, 12 pieces, S235 3 mm, with routing laser cutting → bending → powder coating." → `create_part` with `operations` (cells looked up with `fetch_cells`)
+3. "Show the routing." → `get_part_routing`
+4. "Mark the whole job as a rush order." → `prioritize_job`
+
+## Scenario 2: production on the floor
+
+1. "Start laser cutting on BRACKET-01 for operator Jan." → `start_operation` with `operator_id`
+2. "Jan is done, 12 good, 0 scrap." → `report_production`, then `complete_operation`
+3. "Start bending now." → `start_operation`. With sequential release on and laser cutting not completed the tool returns `INVALID_STATE_TRANSITION: Previous operation must be completed first`.
+4. "Who is clocked on right now?" → resource `eryxon://timers` or `fetch_active_time_entries`
+
+## Scenario 3: a problem at a cell
+
+1. "Report a standstill on the bending operation: tool broke, high severity." → `create_issue` with `causes_standstill: true` (the operation is parked under a Yellow Card)
+2. "What is blocked right now?" → `fetch_issues` with `causes_standstill: true`, `status: pending`
+3. "Tool replaced, resolve it." → `resolve_issue`
+4. "Scrap 2 pieces, reason burr." → `fetch_scrap_reasons`, `report_production` with `scrap_reasons`
+
+## Scenario 4: planning
+
+1. "Which parts are due in the next three days and what blocks them?" → `get_parts_due_soon`
+2. "How full is the bending cell?" → `get_cell_capacity` or `eryxon://cells/{id}/wip`
+3. "Shift every open operation of JOB-2026-0042 by two days." → `reschedule_operations`
+4. "Suggest how to fit a rush job in." → `suggest_reschedule`, or the `release-plan-for-job` prompt
+
+## Scenario 5: quality review
+
+- "Scrap by reason for the last 30 days." → `get_scrap_analytics`
+- "Pareto of scrap reasons." → `get_scrap_pareto`
+- "Recurring root causes this quarter." → `get_root_cause_analysis`
+- "Quality score for last month." → `get_quality_score`
+
+## Scenario 6: workshop configuration
+
+- "Add a cell Deburring after bending with a WIP limit of 6." → `create_cell`
+- "Register laser 2 as a machine." → `create_resource`
+- "Create operator Piet with PIN 4711." → `create_operator`
+- "Block starting an operation before the previous one is done." → `update_workshop_settings` with `{"feature_flags": {"sequentialRelease": true}}`
+- "Send operation.completed events to https://erp.example/hook." → `create_webhook`
+- "Friday 3 October is a holiday." → `set_calendar_day`
+
+## Scenario 7: shift handover
+
+Run the `shift-handover` prompt. It reads the running timers, the open standstills and the parts due within two days and writes the handover note.
+
+## Scenario 8: a confirmed delete
+
+"Delete the Deburring cell." → `delete_cell` answers with a confirmation request (multi-round-trip); the client shows "Delete cell …?", the agent confirms, and the retry performs the delete. Declining leaves the cell in place.
+
+## Notes for a demo
+
+- Use a workshop with a few jobs, cells and operators; `seed_default_scrap_reasons` fills the scrap reason list.
+- Refusals are part of the demo: the agent sees the production rule in the error message and can explain it.
+- Everything the agent does is visible in the app immediately and appears in `fetch_activity_log`.

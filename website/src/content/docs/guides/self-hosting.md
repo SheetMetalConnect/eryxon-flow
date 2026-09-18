@@ -49,7 +49,6 @@ Copy `.env.example` to `.env` and configure the public frontend values:
 ```dotenv
 VITE_SUPABASE_URL=https://yourproject.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-public-key
-VITE_SUPABASE_PROJECT_ID=yourproject
 ```
 
 Keep database passwords, service-role keys, and integration credentials on the

@@ -25,7 +25,7 @@ You are a specialized agent for the Eryxon Flow tech stack — answering questio
 
 ### DevOps
 - **Vercel** — Frontend hosting and preview deployments
-- **Cloudflare Workers** — Documentation site
+- **Website** — Astro/Starlight in `website/`, deployed separately
 - **Dependabot** — Automated dependency updates
 - **ESLint** — Code linting
 - **npm** — Package manager

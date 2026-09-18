@@ -5,7 +5,6 @@ description: Touch-friendly workstation view showing what to work on, with live 
 
 The Operator Terminal is the screen operators see at their workstation. It runs on tablets and large touchscreens on the shop floor. Everything is designed for touch — large tap targets, no tiny buttons, no keyboard needed.
 
-The tabbed detail panel below arrived in the [v0.8.0 release](/release-notes/v0-8-0/); [v0.8.3](/release-notes/v0-8-3/) added time booked-vs-budget, the operators who worked the job, and a one-tap Complete, and made every time read in plain units. All shipped changes live in the [release notes](/release-notes/).
 
 ## Selecting Your Cell
 
@@ -13,7 +12,18 @@ When you open the terminal, pick your cell (workstation) from the cell selector 
 
 ## The Three Queues
 
-Your work is split into three sections, top to bottom:
+Your work is split into three sections, top to bottom. The split follows the routing of each part:
+
+```mermaid
+flowchart TD
+  O["Operation at your cell"] -->|"in progress or on hold"| P["In Process"]
+  O -->|"not started"| R{"Every earlier operation<br/>on the part completed?"}
+  R -->|yes| B["In Buffer"]
+  R -->|no| E["Expected"]
+  E -->|"Sequential release on"| X["Start disabled"]
+  E -->|"Sequential release off"| S["Start allowed"]
+```
+
 
 ### In Process
 
@@ -21,11 +31,11 @@ What you are working on right now. These operations are active — the timer is 
 
 ### In Buffer
 
-What is next. These parts have physically arrived at your cell and are ready to pick up. When you finish your current work, grab the next item from the buffer.
+What is next. Every earlier operation on the part is completed, so the part can be picked up at your cell. Work first in, first out: when you finish your current work, take the next item from the buffer.
 
 ### Expected
 
-What is on its way. These operations are planned for your cell but the parts have not arrived yet. Use this to see what is coming later today or tomorrow.
+What is on its way. An earlier operation on the part is still open at another cell. The Cell column shows where the part is right now. By default you can still start an Expected operation, for example to prepare the workplace on project work. An admin can switch on **Sequential release** in Organization settings; then Start is disabled until the previous operation is completed, and the API and MCP server follow the same rule.
 
 Each section shows **totals** at the bottom: total time and total pieces. Time reads in plain units — `45m`, `1h 20m`, `2h` — never minutes mislabelled as hours.
 
@@ -45,9 +55,9 @@ The backlog column tells you how urgent each operation is:
 
 | Status | Meaning |
 |---|---|
-| **Te laat** | Overdue. Should have been done already. |
-| **Vandaag** | Due today. Finish before end of shift. |
-| **Binnenkort** | Due soon. Coming up in the next few days. |
+| **Overdue** | Overdue. Should have been done already. |
+| **Today** | Due today. Finish before end of shift. |
+| **Soon** | Due soon. Coming up in the next few days. |
 
 Combined with the POLCA signal, this helps you decide what to pick up next: overdue GO items first, then today's GO items, then the rest.
 

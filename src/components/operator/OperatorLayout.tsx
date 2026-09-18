@@ -1,4 +1,5 @@
-import { useState } from "react";
+const AppTour = lazy(() => import("@/components/onboarding/AppTour").then((m) => ({ default: m.AppTour })));
+import { lazy, Suspense, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
 import { useTranslation } from "react-i18next";
 import { DOCS_GUIDES_URL } from "@/lib/config";
@@ -32,7 +33,6 @@ import { OperatorSwitcher } from "./OperatorSwitcher";
 import { OperatorStatusBar } from "./OperatorStatusBar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { AppTour } from "@/components/onboarding";
 import { cn } from "@/lib/utils";
 import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
 import { NavigationButtons } from "@/components/NavigationButtons";
@@ -59,7 +59,7 @@ export const OperatorLayout = ({
 
   const navItems = [
     { path: "/operator/work-queue", label: t("navigation.workQueue"), icon: ListChecks },
-    { path: "/operator/view", label: t("navigation.terminalView", "Terminal View"), icon: Gauge },
+    { path: "/operator/view", label: t("navigation.terminalView"), icon: Gauge },
     { path: "/operator/my-activity", label: t("navigation.myActivity"), icon: Clock },
     { path: "/operator/my-issues", label: t("navigation.myIssues"), icon: Flag },
   ];
@@ -84,7 +84,7 @@ export const OperatorLayout = ({
                 >
                   <Factory className="h-4 w-4" />
                   <span className="hidden sm:inline">
-                    {t("navigation.backToAdmin", "Back to Admin")}
+                    {t("navigation.backToAdmin")}
                   </span>
                 </Button>
               ) : (
@@ -107,7 +107,7 @@ export const OperatorLayout = ({
 
             {/* Right: Actions */}
             <div className="flex shrink-0 items-center gap-1">
-              <Button variant="ghost" size="icon" aria-label={t("mobile.scanTitle", "Scan barcode or QR")}
+              <Button variant="ghost" size="icon" aria-label={t("mobile.scanTitle")}
                 onClick={() => navigate("/operator/work-queue?scan=1")}><ScanLine className="h-4 w-4" /></Button>
               <SearchTriggerButton onClick={() => setSearchOpen(true)} compact />
               <ThemeToggle variant="dropdown" />
@@ -212,7 +212,7 @@ export const OperatorLayout = ({
 
         {profile &&
         (profile as { tour_completed?: boolean }).tour_completed === false ? (
-          <AppTour userRole="operator" />
+          <Suspense fallback={null}><AppTour userRole="operator" /></Suspense>
         ) : null}
       </div>
 

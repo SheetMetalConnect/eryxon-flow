@@ -32,7 +32,7 @@ vi.mock("@/hooks/useCADProcessing", () => ({
   isCADServiceEnabled: () => false,
 }));
 
-vi.mock("@/lib/database", () => ({
+vi.mock("@/lib/db", () => ({
   fetchOperationLookupDetails: (...args: unknown[]) =>
     mockFetchOperationLookupDetails(...args),
   startTimeTracking: vi.fn(),
@@ -71,8 +71,11 @@ const createQueryBuilder = (table: string, data: unknown[]) => {
   const chain = {
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
+    is: vi.fn().mockReturnThis(),
     order: vi.fn(),
     single: vi.fn(),
+    then: (resolve: (value: { data: unknown[]; error: null }) => void) =>
+      resolve({ data, error: null }),
   };
 
   chain.order.mockImplementation(() =>
@@ -118,6 +121,7 @@ const createOperation = (
   status: "in_progress" | "not_started",
   sequence: number,
   cellId = "cell-1",
+  partId = `part-${id}`,
 ) =>
   ({
     id,
@@ -138,7 +142,7 @@ const createOperation = (
           }
         : null,
     part: {
-      id: `part-${id}`,
+      id: partId,
       part_number: `PART-${id}`,
       material: "Steel",
       quantity: sequence,
@@ -160,10 +164,7 @@ describe("OperatorView", () => {
       createOperation("1", "in_progress", 1),
       createOperation("2", "not_started", 2),
       createOperation("3", "not_started", 3),
-      createOperation("4", "not_started", 4),
-      createOperation("5", "not_started", 5),
-      createOperation("6", "not_started", 6),
-      createOperation("7", "not_started", 7),
+      createOperation("4", "not_started", 4, "cell-1", "part-3"),
     ]);
     window.localStorage.clear();
   });
@@ -179,7 +180,7 @@ describe("OperatorView", () => {
     const headings = screen.getAllByRole("heading", { level: 2 });
     const bufferHeading = headings.find(h => h.textContent?.includes("inBuffer"));
     const expectedHeading = headings.find(h => h.textContent?.includes("expected"));
-    expect(bufferHeading).toHaveTextContent("5");
+    expect(bufferHeading).toHaveTextContent("2");
     expect(expectedHeading).toHaveTextContent("1");
   });
 

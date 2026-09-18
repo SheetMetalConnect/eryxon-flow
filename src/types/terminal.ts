@@ -12,6 +12,8 @@ export interface TerminalJob {
     hours: number;
     dueDate: string;
     status: "in_progress" | "in_buffer" | "expected" | "completed" | "on_hold";
+    released: boolean; // every earlier operation of the part is completed
+    startBlocked: boolean; // sequential release is on and this operation is not released
     warnings?: string[];
     nextStep?: string;
     hasPdf: boolean;
@@ -36,6 +38,7 @@ export interface TerminalJob {
     cncProgramName?: string | null;
     isBulletCard?: boolean | null; // QRM: Bullet Card (always-on-top priority) flag
     plannedStart?: string | null; // Scheduled start date of operation
+    locationCode?: string | null; // Drop-off slot the part sits in (location tracking on)
     batchContext?: {
         batchId: string;
         batchNumber: string;

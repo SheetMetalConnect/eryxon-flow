@@ -10,7 +10,7 @@ tags: ["QRM", "planning"]
 ctaIntent: "trial"
 relatedLinks:
   - label: "Getting started overview"
-    href: "/getting-started/introduction/overview/"
+    href: "/introduction/"
 ---
 
 A high-mix, low-volume shop rarely has a throughput problem on any single machine. It has a

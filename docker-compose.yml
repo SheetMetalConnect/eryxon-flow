@@ -6,12 +6,12 @@
 #
 # For HTTPS with automatic SSL:
 #   1. Uncomment the caddy service below
-#   2. Create a Caddyfile (see docs)
+#   2. Edit Caddyfile for your hostname
 #   3. Change eryxon-flow ports from "80:80" to expose: ["80"]
 
 services:
   eryxon-flow:
-    image: ${ERYXON_IMAGE:-ghcr.io/sheetmetalconnect/eryxon-flow:0.10.0}
+    image: ${ERYXON_IMAGE:-ghcr.io/sheetmetalconnect/eryxon-flow:0.11.0}
     container_name: eryxon-flow
     restart: unless-stopped
     ports:
@@ -29,10 +29,7 @@ services:
   # To enable:
   #   1. Uncomment the caddy service and volumes below
   #   2. Change eryxon-flow from ports: ["80:80"] to expose: ["80"]
-  #   3. Create a Caddyfile with your domain:
-  #        your-domain.com {
-  #          reverse_proxy eryxon-flow:80
-  #        }
+  #   3. Edit Caddyfile (section A for a public hostname, B for LAN)
   #
   # caddy:
   #   image: caddy:alpine

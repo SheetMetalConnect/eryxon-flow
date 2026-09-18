@@ -30,7 +30,7 @@ Kies het pad dat past bij uw evaluatie van Eryxon Flow.
 
 - **Operators** krijgen een touchvriendelijke werkwachtrij: werk per stadium pullen, tijd loggen, STEP/PDF bekijken en issues op de werkvloer melden.
 - **Admins** krijgen realtime zicht: wie waaraan werkt, issue-goedkeuringen, datum-overschrijvingen en configuratie van stadia/materialen.
-- **Technische evaluatoren** krijgen een API-first systeem: 24 REST-endpoints, webhooks, MQTT, een MCP-server en planningadapters voor FrePPLe en Odoo.
+- **Technische evaluatoren** krijgen een API- en MCP-native systeem. De UI, de REST API en de MCP-server roepen dezelfde Postgres-functies en rijbeveiligingsregels aan, en elke wijziging vuurt dezelfde ondertekende webhooks af. Een MCP-client zoals Claude kan productie plannen, vrijgeven, starten, rapporteren en bevragen met dezelfde bewaking als een operator.
 
 > **Probeer het nu:** Open de <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_try_now_nl" data-cta-surface="docs_intro" data-cta-kind="hosted_app" data-cta-locale="nl">hosted versie op app.eryxon.eu</a> — geen installatie vereist.
 
@@ -92,7 +92,7 @@ Volg in realtime wie er aanwezig is en waaraan zij werken. Geen gegis, geen vert
 
 ## Integratie-Eerste Architectuur
 
-**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via 24 REST-API-endpoints (Beta). Eryxon stuurt voltooiingsgebeurtenissen terug via webhooks (Beta) of MQTT (Beta) — de MQTT-client krijgt retry, circuit breaker en dead-letter logging. De MCP-server (Live) maakt AI/automatisering-integratie mogelijk met stdio voor lokale clients en Streamable HTTP voor vertrouwde zelfgehoste deployments.
+**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via de [REST API](/api/rest-api-reference/). Eryxon stuurt voltooiingsgebeurtenissen terug via ondertekende webhooks. De MCP-server (Live) maakt AI/automatisering-integratie mogelijk met stdio voor lokale clients en Streamable HTTP voor vertrouwde zelfgehoste deployments.
 
 ### Bestandsafhandeling
 Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden rechtstreeks naar Supabase Storage en verwijs vervolgens naar het bestandspad bij het maken van orders of onderdelen. Grote bestanden (typisch 5-50MB) worden rechtstreeks naar de storage geüpload—geen timeouts, geen API-knelpunten.
@@ -101,7 +101,7 @@ Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden 
 Voeg JSON-payloads toe aan orders, onderdelen en taken voor uw specifieke behoeften—gereedschapsvereisten, malnummers, machine-instellingen, materiaalspecificaties, alles wat uw werkplaats moet bijhouden.
 
 ### ERP- & Planning-Integraties
-Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. Of bouw uw eigen integratie met onze GitHub starter kits met voorbeeldcode en documentatie. Eryxon Flow levert ook pluggable planning-adapters in **Beta**-status voor **FrePPLe** en **Odoo MRP**.
+Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. Of bouw uw eigen integratie met onze GitHub starter kits met voorbeeldcode en documentatie.
 
 ### Assemblage Volgen
 Onderdelen kunnen ouder-kind relaties hebben. Visuele groepering toont assemblages met geneste componenten. Niet-blokkerende afhankelijkheidswaarschuwingen herinneren operators eraan wanneer onderdelen voltooid moeten zijn voordat assemblage-taken worden gestart—maar ze kunnen dit overschrijven indien nodig.

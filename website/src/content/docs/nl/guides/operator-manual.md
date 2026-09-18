@@ -5,6 +5,21 @@ description: Hoe Eryxon Flow te gebruiken als operator — werkwachtrij, termina
 
 Deze handleiding behandelt alles wat je nodig hebt om met Eryxon Flow op de werkvloer te werken. Er zijn twee hoofdinterfaces: de **Werkwachtrij** voor desktopgebruik en de **Terminal** voor vaste werkstationschermen. Beide tonen hetzelfde werk — alleen anders gepresenteerd.
 
+## Navigatie en schermindeling
+
+Gebruik de operatornavigatie om deze weergaven te openen:
+
+| Weergave | Adres | Doel |
+| --- | --- | --- |
+| Werkwachtrij | `/operator/work-queue` | Bewerkingen over alle cellen vinden; de scanknop opent de scannerinvoer. |
+| Terminal-weergave | `/operator/view` | Werken vanuit de wachtrijen van een gekozen cel. |
+| Mijn activiteit | `/operator/my-activity` | Je geregistreerde werk bekijken. |
+| Mijn issues | `/operator/my-issues` | De issues bekijken die je hebt gemeld. |
+
+Gedeelde bewerkingslinks openen `/operator/operations/<operation-id>`. Oude `/m`-links sturen door naar de bijbehorende operatorweergave.
+
+In de Werkwachtrij staan celkolommen naast elkaar op brede schermen en onder elkaar op smalle schermen. In de Terminal tonen schermen smaller dan 768 pixels één paneel tegelijk: kies een bewerking om de details te openen en tik op **Terug** om naar de wachtrij te gaan. Bredere schermen tonen wachtrij en detailpaneel naast elkaar.
+
 ## Werkwachtrij (Kanban)
 
 De Werkwachtrij is je standaardweergave na het inloggen. Het toont bewerkingen als kaarten op een kanbanbord.
@@ -55,8 +70,8 @@ De Terminal is gebouwd voor vaste schermen bij een werkstation. Het werkt goed o
 Kies je cel uit de **celselector** in de koptekst. De terminal toont dan alleen werk voor die cel, opgesplitst in drie wachtrijen:
 
 - **In Bewerking** (groen) — bewerkingen waar je op dit moment actief aan werkt
-- **In Buffer** (blauw) — de volgende bewerkingen die klaar zijn om te starten, al bij je cel
-- **Verwacht** (oranje) — aankomend werk dat bij je cel zal aankomen
+- **In Buffer** (blauw) — de volgende bewerkingen die klaar zijn om te starten: alle eerdere bewerkingen van het onderdeel zijn afgerond
+- **Verwacht** (oranje) — aankomend werk: een eerdere bewerking van het onderdeel staat nog open bij een andere cel. Je kunt hem toch starten, tenzij je beheerder **Volgorde afdwingen** heeft aangezet; dan blijft Start uit tot de vorige bewerking is afgerond
 
 ### Statusbalk
 

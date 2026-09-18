@@ -94,7 +94,7 @@ export function AllSubstepsView() {
 
     if (error) {
       logger.error('AllSubstepsView', 'Error loading substeps', error);
-      toast.error(t("Failed to load substeps"));
+      toast.error(t("substeps.loadFailed"));
     } else {
       const transformedData = ((data || []) as unknown as { id: string; name: string; status: string; sequence: number; notes: string | null; icon_name: string | null; operation_id: string; operations: { id: string; operation_name: string; parts: { id: string; part_number: string; jobs: { id: string; job_number: string } } } }[]).map((item) => ({
         ...item,
@@ -169,7 +169,7 @@ export function AllSubstepsView() {
     if (!editingSubstep) return;
 
     if (!formData.name.trim()) {
-      toast.error(t("Substep name is required"));
+      toast.error(t("substeps.nameRequired"));
       return;
     }
 
@@ -186,16 +186,16 @@ export function AllSubstepsView() {
 
     if (error) {
       logger.error('AllSubstepsView', 'Error updating substep', error);
-      toast.error(t("Failed to update substep"));
+      toast.error(t("substeps.updateFailed"));
     } else {
-      toast.success(t("Substep updated successfully"));
+      toast.success(t("substeps.updated"));
       handleCloseEditDialog();
       loadSubsteps();
     }
   };
 
   const handleDelete = async (substep: Substep) => {
-    if (!confirm(t("Are you sure you want to delete this substep?"))) return;
+    if (!confirm(t("substeps.deleteConfirm"))) return;
 
     const { error } = await supabase
       .from("substeps")
@@ -204,9 +204,9 @@ export function AllSubstepsView() {
 
     if (error) {
       logger.error('AllSubstepsView', 'Error deleting substep', error);
-      toast.error(t("Failed to delete substep"));
+      toast.error(t("substeps.deleteFailed"));
     } else {
-      toast.success(t("Substep deleted successfully"));
+      toast.success(t("substeps.deleted"));
       loadSubsteps();
     }
   };
@@ -227,13 +227,13 @@ export function AllSubstepsView() {
   const getStatusLabel = (status: string) => {
     switch (status) {
       case 'completed':
-        return t('Completed');
+        return t('substeps.completed');
       case 'in_progress':
-        return t('In Progress');
+        return t('substeps.inProgress');
       case 'blocked':
-        return t('Blocked');
+        return t('substeps.blocked');
       default:
-        return t('Not Started');
+        return t('substeps.notStarted');
     }
   };
 
@@ -249,50 +249,50 @@ export function AllSubstepsView() {
     <div className="space-y-4">
       <div className="flex gap-4 items-end">
         <div className="flex-1 space-y-2">
-          <Label htmlFor="search">{t("Search")}</Label>
+          <Label htmlFor="search">{t("globalSearch.title")}</Label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               id="search"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder={t("Search by job, part, operation, or step name...")}
+              placeholder={t("substeps.searchPlaceholder")}
               className="pl-9"
             />
           </div>
         </div>
         <div className="w-48 space-y-2">
-          <Label htmlFor="status-filter">{t("Status")}</Label>
+          <Label htmlFor="status-filter">{t("common.status")}</Label>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger id="status-filter">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">{t("All Statuses")}</SelectItem>
-              <SelectItem value="not_started">{t("Not Started")}</SelectItem>
-              <SelectItem value="in_progress">{t("In Progress")}</SelectItem>
-              <SelectItem value="completed">{t("Completed")}</SelectItem>
-              <SelectItem value="blocked">{t("Blocked")}</SelectItem>
+              <SelectItem value="all">{t("substeps.allStatuses")}</SelectItem>
+              <SelectItem value="not_started">{t("substeps.notStarted")}</SelectItem>
+              <SelectItem value="in_progress">{t("substeps.inProgress")}</SelectItem>
+              <SelectItem value="completed">{t("substeps.completed")}</SelectItem>
+              <SelectItem value="blocked">{t("substeps.blocked")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
       </div>
 
       <div className="text-sm text-muted-foreground">
-        {t("Showing")} {filteredSubsteps.length} {t("of")} {substeps.length} {t("substeps")}
+        {t("substeps.showing", { shown: filteredSubsteps.length, total: substeps.length })}
       </div>
 
       <div className="border rounded-lg">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("Job")}</TableHead>
-              <TableHead>{t("Part")}</TableHead>
-              <TableHead>{t("Operation")}</TableHead>
-              <TableHead>{t("Step Name")}</TableHead>
-              <TableHead>{t("Status")}</TableHead>
-              <TableHead>{t("Seq")}</TableHead>
-              <TableHead className="w-[100px]">{t("Actions")}</TableHead>
+              <TableHead>{t("common.job")}</TableHead>
+              <TableHead>{t("common.part")}</TableHead>
+              <TableHead>{t("common.operation")}</TableHead>
+              <TableHead>{t("substeps.stepName")}</TableHead>
+              <TableHead>{t("common.status")}</TableHead>
+              <TableHead>{t("substeps.seq")}</TableHead>
+              <TableHead className="w-[100px]">{t("substeps.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -351,8 +351,8 @@ export function AllSubstepsView() {
         {filteredSubsteps.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
             {searchTerm || statusFilter !== 'all'
-              ? t("No substeps match your filters")
-              : t("No substeps created yet")}
+              ? t("substeps.noMatch")
+              : t("substeps.noneYet")}
           </div>
         )}
       </div>
@@ -361,33 +361,33 @@ export function AllSubstepsView() {
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("Edit Substep")}</DialogTitle>
+            <DialogTitle>{t("substeps.editTitle")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="edit-name">{t("Step Name")}</Label>
+              <Label htmlFor="edit-name">{t("substeps.stepName")}</Label>
               <Input
                 id="edit-name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder={t("Step name")}
+                placeholder={t("substeps.stepName")}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-notes">{t("Notes")}</Label>
+              <Label htmlFor="edit-notes">{t("substeps.notes")}</Label>
               <Textarea
                 id="edit-notes"
                 value={formData.notes}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                placeholder={t("Optional notes")}
+                placeholder={t("substeps.optionalNotes")}
                 rows={3}
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="edit-status">{t("Status")}</Label>
+              <Label htmlFor="edit-status">{t("common.status")}</Label>
               <Select
                 value={formData.status}
                 onValueChange={(value) => setFormData({ ...formData, status: value })}
@@ -396,10 +396,10 @@ export function AllSubstepsView() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="not_started">{t("Not Started")}</SelectItem>
-                  <SelectItem value="in_progress">{t("In Progress")}</SelectItem>
-                  <SelectItem value="completed">{t("Completed")}</SelectItem>
-                  <SelectItem value="blocked">{t("Blocked")}</SelectItem>
+                  <SelectItem value="not_started">{t("substeps.notStarted")}</SelectItem>
+                  <SelectItem value="in_progress">{t("substeps.inProgress")}</SelectItem>
+                  <SelectItem value="completed">{t("substeps.completed")}</SelectItem>
+                  <SelectItem value="blocked">{t("substeps.blocked")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -407,10 +407,10 @@ export function AllSubstepsView() {
 
           <DialogFooter>
             <Button variant="outline" onClick={handleCloseEditDialog}>
-              {t("Cancel")}
+              {t("common.cancel")}
             </Button>
             <Button onClick={handleUpdate}>
-              {t("Update")}
+              {t("substeps.update")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,386 +1,151 @@
-import { useState, useEffect, useMemo } from "react";
-import { ROUTES } from "@/routes/constants";
-import { ColumnDef } from "@tanstack/react-table";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Copy, ExternalLink, Plus, Trash2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { DOCS_URL, FUNCTIONS_URL } from "@/lib/config";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { env } from "@/config/env";
-import { useProfile } from "@/hooks/useProfile";
-import { Key, Copy, Trash2, Plus, BookOpen, ExternalLink } from "lucide-react";
-import { format } from "date-fns";
-import { useTranslation } from "react-i18next";
 import { DataTable } from "@/components/ui/data-table/DataTable";
-import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
-import { logger } from "@/lib/logger";
 
-interface ApiKey {
-  id: string;
-  name: string;
-  key_prefix: string;
-  created_at: string;
-  last_used_at: string | null;
-  active: boolean;
+interface ApiKey { id: string; name: string; key_prefix: string; created_at: string; last_used_at: string | null; active: boolean }
+
+// Keys are hashed by the Edge Function; the browser never writes api_keys directly.
+async function keyApi<T>(method: "GET" | "POST" | "DELETE", body?: unknown, id?: string): Promise<T> {
+  const { data: { session } } = await supabase.auth.getSession();
+  const response = await fetch(`${FUNCTIONS_URL}/api-key-generate${id ? `?id=${id}` : ""}`, {
+    method,
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session?.access_token ?? ""}` },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  const result = await response.json();
+  if (!response.ok || !result.success) throw new Error(result.error?.message ?? response.statusText);
+  return result.data as T;
 }
 
 export default function ConfigApiKeys() {
   const { t } = useTranslation();
-  const profile = useProfile();
-  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [keys, setKeys] = useState<ApiKey[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [newKeyDialog, setNewKeyDialog] = useState(false);
-  const [generatedKey, setGeneratedKey] = useState<string | null>(null);
-  const [keyName, setKeyName] = useState("");
-  const projectId = env('VITE_SUPABASE_PROJECT_ID');
-  const supabaseUrl = env('VITE_SUPABASE_URL') || (projectId ? `https://${projectId}.supabase.co` : "");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [generated, setGenerated] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (profile?.tenant_id) {
-      fetchApiKeys();
-    }
-  }, [profile?.tenant_id]);
-
-  const fetchApiKeys = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('api_keys')
-      .select('*')
-      .eq('tenant_id', profile?.tenant_id)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      toast.error(t('apiKeys.error'), { description: t('apiKeys.failedToFetch') });
-    } else {
-      setApiKeys(data || []);
-    }
-    setLoading(false);
-  };
-
-  const generateApiKey = async () => {
-    if (!keyName.trim()) {
-      toast.error(t('apiKeys.error'), { description: t('apiKeys.enterKeyName') });
-      return;
-    }
-
-    setIsGenerating(true);
-
+  const load = useCallback(async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Not authenticated');
-
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/api-key-generate`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ name: keyName.trim() }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error?.message || 'Failed to generate API key');
-      }
-
-      setGeneratedKey(result.data.api_key);
-      setKeyName("");
-      fetchApiKeys();
-
-      toast.success(t('apiKeys.success'), { description: t('apiKeys.generated') });
+      setKeys((await keyApi<{ api_keys: ApiKey[] }>("GET")).api_keys);
     } catch (error) {
-      logger.error('ApiKeys', 'Error generating API key', error);
-      toast.error(t('apiKeys.error'), { description: error instanceof Error ? error.message : t('apiKeys.failedToGenerate') });
+      toast.error(error instanceof Error ? error.message : t("apiKeys.failedToFetch"));
     } finally {
-      setIsGenerating(false);
+      setLoading(false);
+    }
+  }, [t]);
+  useEffect(() => { void load(); }, [load]);
+
+  const generate = async () => {
+    try {
+      const key = await keyApi<{ api_key: string }>("POST", { name: name.trim() });
+      setGenerated(key.api_key);
+      setName("");
+      void load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("apiKeys.failedToGenerate"));
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(t('apiKeys.copied'), { description: t('apiKeys.copiedToClipboard') });
-  };
-
-  const revokeKey = async (keyId: string) => {
-    const { error } = await supabase
-      .from('api_keys')
-      .update({ active: false })
-      .eq('id', keyId);
-
-    if (error) {
-      toast.error(t('apiKeys.error'), { description: t('apiKeys.failedToRevoke') });
-    } else {
-      toast.success(t('apiKeys.success'), { description: t('apiKeys.revoked') });
-      fetchApiKeys();
+  const revoke = async (id: string) => {
+    try {
+      await keyApi("DELETE", undefined, id);
+      toast.success(t("apiKeys.revokedToast"));
+      void load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : t("apiKeys.failedToRevoke"));
     }
   };
 
-  const closeKeyDialog = () => {
-    setNewKeyDialog(false);
-    setGeneratedKey(null);
+  const copy = (text: string) => {
+    void navigator.clipboard.writeText(text);
+    toast.success(t("apiKeys.copied"));
   };
 
-  const columns: ColumnDef<ApiKey>[] = useMemo(() => [
-    {
-      accessorKey: "name",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('apiKeys.name')} />
-      ),
-      cell: ({ row }) => (
-        <span className="font-medium">{row.getValue("name")}</span>
-      ),
-    },
-    {
-      accessorKey: "key_prefix",
-      header: t('apiKeys.keyPrefix'),
-      cell: ({ row }) => (
-        <code className="text-sm">{row.getValue("key_prefix")}****</code>
-      ),
-    },
-    {
-      accessorKey: "created_at",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('apiKeys.created')} />
-      ),
-      cell: ({ row }) => format(new Date(row.getValue("created_at")), 'MMM d, yyyy'),
-    },
-    {
-      accessorKey: "last_used_at",
-      header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t('apiKeys.lastUsed')} />
-      ),
-      cell: ({ row }) => {
-        const lastUsed = row.getValue("last_used_at") as string | null;
-        return lastUsed
-          ? format(new Date(lastUsed), 'MMM d, yyyy HH:mm')
-          : t('apiKeys.never');
-      },
-    },
-    {
-      accessorKey: "active",
-      header: t('apiKeys.status'),
-      cell: ({ row }) => {
-        const active = row.getValue("active") as boolean;
-        return (
-          <Badge variant={active ? "default" : "secondary"}>
-            {active ? t('apiKeys.active') : t('apiKeys.revoked')}
-          </Badge>
-        );
-      },
-    },
-    {
-      id: "actions",
-      header: t('apiKeys.actions'),
-      cell: ({ row }) => {
-        const key = row.original;
-        return key.active ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => revokeKey(key.id)}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        ) : null;
-      },
-    },
+  const columns = useMemo<ColumnDef<ApiKey>[]>(() => [
+    { accessorKey: "name", header: t("apiKeys.name"), cell: ({ row }) => <span className="font-medium">{row.original.name}</span> },
+    { accessorKey: "key_prefix", header: t("apiKeys.keyPrefix"), cell: ({ row }) => <code className="text-sm">{row.original.key_prefix}…</code> },
+    { accessorKey: "created_at", header: t("apiKeys.created"), cell: ({ row }) => format(new Date(row.original.created_at), "d MMM yyyy") },
+    { accessorKey: "last_used_at", header: t("apiKeys.lastUsed"), cell: ({ row }) => row.original.last_used_at ? format(new Date(row.original.last_used_at), "d MMM yyyy HH:mm") : t("apiKeys.never") },
+    { accessorKey: "active", header: t("apiKeys.status"), cell: ({ row }) => <Badge variant={row.original.active ? "default" : "secondary"}>{row.original.active ? t("apiKeys.active") : t("apiKeys.revoked")}</Badge> },
+    { id: "actions", header: "", cell: ({ row }) => row.original.active ? (
+      <Button variant="ghost" size="sm" title={t("apiKeys.revoke")} onClick={() => void revoke(row.original.id)}><Trash2 className="h-4 w-4" /></Button>
+    ) : null },
   ], [t]);
 
+  const curl = `curl ${FUNCTIONS_URL}/api-jobs?status=in_progress \\\n  -H "Authorization: Bearer ery_live_…"`;
+
   return (
-    <div className="p-6 space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-          {t('apiKeys.title')}
-        </h1>
-        <p className="text-muted-foreground text-lg">{t('apiKeys.description')}</p>
+    <div className="space-y-6 p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">{t("apiKeys.title")}</h1>
+          <p className="mt-1 max-w-2xl text-muted-foreground">{t("apiKeys.subtitle")}</p>
+        </div>
+        <Button onClick={() => { setGenerated(null); setDialogOpen(true); }}><Plus className="mr-2 h-4 w-4" />{t("apiKeys.generate")}</Button>
       </div>
 
-      <hr className="title-divider" />
+      <Card>
+        <CardContent className="pt-6">
+          <DataTable columns={columns} data={keys} loading={loading} emptyMessage={t("apiKeys.noKeys")} showToolbar={false} pageSize={10} />
+        </CardContent>
+      </Card>
 
-      <div className="flex justify-end">
-        <Dialog open={newKeyDialog} onOpenChange={setNewKeyDialog}>
-          <DialogTrigger asChild>
-            <Button className="cta-button">
-              <Plus className="mr-2 h-4 w-4" />
-              {t('apiKeys.generateNewKey')}
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="glass-card sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>{t('apiKeys.generateApiKey')}</DialogTitle>
-              <DialogDescription>
-                {generatedKey
-                  ? t('apiKeys.saveKeyNow')
-                  : t('apiKeys.createNewKey')}
-              </DialogDescription>
-            </DialogHeader>
-
-            {generatedKey ? (
-              <div className="space-y-4">
-                <div className="p-4 bg-muted rounded-md">
-                  <code className="text-sm break-all">{generatedKey}</code>
-                </div>
-                <Button onClick={() => copyToClipboard(generatedKey)} className="w-full">
-                  <Copy className="mr-2 h-4 w-4" />
-                  {t('apiKeys.copyKey')}
-                </Button>
-                <Button onClick={closeKeyDialog} variant="outline" className="w-full">
-                  {t('apiKeys.done')}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="key-name">{t('apiKeys.keyName')}</Label>
-                  <Input
-                    id="key-name"
-                    placeholder={t('apiKeys.keyNamePlaceholder')}
-                    value={keyName}
-                    onChange={(e) => setKeyName(e.target.value)}
-                  />
-                </div>
-                <Button
-                  onClick={generateApiKey}
-                  disabled={isGenerating}
-                  className="w-full"
-                >
-                  {isGenerating ? t('apiKeys.generating') : t('apiKeys.generateKey')}
-                </Button>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      <Card className="glass-card border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5" />
-            {t('apiKeys.gettingStarted')}
-          </CardTitle>
-          <CardDescription>
-            {t('apiKeys.gettingStartedDescription')}
-          </CardDescription>
+          <CardTitle>{t("apiKeys.usage")}</CardTitle>
+          <CardDescription>{t("apiKeys.usageHint")}</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm">
-              {t('apiKeys.exploreDocumentation')}
-            </p>
-            <Button asChild className="w-full sm:w-auto">
-              <a href={ROUTES.COMMON.API_DOCS} className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                {t('apiKeys.openDocumentation')}
-                <ExternalLink className="h-4 w-4" />
-              </a>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <code className="truncate text-sm">{FUNCTIONS_URL}</code>
+            <Button variant="ghost" size="sm" onClick={() => copy(FUNCTIONS_URL)}><Copy className="h-4 w-4" /></Button>
+          </div>
+          <pre className="overflow-x-auto rounded-md bg-muted p-3 text-xs">{curl}</pre>
+          <div className="flex flex-wrap gap-2">
+            <Button asChild variant="outline" size="sm">
+              <a href={`${DOCS_URL}/api/rest-api-reference/`} target="_blank" rel="noopener noreferrer">{t("apiKeys.reference")}<ExternalLink className="ml-1.5 h-3.5 w-3.5" /></a>
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <a href="/openapi.json" target="_blank" rel="noopener noreferrer">{t("apiKeys.spec")}<ExternalLink className="ml-1.5 h-3.5 w-3.5" /></a>
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle>{t('apiKeys.activeKeys')}</CardTitle>
-          <CardDescription>
-            {t('apiKeys.activeKeysDescription')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={columns}
-            data={apiKeys}
-            loading={loading}
-            searchPlaceholder={t('apiKeys.searchKeys') || "Search keys..."}
-            pageSize={10}
-            emptyMessage={t('apiKeys.noKeys')}
-            showToolbar={false}
-          />
-        </CardContent>
-      </Card>
-
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle>Quick Reference</CardTitle>
-          <CardDescription>
-            Quick overview of available endpoints.
-            <a href={ROUTES.COMMON.API_DOCS} className="text-primary hover:underline ml-2 inline-flex items-center gap-1">
-              View full interactive documentation
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-3 border rounded-lg space-y-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-blue-500"></span>
-                  Jobs Management
-                </h3>
-                <p className="text-xs text-muted-foreground">Create, list, and update jobs with parts and tasks</p>
-              </div>
-              <div className="p-3 border rounded-lg space-y-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-green-500"></span>
-                  Parts & Tasks
-                </h3>
-                <p className="text-xs text-muted-foreground">Track individual parts and task progress</p>
-              </div>
-              <div className="p-3 border rounded-lg space-y-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-purple-500"></span>
-                  File Uploads
-                </h3>
-                <p className="text-xs text-muted-foreground">Upload CAD files, drawings, and images securely</p>
-              </div>
-              <div className="p-3 border rounded-lg space-y-2">
-                <h3 className="font-semibold text-sm flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-orange-500"></span>
-                  Reference Data
-                </h3>
-                <p className="text-xs text-muted-foreground">Query stages, materials, and system data</p>
-              </div>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("apiKeys.generate")}</DialogTitle>
+            <DialogDescription>{generated ? t("apiKeys.saveKeyNow") : t("apiKeys.nameHint")}</DialogDescription>
+          </DialogHeader>
+          {generated ? (
+            <div className="space-y-3">
+              <code className="block break-all rounded-md bg-muted p-3 text-sm">{generated}</code>
+              <Button className="w-full" onClick={() => copy(generated)}><Copy className="mr-2 h-4 w-4" />{t("apiKeys.copy")}</Button>
+              <Button className="w-full" variant="outline" onClick={() => setDialogOpen(false)}>{t("apiKeys.done")}</Button>
             </div>
-
-            <div className="pt-4 border-t space-y-2">
-              <div className="flex items-start gap-2">
-                <Key className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div className="flex-1 space-y-1">
-                  <p className="text-sm font-medium">Authentication</p>
-                  <code className="text-xs bg-muted px-2 py-1 rounded block">
-                    Authorization: Bearer ery_live_your_api_key
-                  </code>
-                </div>
-              </div>
-              <div className="flex items-start gap-2">
-                <ExternalLink className="h-4 w-4 text-muted-foreground mt-0.5" />
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Base URL</p>
-                  <code className="text-xs bg-muted px-2 py-1 rounded block break-all">
-                    {`${supabaseUrl}/functions/v1`}
-                  </code>
-                </div>
-              </div>
-            </div>
-
-            <Button asChild variant="outline" className="w-full">
-              <a href={ROUTES.COMMON.API_DOCS} className="flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Explore Full API Documentation & Try It Out
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          ) : (
+            <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); void generate(); }}>
+              <Label htmlFor="key-name">{t("apiKeys.name")}</Label>
+              <Input id="key-name" value={name} onChange={(e) => setName(e.target.value)} placeholder={t("apiKeys.namePlaceholder")} required />
+              <Button type="submit" className="w-full">{t("apiKeys.generate")}</Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

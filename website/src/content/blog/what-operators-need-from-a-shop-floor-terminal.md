@@ -12,7 +12,7 @@ relatedLinks:
   - label: "Operator Terminal"
     href: "/features/operator-terminal/"
   - label: "Getting started overview"
-    href: "/getting-started/introduction/overview/"
+    href: "/introduction/"
   - label: "Release notes"
     href: "/release-notes/"
 ---
@@ -78,9 +78,9 @@ For foremen, this is also one of the easiest behaviors to coach. Watch the GO it
 
 The terminal's backlog status adds a second layer of decision support:
 
-- **Te laat** for overdue work
-- **Vandaag** for work due today
-- **Binnenkort** for work due soon
+- **Overdue** for late work
+- **Today** for work due today
+- **Soon** for work due soon
 
 Combined with the GO or PAUSE downstream signal, that gives operators a simple rule set on the same screen: overdue GO items first, then today's GO items, then the rest.
 

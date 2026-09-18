@@ -147,13 +147,13 @@ curl -X POST "$BASE/api-operation-lifecycle/complete?id=<uuid>" -H "$AUTH" -d '{
 ```bash
 curl -X POST "$BASE/api-webhooks" -H "$AUTH" \
   -H "Content-Type: application/json" -d '{
+  "name": "ERP",
   "url": "https://your-erp.com/webhook",
   "events": ["operation.started", "operation.completed"],
-  "secret_key": "your-hmac-secret",
-  "active": true
+  "secret_key": "your-hmac-secret"
 }'
 ```
 
-Events are POSTed to your URL with an HMAC SHA-256 signature in the `X-Eryxon-Signature` header. Deliveries are logged and visible in the webhook logs API.
+Events are POSTed to your URL with an HMAC SHA-256 signature in the `X-Eryxon-Signature` header; deliveries are listed at `GET /api-webhook-deliveries`. Catalogue, payload and verification: [Webhooks](/architecture/connectivity-webhooks/).
 
 For full field reference, see [REST API Reference](/api/rest-api-reference/) and [Payload Reference](/api/payload-reference/).

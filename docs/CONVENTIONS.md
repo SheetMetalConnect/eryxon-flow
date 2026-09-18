@@ -8,8 +8,8 @@
 |------|---------|---------|
 | Components | PascalCase.tsx | `JobDetail.tsx`, `PartCreate.tsx` |
 | Pages | PascalCase.tsx | `Dashboard.tsx`, `Settings.tsx` |
-| Hooks | camelCase with `use` prefix | `useJobIssues.ts`, `useServerPagination.ts` |
-| Utils/lib | camelCase.ts | `queryClient.ts`, `searchService.ts` |
+| Hooks | camelCase with `use` prefix | `useJobIssues.ts`, `useFeatureFlags.ts` |
+| Utils/lib | camelCase.ts | `queryClient.ts`, `time-utils.ts` |
 | Edge Functions | kebab-case directory | `api-jobs/`, `api-time-entries/` |
 | Migrations | timestamp_description.sql | `20260121175020_remote_schema.sql` |
 | Tests | same name + `.test.ts(x)` | `useDebounce.test.ts` |
@@ -107,6 +107,7 @@ Add to `src/routes/adminRoutes.tsx` or `operatorRoutes.tsx`:
 - RLS policy required on every table
 - snake_case for all column and table names
 - FK hints required when table has multiple FKs to same target: `!column_name`
+- New RPC functions: `GRANT EXECUTE ... TO authenticated, service_role` explicitly; `anon` only for pre-login calls. Default privileges grant nothing (migration `20260918140000`).
 
 ## i18n
 

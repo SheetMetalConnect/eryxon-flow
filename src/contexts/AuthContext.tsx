@@ -3,7 +3,6 @@ import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 import { queryClient } from "@/lib/queryClient";
-import { prefetchCommonData } from "@/lib/cacheInvalidation";
 import { registerPushNotifications } from "@/native";
 
 // UI roles are informational; database policies enforce authorization.
@@ -91,14 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // When a token refresh fails, session is null — purge the stale
         // refresh token from localStorage so the user can log in fresh.
         if (event === 'TOKEN_REFRESHED' && !session) {
-          // Pilot-critical auth lifecycle event (ERY-51): a failed token refresh
-          // forces a re-login and is a common pilot incident trigger.
-          logger.warn('Token refresh failed, signing out', {
-            component: 'AuthContext',
-            service: 'client',
-            eventType: 'auth.session_recovery',
-            failureReason: 'token_refresh_failed',
-          });
+          logger.warn('AuthContext', 'Token refresh failed, signing out');
           supabase.auth.signOut();
           updateSession(null);
           lastRegisteredUserId = null;
@@ -139,13 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session }, error }) => {
       if (authRevision.current !== initialRevision) return;
       if (error) {
-        // Pilot-critical auth lifecycle event (ERY-51).
-        logger.error('Failed to recover session, signing out', error, {
-          component: 'AuthContext',
-          service: 'client',
-          eventType: 'auth.session_recovery',
-          failureReason: 'session_recovery_failed',
-        });
+        logger.error('AuthContext', 'Failed to recover session, signing out', error);
         supabase.auth.signOut();
         updateSession(null);
         return;
@@ -154,12 +140,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       updateSession(session);
 
       if (session?.user) {
-        logger.info('Session recovered', {
-          component: 'AuthContext',
-          service: 'client',
-          eventType: 'auth.session_recovery',
-          userId: session.user.id,
-        });
+        logger.info('AuthContext', 'Session recovered', session.user.id);
         fetchProfile(session.user.id);
       } else {
         setProfile(null);
@@ -178,11 +159,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const revision = authRevision.current;
     const isCurrent = () => revision === authRevision.current && userId === activeUserId.current;
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin, onboarding_completed, onboarding_step")
-        .eq("id", userId)
-        .maybeSingle();
+      const [{ data, error }] = await Promise.all([
+        supabase
+          .from("profiles")
+          .select("id, tenant_id, username, full_name, email, role, active, is_machine, is_root_admin, onboarding_completed, onboarding_step")
+          .eq("id", userId)
+          .maybeSingle(),
+        fetchTenant(revision),
+      ]);
 
       if (!isCurrent()) return;
       if (error) throw error;
@@ -199,13 +183,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ...(data as Profile),
         onboarding_completed: data.onboarding_completed ?? false,
         onboarding_step: data.onboarding_step ?? 0,
-      });
-      await fetchTenant(revision);
-      if (!isCurrent()) return;
-      prefetchCommonData(queryClient, data.tenant_id, {
-        fetchCells: () => Promise.resolve(supabase.from('cells').select('*').eq('tenant_id', data.tenant_id).eq('active', true).then(r => r.data)),
-        fetchMaterials: () => Promise.resolve(supabase.from('materials').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
-        fetchScrapReasons: () => Promise.resolve(supabase.from('scrap_reasons').select('*').eq('tenant_id', data.tenant_id).then(r => r.data)),
       });
     } catch (error) {
       logger.error('AuthContext', 'Error fetching profile', error);
@@ -255,29 +232,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error;
 
-      // Pilot-critical auth lifecycle event (ERY-51): root-admin tenant switch.
-      logger.info('Tenant switched', {
-        component: 'AuthContext',
-        service: 'client',
-        eventType: 'auth.tenant_switch',
-        userId: profile?.id,
-        entityType: 'tenant',
-        entityId: tenantId,
-      });
+      logger.info('AuthContext', 'Tenant switched', tenantId);
 
       authRevision.current += 1;
       queryClient.clear();
       await fetchTenant();
       window.location.reload();
     } catch (error) {
-      logger.error('Error switching tenant', error, {
-        component: 'AuthContext',
-        service: 'client',
-        eventType: 'auth.tenant_switch',
-        failureReason: 'tenant_switch_failed',
-        entityType: 'tenant',
-        entityId: tenantId,
-      });
+      logger.error('AuthContext', 'Error switching tenant', error);
       throw error;
     }
   };

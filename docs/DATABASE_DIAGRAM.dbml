@@ -1077,27 +1077,36 @@ Table api_keys {
 Table webhooks {
   id uuid [pk]
   tenant_id uuid [not null, ref: > tenants.id]
-  url text [not null]
-  secret_key text [not null]
+  name text [not null]
+  url text [not null, note: 'https only']
   events text[] [not null]
-  active bool [default: true]
+  secret_key text [not null]
+  active bool [not null, default: true]
+  consecutive_failures int [not null, default: 0]
+  disabled_reason text
+  last_delivery_at timestamptz
+  last_status_code int
+  created_at timestamptz [not null, default: `now()`]
+  updated_at timestamptz [not null, default: `now()`]
 
-  created_at timestamptz [default: `now()`]
-
-  Note: 'Outbound webhook configurations'
+  Note: 'Outbound webhook endpoints; events emitted by emit_webhook_event() triggers'
 }
 
-Table webhook_logs {
+Table webhook_deliveries {
   id uuid [pk]
+  tenant_id uuid [not null, ref: > tenants.id]
   webhook_id uuid [not null, ref: > webhooks.id]
-  event_type text [not null]
+  event_id uuid [not null]
+  event text [not null]
   payload jsonb [not null]
+  status text [not null, note: 'delivered | failed']
   status_code int
-  error_message text
+  attempts int [not null, default: 1]
+  latency_ms int
+  error text
+  created_at timestamptz [not null, default: `now()`]
 
-  created_at timestamptz [default: `now()`]
-
-  Note: 'Webhook delivery logs'
+  Note: 'One row per delivery series (up to 5 attempts)'
 }
 
 Table integrations {
@@ -1259,250 +1268,6 @@ Table mcp_server_logs {
   created_at timestamptz [default: `now()`]
 
   Note: 'MCP server event logs'
-}
-
-// ============================================
-// MQTT DOMAIN
-// ============================================
-
-Table mqtt_publishers {
-  id uuid [pk]
-  tenant_id uuid [not null, ref: > tenants.id]
-  name text [not null]
-  description text
-
-  broker_url text [not null]
-  port int [default: 1883]
-  username text
-  password text
-  use_tls bool [default: false]
-
-  topic_pattern text [not null, note: 'Pattern with {event}, {tenant}, etc.']
-  events text[] [not null]
-  active bool [default: true]
-
-  // ISA-95 defaults
-  default_enterprise text
-  default_site text
-  default_area text
-
-  last_connected_at timestamptz
-  last_error text
-
-  created_by uuid [ref: > profiles.id]
-  created_at timestamptz [default: `now()`]
-  updated_at timestamptz [default: `now()`]
-
-  Note: 'MQTT publisher configurations'
-}
-
-Table mqtt_logs {
-  id uuid [pk]
-  mqtt_publisher_id uuid [not null, ref: > mqtt_publishers.id]
-
-  event_type text [not null]
-  topic text [not null]
-  payload jsonb [not null]
-  success bool [default: true]
-  error_message text
-  latency_ms int
-
-  created_at timestamptz [default: `now()`]
-
-  Note: 'MQTT publish logs'
-}
-
-// ============================================
-// TABLE GROUPS (for visual organization)
-// ============================================
-
-TableGroup core {
-  tenants
-  profiles
-  user_roles
-  invitations
-}
-
-TableGroup jobs_domain {
-  jobs
-  parts
-  operations
-  cells
-  assignments
-}
-
-TableGroup quality {
-  issues
-  issue_categories
-  scrap_reasons
-}
-
-TableGroup time_tracking {
-  time_entries
-  time_entry_pauses
-  operation_quantities
-  operation_day_allocations
-}
-
-TableGroup manufacturing {
-  resources
-  operation_resources
-  operators
-  materials
-  substeps
-  substep_templates
-  substep_template_items
-}
-
-// ============================================
-// SYNC/IMPORT DOMAIN
-// ============================================
-
-Table sync_imports {
-  id uuid [pk]
-  tenant_id uuid [not null, ref: > tenants.id]
-  source text [not null, note: 'csv, api, erp_sap, etc.']
-  entity_type text [not null, note: 'jobs, parts, operations, etc.']
-  status text [default: 'pending', note: 'pending, processing, completed, failed']
-
-  total_records int [default: 0]
-  created_count int [default: 0]
-  updated_count int [default: 0]
-  skipped_count int [default: 0]
-  error_count int [default: 0]
-  errors jsonb [note: 'Array of error details']
-
-  file_name text [note: 'Original filename for CSV imports']
-  started_at timestamptz
-  completed_at timestamptz
-  created_by uuid [ref: > profiles.id]
-
-  created_at timestamptz [default: `now()`]
-  updated_at timestamptz [default: `now()`]
-
-  indexes {
-    (tenant_id, created_at)
-    (tenant_id, status)
-  }
-
-  Note: 'Tracks batch import operations for audit and monitoring'
-}
-
-// ============================================
-// VIEWS
-// ============================================
-
-Table issues_with_context {
-  id uuid [pk, note: 'VIEW - Read only']
-  tenant_id uuid
-  operation_id uuid
-  part_id uuid
-  job_id uuid
-
-  // Issue fields
-  description text
-  severity issue_severity
-  status issue_status
-  resolution_notes text
-  image_paths text[]
-  search_vector tsvector
-
-  // Joined fields
-  operation_name text
-  part_number text
-  job_number text
-  customer text
-  creator_name text
-  reviewer_name text
-
-  created_by uuid
-  reviewed_by uuid
-  reviewed_at timestamptz
-  created_at timestamptz
-  updated_at timestamptz
-
-  Note: 'VIEW: Issues with operation, part, job context'
-}
-
-// ============================================
-// TABLE GROUPS (for visual organization)
-// ============================================
-
-TableGroup core {
-  tenants
-  profiles
-  user_roles
-  invitations
-}
-
-TableGroup jobs_domain {
-  jobs
-  parts
-  operations
-  cells
-  assignments
-}
-
-TableGroup quality {
-  issues
-  issue_categories
-  scrap_reasons
-}
-
-TableGroup time_tracking {
-  time_entries
-  time_entry_pauses
-  operation_quantities
-  operation_day_allocations
-}
-
-TableGroup manufacturing {
-  resources
-  operation_resources
-  operators
-  materials
-  substeps
-  substep_templates
-  substep_template_items
-}
-
-TableGroup logistics {
-  shipments
-  shipment_jobs
-}
-
-TableGroup system {
-  activity_log
-  notifications
-  factory_calendar
-  sync_imports
-}
-
-TableGroup billing {
-  billing_waitlist
-  subscription_events
-  monthly_reset_logs
-}
-
-TableGroup integrations {
-  api_keys
-  webhooks
-  webhook_logs
-  integrations
-  installed_integrations
-}
-
-TableGroup mcp {
-  mcp_authentication_keys
-  mcp_key_usage_logs
-  mcp_server_config
-  mcp_server_health
-  mcp_server_logs
-}
-
-TableGroup mqtt {
-  mqtt_publishers
-  mqtt_logs
 }
 
 TableGroup views {

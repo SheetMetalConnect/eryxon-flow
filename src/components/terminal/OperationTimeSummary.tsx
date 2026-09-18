@@ -36,7 +36,7 @@ export function OperationTimeSummary({
   for (const entry of entries) {
     const prev = byOperator.get(entry.operator_id);
     byOperator.set(entry.operator_id, {
-      name: entry.operator_name ?? t("terminal.other", "Operator"),
+      name: entry.operator_name ?? t("terminal.other"),
       minutes: (prev?.minutes ?? 0) + entry.minutes,
       active: (prev?.active ?? false) || entry.isActive,
     });
@@ -48,21 +48,21 @@ export function OperationTimeSummary({
       <div className="flex items-end justify-between gap-3">
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {t("terminal.time.booked", "Booked")}
+            {t("terminal.time.booked")}
           </div>
           <div className="flex items-center gap-1.5 font-mono text-lg font-semibold text-foreground">
             {formatDuration(totalMinutes)}
             {activeCount > 0 ? (
               <span
                 className="inline-block h-2 w-2 animate-pulse rounded-full bg-status-active"
-                title={t("terminal.time.activeNow", "Running now")}
+                title={t("terminal.time.activeNow")}
               />
             ) : null}
           </div>
         </div>
         <div className="text-right">
           <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {t("terminal.time.budget", "Budget")}
+            {t("terminal.time.budget")}
           </div>
           <div className="font-mono text-lg font-semibold text-muted-foreground">
             {planned > 0 ? formatDuration(planned) : "—"}
@@ -89,8 +89,8 @@ export function OperationTimeSummary({
           >
             {formatDuration(variance)}{" "}
             {over
-              ? t("terminal.time.over", "over budget")
-              : t("terminal.time.left", "of budget left")}
+              ? t("terminal.time.over")
+              : t("terminal.time.left")}
           </div>
         </div>
       ) : null}
@@ -98,7 +98,7 @@ export function OperationTimeSummary({
       {plannedQuantity > 0 ? (
         <div className="flex items-center justify-between border-t border-border pt-2">
           <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {t("terminal.produced", "Produced")}
+            {t("terminal.produced")}
           </span>
           <span className="font-mono text-sm">
             <span className="font-semibold text-status-completed">{producedQuantity}</span>
@@ -111,7 +111,7 @@ export function OperationTimeSummary({
         <div className="space-y-1.5 border-t border-border pt-2">
           <div className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
             <Users className="h-3 w-3" />
-            {t("terminal.people.title", "Worked on this")}
+            {t("terminal.people.title")}
           </div>
           <div className="flex flex-wrap gap-1.5">
             {operators.map((op) => (

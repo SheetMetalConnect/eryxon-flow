@@ -1,4 +1,4 @@
-import type { OperationWithDetails } from "@/lib/database";
+import type { OperationWithDetails } from "@/lib/db";
 
 export type ScanFailureReason =
   | "no_match"

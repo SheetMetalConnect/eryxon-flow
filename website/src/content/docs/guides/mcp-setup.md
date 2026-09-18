@@ -1,64 +1,33 @@
 ---
 title: MCP Server Setup Guide
-description: Complete guide to setting up and deploying the Eryxon Flow MCP Server for Claude Desktop integration.
+description: Run the Eryxon Flow MCP server for Claude Desktop, Cursor or any MCP client, locally or over Streamable HTTP.
 ---
 
-The MCP (Model Context Protocol) server enables Claude Desktop to interact with your Eryxon Flow deployment using natural language. This guide covers local development and trusted self-hosted deployment.
+The MCP (Model Context Protocol, revision 2026-07-28) server lets an AI agent work in your Eryxon Flow workshop with the same capabilities as the app: create jobs, parts and routings, start and complete operations, report output and scrap, raise and resolve issues, manage cells, resources and operators, and change workshop settings. The full tool list and the error contract are in the [MCP Server Reference](/api/mcp-server-reference/).
 
-## Overview
+It is an optional component for self-hosted installations. It uses the Supabase service-role key, so run it only on infrastructure you trust.
 
-**What is the MCP Server?**
-- Provides 50 AI tools across 9 modules for manufacturing operations
-- Enables natural language interaction with jobs, parts, operations, quality, and analytics
-- Optional component - your application works perfectly without it
-- Designed for developers and power users who want AI assistant integration
+## In the app
 
-**Architecture:**
-```
-Claude Desktop (User)
-  ↓ MCP Protocol (stdio/SSE)
-MCP Server (Local or Docker host)
-  ↓ Direct Supabase service-role client
-Eryxon Flow Database
-  ↓ Optional TENANT_ID enforcement
-Your Data
-```
+Admin → Integrations → **MCP server** generates the server environment block and the client configuration (Claude Code command, `mcpServers` JSON for Claude Desktop, Cursor and others) from your workshop: it fills in the Supabase URL and the workshop id, lets you pick the profile the agent acts as (`MCP_ACTOR_ID`) and generates a bearer token in the browser. The service-role key is never shown or stored in the app; paste it on the server. The page also lists the last actions logged under the agent's profile.
 
-## Deployment Modes
+## Requirements
 
-### Local Stdio
+- Node.js 22
+- The Supabase URL and service-role key of your installation
+- The workshop id (`tenants.id`) for `TENANT_ID`
+- Optionally a profile id for `MCP_ACTOR_ID`, used as the author of issues, assignments and production reports when the agent does not pass one
+- An MCP client that speaks protocol revision 2026-07-28 (the server does not serve the 2025 `initialize` handshake)
 
-Best for: Claude Desktop, Cursor, and local development.
+## Local (stdio)
 
-**Requirements:**
-- Node.js 20+
-- Direct access to Supabase database
-- Service role key
-
-**Setup:**
-
-1. **Build the server:**
 ```bash
 cd mcp-server
-npm install
+npm ci
 npm run build
 ```
 
-2. **Configure environment:**
-```bash
-export SUPABASE_URL="https://your-project.supabase.co"
-export SUPABASE_SERVICE_KEY="eyJhbGc..."  # Service role key
-export TENANT_ID="optional-tenant-id"      # recommended when sharing one DB
-```
-
-3. **Start the server:**
-```bash
-npm start
-```
-
-4. **Configure Claude Desktop:**
-
-Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+Claude Desktop (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS, `%APPDATA%\Claude\claude_desktop_config.json` on Windows):
 
 ```json
 {
@@ -68,256 +37,58 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) o
       "args": ["/absolute/path/to/eryxon-flow/mcp-server/dist/index.js"],
       "env": {
         "SUPABASE_URL": "https://your-project.supabase.co",
-        "SUPABASE_SERVICE_KEY": "your-service-role-key"
+        "SUPABASE_SERVICE_KEY": "your-service-role-key",
+        "TENANT_ID": "your-workshop-uuid",
+        "MCP_ACTOR_ID": "profile-uuid-for-agent-writes"
       }
     }
   }
 }
 ```
 
-5. **Restart Claude Desktop**
+Restart the client. It lists the server's tools, resources (`eryxon://jobs`, `eryxon://cells`, `eryxon://timers`, …) and prompts.
 
-You should see "Eryxon Flow MCP Server" with the available tools listed.
-
----
-
-### Docker HTTP
-
-Best for: trusted internal deployments and MCP clients that support Streamable HTTP.
+## Streamable HTTP (Docker)
 
 ```bash
 cd mcp-server
-docker build -t eryxon-mcp .
-docker run -p 3001:3001 \
-  -e SUPABASE_URL="https://your-project.supabase.co" \
-  -e SUPABASE_SERVICE_KEY="your-service-role-key" \
-  -e MCP_BEARER="change-this-long-random-token" \
-  -e MCP_ALLOWED_HOSTS="localhost,your-mcp-domain.com" \
-  eryxon-mcp
+docker compose up
 ```
 
----
+`.env` needs `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` and `MCP_BEARER`; add `TENANT_ID` and `MCP_ACTOR_ID` as above. The endpoint is `POST http://host:3001/mcp`; clients send `Authorization: Bearer <MCP_BEARER>` on every request. The endpoint is stateless (no session id), so several instances can run behind a plain load balancer; give them one shared `MCP_STATE_KEY` so a multi-round-trip confirmation can be answered by any instance. `GET /health` returns the version, protocol, tool count and whether the database answers.
 
-## Connection Mode
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `MCP_TRANSPORT` | `stdio` | `stdio` or `http` |
+| `MCP_PORT` / `MCP_HOST` | `3001` / `127.0.0.1` | HTTP bind |
+| `MCP_BIND_PUBLIC` | `false` | Must be `true` to bind `0.0.0.0`; `MCP_BEARER` is then mandatory |
+| `MCP_BEARER` | | Bearer token required on `/mcp` |
+| `MCP_ALLOWED_HOSTS` | `localhost,127.0.0.1,[::1]` | Hostnames accepted by the HTTP transport |
+| `MCP_STATE_KEY` | random per process | HMAC key sealing multi-round-trip state; set when running more than one instance |
 
-The MCP server supports direct Supabase access only.
+## Check the setup
 
-| Environment Variables | Mode | Use Case |
-|----------------------|------|----------|
-| `SUPABASE_URL` + `SUPABASE_SERVICE_KEY` | **Direct Mode** | Self-hosted, local, trusted internal deployment |
-
-If you expose HTTP transport, set `MCP_HOST=0.0.0.0`, `MCP_BIND_PUBLIC=true`, a strong `MCP_BEARER`, and `MCP_ALLOWED_HOSTS` to the hostnames allowed to reach the server. The default bind address is `127.0.0.1`; `MCP_ALLOWED_HOSTS` defaults to `localhost,127.0.0.1,[::1]`.
-
----
-
-## Available Tools
-
-The MCP server provides **50 tools across 9 modules**:
-
-### 1. Jobs (7 tools)
-- `fetch_jobs` - Query jobs with filters and pagination
-- `create_job` - Create new manufacturing jobs
-- `update_job` - Update job properties
-- `start_job` - Start job execution
-- `stop_job` - Pause/stop job
-- `complete_job` - Mark job as completed
-- `resume_job` - Resume paused job
-
-### 2. Parts (2 tools)
-- `fetch_parts` - Query parts with relationships
-- `update_part` - Update part properties
-
-### 3. Operations (5 tools)
-- `fetch_operations` - Query operations with filters
-- `start_operation` - Begin operation execution
-- `pause_operation` - Pause operation
-- `complete_operation` - Complete operation
-- `update_operation` - Update operation details
-
-### 4. Tasks (2 tools)
-- `fetch_tasks` - Query tasks
-- `update_task` - Update task status
-
-### 5. Issues (8 tools)
-- `fetch_issues` - Query quality issues
-- `create_ncr` - Create Non-Conformance Reports
-- `fetch_ncrs` - Query NCRs
-- `update_issue` - Update issue status
-- `get_issue_analytics` - Issue trend analysis
-- `get_issue_trends` - Historical issue patterns
-- `get_root_cause_analysis` - Root cause insights
-- `suggest_quality_improvements` - AI-powered recommendations
-
-### 6. Substeps (5 tools)
-- `fetch_substeps` - Query operation substeps
-- `add_substep` - Add substep to operation
-- `complete_substep` - Mark substep complete
-- `update_substep` - Update substep
-- `delete_substep` - Remove substep
-
-### 7. Dashboard (3 tools)
-- `get_dashboard_stats` - Real-time production metrics
-- `get_qrm_data` - Quick Response Manufacturing capacity
-- `get_production_metrics` - Historical production data
-
-### 8. Scrap (7 tools)
-- `fetch_scrap_reasons` - Query scrap categories
-- `report_scrap` - Record scrap events
-- `get_scrap_analytics` - Scrap analysis
-- `get_scrap_trends` - Scrap patterns over time
-- `get_yield_metrics` - Production yield rates
-- `get_scrap_pareto` - Pareto analysis of scrap causes
-- `get_quality_score` - Overall quality metrics
-
-### 9. Agent Batch (11 tools)
-Optimized batch operations for AI agents:
-- `batch_update_parts` - Bulk part updates
-- `batch_reschedule_operations` - Bulk rescheduling
-- `prioritize_job` - Set job priority
-- `fetch_parts_by_customer` - Customer-scoped queries
-- `batch_complete_operations` - Bulk completion
-- `get_job_overview` - Comprehensive job summary
-- `check_resource_availability` - Resource planning
-- `assign_resource_to_operations` - Resource allocation
-- `get_cell_capacity` - Cell utilization
-- `get_parts_due_soon` - Due date alerts
-- `suggest_reschedule` - AI-powered rescheduling
-
----
-
-## Testing Your Setup
-
-### 1. Verify Server is Running
-
-Local mode:
 ```bash
-npm start
-# Should output:
-# Eryxon Flow MCP Server
-# Loaded 50 tools from 9 modules
-# Eryxon Flow MCP Server running on stdio
-```
-
-HTTP mode:
-```bash
+node dist/index.js --version
+# eryxon-flow-mcp 3.0.0 (MCP 2026-07-28)
 curl http://localhost:3001/health
-# Should return: {"status":"ok","version":"2.4.0","mode":"direct","tools":50,"transport":"streamable-http"}
+# {"status":"ok","version":"3.0.0","protocol":"2026-07-28","tools":113}
 ```
 
-### 2. Test in Claude Desktop
-
-Ask Claude:
-```
-"Show me all jobs currently in progress"
-```
-
-Claude should use the `fetch_jobs` tool with `status: "in_progress"`.
-
-### 3. Verify Tool Access
-
-Ask Claude:
-```
-"What tools do you have available from Eryxon Flow?"
-```
-
-Claude should list all 50 tools.
-
----
+Then ask the agent: "Show the jobs in progress" (uses `fetch_jobs` with `status: in_progress`) or "What is running on the floor right now?" (reads `eryxon://timers`).
 
 ## Troubleshooting
 
-### "MCP server not found"
+- **Server not found in the client**: use absolute paths, run `npm run build`, restart the client.
+- **`SUPABASE_URL and SUPABASE_SERVICE_KEY are required`**: the environment block is missing or the client did not pass it.
+- **`MCP_BEARER is required when MCP_BIND_PUBLIC=true`**: set a long random token before exposing the HTTP port.
+- **Tool result with `INVALID_STATE_TRANSITION`**: the database refused the transition; the message is the production rule (operator already clocked on another operation, standstill open, previous operation not completed). This is expected behaviour, not a fault.
+- **`created_by is required`**: pass the profile id in the call or set `MCP_ACTOR_ID`.
+- **`-32022 Unsupported protocol version`**: the client opened with the 2025 `initialize` handshake; use a client that negotiates 2026-07-28.
+- **A delete returns `input_required`**: expected; the client shows the confirmation and retries with the answer.
 
-**Issue:** Claude Desktop can't find the server
+## Security
 
-**Solutions:**
-1. Verify absolute paths in config (no `~` or relative paths)
-2. Ensure `npm run build` completed successfully
-3. Check `dist/index.js` exists
-4. Restart Claude Desktop after config changes
-
-### "Permission denied" or "EACCES"
-
-**Issue:** Node can't execute the script
-
-**Solution:**
-```bash
-chmod +x mcp-server/dist/index.js
-```
-
-### "Supabase connection failed"
-
-**Issue:** Can't connect to database
-
-**Solutions:**
-1. Verify `SUPABASE_URL` is correct
-2. Check `SUPABASE_SERVICE_KEY` is valid
-3. Test connection manually:
-```bash
-curl https://your-project.supabase.co/rest/v1/jobs \
-  -H "apikey: YOUR_ANON_KEY_HERE" \
-  -H "Authorization: Bearer YOUR_SERVICE_KEY_HERE"
-```
-
-### "No tools available"
-
-**Issue:** Tools not loading
-
-**Solutions:**
-1. Check server logs for errors
-2. Verify build output: `ls -la mcp-server/dist/tools/`
-3. Ensure all dependencies installed: `npm ci`
-
-### "Rate limited"
-
-**Issue:** Too many requests
-
-**Solution:**
-- Reduce request frequency
-- Use pagination limits on broad fetches
-
----
-
-## Security Best Practices
-
-### For Self-Hosted (Direct Mode)
-
-1. **Never commit service keys** to version control
-2. **Use environment variables** for all secrets
-3. **Restrict service key** to specific IP ranges if possible
-4. **Enable RLS policies** on all tables
-5. **Monitor usage** via Supabase dashboard
-
----
-
-## Updating the MCP Server
-
-### Local Mode
-
-```bash
-cd mcp-server
-git pull origin main
-npm ci
-npm run build
-# Restart Claude Desktop
-```
-
-## Performance Optimization
-
-### Caching
-
-Add Redis caching for frequently accessed data:
-
-```bash
-UPSTASH_REDIS_REST_URL="https://your-redis.upstash.io"
-UPSTASH_REDIS_REST_TOKEN="your-token"
-```
-
-Default TTL: 5 minutes for fetch operations
-
-### Query Optimization
-
-The server includes:
-- **Pagination** - All fetch operations support `limit` and `offset`
-- **Soft-delete filtering** - Automatically excludes deleted records
-- **Timeout protection** - 30-second query timeout (configurable)
+- Never commit the service key; pass it through the environment.
+- Set `TENANT_ID`: without it the service-role client is not pinned to one workshop.
+- Expose HTTP only behind TLS with `MCP_BEARER` set.

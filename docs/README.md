@@ -7,8 +7,8 @@ self-hosters, or evaluators — lives in **`website/`** (Astro/Starlight: docs g
 features, blog, release notes). The website is the documentation.
 
 This `docs/` folder is only for things that would be out of place on a public docs
-site: ADRs (`docs/decisions/`), coding conventions, the DB schema diagram, route/hook
-maps, and build/design-system internals.
+site: ADRs (`docs/decisions/`), coding conventions, the DB schema diagram, and
+build/design-system internals.
 
 ## Rules
 

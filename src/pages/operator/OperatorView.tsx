@@ -171,11 +171,11 @@ export default function OperatorView() {
             <div className="flex min-w-0 flex-wrap items-center gap-2">
               <Select value={selectedCellId} onValueChange={handleCellChange}>
                 <SelectTrigger className="h-8 w-[180px] border-input bg-card text-sm text-foreground">
-                  <SelectValue placeholder={t("terminal.selectCell", "Select Cell")} />
+                  <SelectValue placeholder={t("terminal.selectCell")} />
                 </SelectTrigger>
                 <SelectContent className="border-border bg-card text-foreground">
                   <SelectItem value="all">
-                    {t("terminal.allCells", "All Cells")}
+                    {t("terminal.allCells")}
                   </SelectItem>
                   {cells.map((cell) => (
                     <SelectItem key={cell.id} value={cell.id}>
@@ -198,7 +198,7 @@ export default function OperatorView() {
           <div className="flex flex-col items-center gap-4">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent" />
             <p className="animate-pulse font-medium text-primary">
-              {t("terminal.loading", "Loading Terminal Data...")}
+              {t("terminal.loading")}
             </p>
           </div>
         </div>
@@ -228,7 +228,7 @@ export default function OperatorView() {
                   className="text-xs font-medium uppercase tracking-wide opacity-70 transition-opacity hover:opacity-100"
                   onClick={() => setScanFeedback(null)}
                 >
-                  {t("common.dismiss", "Dismiss")}
+                  {t("common.dismiss")}
                 </button>
               </div>
             </div>
@@ -284,7 +284,7 @@ export default function OperatorView() {
             className="flex items-center gap-1 border-b border-border px-4 py-3 text-sm font-medium text-primary"
           >
             <ChevronLeft className="h-4 w-4" />
-            {t("common.back", "Back")}
+            {t("common.back")}
           </button>
         ) : null}
         <OperatorDetailSidebar

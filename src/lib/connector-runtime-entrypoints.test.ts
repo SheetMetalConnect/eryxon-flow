@@ -12,7 +12,6 @@ function readConnectorEntrypoint(relativePath: string): string {
 describe("connector edge runtime entrypoints", () => {
   it.each([
     "supabase/functions/webhook-dispatch/index.ts",
-    "supabase/functions/mqtt-publish/index.ts",
   ])("%s uses Deno.serve instead of the deprecated stdlib http server", (filePath) => {
     const source = readConnectorEntrypoint(filePath);
 

@@ -203,9 +203,9 @@
     },
     "allCells": "All Cells",
     "backlog": {
-      "overdue": "Te laat",
-      "soon": "Binnenkort",
-      "today": "Vandaag"
+      "overdue": "Overdue",
+      "soon": "Soon",
+      "today": "Today"
     },
     "capacityBlocked": "Cannot complete because the next cell is at capacity.",
     "completeOperation": "Complete operation",
@@ -250,7 +250,7 @@
     },
     "status": {
       "longRunning": "lang actief",
-      "notClockedOn": "niet ingeklokt"
+      "notClockedOn": "not clocked on"
     },
     "stopBeforeComplete": "Pause active timing before completing the operation.",
     "substeps": "substeps"
@@ -300,7 +300,20 @@
     "scrap": "Scrap",
     "selectReason": "Select reason...",
     "selectScrapReason": "Select a reason for each scrap entry",
-    "totalScrap": "Total scrap"
+    "totalScrap": "Total scrap",
+    "errors": {
+      "activeElsewhere": "You are still clocked on another operation. Stop it first.",
+      "alreadyCompleted": "This operation is already completed.",
+      "notPaused": "Only a paused operation can resume.",
+      "notInProgress": "Only an operation in progress can pause.",
+      "standstill": "Resolve the active standstill before restarting.",
+      "operatorRequired": "Select an operator first.",
+      "notStarted": "Start the operation before completing it.",
+      "timersOpen": "Stop all running timers before completing.",
+      "notFound": "Operation not found.",
+      "notReleased": "The previous operation on this part is not completed yet."
+    },
+    "switchedFrom": "Stopped {{operation}} and started this one."
   },
   "terminalLogin": {
     "welcome": "OPERATOR TERMINAL",

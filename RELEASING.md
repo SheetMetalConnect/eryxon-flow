@@ -2,7 +2,7 @@
 
 The repository is private. Community retains the Business Source License 1.1;
 “Community” does not mean that the current version has an open-source license.
-Premium remains separate. Keep customer information and credentials out of code,
+Keep customer information and credentials out of code,
 issues, pull requests, release notes, and fixtures.
 
 ## Feature changes
@@ -138,10 +138,6 @@ npm run deploy:hosted
 migrations, all Edge Functions, and a Vercel production deployment. It prints the
 Supabase and Vercel targets first. Never run `vercel` from a parent directory: the
 CLI links and uploads whatever directory it is started in.
-
-The separate Cloudflare Pages workflow is manual, runs CI, and fails if required
-credentials are missing. It publishes the frontend only; coordinate its backend
-migration requirements using the same runbook.
 
 ## GitHub configuration limits
 

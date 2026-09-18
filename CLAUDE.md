@@ -25,7 +25,7 @@ explains how the app *works or operates* — for operators, admins, self-hosters
 evaluators — lives in `website/` (Astro/Starlight: `docs/` guides + features, blog,
 release-notes). The `docs/` folder at the repo root is **only** for contributor/coding
 internals that have no place on a public site: ADRs, code conventions, the DB schema
-diagram, route/hook maps, the design-system tooling.
+diagram, the design-system tooling.
 
 Rules:
 - **Never** write a feature explanation, user/admin/operator flow, setup/operations guide,
@@ -46,7 +46,7 @@ Before making any code change, trace the chain of effects:
 2. **2nd order** — what depends on those things?
 3. **3rd order** — could this cascade further (API contracts, imports, downstream consumers)?
 
-Never change a shared module, type, or function signature without first grepping every caller (`git grep`, `docs/ROUTE_MAP.md`, `docs/HOOK_MAP.md`). Surface the blast radius proactively.
+Never change a shared module, type, or function signature without first grepping every caller (`git grep`; routes are defined in `src/routes/`). Surface the blast radius proactively.
 
 ## Workspace isolation
 

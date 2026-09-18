@@ -38,7 +38,7 @@ describe("OperationTimeSummary", () => {
     );
     expect(screen.getByText("30m")).toBeInTheDocument();
     expect(screen.getByText("1h 12m")).toBeInTheDocument(); // budget
-    expect(screen.getByText(/of budget left/)).toBeInTheDocument();
+    expect(screen.getByText(/terminal\.time\.left/)).toBeInTheDocument();
   });
 
   it("flags over budget", () => {
@@ -56,7 +56,7 @@ describe("OperationTimeSummary", () => {
         })}
       />,
     );
-    expect(screen.getByText(/28m over budget/)).toBeInTheDocument(); // variance + label
+    expect(screen.getByText(/28m terminal\.time\.over/)).toBeInTheDocument(); // variance + label
   });
 
   it("rolls time entries up per operator, newest minutes summed", () => {

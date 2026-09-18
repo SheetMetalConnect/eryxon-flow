@@ -19,8 +19,7 @@ import { VitePWA } from "vite-plugin-pwa";
 //      production meta CSP, unless the configured Supabase URL is local
 //      (the `supabase start` / Docker self-host case).
 //
-// Header-based CSPs in vercel.json / nginx-security-headers.conf /
-// public/_headers stay the source of truth in prod when there's a reverse
+// Header-based CSPs in vercel.json / nginx-security-headers.conf stay the source of truth in prod when there's a reverse
 // proxy in front; the meta tag is a defence in depth for direct file
 // hosting (Caddy LAN, static build server).
 function applyCspBuildRewrites(): Plugin {
@@ -174,7 +173,7 @@ self.addEventListener("activate", (event) => {
     }),
     mode === "analyze" &&
       visualizer({
-        open: true,
+        open: false,
         filename: "dist/bundle-stats.html",
         gzipSize: true,
       }),

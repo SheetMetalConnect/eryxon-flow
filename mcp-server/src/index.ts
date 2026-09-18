@@ -1,397 +1,64 @@
 #!/usr/bin/env node
+import { createServer } from "node:http";
+import { createMcpHandler } from "@modelcontextprotocol/server";
+import { serveStdio } from "@modelcontextprotocol/server/stdio";
+import { hostHeaderValidation, toNodeHandler } from "@modelcontextprotocol/node";
+import { connect } from "./supabase.js";
+import { buildServer, PROTOCOL_VERSION, VERSION } from "./server.js";
+import { allTools } from "./tools/index.js";
 
-/**
- * Eryxon Flow MCP Server v2.4.0
- *
- * MCP server for self-hosted deployments using direct Supabase access.
- *
- * Transport options (MCP_TRANSPORT env var):
- * - stdio (default): StdioServerTransport for local CLI usage
- * - http: StreamableHTTP transport for cloud/Docker deployment
- *
- * Architecture:
- * - clients/ - Direct Supabase client abstraction
- * - tools/ - Domain-specific tool modules (50 tools)
- * - config.ts - Auto-detects deployment mode
- *
- * @see https://github.com/SheetMetalConnect/eryxon-flow/tree/main/mcp-server
- */
-
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-  CallToolResult,
-  isInitializeRequest,
-} from "@modelcontextprotocol/sdk/types.js";
-import type { Request, Response } from "express";
-
-import { loadConfig, getModeDescription } from "./config.js";
-import { createClient, DirectSupabaseClient } from "./clients/index.js";
-import { createConfiguredRegistry } from "./tools/index.js";
-
-// Load configuration and detect mode
-const config = loadConfig();
-console.error(`Eryxon Flow MCP Server v2.4.0`);
-console.error(`Mode: ${getModeDescription(config.mode)}`);
-
-// Create direct Supabase client and extract a SupabaseClient for tool handlers.
-// Handlers call supabase.from() directly, so they need a raw-style client — but
-// the service-role key bypasses RLS, so getScopedClient() returns a tenant-scoped
-// wrapper when TENANT_ID is set (and the raw client otherwise). This keeps tool
-// queries constrained to the configured tenant instead of unscoped admin access.
-const unifiedClient = createClient(config);
-const supabaseClient = (unifiedClient as DirectSupabaseClient).getScopedClient();
-
-// Create and configure the tool registry with all modules
-const toolRegistry = createConfiguredRegistry();
-
-// Log startup info
-const stats = toolRegistry.getStats();
-console.error(`Loaded ${stats.totalTools} tools`);
-
-/**
- * Create a configured MCP Server instance with all tool handlers registered
- */
-function createMCPServer(): Server {
-  const server = new Server(
-    {
-      name: "eryxon-flow-mcp",
-      version: "2.4.0",
-    },
-    {
-      capabilities: {
-        tools: {},
-      },
-    }
-  );
-
-  /**
-   * Handle tool listing requests
-   * Returns all registered tools from all modules
-   */
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    return { tools: toolRegistry.getTools() };
-  });
-
-  /**
-   * Handle tool execution requests
-   * Routes to the appropriate module handler
-   *
-   * NOTE: Tools receive the unified client, which automatically
-   * uses either Supabase (direct) or REST API (cloud) based on config
-   */
-  server.setRequestHandler(CallToolRequestSchema, async (request): Promise<CallToolResult> => {
-    const { name, arguments: args } = request.params;
-
-    try {
-      // Execute the tool through the registry
-      // Pass the raw SupabaseClient — tools call .from() directly
-      const result = await toolRegistry.executeTool(
-        name,
-        (args as Record<string, unknown>) || {},
-        supabaseClient
-      );
-
-      return result as CallToolResult;
-    } catch (error) {
-      console.error(`Error executing tool ${name}:`, error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify({
-              error: error instanceof Error ? error.message : 'Unknown error',
-            }),
-          },
-        ],
-      };
-    }
-  });
-
-  return server;
+if (process.argv.includes("--version")) {
+  console.log(`eryxon-flow-mcp ${VERSION} (MCP ${PROTOCOL_VERSION})`);
+  process.exit(0);
 }
 
-/**
- * Start with stdio transport (default, for local CLI usage)
- */
-async function startStdio(): Promise<void> {
-  const server = createMCPServer();
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("MCP Server ready on stdio");
-}
+const supabase = connect();
+const factory = () => buildServer(supabase);
+const transport = process.env.MCP_TRANSPORT ?? "stdio";
 
-/**
- * Start with Streamable HTTP transport (for Docker/cloud deployment)
- *
- * Uses the MCP SDK's StreamableHTTPServerTransport with session management.
- * Supports SSE streaming for real-time tool responses.
- */
-async function startHttp(): Promise<void> {
-  const { randomUUID } = await import("node:crypto");
-  const { StreamableHTTPServerTransport } = await import(
-    "@modelcontextprotocol/sdk/server/streamableHttp.js"
-  );
-  const { createMcpExpressApp } = await import(
-    "@modelcontextprotocol/sdk/server/express.js"
-  );
-
-  const port = parseInt(process.env.MCP_PORT || "3001", 10);
+if (transport === "stdio") {
+  const handle = serveStdio(factory, { legacy: "reject" });
+  console.error(`Eryxon Flow MCP ${VERSION} (${PROTOCOL_VERSION}) on stdio, ${allTools.length} tools`);
+  process.on("SIGINT", () => void handle.close().then(() => process.exit(0)));
+} else if (transport === "http") {
+  const port = Number(process.env.MCP_PORT ?? 3001);
   const bindPublic = process.env.MCP_BIND_PUBLIC === "true";
-  const requestedHost = process.env.MCP_HOST || "127.0.0.1";
-  const requestedPublicBind = requestedHost === "0.0.0.0" || requestedHost === "::";
-  const host = requestedPublicBind && !bindPublic ? "127.0.0.1" : requestedHost;
-
-  if (requestedPublicBind && !bindPublic) {
-    console.error(
-      "MCP_HOST requested a public bind, but MCP_BIND_PUBLIC is not true; falling back to 127.0.0.1"
-    );
+  const requestedHost = process.env.MCP_HOST ?? "127.0.0.1";
+  const host = !bindPublic && (requestedHost === "0.0.0.0" || requestedHost === "::") ? "127.0.0.1" : requestedHost;
+  const bearer = process.env.MCP_BEARER;
+  if (bindPublic && !bearer) {
+    console.error("MCP_BEARER is required when MCP_BIND_PUBLIC=true");
+    process.exit(1);
   }
+  const allowedHosts = (process.env.MCP_ALLOWED_HOSTS ?? "localhost,127.0.0.1,[::1]").split(",").map((v) => v.trim()).filter(Boolean);
+  const validHost = hostHeaderValidation(allowedHosts);
+  const mcp = toNodeHandler(createMcpHandler(factory, { legacy: "reject" }));
 
-  // Map to store transports by session ID
-  const transports = new Map<string, InstanceType<typeof StreamableHTTPServerTransport>>();
-
-  const allowedHosts = (process.env.MCP_ALLOWED_HOSTS || "localhost,127.0.0.1,[::1]")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean);
-  const bearerToken = process.env.MCP_BEARER;
-
-  const app = createMcpExpressApp({ host, allowedHosts });
-
-  const authorizeMcpRequest = (req: Request, res: Response): boolean => {
-    if (bindPublic && !bearerToken) {
-      res.status(503).json({
-        jsonrpc: "2.0",
-        error: {
-          code: -32000,
-          message: "MCP_BEARER is required when MCP_BIND_PUBLIC=true",
-        },
-        id: null,
-      });
-      return false;
+  const http = createServer(async (req, res) => {
+    const path = new URL(req.url ?? "/", "http://localhost").pathname;
+    if (path === "/health") {
+      const { error } = await supabase.from("jobs").select("id", { count: "exact", head: true }).limit(1);
+      res.writeHead(error ? 503 : 200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ status: error ? "degraded" : "ok", version: VERSION, protocol: PROTOCOL_VERSION, tools: allTools.length, ...(error ? { database: error.message } : {}) }));
+      return;
     }
-
-    if (!bearerToken) {
-      return true;
+    if (path !== "/mcp") {
+      res.writeHead(404).end();
+      return;
     }
-
-    if (req.headers.authorization !== `Bearer ${bearerToken}`) {
-      res.setHeader("WWW-Authenticate", "Bearer");
-      res.status(401).json({
-        jsonrpc: "2.0",
-        error: {
-          code: -32001,
-          message: "Unauthorized",
-        },
-        id: null,
-      });
-      return false;
+    if (!validHost(req, res)) return;
+    if (bearer && req.headers.authorization !== `Bearer ${bearer}`) {
+      res.writeHead(401, { "www-authenticate": "Bearer", "content-type": "application/json" });
+      res.end(JSON.stringify({ jsonrpc: "2.0", error: { code: -32001, message: "Unauthorized" }, id: null }));
+      return;
     }
-
-    return true;
-  };
-
-  // Use a tenant-owned table because the scoped client filters by tenant_id.
-  app.get("/health", async (_req, res) => {
-    let database: "ok" | "error" = "ok";
-    let databaseError: string | undefined;
-    try {
-      const { error } = await supabaseClient
-        .from("jobs")
-        .select("id", { count: "exact", head: true })
-        .limit(1);
-      if (error) {
-        database = "error";
-        databaseError = error.message;
-      }
-    } catch (probeError) {
-      database = "error";
-      databaseError =
-        probeError instanceof Error ? probeError.message : String(probeError);
-    }
-
-    res.status(database === "ok" ? 200 : 503).json({
-      status: database === "ok" ? "ok" : "degraded",
-      version: "2.4.0",
-      mode: config.mode,
-      tools: stats.totalTools,
-      transport: "streamable-http",
-      database,
-      ...(databaseError ? { databaseError } : {}),
-    });
+    await mcp(req, res);
   });
-
-  // MCP POST endpoint — handles initialization and tool calls
-  app.post("/mcp", async (req, res) => {
-    const sessionId = req.headers["mcp-session-id"] as string | undefined;
-
-    try {
-      if (!authorizeMcpRequest(req, res)) {
-        return;
-      }
-
-      let transport: InstanceType<typeof StreamableHTTPServerTransport>;
-
-      if (sessionId && transports.has(sessionId)) {
-        // Reuse existing transport for established session
-        transport = transports.get(sessionId)!;
-      } else if (!sessionId && isInitializeRequest(req.body)) {
-        // New initialization request — create transport + server
-        transport = new StreamableHTTPServerTransport({
-          sessionIdGenerator: () => randomUUID(),
-          onsessioninitialized: (sid: string) => {
-            console.error(`Session initialized: ${sid}`);
-            transports.set(sid, transport);
-          },
-        });
-
-        // Clean up on close
-        transport.onclose = () => {
-          const sid = transport.sessionId;
-          if (sid && transports.has(sid)) {
-            console.error(`Session closed: ${sid}`);
-            transports.delete(sid);
-          }
-        };
-
-        // Each session gets its own MCP server instance
-        const server = createMCPServer();
-        await server.connect(transport);
-        await transport.handleRequest(req, res, req.body);
-        return;
-      } else {
-        // Invalid request
-        res.status(400).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32000,
-            message: "Bad Request: No valid session ID provided",
-          },
-          id: null,
-        });
-        return;
-      }
-
-      await transport.handleRequest(req, res, req.body);
-    } catch (error) {
-      console.error("Error handling MCP request:", error);
-      if (!res.headersSent) {
-        res.status(500).json({
-          jsonrpc: "2.0",
-          error: {
-            code: -32603,
-            message: "Internal server error",
-          },
-          id: null,
-        });
-      }
-    }
-  });
-
-  // MCP GET endpoint — SSE stream for server-initiated messages
-  app.get("/mcp", async (req, res) => {
-    try {
-      if (!authorizeMcpRequest(req, res)) {
-        return;
-      }
-
-      const sessionId = req.headers["mcp-session-id"] as string | undefined;
-      const transport = sessionId ? transports.get(sessionId) : undefined;
-      if (!transport) {
-        res.status(400).send("Invalid or missing session ID");
-        return;
-      }
-
-      await transport.handleRequest(req, res);
-    } catch (error) {
-      console.error("Error handling MCP stream:", error);
-      if (!res.headersSent) {
-        res.status(500).send("Internal server error");
-      }
-    }
-  });
-
-  // MCP DELETE endpoint — session termination
-  app.delete("/mcp", async (req, res) => {
-    try {
-      if (!authorizeMcpRequest(req, res)) {
-        return;
-      }
-
-      const sessionId = req.headers["mcp-session-id"] as string | undefined;
-      const transport = sessionId ? transports.get(sessionId) : undefined;
-      if (!transport) {
-        res.status(400).send("Invalid or missing session ID");
-        return;
-      }
-
-      await transport.handleRequest(req, res);
-    } catch (error) {
-      console.error("Error terminating MCP session:", error);
-      if (!res.headersSent) {
-        res.status(500).send("Internal server error");
-      }
-    }
-  });
-
-  // Start listening
-  app.listen(port, () => {
-    console.error(`MCP Server ready on http://${host}:${port}/mcp`);
-    console.error(`Health check: http://${host}:${port}/health`);
-  });
-
-  // Graceful shutdown
-  process.on("SIGINT", async () => {
-    console.error("Shutting down...");
-    for (const [sessionId, transport] of transports) {
-      try {
-        await transport.close();
-        transports.delete(sessionId);
-      } catch (error) {
-        console.error(`Error closing session ${sessionId}:`, error);
-      }
-    }
-    process.exit(0);
-  });
-
-  process.on("SIGTERM", async () => {
-    console.error("SIGTERM received, shutting down...");
-    for (const [sessionId, transport] of transports) {
-      try {
-        await transport.close();
-        transports.delete(sessionId);
-      } catch (error) {
-        console.error(`Error closing session ${sessionId}:`, error);
-      }
-    }
-    process.exit(0);
-  });
-}
-
-/**
- * Main entry point — select transport based on MCP_TRANSPORT env var
- */
-async function main(): Promise<void> {
-  const transportMode = process.env.MCP_TRANSPORT || "stdio";
-
-  switch (transportMode) {
-    case "stdio":
-      await startStdio();
-      break;
-    case "http":
-      await startHttp();
-      break;
-    default:
-      console.error(`Unknown transport: ${transportMode}. Use "stdio" or "http".`);
-      process.exit(1);
-  }
-}
-
-// Start the server
-main().catch((error) => {
-  console.error("Server error:", error);
+  http.listen(port, host, () => console.error(`Eryxon Flow MCP ${VERSION} (${PROTOCOL_VERSION}) on http://${host}:${port}/mcp, ${allTools.length} tools`));
+  const shutdown = () => http.close(() => process.exit(0));
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+} else {
+  console.error(`Unknown MCP_TRANSPORT "${transport}"; use stdio or http`);
   process.exit(1);
-});
+}

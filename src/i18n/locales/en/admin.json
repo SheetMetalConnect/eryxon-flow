@@ -65,7 +65,8 @@
       "title": "Needs Attention",
       "overHours": "Over planned hours",
       "minutesOver": "Minutes over"
-    }
+    },
+    "wipeConfirm": "Wipe all demo data? This cannot be undone."
   },
   "organizationSettings": {
     "title": "Organization Settings",
@@ -100,6 +101,10 @@
       "setupPrepEnabledDescription": "Allow operators to log setup or machine preparation separately from production.",
       "setupRequired": "Require setup before production",
       "setupRequiredDescription": "Block production start until setup/prep has been recorded on the operation."
+    },
+    "sequentialRelease": {
+      "title": "Sequential release",
+      "description": "An operation can only start once every earlier operation on the same part is completed. Off: the terminal shows the order but lets operators start any operation."
     }
   },
   "settings": {
@@ -556,7 +561,7 @@
     },
     "integrations": {
       "label": "Integrations",
-      "description": "API Keys, Webhooks, MQTT, and Data Import/Export"
+      "description": "API Keys, Webhooks, and Data Import/Export"
     },
     "issues": {
       "label": "Issues",
@@ -694,7 +699,10 @@
       "notPlaced": "Not placed yet",
       "notPlacedHint": "Record where you put this part so the next operator can find it.",
       "record": "Record location",
-      "move": "Move to another slot"
+      "move": "Move to another slot",
+      "nextCellFull": "— all slots full",
+      "nextCellFree_one": "— {{count}} free slot",
+      "nextCellFree_other": "— {{count}} free slots"
     }
   },
   "timeTracking": {

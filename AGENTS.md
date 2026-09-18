@@ -14,7 +14,7 @@ Before making any code change, trace the chain of effects:
 2. **2nd order** — what depends on those things?
 3. **3rd order** — could this cascade further (API contracts, imports, downstream consumers)?
 
-Never change a shared module, type, or function signature without first grepping every caller (`git grep`, `docs/ROUTE_MAP.md`, `docs/HOOK_MAP.md`). Surface the blast radius proactively.
+Never change a shared module, type, or function signature without first grepping every caller (`git grep`; routes are defined in `src/routes/`). Surface the blast radius proactively.
 
 ## Workspace isolation
 

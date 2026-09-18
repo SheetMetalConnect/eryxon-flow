@@ -15,7 +15,7 @@ import { Chip } from "@/components/ui/chip";
 import OperationDetailModal from "./OperationDetailModal";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
-import { OperationWithDetails } from "@/lib/database";
+import { OperationWithDetails } from "@/lib/db";
 import {
   getDueUrgency,
   dueUrgencyTextClass,

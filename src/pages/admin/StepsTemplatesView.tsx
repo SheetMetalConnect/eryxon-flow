@@ -25,19 +25,19 @@ export default function StepsTemplatesView() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
             <TabsTrigger value="templates">
-              {t("Templates")}
+              {t("templates.tabTemplates")}
             </TabsTrigger>
             <TabsTrigger value="substeps">
-              {t("All Substeps")}
+              {t("templates.tabSubsteps")}
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="templates" className="space-y-4">
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle>{t("Substep Templates")}</CardTitle>
+                <CardTitle>{t("templates.cardTitle")}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {t("Create and manage reusable templates for common operations. Templates help operators quickly add standardized substeps to any operation.")}
+                  {t("templates.cardDescription")}
                 </p>
               </CardHeader>
               <CardContent>
@@ -49,9 +49,9 @@ export default function StepsTemplatesView() {
           <TabsContent value="substeps" className="space-y-4">
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle>{t("All Substeps")}</CardTitle>
+                <CardTitle>{t("substeps.title")}</CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  {t("View and manage all substeps across all operations in your system")}
+                  {t("substeps.subtitle")}
                 </p>
               </CardHeader>
               <CardContent>

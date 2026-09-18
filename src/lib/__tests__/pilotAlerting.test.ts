@@ -115,8 +115,8 @@ describe('flow.pilot.job_failure', () => {
   });
 
   it('fires on a stalled backlog past the age threshold', () => {
-    const result = evaluateJobFailure([], ctx({ jobBacklogAgeMs: { 'mqtt-dispatch': 20 * MINUTE } }));
-    expect(result?.observations.stalledJobs).toContain('mqtt-dispatch');
+    const result = evaluateJobFailure([], ctx({ jobBacklogAgeMs: { 'webhook-dispatch': 20 * MINUTE } }));
+    expect(result?.observations.stalledJobs).toContain('webhook-dispatch');
   });
 
   it('does not fire when a failure run is broken by a success', () => {

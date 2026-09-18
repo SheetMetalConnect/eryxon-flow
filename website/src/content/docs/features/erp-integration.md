@@ -7,22 +7,12 @@ Eryxon Flow supports two-way data synchronization with external ERP systems like
 
 ## Architecture Overview
 
-```
-┌─────────────────┐         ┌─────────────────┐
-│   Your ERP      │◄───────►│   Eryxon Flow    │
-│   (SAP, etc.)   │         │                 │
-└────────┬────────┘         └────────┬────────┘
-         │                           │
-         │ REST API / Webhooks       │
-         │                           │
-         ▼                           ▼
-┌─────────────────────────────────────────────┐
-│              Sync Layer                      │
-│  • external_id tracking                      │
-│  • Upsert operations                         │
-│  • Change detection (sync_hash)              │
-│  • Soft delete support                       │
-└─────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+  ERP["Your ERP"] -->|REST sync, bulk-sync| API["Edge Functions<br/>(API key)"]
+  API --> PG[("Postgres<br/>external_id · sync_hash · RLS")]
+  PG -->|triggers| WH["Signed webhooks"]
+  WH --> ERP
 ```
 
 ## Integration Options
@@ -37,24 +27,13 @@ Best for: Webhook-driven updates, event-based sync, real-time integration.
 | `POST` | `/api-{entity}/bulk-sync` | Batch upsert (up to 1000) |
 | `DELETE` | `/api-{entity}?id={uuid}` | Hard delete |
 
-24 integration endpoints are available across jobs, parts, operations, batches, cells, resources, materials, time entries, webhooks, and assignments. See the [REST API reference](/api/rest-api-reference/) for the full catalog.
+Sync endpoints exist for jobs, parts, operations, batches, cells, resources, materials, time entries, webhooks, and assignments. See the [REST API reference](/api/rest-api-reference/) for the full catalog.
 
 ### 2. CSV Batch Import (UI-based)
 
 Best for: Initial data migration, periodic bulk updates, manual imports.
 
 Navigate to **Admin → Data Import** in the web UI.
-
-### 3. Planning Adapters
-
-Best for: Pulling work orders and resources from a dedicated planning system without writing custom REST sync code.
-
-| Adapter | Source | Status | Notes |
-|---------|--------|--------|-------|
-| **FrePPLe** | FrePPLe REST API | Beta | Pull work orders + resources, push start and completion, Basic Auth, pagination |
-| **Odoo MRP** | Odoo `mrp.production` over JSON-RPC | Beta | Pull work orders, push execution feedback |
-
-Both adapters are **Beta** — interfaces and behavior may still change, so pilot them on non-critical work first. Adapters share a single TypeScript interface (`src/lib/planning/`) using ISA-95 aligned vocabulary. Pick one at runtime with `createPlanningAdapter(config)`.
 
 ## Supported Entities
 
@@ -92,8 +71,7 @@ Timestamp of the last successful sync, useful for incremental updates.
 
 ## Related Documentation
 
-- [CSV Import](./csv-import.md) - Step-by-step CSV import instructions
-- [REST API Overview](/architecture/connectivity-rest-api/) - Endpoints and auth
+- [CSV Import](/features/csv-import/) - Step-by-step CSV import instructions
 - [REST API Reference](/api/rest-api-reference/) - Full endpoint documentation
 
 ## Database Schema

@@ -9,10 +9,12 @@ This guide covers everything a production manager or planner needs to run day-to
 
 The dashboard is your starting screen. It shows:
 
-- **Active operators** — who is logged in and working right now.
+- **Active work** — who is clocked on which operation, with a stop button per timer and a stop-all for end of shift. Stopping goes through the same production rules as the terminal, so hours, events and the activity log stay consistent.
 - **Pending issues** — quality problems reported from the shop floor, waiting for your review.
-- **WIP per cell** — how many operations are active in each production cell, against the cell's WIP limit.
-- **Due dates** — upcoming deadlines across all active jobs, sorted by urgency.
+- **In progress and due this week** — head counts you can click through to the jobs list.
+- **Needs attention** — rush orders, operations on hold and operations over their planned hours.
+
+WIP per cell against the cell's limit lives on the capacity matrix and the cell overview.
 
 All data updates in real time. When an operator scans a start or finish on the terminal, the dashboard reflects it within seconds.
 
@@ -47,7 +49,9 @@ Use this sparingly. If everything is rush, nothing is.
 
 ### Putting operations on hold
 
-You can place any operation on hold from the operation detail panel. A held operation stays visible in the work queue but is marked with a hold badge so operators know not to start it. Resume it when the block is cleared.
+Open a running operation and switch on the Yellow Card. Open timers are stopped and the operation is parked as on hold; it stays visible at its cell so the standstill is not lost. The hold clears when an operator starts the operation again at the terminal. Only an operation in progress can be put on hold, and only a supervisor can complete one from the detail panel; both actions use the same database rules as the terminal.
+
+From the same panel you can move an operation to another cell, change its sequence, correct the planned hours and set a planned window. With sequential release switched on, the operations list marks a step as *Waiting on earlier step* until its predecessors are completed.
 
 ## Production Cells (Stages)
 
@@ -99,6 +103,8 @@ Use this to spot bottlenecks before they hit the shop floor. If a cell shows red
 When a customer changes their deadline, update the due date on the job. The scheduler picks up the change on its next run.
 
 ### Factory calendar
+
+**Sequential release** (Organization settings) decides whether the operation order on a part is enforced. Off, the terminal shows In Buffer and Expected but operators may start any operation. On, an operation cannot start until every earlier operation on the same part is completed; the API and MCP server follow the same rule.
 
 The factory calendar defines working days and holidays. The scheduler skips non-working days automatically. Configure this in **Settings** before running your first schedule.
 

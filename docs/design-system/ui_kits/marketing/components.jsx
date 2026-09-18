@@ -123,7 +123,7 @@ function FeatureGrid() {
     },
     {
       title: '30+ REST endpoints',
-      body: 'Webhook notifications for lifecycle events. Planning adapters for FrePPLe and Odoo MRP. MQTT connectivity with retry, circuit breaker, and dead-letter queue.',
+      body: 'Webhook notifications for lifecycle events. An MCP server for AI agents.',
     },
     {
       title: 'Self-hostable, source-available',
@@ -379,7 +379,6 @@ function Integrations() {
     { name: 'UMH / UNS', kind: 'Industrial' },
     { name: 'Supabase',  kind: 'Backend' },
     { name: 'PostgreSQL',kind: 'Database' },
-    { name: 'MQTT',      kind: 'Protocol' },
     { name: 'Webhooks',  kind: 'Events' },
     { name: 'MCP',       kind: 'AI agents' },
     { name: 'Azumuta',   kind: 'Quality' },

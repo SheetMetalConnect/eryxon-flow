@@ -54,7 +54,7 @@ serveApi(async (req: Request, ctx: HandlerContext) => {
     'profiles',
     'api_keys',
     'webhooks',
-    'webhook_logs'
+    'webhook_deliveries'
   ];
 
   const tablesToExport = entities === 'all' || entities.includes('all')

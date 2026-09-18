@@ -19,7 +19,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { useFileUpload } from "@/hooks/useFileUpload";
 import { useCADProcessing } from "@/hooks/useCADProcessing";
 import { usePMI } from "@/hooks/usePMI";
-import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/database";
+import { fetchChildParts, fetchParentPart, checkAssemblyDependencies } from "@/lib/db";
 import { useTranslation } from "react-i18next";
 import { usePartRouting } from "@/hooks/useQRMMetrics";
 import { logger } from '@/lib/logger';
@@ -559,13 +559,13 @@ export default function PartDetailModal({ partId, onClose, onUpdate }: PartDetai
           <div className="px-4 sm:px-6 border-b">
             <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4 overflow-x-auto">
               <TabsTrigger value="details" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
-                {t("common.details", "Details")}
+                {t("common.details")}
               </TabsTrigger>
               <TabsTrigger value="operations" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
                 {t("operations.title")} ({operationsCount})
               </TabsTrigger>
               <TabsTrigger value="files" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3 shrink-0">
-                {t("parts.files", "Files")} ({filesCount})
+                {t("parts.files")} ({filesCount})
               </TabsTrigger>
             </TabsList>
           </div>

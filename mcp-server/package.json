@@ -1,7 +1,7 @@
 {
   "name": "eryxon-flow-mcp-server",
-  "version": "2.4.0",
-  "description": "MCP Server for Eryxon Flow MES",
+  "version": "3.0.0",
+  "description": "MCP server for Eryxon Flow: production tools for AI agents over stdio or Streamable HTTP",
   "license": "BUSL-1.1",
   "type": "module",
   "main": "dist/index.js",
@@ -11,18 +11,13 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
-    "dev:http": "MCP_TRANSPORT=http tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "start:http": "MCP_TRANSPORT=http node dist/index.js",
-    "docker:build": "docker build -t eryxon-mcp .",
-    "docker:run": "docker compose up",
     "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.25.3",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
     "@supabase/supabase-js": "^2.100.1",
     "zod": "^4.3.6"
   },
@@ -32,9 +27,11 @@
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/node": "^25.5.0",
-    "@vitest/ui": "^4.1.2",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",
     "vitest": "^4.1.2"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

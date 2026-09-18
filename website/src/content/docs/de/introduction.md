@@ -30,7 +30,7 @@ Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
 
 - **Werker** erhalten eine touchfreundliche Arbeitswarteschlange: Arbeit nach Stufe ziehen, Zeit erfassen, STEP/PDF ansehen und Probleme direkt auf dem Shopfloor melden.
 - **Admins** erhalten Echtzeit-Transparenz: wer woran arbeitet, Issue-Freigaben, Termin-Overrides sowie Stufen- und Materialkonfiguration.
-- **Technische Evaluatoren** erhalten ein API-first System: 24 REST-Endpunkte, Webhooks, MQTT, MCP-Server und planungsseitige Adapter für FrePPLe und Odoo.
+- **Technische Evaluatoren** erhalten ein API- und MCP-natives System. UI, REST-API und MCP-Server rufen dieselben Postgres-Funktionen und Zeilenschutzregeln auf, und jede Änderung löst dieselben signierten Webhooks aus. Ein MCP-Client wie Claude kann Produktion planen, freigeben, starten, melden und abfragen, mit denselben Schranken wie ein Werker.
 
 ## Was Es Macht
 
@@ -90,7 +90,7 @@ Verfolgen Sie in Echtzeit, wer anwesend ist und woran gearbeitet wird. Kein Rate
 
 ## Integration-First-Architektur
 
-**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über 24 REST-API-Endpunkte (Beta). Eryxon sendet Abschlussereignisse zurück über Webhooks (Beta) oder MQTT (Beta) — der MQTT-Client bringt Retry, Circuit Breaker und Dead-Letter-Logging mit. Der MCP-Server (Live) ermöglicht KI/Automatisierungs-Integration mit stdio für lokale Clients und Streamable HTTP für vertrauenswürdige selbstgehostete Deployments.
+**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über die [REST-API](/api/rest-api-reference/). Eryxon sendet Abschlussereignisse über signierte Webhooks zurück. Der MCP-Server (Live) ermöglicht KI/Automatisierungs-Integration mit stdio für lokale Clients und Streamable HTTP für vertrauenswürdige selbstgehostete Deployments.
 
 ### Dateihandhabung
 Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-Dateien direkt in den Supabase Storage hoch und referenzieren Sie dann den Dateipfad beim Erstellen von Aufträgen oder Teilen. Große Dateien (typisch 5-50 MB) werden direkt in den Speicher hochgeladen — keine Timeouts, keine API-Engpässe.
@@ -99,7 +99,7 @@ Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-
 Fügen Sie JSON-Payloads zu Aufträgen, Teilen und Aufgaben hinzu für Ihre spezifischen Anforderungen — Werkzeuganforderungen, Formnummern, Maschineneinstellungen, Materialspezifikationen, alles was Ihre Werkstatt nachverfolgen muss.
 
 ### ERP- & Planungs-Integrationen
-Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation. Eryxon Flow liefert außerdem steckbare Planungs-Adapter im **Beta**-Status für **FrePPLe** und **Odoo MRP**.
+Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation.
 
 ### Montage-Verfolgung
 Teile können Eltern-Kind-Beziehungen haben. Visuelle Gruppierung zeigt Baugruppen mit verschachtelten Komponenten. Nicht-blockierende Abhängigkeitswarnungen erinnern Werker daran, wann Unterteile fertig sein sollten, bevor Montageaufgaben beginnen — sie können dies aber bei Bedarf überschreiben.

@@ -387,7 +387,7 @@ export default function ConfigStages() {
               </h1>
               {stages.length > 0 && (
                 <Badge className="bg-primary/20 text-primary border-primary/30 text-sm px-3 py-1">
-                  {stages.length} {stages.length === 1 ? t("common.stage", "stage") : t("common.stages", "stages")}
+                  {stages.length} {stages.length === 1 ? t("common.stage") : t("common.stages")}
                 </Badge>
               )}
             </div>
@@ -395,7 +395,7 @@ export default function ConfigStages() {
               {t("stages.manageStages")}
               {stages.length > 1 && (
                 <span className="text-sm ml-2 opacity-70">
-                  ({t("stages.dragToReorder", "Drag to reorder")})
+                  ({t("stages.dragToReorder")})
                 </span>
               )}
             </p>
@@ -428,7 +428,7 @@ export default function ConfigStages() {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      placeholder={t("stages.stageNamePlaceholder", "e.g., Cutting, Welding, Assembly")}
+                      placeholder={t("stages.stageNamePlaceholder")}
                       required
                     />
                   </div>
@@ -441,20 +441,20 @@ export default function ConfigStages() {
                       onChange={(e) =>
                         setFormData({ ...formData, description: e.target.value })
                       }
-                      placeholder={t("stages.descriptionPlaceholder", "Describe what happens at this stage...")}
+                      placeholder={t("stages.descriptionPlaceholder")}
                       rows={2}
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="icon">{t("stages.icon", "Icon")}</Label>
+                      <Label htmlFor="icon">{t("stages.icon")}</Label>
                       <IconPicker
                         value={formData.icon_name}
                         onValueChange={(icon) =>
                           setFormData({ ...formData, icon_name: icon })
                         }
-                        placeholder={t("stages.selectIcon", "Select...")}
+                        placeholder={t("stages.selectIcon")}
                       />
                     </div>
 
@@ -487,7 +487,7 @@ export default function ConfigStages() {
                     <div>
                       <Label htmlFor="active" className="font-medium">{t("stages.active")}</Label>
                       <p className="text-xs text-muted-foreground">
-                        {t("stages.activeHelp", "Inactive stages are hidden from operators")}
+                        {t("stages.activeHelp")}
                       </p>
                     </div>
                     <Switch
@@ -503,11 +503,11 @@ export default function ConfigStages() {
                 <div className="space-y-4 pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <CalendarClock className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold text-sm">{t("capacity.schedulingCapacity", "Scheduling Capacity")}</h3>
+                    <h3 className="font-semibold text-sm">{t("capacity.schedulingCapacity")}</h3>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="capacity_hours_per_day">{t("capacity.hoursPerDay", "Hours per Day")}</Label>
+                    <Label htmlFor="capacity_hours_per_day">{t("capacity.hoursPerDay")}</Label>
                     <div className="flex items-center gap-2">
                       <Input
                         id="capacity_hours_per_day"
@@ -524,10 +524,10 @@ export default function ConfigStages() {
                         }
                         className="w-24"
                       />
-                      <span className="text-sm text-muted-foreground">{t("capacity.hoursUnit", "hours")}</span>
+                      <span className="text-sm text-muted-foreground">{t("capacity.hoursUnit")}</span>
                     </div>
                     <p className="text-xs text-muted-foreground">
-                      {t("capacity.hoursPerDayHelp", "Maximum work hours this cell can process per day. Used by the scheduler to allocate operations.")}
+                      {t("capacity.hoursPerDayHelp")}
                     </p>
                   </div>
                 </div>
@@ -535,12 +535,12 @@ export default function ConfigStages() {
                 <div className="space-y-4 pt-2 border-t">
                   <div className="flex items-center gap-2">
                     <Settings2 className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold text-sm">{t("qrm.settings", "WIP Limits")}</h3>
+                    <h3 className="font-semibold text-sm">{t("qrm.settings")}</h3>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="wip_limit">{t("qrm.wipLimit", "WIP Limit")}</Label>
+                      <Label htmlFor="wip_limit">{t("qrm.wipLimit")}</Label>
                       <Input
                         id="wip_limit"
                         type="number"
@@ -552,13 +552,13 @@ export default function ConfigStages() {
                             wip_limit: e.target.value ? parseInt(e.target.value) : null
                           })
                         }
-                        placeholder={t("qrm.unlimited", "No limit")}
+                        placeholder={t("qrm.unlimited")}
                       />
                     </div>
 
                     <div className="space-y-2">
                       <Label htmlFor="wip_warning_threshold">
-                        {t("qrm.wipWarningThreshold", "Warning At")}
+                        {t("qrm.wipWarningThreshold")}
                       </Label>
                       <Input
                         id="wip_warning_threshold"
@@ -578,17 +578,17 @@ export default function ConfigStages() {
                   </div>
 
                   <p className="text-xs text-muted-foreground">
-                    {t("qrm.wipLimitHelp", "Set WIP limits to prevent overloading this stage. Leave empty for unlimited.")}
+                    {t("qrm.wipLimitHelp")}
                   </p>
 
                   <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="enforce_wip_limit" className="text-sm">
-                          {t("qrm.enforceLimit", "Enforce Limit")}
+                          {t("qrm.enforceLimit")}
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          {t("qrm.enforceLimitHelp", "Block new work at capacity")}
+                          {t("qrm.enforceLimitHelp")}
                         </p>
                       </div>
                       <Switch
@@ -604,10 +604,10 @@ export default function ConfigStages() {
                     <div className="flex items-center justify-between">
                       <div>
                         <Label htmlFor="show_capacity_warning" className="text-sm">
-                          {t("qrm.showWarnings", "Visual Warnings")}
+                          {t("qrm.showWarnings")}
                         </Label>
                         <p className="text-xs text-muted-foreground">
-                          {t("qrm.showWarningsHelp", "Show capacity indicators")}
+                          {t("qrm.showWarningsHelp")}
                         </p>
                       </div>
                       <Switch
@@ -641,20 +641,17 @@ export default function ConfigStages() {
                 <Factory className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-semibold mb-2">
-                {t("stages.noStages", "No stages configured")}
+                {t("stages.noStages")}
               </h3>
               <p className="text-muted-foreground text-center max-w-md mb-6">
-                {t(
-                  "stages.noStagesDescription",
-                  "Stages represent different steps in your manufacturing process. Create your first stage to start organizing your workflow."
-                )}
+                {t("stages.noStagesDescription")}
               </p>
               <Button
                 onClick={() => setDialogOpen(true)}
                 className="gap-2"
               >
                 <Plus className="h-4 w-4" />
-                {t("stages.createFirstStage", "Create your first stage")}
+                {t("stages.createFirstStage")}
               </Button>
             </CardContent>
           </Card>
@@ -753,7 +750,7 @@ function StageWIPDisplay({
         />
         {metrics.jobs_in_cell && metrics.jobs_in_cell.length > 0 && (
           <div className="text-xs text-muted-foreground">
-            {t("qrm.jobsInCell", "Jobs")}: {metrics.jobs_in_cell.map((j) => j.job_number).join(", ")}
+            {t("qrm.jobsInCell")}: {metrics.jobs_in_cell.map((j) => j.job_number).join(", ")}
           </div>
         )}
       </div>

@@ -1,5 +1,5 @@
 import { Badge } from "@/components/ui/badge";
-import { FileText, Box, AlertTriangle, Clock, User } from "lucide-react";
+import { FileText, Box, AlertTriangle, Clock, User, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "react-i18next";
 import { TerminalJob } from "@/types/terminal";
@@ -82,7 +82,15 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
 
       {/* Part Number */}
       <td className="whitespace-nowrap px-2 py-1.5 text-sm text-foreground">
-        {String(job.description ?? "")}
+        <div className="flex items-center gap-1.5">
+          {String(job.description ?? "")}
+          {job.locationCode ? (
+            <Badge variant="outline" className="px-1 py-0 font-mono text-[10px]" title={t("locations.panel.currentlyAt")}>
+              <MapPin className="mr-0.5 h-2.5 w-2.5" />
+              {job.locationCode}
+            </Badge>
+          ) : null}
+        </div>
       </td>
 
       {/* Operation */}
@@ -186,16 +194,16 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
       <td className="whitespace-nowrap px-2 py-1.5">
         {dueUrgency === "overdue" ? (
           <span className="inline-flex items-center gap-1 rounded bg-red-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-500">
-            {t("terminal.backlog.overdue", "Te laat")}
+            {t("terminal.backlog.overdue")}
             <span className="text-red-400">▶</span>
           </span>
         ) : dueUrgency === "today" ? (
           <span className="inline-flex items-center gap-1 rounded bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-500">
-            {t("terminal.backlog.today", "Vandaag")}
+            {t("terminal.backlog.today")}
           </span>
         ) : dueUrgency === "soon" ? (
           <span className="text-[10px] font-medium text-orange-400">
-            {t("terminal.backlog.soon", "Binnenkort")}
+            {t("terminal.backlog.soon")}
           </span>
         ) : null}
       </td>

@@ -1,6 +1,5 @@
 import { throwDatabaseError } from "@shared/validation/errorHandler.ts";
 import { serveApi, errorResponse, successResponse } from "@shared/handler.ts";
-import { dispatchEvent, type EventType } from "@shared/events.ts";
 
 const actions = { start: "start", pause: "pause", resume: "resume", complete: "finish" } as const;
 
@@ -31,15 +30,6 @@ serveApi(async (req, ctx) => {
       eventType: "operation.lifecycle", action: `operation.${action}`,
       entityType: "operation", entityId: operationId, entityName: operation.operation_name,
       extra: { previous_status: result.previous_status, new_status: operation.status },
-    });
-    const eventAction = { start: "started", pause: "paused", resume: "resumed", complete: "completed" }[action];
-    await dispatchEvent(tenantId, `operation.${eventAction}` as EventType, {
-      operation_id: operationId, operation_name: operation.operation_name,
-      part_id: operation.part?.id, part_number: operation.part?.part_number,
-      job_id: operation.part?.job?.id, job_number: operation.part?.job?.job_number,
-      previous_status: result.previous_status, new_status: operation.status,
-      estimated_time: operation.estimated_time, actual_time: operation.actual_time,
-      completion_percentage: operation.completion_percentage,
     });
   }
   return successResponse({

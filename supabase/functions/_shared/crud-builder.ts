@@ -67,7 +67,7 @@ export interface CrudConfig {
   /** Custom query modifications for GET requests */
   queryModifier?: QueryModifier;
 
-  /** Skip automatic tenant_id filter (for tables without tenant_id column, e.g. webhook_logs) */
+  /** Skip automatic tenant_id filter (for tables without tenant_id column) */
   skipTenantFilter?: boolean;
 
   /** Enable sync endpoints (PUT /sync, POST /bulk-sync) */

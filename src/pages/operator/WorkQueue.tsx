@@ -9,7 +9,7 @@ import {
   fetchOperationLookupDetails,
   fetchOperationDetails,
   type OperationWithDetails,
-} from "@/lib/database";
+} from "@/lib/db";
 import OperationCard from "@/components/operator/OperationCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -361,7 +361,7 @@ export default function WorkQueue() {
       <div
         className="flex h-[calc(100vh-160px)] gap-3 overflow-hidden pt-2"
         aria-busy="true"
-        aria-label={t("workQueue.loading", "Loading work queue")}
+        aria-label={t("workQueue.loading")}
       >
         {Array.from({ length: 4 }).map((_, column) => (
           <div key={column} className="flex w-72 shrink-0 flex-col gap-2">
@@ -391,10 +391,7 @@ export default function WorkQueue() {
           <div className="relative min-w-[200px] flex-1">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder={t(
-                "workQueue.searchPlaceholder",
-                "Search job, part, operation...",
-              )}
+              placeholder={t("workQueue.searchPlaceholder")}
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               className="h-8 rounded-md border-border/80 pl-8 text-sm"
@@ -405,18 +402,18 @@ export default function WorkQueue() {
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="h-8 w-[150px] rounded-md border-border/80 text-xs">
               <SelectValue
-                placeholder={t("workQueue.sortBy", "Sort by")}
+                placeholder={t("workQueue.sortBy")}
               />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="sequence">
-                {t("workQueue.sequence", "Sequence")}
+                {t("workQueue.sequence")}
               </SelectItem>
               <SelectItem value="due_date">
-                {t("workQueue.dueDate", "Due date")}
+                {t("workQueue.dueDate")}
               </SelectItem>
               <SelectItem value="estimated_time">
-                {t("workQueue.estimatedTime", "Est. time")}
+                {t("workQueue.estimatedTime")}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -428,16 +425,16 @@ export default function WorkQueue() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="active">
-                {t("workQueue.activeOnly", "Active only")}
+                {t("workQueue.activeOnly")}
               </SelectItem>
               <SelectItem value="all">
-                {t("workQueue.allStatuses", "All statuses")}
+                {t("workQueue.allStatuses")}
               </SelectItem>
               <SelectItem value="not_started">
-                {t("workQueue.notStarted", "Not started")}
+                {t("workQueue.notStarted")}
               </SelectItem>
               <SelectItem value="in_progress">
-                {t("workQueue.inProgress", "In progress")}
+                {t("workQueue.inProgress")}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -450,13 +447,13 @@ export default function WorkQueue() {
             className="h-8 rounded-md text-xs"
           >
             <Filter className="mr-1.5 h-3.5 w-3.5" />
-            {t("common.filters", "Filters")}
+            {t("common.filters")}
           </Button>
 
           {/* Summary */}
           <div className="hidden text-xs text-muted-foreground lg:block">
             {filteredOperations.length}{" "}
-            {t("workQueue.operations", "operations")}
+            {t("workQueue.operations")}
           </div>
         </div>
 
@@ -465,7 +462,7 @@ export default function WorkQueue() {
           <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-border pt-2">
             <div className="space-y-1">
               <Label className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                {t("workQueue.dueDate", "Due date")}
+                {t("workQueue.dueDate")}
               </Label>
               <Select value={dueDateFilter} onValueChange={setDueDateFilter}>
                 <SelectTrigger className="h-8 w-[130px] rounded-md text-xs">
@@ -473,16 +470,16 @@ export default function WorkQueue() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">
-                    {t("workQueue.allDates", "All dates")}
+                    {t("workQueue.allDates")}
                   </SelectItem>
                   <SelectItem value="overdue">
-                    {t("workQueue.overdue", "Overdue")}
+                    {t("workQueue.overdue")}
                   </SelectItem>
                   <SelectItem value="today">
-                    {t("workQueue.dueToday", "Due today")}
+                    {t("workQueue.dueToday")}
                   </SelectItem>
                   <SelectItem value="this_week">
-                    {t("workQueue.thisWeek", "This week")}
+                    {t("workQueue.thisWeek")}
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -493,7 +490,7 @@ export default function WorkQueue() {
                 htmlFor="assigned-to-me"
                 className="text-xs font-medium"
               >
-                {t("workQueue.assignedToMe", "Assigned to me")}
+                {t("workQueue.assignedToMe")}
               </Label>
               <Switch
                 id="assigned-to-me"
@@ -507,7 +504,7 @@ export default function WorkQueue() {
                 htmlFor="show-completed"
                 className="text-xs font-medium"
               >
-                {t("workQueue.showCompleted", "Show completed")}
+                {t("workQueue.showCompleted")}
               </Label>
               <Switch
                 id="show-completed"
@@ -526,13 +523,10 @@ export default function WorkQueue() {
             <div className="flex flex-col items-center gap-3 text-center">
               <PackageSearch className="h-10 w-10 text-muted-foreground/50" />
               <div className="text-sm font-medium text-foreground">
-                {t("workQueue.noCells", "No cells configured")}
+                {t("workQueue.noCells")}
               </div>
               <div className="text-xs text-muted-foreground">
-                {t(
-                  "workQueue.noCellsDescription",
-                  "Add manufacturing cells in admin settings to see the kanban board.",
-                )}
+                {t("workQueue.noCellsDescription")}
               </div>
             </div>
           </div>
@@ -562,7 +556,7 @@ export default function WorkQueue() {
                     ) : null}
                     {inProgress > 0 ? (
                       <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
-                        {inProgress} {t("workQueue.active", "active")}
+                        {inProgress} {t("workQueue.active")}
                       </span>
                     ) : null}
                     {onHold > 0 ? (
@@ -587,10 +581,7 @@ export default function WorkQueue() {
                 {cellOps.length === 0 ? (
                   <div className="flex h-full items-center justify-center p-4">
                     <div className="text-center text-xs text-muted-foreground">
-                      {t(
-                        "workQueue.emptyColumn",
-                        "No operations",
-                      )}
+                      {t("workQueue.emptyColumn")}
                     </div>
                   </div>
                 ) : (

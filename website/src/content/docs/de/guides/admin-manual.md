@@ -47,7 +47,9 @@ Verwenden Sie dies sparsam. Wenn alles Eil ist, ist nichts Eil.
 
 ### Arbeitsgänge anhalten
 
-Sie können jeden Arbeitsgang aus dem Arbeitsgangdetailpanel anhalten. Ein angehaltener Arbeitsgang bleibt in der Arbeitswarteschlange sichtbar, ist aber mit einem Halt-Badge markiert, damit Werker wissen, nicht damit zu beginnen. Setzen Sie ihn fort, wenn die Blockade beseitigt ist.
+Öffnen Sie einen laufenden Arbeitsgang und schalten Sie die Yellow Card ein. Offene Timer werden gestoppt und der Arbeitsgang wird angehalten; er bleibt an seiner Zelle sichtbar, damit der Stillstand nicht verloren geht. Der Halt endet, sobald ein Bediener den Arbeitsgang am Terminal erneut startet. Nur ein laufender Arbeitsgang kann angehalten werden; nur ein Supervisor kann einen aus dem Detailpanel abschließen. Beide Aktionen nutzen dieselben Datenbankregeln wie das Terminal.
+
+Im selben Panel verschieben Sie einen Arbeitsgang in eine andere Zelle, ändern die Reihenfolge, korrigieren die geplanten Stunden und setzen ein geplantes Zeitfenster. Bei eingeschalteter sequenzieller Freigabe markiert die Arbeitsgangliste einen Schritt als *Wartet auf früheren Schritt*, bis die Vorgänger abgeschlossen sind.
 
 ## Produktionszellen (Stufen)
 
@@ -99,6 +101,8 @@ Verwenden Sie dies, um Engpässe zu erkennen, bevor sie die Werkstatt erreichen.
 Wenn ein Kunde seine Frist ändert, aktualisieren Sie das Lieferdatum am Auftrag. Der Planer berücksichtigt die Änderung beim nächsten Lauf.
 
 ### Fabrikkalender
+
+**Reihenfolge erzwingen** (Organisationseinstellungen) legt fest, ob die Reihenfolge der Arbeitsgänge eines Teils erzwungen wird. Aus: das Terminal zeigt Im Puffer und Erwartet, Werker dürfen aber jeden Arbeitsgang starten. An: ein Arbeitsgang kann erst starten, wenn alle vorherigen Arbeitsgänge desselben Teils abgeschlossen sind; API und MCP-Server folgen derselben Regel.
 
 Der Fabrikkalender definiert Arbeitstage und Feiertage. Der Planer überspringt arbeitsfreie Tage automatisch. Konfigurieren Sie dies unter **Einstellungen**, bevor Sie Ihre erste Planung ausführen.
 

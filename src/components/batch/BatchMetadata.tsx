@@ -18,7 +18,7 @@ export function BatchMetadata({ metadata }: BatchMetadataProps) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-base">
           <FileCode className="h-4 w-4" />
-          {t("Additional Metadata")}
+          {t("batches.additionalMetadata")}
         </CardTitle>
       </CardHeader>
       <CardContent>

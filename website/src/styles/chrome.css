@@ -12,49 +12,6 @@
    ============================================================================ */
 
 /* ---------------------------------------------------------------------------
-   CODE BLOCKS (Expressive Code)
-   ---------------------------------------------------------------------------
-   The kit defines a single dark code surface (#0a0a0a) on every theme — code
-   reads as a deliberately dark, calm panel against the light page, identical to
-   the marketing editorial code blocks. Pin the Expressive Code frame, terminal,
-   and editor backgrounds to the canonical code surface and give them a hairline
-   border + the 16px card radius. */
-.expressive-code {
-  --ec-codeBg: var(--ery-code-bg);
-  --ec-frm-edBg: var(--ery-code-bg);
-  --ec-frm-trmBg: var(--ery-code-bg);
-  --ec-frm-edActTabBg: var(--ery-code-bg);
-  --ec-frm-edActTabIndBtm: var(--ery-brand-on-dark);
-  --ec-frm-edTabBarBg: var(--ery-bg-dark);
-  --ec-frm-edTabBarBrdBtm: var(--ery-code-border);
-  --ec-frm-trmTtbBg: var(--ery-bg-dark);
-  --ec-frm-trmTtbBrdBtm: var(--ery-code-border);
-  --ec-frm-edTabBrdRad: var(--ery-radius-lg);
-  --ec-frm-frameBoxShdCssVal: none;
-  --ec-brdCol: var(--ery-code-border);
-  --ec-brdRad: var(--ery-radius-lg);
-}
-.expressive-code .frame {
-  border: 1px solid var(--ery-code-border);
-  border-radius: var(--ery-radius-lg);
-  box-shadow: none;
-}
-.expressive-code .frame pre {
-  border-radius: var(--ery-radius-lg);
-  background: var(--ery-code-bg);
-}
-/* Terminal / editor title bars sit flush on the dark surface. */
-.expressive-code .frame.is-terminal .header,
-.expressive-code .frame:not(.is-terminal) .header {
-  color: var(--ery-text-on-dark-muted);
-}
-/* Copy button reads on the dark surface. */
-.expressive-code .copy button {
-  background: var(--ery-surface-dark-2);
-  border-color: var(--ery-code-border);
-}
-
-/* ---------------------------------------------------------------------------
    INLINE CODE
    --------------------------------------------------------------------------- */
 .sl-markdown-content code:not(:where(.expressive-code *)) {
@@ -184,11 +141,11 @@
   border-radius: var(--ery-radius-sm);
   border-collapse: separate;
   border-spacing: 0;
-  overflow: hidden;
+  overflow-x: auto;
   font-size: var(--ery-text-sm);
   font-variant-numeric: tabular-nums;
-  display: table;
-  width: 100%;
+  display: block;
+  max-width: 100%;
 }
 .sl-markdown-content th:not(:where(.not-content *)),
 .sl-markdown-content td:not(:where(.not-content *)) {

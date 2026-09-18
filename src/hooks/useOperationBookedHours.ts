@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { QueryKeys, StaleTime } from "@/lib/queryClient";
+import { QueryKeys } from "@/lib/queryClient";
 import { logger } from "@/lib/logger";
 import {
   bookedMinutes,
@@ -71,7 +71,7 @@ export function useOperationBookedHours(
     queryKey: QueryKeys.operations.bookedHours(operationId ?? ""),
     enabled: Boolean(operationId),
     // Active entries are counted live, so keep this fresh.
-    staleTime: StaleTime.VERY_SHORT,
+    staleTime: 10_000,
     queryFn: async (): Promise<{ entries: OperationBookedEntry[]; totalMinutes: number }> => {
       if (!operationId) return { entries: [], totalMinutes: 0 };
 

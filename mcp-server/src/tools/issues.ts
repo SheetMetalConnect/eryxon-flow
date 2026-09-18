@@ -1,462 +1,127 @@
-/**
- * Issues & NCR domain tools
- * Handles issue tracking, Non-Conformance Reports, and quality analytics
- */
-
-import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { ToolModule, ToolHandler } from "../types/index.js";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { schemas, validateArgs } from "../utils/validation.js";
-import { structuredResponse, errorResponse } from "../utils/response.js";
-import { databaseError } from "../utils/errors.js";
-import { createFetchTool, createUpdateTool } from "../utils/tool-factories.js";
+import * as s from "../schemas.js";
+import { READ, WRITE, IDEMPOTENT_WRITE, actor, tool } from "../tool.js";
+import { deleteTool, fetchTool, updateTool } from "./crud.js";
 
-// Fetch issues with filters
-// Note: issues table has no deleted_at column
-const { tool: fetchIssuesTool, handler: fetchIssuesHandler } = createFetchTool({
-  tableName: 'issues',
-  description: 'Fetch issues/defects from the database with optional filters and pagination',
-  selectFields: '*, operations(operation_name, parts(part_number))',
-  filterFields: {
-    status: schemas.issueStatus.optional(),
-    severity: schemas.issueSeverity.optional(),
-  },
-  orderBy: { column: 'created_at', ascending: false },
-  includeDeleted: true,
-});
+const since = (days: number) => new Date(Date.now() - days * 86_400_000).toISOString();
+const count = (map: Record<string, number>, key: string) => (map[key] = (map[key] ?? 0) + 1);
 
-// Fetch NCRs with filters
-const { tool: fetchNcrsTool, handler: fetchNcrsHandler } = createFetchTool({
-  tableName: 'issues',
-  description: 'Fetch Non-Conformance Reports with filtering and pagination',
-  selectFields: '*, operations(operation_name, parts(part_number, jobs(job_number)))',
-  filterFields: {
-    issue_type: z.literal('ncr').default('ncr'),
-    status: schemas.issueStatus.optional(),
-    severity: schemas.issueSeverity.optional(),
-    ncr_category: z.enum(['material_defect', 'dimensional', 'surface_finish', 'process_error', 'other']).optional(),
-  },
-  orderBy: { column: 'created_at', ascending: false },
-  includeDeleted: true,
-});
+type IssueRow = {
+  severity: string | null; status: string; ncr_category?: string | null; created_at: string; updated_at: string;
+  root_cause?: string | null; corrective_action?: string | null;
+  operations?: { operation_name: string | null; cells?: { name: string } | null } | null;
+};
 
-// Update issue
-const { tool: updateIssueTool, handler: updateIssueHandler } = createUpdateTool({
-  tableName: 'issues',
-  description: "Update an issue's status or properties",
-  resourceName: 'issue',
-  updateSchema: z.object({
-    id: schemas.id,
-    status: schemas.issueStatus.optional(),
-    severity: schemas.issueSeverity.optional(),
-    resolution_notes: z.string().optional(),
+const ncrFields = {
+  ncr_category: s.ncrCategory.optional(), affected_quantity: z.number().int().min(0).optional(), disposition: s.ncrDisposition.optional(),
+  root_cause: z.string().optional(), corrective_action: z.string().optional(), preventive_action: z.string().optional(),
+};
+
+export const issueTools = [
+  fetchTool({
+    table: "issues", title: "Fetch issues", description: "Issues and NCRs with operation, part and job context.",
+    select: "*, operations(operation_name, parts(part_number, jobs(job_number)))",
+    filters: { status: s.issueStatus.optional(), severity: s.issueSeverity.optional(), issue_type: s.issueType.optional(), operation_id: s.id.optional(), causes_standstill: z.boolean().optional() },
+    orderBy: { column: "created_at" }, softDelete: false,
   }),
-});
-
-// Custom tool definitions
-const createNcrTool: Tool = {
-  name: "create_ncr",
-  description: "Create a Non-Conformance Report (NCR) with comprehensive tracking",
-  inputSchema: {
-    type: "object",
-    properties: {
-      operation_id: { type: "string", description: "Operation where the non-conformance occurred" },
-      title: { type: "string", description: "Short title/summary of the NCR" },
-      description: { type: "string", description: "Detailed description of the non-conformance" },
-      severity: { type: "string", enum: ["low", "medium", "high", "critical"], description: "Severity level" },
-      ncr_category: { type: "string", enum: ["material_defect", "dimensional", "surface_finish", "process_error", "other"] },
-      affected_quantity: { type: "number", description: "Number of parts affected" },
-      disposition: { type: "string", enum: ["use_as_is", "rework", "scrap", "return_to_supplier"] },
-      root_cause: { type: "string", description: "Root cause analysis" },
-      corrective_action: { type: "string", description: "Immediate corrective action taken" },
-      preventive_action: { type: "string", description: "Preventive action to avoid recurrence" },
-      reported_by_id: { type: "string", description: "User ID who reported the NCR" },
+  tool({
+    name: "create_issue",
+    title: "Report issue",
+    description: "Report an issue on an operation like the terminal's Report Issue. causes_standstill=true parks the operation under a Yellow Card until the issue is resolved. issue_type 'ncr' makes it a non-conformance report.",
+    input: {
+      operation_id: s.id, description: z.string().min(1), severity: s.issueSeverity.default("medium"), issue_type: s.issueType.default("general"),
+      title: z.string().optional(), causes_standstill: z.boolean().default(false), current_cell_id: s.id.optional(), intended_next_cell_id: s.id.optional(),
+      created_by: s.id.optional(), reported_by_id: s.id.optional(), ...ncrFields,
     },
-    required: ["operation_id", "title", "severity", "ncr_category"],
-  },
-};
-
-const getIssueAnalyticsTool: Tool = {
-  name: "get_issue_analytics",
-  description: "Get aggregated issue statistics and metrics for quality analysis, grouped by the specified field",
-  inputSchema: {
-    type: "object",
-    properties: {
-      days: { type: "number", description: "Number of days to analyze (default: 30)" },
-      group_by: {
-        type: "string",
-        enum: ["severity", "status", "ncr_category", "cell", "operation"],
-        description: "Group results by this field (default: severity)",
-      },
+    output: s.ROW,
+    annotations: WRITE,
+    async handler({ created_by, ...issue }, supabase) {
+      const { data, error } = await supabase.from("issues").insert({ ...issue, created_by: actor(created_by), status: "pending" }).select().single();
+      if (error) throw error;
+      return data as Record<string, unknown>;
     },
-  },
-};
-
-const getIssueTrendsTool: Tool = {
-  name: "get_issue_trends",
-  description: "Get issue trends over time for pattern analysis",
-  inputSchema: {
-    type: "object",
-    properties: {
-      days: { type: "number", description: "Number of days to analyze (default: 30)" },
-      interval: { type: "string", enum: ["daily", "weekly"], description: "Aggregation interval" },
+  }),
+  updateTool({
+    table: "issues", name: "update_issue", title: "Update issue",
+    description: "Edit severity, NCR fields or notes. Use resolve_issue to close it.",
+    fields: { title: z.string().optional(), description: z.string().optional(), severity: s.issueSeverity.optional(), resolution_notes: z.string().optional(), verification_required: z.boolean().optional(), ...ncrFields },
+  }),
+  tool({
+    name: "resolve_issue",
+    title: "Resolve issue",
+    description: "Set an issue to approved, rejected or closed with resolution notes. Resolving a standstill issue lifts the Yellow Card from its operation.",
+    input: { id: s.id, status: z.enum(["approved", "rejected", "closed"]).default("closed"), resolution_notes: z.string().optional(), reviewed_by: s.id.optional() },
+    output: { id: z.string(), status: z.string() },
+    annotations: IDEMPOTENT_WRITE,
+    async handler({ id, status, resolution_notes, reviewed_by }, supabase) {
+      const { data, error } = await supabase.from("issues")
+        .update({ status, resolution_notes, reviewed_by: reviewed_by ?? process.env.MCP_ACTOR_ID ?? null, reviewed_at: new Date().toISOString() })
+        .eq("id", id).select().single();
+      if (error) throw error;
+      return data as Record<string, unknown>;
     },
-  },
-};
-
-const getRootCauseAnalysisTool: Tool = {
-  name: "get_root_cause_analysis",
-  description: "Analyze common root causes and corrective actions across issues",
-  inputSchema: {
-    type: "object",
-    properties: {
-      days: { type: "number", description: "Number of days to analyze (default: 90)" },
-      min_occurrences: { type: "number", description: "Minimum occurrences to include (default: 2)" },
+  }),
+  deleteTool({ table: "issues", name: "delete_issue", title: "Delete issue", description: "Delete an issue permanently.", softDelete: false }),
+  tool({
+    name: "get_issue_analytics", title: "Issue analytics",
+    description: "Issue counts over a period grouped by severity, status, NCR category, cell or operation, with average resolution time.",
+    input: { days: s.days, group_by: z.enum(["severity", "status", "ncr_category", "cell", "operation"]).default("severity") },
+    output: { total_issues: z.number(), grouped_data: z.record(z.string(), z.number()), avg_resolution_days: z.number() }, annotations: READ,
+    async handler({ days, group_by }, supabase) {
+      const { data, error } = await supabase.from("issues").select("severity, status, ncr_category, created_at, updated_at, operations(operation_name, cells(name))").gte("created_at", since(days));
+      if (error) throw error;
+      const grouped: Record<string, number> = {};
+      let resolved = 0, resolutionDays = 0;
+      for (const issue of data as unknown as IssueRow[]) {
+        count(grouped, { severity: issue.severity ?? "unknown", status: issue.status, ncr_category: issue.ncr_category ?? "none", cell: issue.operations?.cells?.name ?? "Unknown", operation: issue.operations?.operation_name ?? "Unknown" }[group_by]);
+        if (issue.status === "approved" || issue.status === "closed") { resolved++; resolutionDays += (Date.parse(issue.updated_at) - Date.parse(issue.created_at)) / 86_400_000; }
+      }
+      return { period_days: days, group_by, total_issues: data.length, grouped_data: grouped, avg_resolution_days: resolved ? Math.round((resolutionDays / resolved) * 10) / 10 : 0 };
     },
-  },
-};
-
-const suggestQualityImprovementsTool: Tool = {
-  name: "suggest_quality_improvements",
-  description: "AI-driven suggestions based on issue patterns and quality data",
-  inputSchema: {
-    type: "object",
-    properties: {
-      focus_area: { type: "string", enum: ["recurring_issues", "high_severity", "slow_resolution", "cell_problems"] },
+  }),
+  tool({
+    name: "get_issue_trends", title: "Issue trends", description: "Issues per day or week over a period, split by severity.",
+    input: { days: s.days, interval: z.enum(["daily", "weekly"]).default("daily") },
+    output: { data: z.array(z.record(z.string(), z.unknown())) }, annotations: READ,
+    async handler({ days, interval }, supabase) {
+      const { data, error } = await supabase.from("issues").select("severity, created_at").gte("created_at", since(days)).order("created_at");
+      if (error) throw error;
+      const buckets: Record<string, { total: number; by_severity: Record<string, number> }> = {};
+      for (const issue of data) {
+        const entry = (buckets[bucket(issue.created_at, interval)] ??= { total: 0, by_severity: {} });
+        entry.total++; count(entry.by_severity, issue.severity ?? "unknown");
+      }
+      return { interval, period_days: days, data: Object.entries(buckets).map(([date, v]) => ({ date, ...v })) };
     },
-  },
-};
+  }),
+  tool({
+    name: "get_root_cause_analysis", title: "Root cause analysis", description: "Recurring root causes over a period with affected cells and sample corrective actions.",
+    input: { days: s.days.default(90), min_occurrences: z.number().int().min(1).default(2) },
+    output: { common_root_causes: z.array(z.record(z.string(), z.unknown())) }, annotations: READ,
+    async handler({ days, min_occurrences }, supabase) {
+      const { data, error } = await supabase.from("issues").select("root_cause, corrective_action, severity, operations(operation_name, cells(name))").gte("created_at", since(days)).not("root_cause", "is", null);
+      if (error) throw error;
+      const causes: Record<string, { count: number; severities: Record<string, number>; cells: Set<string>; actions: Set<string> }> = {};
+      for (const issue of data as unknown as IssueRow[]) {
+        const key = issue.root_cause?.toLowerCase().trim();
+        if (!key) continue;
+        const entry = (causes[key] ??= { count: 0, severities: {}, cells: new Set(), actions: new Set() });
+        entry.count++;
+        if (issue.severity) count(entry.severities, issue.severity);
+        if (issue.operations?.cells?.name) entry.cells.add(issue.operations.cells.name);
+        if (issue.corrective_action) entry.actions.add(issue.corrective_action);
+      }
+      const common = Object.entries(causes).filter(([, v]) => v.count >= min_occurrences).map(([root_cause, v]) => ({
+        root_cause, occurrence_count: v.count, most_common_severity: Object.entries(v.severities).sort((a, b) => b[1] - a[1])[0]?.[0] ?? null,
+        affected_cells: [...v.cells], sample_corrective_actions: [...v.actions].slice(0, 3),
+      })).sort((a, b) => b.occurrence_count - a.occurrence_count);
+      return { period_days: days, min_occurrences, total_with_root_cause: data.length, common_root_causes: common };
+    },
+  }),
+];
 
-// Helper function
-function getMostCommon(arr: string[]): string | null {
-  if (arr.length === 0) return null;
-  const counts: Record<string, number> = {};
-  arr.forEach((item) => {
-    counts[item] = (counts[item] || 0) + 1;
-  });
-  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+export function bucket(timestamp: string, interval: "daily" | "weekly") {
+  const date = new Date(timestamp);
+  if (interval === "weekly") date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+  return date.toISOString().slice(0, 10);
 }
-
-// Custom handlers with validation
-const createNcr: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const validated = validateArgs(args, z.object({
-      operation_id: schemas.id,
-      title: z.string().min(1),
-      description: z.string().optional(),
-      severity: schemas.issueSeverity,
-      ncr_category: z.enum(['material_defect', 'dimensional', 'surface_finish', 'process_error', 'other']),
-      affected_quantity: z.number().int().min(0).optional(),
-      disposition: z.enum(['use_as_is', 'rework', 'scrap', 'return_to_supplier']).optional(),
-      root_cause: z.string().optional(),
-      corrective_action: z.string().optional(),
-      preventive_action: z.string().optional(),
-      reported_by_id: schemas.id.optional(),
-    }));
-
-    const { data, error } = await supabase
-      .from("issues")
-      .insert({
-        operation_id: validated.operation_id,
-        title: validated.title,
-        description: validated.description,
-        severity: validated.severity,
-        issue_type: "ncr",
-        ncr_category: validated.ncr_category,
-        root_cause: validated.root_cause,
-        corrective_action: validated.corrective_action,
-        preventive_action: validated.preventive_action,
-        affected_quantity: validated.affected_quantity,
-        disposition: validated.disposition,
-        reported_by_id: validated.reported_by_id,
-        status: "pending",
-      })
-      .select()
-      .single();
-
-    if (error) throw databaseError("Failed to create NCR", error as Error);
-    return structuredResponse(data, "NCR created successfully");
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-const getIssueAnalytics: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const { days, group_by } = validateArgs(args, z.object({
-      days: z.number().int().min(1).max(365).optional().default(30),
-      group_by: z.enum(["severity", "status", "ncr_category", "cell", "operation"]).optional().default("severity"),
-    }));
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const { data: issues, error } = await supabase
-      .from("issues")
-      .select(`id, severity, status, issue_type, ncr_category, created_at, updated_at, operations(operation_name, cell_id, cells(name))`)
-      .gte("created_at", startDate.toISOString());
-
-    if (error) throw databaseError("Failed to fetch issue analytics", error as Error);
-
-    // Build all groupings (efficient single pass)
-    const groupings = {
-      severity: {} as Record<string, number>,
-      status: {} as Record<string, number>,
-      ncr_category: {} as Record<string, number>,
-      cell: {} as Record<string, number>,
-      operation: {} as Record<string, number>,
-    };
-
-    let resolvedCount = 0;
-    let totalResolutionDays = 0;
-
-    issues?.forEach((issue: any) => {
-      groupings.severity[issue.severity || "unknown"] = (groupings.severity[issue.severity || "unknown"] || 0) + 1;
-      groupings.status[issue.status || "unknown"] = (groupings.status[issue.status || "unknown"] || 0) + 1;
-      if (issue.ncr_category) {
-        groupings.ncr_category[issue.ncr_category] = (groupings.ncr_category[issue.ncr_category] || 0) + 1;
-      }
-      const cellName = issue.operations?.cells?.name || "Unknown";
-      groupings.cell[cellName] = (groupings.cell[cellName] || 0) + 1;
-
-      const operationName = issue.operations?.operation_name || "Unknown";
-      groupings.operation[operationName] = (groupings.operation[operationName] || 0) + 1;
-
-      if (issue.status === "approved" || issue.status === "closed") {
-        const daysDiff = (new Date(issue.updated_at).getTime() - new Date(issue.created_at).getTime()) / (1000 * 60 * 60 * 24);
-        totalResolutionDays += daysDiff;
-        resolvedCount++;
-      }
-    });
-
-    const avgResolutionDays = resolvedCount > 0 ? Math.round((totalResolutionDays / resolvedCount) * 10) / 10 : 0;
-
-    // Return focused analytics based on group_by parameter
-    const analytics = {
-      total_issues: issues?.length || 0,
-      group_by: group_by,
-      grouped_data: groupings[group_by],
-      avg_resolution_days: avgResolutionDays,
-      period_days: days,
-    };
-
-    return structuredResponse(analytics);
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-const getIssueTrends: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const { days, interval } = validateArgs(args, z.object({
-      days: z.number().int().min(1).max(365).optional().default(30),
-      interval: z.enum(['daily', 'weekly']).optional().default('daily'),
-    }));
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const { data: issues, error } = await supabase
-      .from("issues")
-      .select("id, severity, status, created_at")
-      .gte("created_at", startDate.toISOString())
-      .order("created_at", { ascending: true });
-
-    if (error) throw databaseError("Failed to fetch issue trends", error as Error);
-
-    const trends: Record<string, { total: number; by_severity: Record<string, number> }> = {};
-
-    issues?.forEach((issue: any) => {
-      const date = new Date(issue.created_at);
-      let key: string;
-
-      if (interval === "weekly") {
-        const dayOfWeek = date.getDay();
-        const diff = date.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
-        const weekStart = new Date(date.setDate(diff));
-        key = weekStart.toISOString().split("T")[0];
-      } else {
-        key = date.toISOString().split("T")[0];
-      }
-
-      if (!trends[key]) trends[key] = { total: 0, by_severity: {} };
-      trends[key].total++;
-      const severity = issue.severity || "unknown";
-      trends[key].by_severity[severity] = (trends[key].by_severity[severity] || 0) + 1;
-    });
-
-    const trendArray = Object.entries(trends)
-      .map(([date, data]) => ({ date, ...data }))
-      .sort((a, b) => a.date.localeCompare(b.date));
-
-    return structuredResponse({ interval, period_days: days, data: trendArray });
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-const getRootCauseAnalysis: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const { days, min_occurrences } = validateArgs(args, z.object({
-      days: z.number().int().min(1).max(365).optional().default(90),
-      min_occurrences: z.number().int().min(1).optional().default(2),
-    }));
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const { data: issues, error } = await supabase
-      .from("issues")
-      .select(`id, root_cause, corrective_action, preventive_action, severity, status, ncr_category, operations(operation_name, cells(name))`)
-      .gte("created_at", startDate.toISOString())
-      .not("root_cause", "is", null);
-
-    if (error) throw databaseError("Failed to fetch root cause data", error as Error);
-
-    const rootCauses: Record<string, { count: number; severities: string[]; cells: string[]; corrective_actions: string[] }> = {};
-
-    issues?.forEach((issue: any) => {
-      const rootCause = issue.root_cause?.toLowerCase().trim();
-      if (!rootCause) return;
-
-      if (!rootCauses[rootCause]) {
-        rootCauses[rootCause] = { count: 0, severities: [], cells: [], corrective_actions: [] };
-      }
-      rootCauses[rootCause].count++;
-      if (issue.severity) rootCauses[rootCause].severities.push(issue.severity);
-      if (issue.operations?.cells?.name) rootCauses[rootCause].cells.push(issue.operations.cells.name);
-      if (issue.corrective_action) rootCauses[rootCause].corrective_actions.push(issue.corrective_action);
-    });
-
-    const analysis = Object.entries(rootCauses)
-      .filter(([, data]) => data.count >= min_occurrences)
-      .map(([cause, data]) => ({
-        root_cause: cause,
-        occurrence_count: data.count,
-        most_common_severity: getMostCommon(data.severities),
-        affected_cells: [...new Set(data.cells)],
-        sample_corrective_actions: [...new Set(data.corrective_actions)].slice(0, 3),
-      }))
-      .sort((a, b) => b.occurrence_count - a.occurrence_count);
-
-    return structuredResponse({
-      period_days: days,
-      min_occurrences,
-      total_with_root_cause: issues?.length || 0,
-      common_root_causes: analysis,
-    });
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-const suggestQualityImprovements: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const { focus_area } = validateArgs(args, z.object({
-      focus_area: z.enum(['recurring_issues', 'high_severity', 'slow_resolution', 'cell_problems']).optional().default('recurring_issues'),
-    }));
-
-    const { data: issues, error } = await supabase
-      .from("issues")
-      .select(`id, title, description, severity, status, ncr_category, root_cause, corrective_action, created_at, updated_at, operations(operation_name, cells(name))`)
-      .gte("created_at", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString())
-      .order("created_at", { ascending: false });
-
-    if (error) throw databaseError("Failed to fetch issues for suggestions", error as Error);
-
-    const suggestions: { type: string; priority: string; suggestion: string; evidence: string }[] = [];
-
-    if (focus_area === "recurring_issues" || focus_area === "cell_problems") {
-      const cellIssues: Record<string, number> = {};
-      issues?.forEach((issue: any) => {
-        const cell = issue.operations?.cells?.name || "Unknown";
-        cellIssues[cell] = (cellIssues[cell] || 0) + 1;
-      });
-
-      Object.entries(cellIssues)
-        .filter(([, count]) => count >= 3)
-        .sort((a, b) => b[1] - a[1])
-        .forEach(([cell, count]) => {
-          suggestions.push({
-            type: "cell_review",
-            priority: count >= 5 ? "high" : "medium",
-            suggestion: `Review processes in ${cell} cell - ${count} issues in last 90 days`,
-            evidence: `High issue concentration indicates potential systematic problems`,
-          });
-        });
-    }
-
-    if (focus_area === "high_severity" || focus_area === "recurring_issues") {
-      const criticalIssues = issues?.filter((i: any) => i.severity === "critical" || i.severity === "high") || [];
-      const unresolvedCritical = criticalIssues.filter((i: any) => i.status !== "approved" && i.status !== "closed");
-      if (unresolvedCritical.length > 0) {
-        suggestions.push({
-          type: "urgent_resolution",
-          priority: "critical",
-          suggestion: `${unresolvedCritical.length} high/critical severity issues remain unresolved`,
-          evidence: `Unresolved critical issues pose quality and safety risks`,
-        });
-      }
-    }
-
-    if (focus_area === "slow_resolution") {
-      const slowIssues = issues?.filter((i: any) => {
-        if (i.status === "resolved" || i.status === "closed") return false;
-        const daysOpen = (Date.now() - new Date(i.created_at).getTime()) / (1000 * 60 * 60 * 24);
-        return daysOpen > 7;
-      }) || [];
-
-      if (slowIssues.length > 0) {
-        suggestions.push({
-          type: "process_improvement",
-          priority: "medium",
-          suggestion: `${slowIssues.length} issues open for more than 7 days - review resolution process`,
-          evidence: `Long resolution times may indicate resource constraints or unclear ownership`,
-        });
-      }
-    }
-
-    const categoryCount: Record<string, number> = {};
-    issues?.forEach((i: any) => {
-      if (i.ncr_category) {
-        categoryCount[i.ncr_category] = (categoryCount[i.ncr_category] || 0) + 1;
-      }
-    });
-
-    const topCategory = Object.entries(categoryCount).sort((a, b) => b[1] - a[1])[0];
-    if (topCategory && topCategory[1] >= 5) {
-      suggestions.push({
-        type: "category_focus",
-        priority: "medium",
-        suggestion: `Focus on ${topCategory[0]} issues - highest category with ${topCategory[1]} occurrences`,
-        evidence: `Concentrated issue category suggests targeted improvement opportunity`,
-      });
-    }
-
-    return structuredResponse({ focus_area, total_issues_analyzed: issues?.length || 0, suggestions });
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-// Export module
-export const issuesModule: ToolModule = {
-  tools: [
-    fetchIssuesTool,
-    createNcrTool,
-    fetchNcrsTool,
-    updateIssueTool,
-    getIssueAnalyticsTool,
-    getIssueTrendsTool,
-    getRootCauseAnalysisTool,
-    suggestQualityImprovementsTool,
-  ],
-  handlers: new Map<string, ToolHandler>([
-    ['fetch_issues', fetchIssuesHandler],
-    ['create_ncr', createNcr],
-    ['fetch_ncrs', fetchNcrsHandler],
-    ['update_issue', updateIssueHandler],
-    ['get_issue_analytics', getIssueAnalytics],
-    ['get_issue_trends', getIssueTrends],
-    ['get_root_cause_analysis', getRootCauseAnalysis],
-    ['suggest_quality_improvements', suggestQualityImprovements],
-  ]),
-};

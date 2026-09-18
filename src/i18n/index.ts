@@ -2,189 +2,54 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
-// English namespace imports
-import enCommon from './locales/en/common.json';
-import enAuth from './locales/en/auth.json';
-import enNavigation from './locales/en/navigation.json';
-import enAdmin from './locales/en/admin.json';
-import enOperator from './locales/en/operator.json';
-import enJobs from './locales/en/jobs.json';
-import enConfig from './locales/en/config.json';
-import enIntegrations from './locales/en/integrations.json';
-import enAnalytics from './locales/en/analytics.json';
+type Catalog = Record<string, unknown>;
 
-// Dutch namespace imports
-import nlCommon from './locales/nl/common.json';
-import nlAuth from './locales/nl/auth.json';
-import nlNavigation from './locales/nl/navigation.json';
-import nlAdmin from './locales/nl/admin.json';
-import nlOperator from './locales/nl/operator.json';
-import nlJobs from './locales/nl/jobs.json';
-import nlConfig from './locales/nl/config.json';
-import nlIntegrations from './locales/nl/integrations.json';
-import nlAnalytics from './locales/nl/analytics.json';
-
-// German namespace imports
-import deCommon from './locales/de/common.json';
-import deAuth from './locales/de/auth.json';
-import deNavigation from './locales/de/navigation.json';
-import deAdmin from './locales/de/admin.json';
-import deOperator from './locales/de/operator.json';
-import deJobs from './locales/de/jobs.json';
-import deConfig from './locales/de/config.json';
-import deIntegrations from './locales/de/integrations.json';
-import deAnalytics from './locales/de/analytics.json';
-
-/**
- * i18n Namespace Structure
- *
- * Translations are split into logical namespaces for better maintainability:
- *
- * - common: Shared strings (Actions, Cancel, Status, forms, notifications, modals, time)
- * - auth: Authentication, legal, onboarding, subscription
- * - navigation: Sidebar and navigation items
- * - admin: Admin pages (dashboard, settings, users, activity)
- * - operator: Operator terminal (workQueue, terminal, session tracking)
- * - jobs: Jobs, parts, operations, issues
- * - config: Configuration (stages, materials, resources, assignments)
- * - integrations: API keys, webhooks, MQTT, data import/export
- * - analytics: QRM, quality, capacity metrics
- *
- * Edit the individual namespace files above; they are deep-merged into `translation`.
- */
-
-// Merge all namespaces into a single translation object for backward compatibility.
-// Deep merge (not Object.assign) so namespaces that share a top-level key — e.g.
-// `users` lives in both admin.json and config.json — union their sub-keys instead
-// of the later file clobbering the whole block (which dropped 68 users.* keys and
-// rendered them as raw keys on the admin Users page).
-const isPlainObject = (v: unknown): v is Record<string, unknown> =>
+const isPlainObject = (v: unknown): v is Catalog =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
-const deepMerge = (
-  target: Record<string, unknown>,
-  source: Record<string, unknown>
-): Record<string, unknown> => {
+// Namespace files share top-level keys (e.g. `users` in admin.json and
+// config.json), so they are deep-merged instead of overwritten.
+const deepMerge = (target: Catalog, source: Catalog): Catalog => {
   for (const [key, value] of Object.entries(source)) {
     if (key === '__proto__' || key === 'constructor' || key === 'prototype') continue;
-    if (isPlainObject(value)) {
-      const existing = target[key];
-      target[key] = deepMerge(isPlainObject(existing) ? existing : {}, value);
-    } else {
-      target[key] = value;
-    }
+    const existing = target[key];
+    target[key] = isPlainObject(value) ? deepMerge(isPlainObject(existing) ? existing : {}, value) : value;
   }
   return target;
 };
 
-const mergeNamespaces = (...namespaces: Record<string, unknown>[]) =>
-  namespaces.reduce<Record<string, unknown>>((acc, ns) => deepMerge(acc, ns), {});
+const mergeCatalogs = (files: Catalog[]) => files.reduce<Catalog>(deepMerge, {});
 
-const resources = {
-  en: {
-    translation: mergeNamespaces(
-      enCommon,
-      enAuth,
-      enNavigation,
-      enAdmin,
-      enOperator,
-      enJobs,
-      enConfig,
-      enIntegrations,
-      enAnalytics
-    ),
-    // Also expose individual namespaces for future use
-    common: enCommon,
-    auth: enAuth,
-    navigation: enNavigation,
-    admin: enAdmin,
-    operator: enOperator,
-    jobs: enJobs,
-    config: enConfig,
-    integrations: enIntegrations,
-    analytics: enAnalytics,
-  },
-  nl: {
-    translation: mergeNamespaces(
-      nlCommon,
-      nlAuth,
-      nlNavigation,
-      nlAdmin,
-      nlOperator,
-      nlJobs,
-      nlConfig,
-      nlIntegrations,
-      nlAnalytics
-    ),
-    common: nlCommon,
-    auth: nlAuth,
-    navigation: nlNavigation,
-    admin: nlAdmin,
-    operator: nlOperator,
-    jobs: nlJobs,
-    config: nlConfig,
-    integrations: nlIntegrations,
-    analytics: nlAnalytics,
-  },
-  de: {
-    translation: mergeNamespaces(
-      deCommon,
-      deAuth,
-      deNavigation,
-      deAdmin,
-      deOperator,
-      deJobs,
-      deConfig,
-      deIntegrations,
-      deAnalytics
-    ),
-    common: deCommon,
-    auth: deAuth,
-    navigation: deNavigation,
-    admin: deAdmin,
-    operator: deOperator,
-    jobs: deJobs,
-    config: deConfig,
-    integrations: deIntegrations,
-    analytics: deAnalytics,
+// English ships in the entry bundle; other languages load when selected.
+const english = import.meta.glob<{ default: Catalog }>('./locales/en/*.json', { eager: true });
+const lazyCatalogs = import.meta.glob<{ default: Catalog }>('./locales/*/*.json');
+
+const backend = {
+  type: 'backend' as const,
+  init() {},
+  read(lng: string, _ns: string, callback: (error: unknown, data?: Catalog) => void) {
+    const loaders = Object.entries(lazyCatalogs)
+      .filter(([path]) => path.includes(`/${lng}/`))
+      .map(([, load]) => load());
+    Promise.all(loaders)
+      .then((modules) => callback(null, mergeCatalogs(modules.map((m) => m.default))))
+      .catch(callback);
   },
 };
 
 i18n
-  .use(LanguageDetector) // Detect user language
-  .use(initReactI18next) // Pass i18n instance to react-i18next
+  .use(LanguageDetector)
+  .use(backend)
+  .use(initReactI18next)
   .init({
-    resources,
+    resources: { en: { translation: mergeCatalogs(Object.values(english).map((m) => m.default)) } },
+    partialBundledLanguages: true,
+    load: 'currentOnly',
     fallbackLng: 'en',
     supportedLngs: ['en', 'nl', 'de'],
-    defaultNS: 'translation',
-    ns: [
-      'translation',
-      'common',
-      'auth',
-      'navigation',
-      'admin',
-      'operator',
-      'jobs',
-      'config',
-      'integrations',
-      'analytics',
-    ],
-
-    interpolation: {
-      escapeValue: false, // React already escapes values
-    },
-
-    detection: {
-      // Order of language detection
-      order: ['localStorage', 'navigator'],
-      caches: ['localStorage'],
-      lookupLocalStorage: 'i18nextLng',
-    },
-
-    react: {
-      useSuspense: false,
-    },
+    interpolation: { escapeValue: false },
+    detection: { order: ['localStorage', 'navigator'], caches: ['localStorage'], lookupLocalStorage: 'i18nextLng' },
+    react: { useSuspense: false },
   });
 
 export default i18n;

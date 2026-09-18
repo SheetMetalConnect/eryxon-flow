@@ -1,7 +1,3 @@
-/**
- * Standardized Error Handler for Edge Functions
- */
-
 import { corsHeaders } from "../cors.ts";
 import {
   ApiErrorResponse,
@@ -11,14 +7,8 @@ import {
 import { RateLimitError, UnauthorizedError, ForbiddenError } from "../auth.ts";
 import { getRateLimitHeaders } from "../rate-limiter.ts";
 
-// Re-export so existing importers of these from errorHandler.ts keep working.
-// auth.ts is the single source of truth for these classes, so mapError() below
-// checks the exact class that auth throws (issue #908).
 export { UnauthorizedError, ForbiddenError };
 
-/**
- * Custom error classes
- */
 export class ValidationException extends Error {
   constructor(
     public validationResult: ValidationResult,
@@ -74,17 +64,17 @@ export class InternalServerError extends Error {
   }
 }
 
+// Database errors → HTTP: production rules (22023) are 409 with the rule text,
+// missing rows (P0002) 404, duplicates 409, constraint failures 400.
 export function throwDatabaseError(error: { code?: string; message: string }): never {
   if (error.code === "42501") throw new ForbiddenError(error.message);
   if (error.code === "P0002") throw new NotFoundError(error.message);
+  if (error.code === "22023") throw new ConflictError(error.message);
   if (error.code === "23505") throw new ConflictError("The record already exists");
-  if (["22023", "23503", "23514"].includes(error.code ?? "")) throw new BadRequestError(error.message);
+  if (error.code === "23503" || error.code === "23514") throw new BadRequestError(error.message);
   throw new InternalServerError(error.message);
 }
 
-/**
- * Create standardized success response
- */
 export function createSuccessResponse<T>(
   data: T,
   status: number = 200,
@@ -105,9 +95,6 @@ export function createSuccessResponse<T>(
   });
 }
 
-/**
- * Create standardized error response
- */
 export function createErrorResponse(
   code: string,
   message: string,
@@ -133,11 +120,7 @@ export function createErrorResponse(
   });
 }
 
-/**
- * Mapped, code-stable shape of an error. Used both to build the HTTP response
- * and to record the same `error_code`/`statusCode` in observability metadata.
- */
-export interface MappedError {
+interface MappedError {
   code: string;
   message: string;
   status: number;
@@ -146,11 +129,6 @@ export interface MappedError {
   headers?: Record<string, string>;
 }
 
-/**
- * Map an unknown error to a stable code + HTTP status, without building a
- * Response. Single source of truth for the error taxonomy so logs, persisted
- * activity, and HTTP responses all agree on the `error_code`.
- */
 export function mapError(error: unknown): MappedError {
   if (error instanceof ValidationException) {
     return {
@@ -213,12 +191,6 @@ export function mapError(error: unknown): MappedError {
   };
 }
 
-/**
- * Main error handler - converts errors to standardized responses.
- *
- * When `requestId` is provided it is echoed back in the `x-request-id`
- * response header so a client/edge log can be correlated with the failure.
- */
 export function handleError(error: unknown, requestId?: string): Response {
   console.error("Error:", error);
 
@@ -262,16 +234,10 @@ export function handleError(error: unknown, requestId?: string): Response {
   return new Response(JSON.stringify(body), { status: mapped.status, headers });
 }
 
-/**
- * Handle OPTIONS requests (CORS preflight)
- */
 export function handleOptions(): Response {
   return new Response("ok", { headers: corsHeaders });
 }
 
-/**
- * Handle unsupported HTTP methods
- */
 export function handleMethodNotAllowed(
   allowedMethods: string[],
 ): Response {

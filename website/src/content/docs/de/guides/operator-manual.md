@@ -5,6 +5,21 @@ description: Wie Sie Eryxon Flow als Werker verwenden — Arbeitswarteschlange, 
 
 Dieses Handbuch behandelt alles, was Sie brauchen, um mit Eryxon Flow in der Werkstatt zu arbeiten. Es gibt zwei Hauptoberflächen: die **Arbeitswarteschlange** für den Desktop und das **Terminal** für fest installierte Werkstationsbildschirme. Beide zeigen dieselbe Arbeit — nur anders dargestellt.
 
+## Navigation und Bildschirmaufbau
+
+Über die Werker-Navigation öffnest du diese Ansichten:
+
+| Ansicht | Adresse | Zweck |
+| --- | --- | --- |
+| Arbeitswarteschlange | `/operator/work-queue` | Arbeitsgänge über alle Zellen finden; die Scan-Schaltfläche öffnet die Scanner-Eingabe. |
+| Terminal-Ansicht | `/operator/view` | Aus den Warteschlangen einer gewählten Zelle arbeiten. |
+| Meine Aktivität | `/operator/my-activity` | Deine erfasste Arbeit ansehen. |
+| Meine Meldungen | `/operator/my-issues` | Die von dir gemeldeten Probleme ansehen. |
+
+Geteilte Arbeitsgang-Links öffnen `/operator/operations/<operation-id>`. Alte `/m`-Links leiten auf die entsprechende Werker-Ansicht weiter.
+
+In der Arbeitswarteschlange stehen Zellenspalten auf breiten Bildschirmen nebeneinander und auf schmalen untereinander. Im Terminal zeigen Bildschirme unter 768 Pixeln ein Panel zugleich: wähle einen Arbeitsgang, um die Details zu öffnen, und tippe auf **Zurück**, um zur Warteschlange zurückzukehren. Breitere Bildschirme zeigen Warteschlange und Detailpanel nebeneinander.
+
 ## Arbeitswarteschlange (Kanban)
 
 Die Arbeitswarteschlange ist Ihre Standardansicht nach dem Einloggen. Sie zeigt Arbeitsgänge als Karten auf einem Kanban-Board.
@@ -55,8 +70,8 @@ Das Terminal ist für fest installierte Bildschirme an einem Arbeitsplatz gebaut
 Wählen Sie Ihre Zelle aus dem **Zellenselektor** in der Kopfzeile. Das Terminal zeigt dann nur Arbeit für diese Zelle, aufgeteilt in drei Warteschlangen:
 
 - **In Bearbeitung** (grün) — Arbeitsgänge, an denen Sie gerade aktiv arbeiten
-- **Im Puffer** (blau) — die nächsten Arbeitsgänge, bereit zum Starten, bereits an Ihrer Zelle
-- **Erwartet** (gelb) — anstehende Arbeit, die an Ihrer Zelle eintreffen wird
+- **Im Puffer** (blau) — die nächsten Arbeitsgänge, bereit zum Starten: alle vorherigen Arbeitsgänge des Teils sind abgeschlossen
+- **Erwartet** (gelb) — anstehende Arbeit: ein vorheriger Arbeitsgang des Teils ist an einer anderen Zelle noch offen. Sie können ihn trotzdem starten, es sei denn, Ihr Admin hat **Reihenfolge erzwingen** aktiviert; dann bleibt Start deaktiviert, bis der vorherige Arbeitsgang abgeschlossen ist
 
 ### Statusleiste
 

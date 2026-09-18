@@ -75,16 +75,12 @@ BEGIN
       IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-expired-invitations') THEN
         PERFORM cron.unschedule('cleanup-expired-invitations');
       END IF;
-      IF EXISTS (SELECT 1 FROM cron.job WHERE jobname = 'cleanup-mqtt-logs') THEN
-        PERFORM cron.unschedule('cleanup-mqtt-logs');
-      END IF;
 
       -- Schedule jobs
       PERFORM cron.schedule('monthly-parts-reset',        '0 0 1 * *',  'SELECT reset_monthly_parts_counters()');
       PERFORM cron.schedule('check-jobs-due-soon',        '0 8 * * *',  'SELECT check_jobs_due_soon()');
       PERFORM cron.schedule('auto-close-attendance',      '0 0 * * *',  'SELECT auto_close_stale_attendance()');
       PERFORM cron.schedule('cleanup-expired-invitations','0 2 * * *',  'SELECT cleanup_expired_invitations()');
-      PERFORM cron.schedule('cleanup-mqtt-logs',          '0 3 * * 0',  'SELECT cleanup_old_mqtt_logs()');
       
       RAISE NOTICE 'pg_cron jobs scheduled successfully';
   ELSE

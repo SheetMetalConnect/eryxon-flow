@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { ROUTES } from "@/routes/constants";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { DOCS_GUIDES_URL } from "@/lib/config";
@@ -50,10 +49,6 @@ export default function About() {
           >
             Documentation
           </a>{" "}
-          ·{" "}
-          <Link to={ROUTES.COMMON.API_DOCS} className="hover:underline">
-            API Docs
-          </Link>{" "}
           ·{" "}
           <a
             href="https://github.com/SheetMetalConnect/eryxon-flow"

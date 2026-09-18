@@ -1,213 +1,42 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "@supabase/supabase-js";
-import { encode as hexEncode } from "https://deno.land/std@0.168.0/encoding/hex.ts";
-import { sanitizeError } from "../_shared/security.ts";
-import { buildCorsHeaders } from "../_shared/cors.ts";
+import { serveApi, errorResponse, successResponse } from "@shared/handler.ts";
 
-// Hash function using Web Crypto API (compatible with Edge Functions)
-async function hashApiKey(apiKey: string): Promise<string> {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(apiKey);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return new TextDecoder().decode(hexEncode(new Uint8Array(hashBuffer)));
-}
+const encodeHex = (bytes: Uint8Array) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 
-async function authenticateAdmin(authHeader: string | null, supabase: any) {
-  if (!authHeader) {
-    return null;
+// Admin-facing API key management (JWT of a signed-in admin, not an API key).
+// POST creates a key and returns the plaintext once; GET lists; DELETE revokes.
+serveApi(async (req, { supabase, url }) => {
+  const token = req.headers.get("authorization")?.replace(/^Bearer /i, "");
+  const { data: { user } } = token ? await supabase.auth.getUser(token) : { data: { user: null } };
+  const { data: profile } = user
+    ? await supabase.from("profiles").select("id, tenant_id, role").eq("id", user.id).single()
+    : { data: null };
+  if (!profile || profile.role !== "admin") return errorResponse("UNAUTHORIZED", "Admin authentication required", 401);
+
+  if (req.method === "GET") {
+    const { data, error } = await supabase.from("api_keys")
+      .select("id, name, key_prefix, active, last_used_at, created_at, created_by:profiles(id, username, full_name)")
+      .eq("tenant_id", profile.tenant_id).order("created_at", { ascending: false });
+    if (error) throw error;
+    return successResponse({ api_keys: data });
   }
 
-  const token = authHeader.replace('Bearer ', '');
-  const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-
-  if (userError || !user) {
-    return null;
+  if (req.method === "DELETE") {
+    const id = url.searchParams.get("id");
+    if (!id) return errorResponse("VALIDATION_ERROR", "API key ID is required (?id=xxx)");
+    const { data, error } = await supabase.from("api_keys").update({ active: false })
+      .eq("id", id).eq("tenant_id", profile.tenant_id).select("id");
+    if (error) throw error;
+    if (data.length === 0) return errorResponse("NOT_FOUND", "API key not found", 404);
+    return successResponse({ id, revoked: true });
   }
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('id, tenant_id, role')
-    .eq('id', user.id)
-    .single();
-
-  if (!profile || profile.role !== 'admin') {
-    return null;
-  }
-
-  return profile;
-}
-
-serve(async (req) => {
-  // Reflect the caller's origin (hosted vs localhost/self-hosted) per request.
-  const corsHeaders = buildCorsHeaders(req);
-
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
-  const supabase = createClient(
-    Deno.env.get('SUPABASE_URL') ?? '',
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ''
-  );
-
-  try {
-    const profile = await authenticateAdmin(req.headers.get('authorization'), supabase);
-
-    if (!profile) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: { code: 'UNAUTHORIZED', message: 'Admin authentication required' }
-        }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Handle GET requests - list API keys
-    if (req.method === 'GET') {
-      const { data: apiKeys, error } = await supabase
-        .from('api_keys')
-        .select(`
-          id,
-          name,
-          key_prefix,
-          active,
-          last_used_at,
-          created_at,
-          created_by:profiles (
-            id,
-            username,
-            full_name
-          )
-        `)
-        .eq('tenant_id', profile.tenant_id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        throw new Error(`Failed to fetch API keys: ${error.message}`);
-      }
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: { api_keys: apiKeys || [] }
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Handle DELETE requests - revoke/delete API key
-    if (req.method === 'DELETE') {
-      const url = new URL(req.url);
-      const keyId = url.searchParams.get('id');
-
-      if (!keyId) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: { code: 'VALIDATION_ERROR', message: 'API key ID is required in query string (?id=xxx)' }
-          }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-      // Soft delete by marking as inactive
-      const { error } = await supabase
-        .from('api_keys')
-        .update({ active: false })
-        .eq('id', keyId)
-        .eq('tenant_id', profile.tenant_id);
-
-      if (error) {
-        if (error.code === 'PGRST116') {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: { code: 'NOT_FOUND', message: 'API key not found' }
-            }),
-            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        throw new Error(`Failed to revoke API key: ${error.message}`);
-      }
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: { message: 'API key revoked successfully' }
-        }),
-        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Handle POST requests - generate new API key
-    const body = await req.json();
-    const { name } = body;
-
-    if (!name || !name.trim()) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: { code: 'VALIDATION_ERROR', message: 'Name is required' }
-        }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Generate random API key (hex encoding preserves full entropy)
-    const randomPart = Array.from(crypto.getRandomValues(new Uint8Array(16)))
-      .map(b => b.toString(16).padStart(2, '0'))
-      .join('');
-
-    const apiKey = `ery_live_${randomPart}`;
-    const keyPrefix = apiKey.substring(0, 12);
-
-    // Hash the API key with bcrypt
-    const keyHash = await hashApiKey(apiKey);
-
-    // Store in database
-    const { data: createdKey, error } = await supabase
-      .from('api_keys')
-      .insert({
-        tenant_id: profile.tenant_id,
-        name: name.trim(),
-        key_hash: keyHash,
-        key_prefix: keyPrefix,
-        created_by: profile.id,
-        active: true
-      })
-      .select('id, name, key_prefix, created_at')
-      .single();
-
-    if (error) {
-      throw new Error(`Failed to create API key: ${error.message}`);
-    }
-
-    // Return the plaintext key (only time user will see it) and metadata
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: {
-          id: createdKey.id,
-          name: createdKey.name,
-          api_key: apiKey, // Only returned once!
-          key_prefix: createdKey.key_prefix,
-          created_at: createdKey.created_at,
-          warning: 'Store this API key securely. It will not be shown again.'
-        }
-      }),
-      { status: 201, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
-  } catch (error) {
-    console.error('Error in api-key-generate:', error);
-    const sanitized = sanitizeError(error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: { code: sanitized.code, message: sanitized.message }
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-  }
-});
+  const name = String((await req.json()).name ?? "").trim();
+  if (!name) return errorResponse("VALIDATION_ERROR", "Name is required");
+  const apiKey = `ery_live_${encodeHex(crypto.getRandomValues(new Uint8Array(16)))}`;
+  const keyHash = encodeHex(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(apiKey))));
+  const { data, error } = await supabase.from("api_keys")
+    .insert({ tenant_id: profile.tenant_id, name, key_hash: keyHash, key_prefix: apiKey.slice(0, 12), created_by: profile.id, active: true })
+    .select("id, name, key_prefix, created_at").single();
+  if (error) throw error;
+  return successResponse({ ...data, api_key: apiKey }, 201);
+}, { public: true, methods: ["GET", "POST", "DELETE", "OPTIONS"] });

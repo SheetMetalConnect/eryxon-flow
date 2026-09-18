@@ -14,7 +14,7 @@ relatedLinks:
   - label: "WIP limits per cell"
     href: "/blog/wip-limits-per-cell/"
   - label: "Getting started overview"
-    href: "/getting-started/introduction/overview/"
+    href: "/introduction/"
 ---
 
 A high-mix job shop has a different problem from a line. The line runs the same product over and

@@ -215,13 +215,13 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
           <div className="px-4 sm:px-6 border-b">
             <TabsList className="h-10 w-full justify-start bg-transparent p-0 gap-4">
               <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3">
-                {t("common.overview", "Overview")}
+                {t("common.overview")}
               </TabsTrigger>
               <TabsTrigger value="parts" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3">
                 {t("jobs.parts")} ({partsCount})
               </TabsTrigger>
               <TabsTrigger value="delivery" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-0 pb-3">
-                {t("jobs.deliveryInfo", "Delivery")}
+                {t("jobs.deliveryInfo")}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -243,7 +243,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                   <p className="mt-1 font-semibold text-sm">{partsCount}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50 border">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.operations", "Operations")}</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.operations")}</p>
                   <p className="mt-1 font-semibold text-sm">{completedOps}/{operationsCount}</p>
                 </div>
                 <div className="p-3 rounded-lg bg-muted/50 border">
@@ -253,7 +253,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold mb-2">{t("qrm.operationsFlow", "Operations Flow")}</h3>
+                <h3 className="text-sm font-semibold mb-2">{t("qrm.operationsFlow")}</h3>
                 <div className="border rounded-lg p-3 bg-muted/20">
                   <OperationsFlowVisualization routing={routing} loading={routingLoading} />
                 </div>
@@ -451,7 +451,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                             <div className="border rounded-lg p-4 bg-muted/20">
                               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                                 <Weight className="h-4 w-4" />
-                                <span className="text-xs uppercase tracking-wide">{t("parts.totalWeight", "Total Weight")}</span>
+                                <span className="text-xs uppercase tracking-wide">{t("parts.totalWeight")}</span>
                               </div>
                               <p className="text-xl font-semibold">{totalWeight.toFixed(2)} kg</p>
                             </div>
@@ -460,7 +460,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                             <div className="border rounded-lg p-4 bg-muted/20">
                               <div className="flex items-center gap-2 text-muted-foreground mb-1">
                                 <Package className="h-4 w-4" />
-                                <span className="text-xs uppercase tracking-wide">{t("parts.totalVolume", "Total Volume")}</span>
+                                <span className="text-xs uppercase tracking-wide">{t("parts.totalVolume")}</span>
                               </div>
                               <p className="text-xl font-semibold">{totalVolume.toFixed(4)} m³</p>
                             </div>

@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck, PlusCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { isReleased } from "@/features/operator-terminal/release";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { PageStatsRow } from "@/components/admin/PageStatsRow";
 import { DataTable } from "@/components/ui/data-table/DataTable";
@@ -38,6 +39,7 @@ interface Operation {
   cell: string;
   cell_color: string | null;
   assigned_operator_id: string | null;
+  released: boolean;
   assigned_name: string | null;
   due_date: string | null;
   resources_count: number;
@@ -63,6 +65,7 @@ export const Operations: React.FC = () => {
           id,
           operation_name,
           status,
+          sequence,
           assigned_operator_id,
           part_id,
           parts (
@@ -110,13 +113,15 @@ export const Operations: React.FC = () => {
         info.names.push(resourceName);
       });
 
-      return data.map((op) => {
+      const steps = data.map((op) => ({ part: { id: op.part_id }, sequence: op.sequence, status: op.status }));
+      return data.map((op, i) => {
         const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
 
         return {
           id: op.id,
           operation_name: op.operation_name || "Unknown",
           status: op.status || "not_started",
+          released: isReleased(steps[i], steps),
           part_id: op.part_id,
           part_number: op.parts?.part_number || "Unknown",
           job_id: op.parts?.job_id || "",
@@ -165,7 +170,10 @@ export const Operations: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
-  const getStatusBadge = useCallback((status: string) => {
+  const getStatusBadge = useCallback((status: string, released = true) => {
+    if (status === "not_started" && !released) {
+      return <StatusBadge status="pending" label={t("operations.status.waiting")} />;
+    }
     const badgeStatus: Record<string, "pending" | "active" | "completed" | "on-hold"> = {
       not_started: "pending",
       in_progress: "active",
@@ -178,7 +186,7 @@ export const Operations: React.FC = () => {
         label={status.replace(/_/g, " ")}
       />
     );
-  }, []);
+  }, [t]);
 
   const columns: ColumnDef<Operation>[] = useMemo(() => [
     {
@@ -312,7 +320,7 @@ export const Operations: React.FC = () => {
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title={t("common.status")} />
       ),
-      cell: ({ row }) => getStatusBadge(row.getValue("status")),
+      cell: ({ row }) => getStatusBadge(row.getValue("status"), row.original.released),
       filterFn: (row, id, value) => {
         return value.includes(row.getValue(id));
       },
@@ -380,8 +388,8 @@ export const Operations: React.FC = () => {
   return (
     <div className="p-4 space-y-4">
       <AdminPageHeader
-        title={t("operations.title", "Operations")}
-        description={t("operations.subtitle", "Monitor all manufacturing operations across cells and jobs")}
+        title={t("operations.title")}
+        description={t("operations.subtitle")}
       >
         <div className="flex gap-2">
           {Object.keys(rowSelection).length > 0 && (
@@ -402,17 +410,17 @@ export const Operations: React.FC = () => {
           )}
           <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
-            {t("common.export", "Export")}
+            {t("common.export")}
           </Button>
         </div>
       </AdminPageHeader>
 
       <PageStatsRow
         stats={[
-          { label: t("operations.total", "Total Operations"), value: operationStats.total, icon: Wrench, color: "primary" },
-          { label: t("operations.inProgress", "In Progress"), value: operationStats.inProgress, icon: PlayCircle, color: "warning" },
-          { label: t("operations.completed", "Completed"), value: operationStats.completed, icon: CheckCircle2, color: "success" },
-          { label: t("operations.assigned", "Assigned"), value: operationStats.assigned, icon: UserCheck, color: "info" },
+          { label: t("operations.total"), value: operationStats.total, icon: Wrench, color: "primary" },
+          { label: t("operations.inProgress"), value: operationStats.inProgress, icon: PlayCircle, color: "warning" },
+          { label: t("operations.completed"), value: operationStats.completed, icon: CheckCircle2, color: "success" },
+          { label: t("operations.assigned"), value: operationStats.assigned, icon: UserCheck, color: "info" },
         ]}
       />
 
@@ -421,8 +429,8 @@ export const Operations: React.FC = () => {
           columns={columns}
           data={operations}
           filterableColumns={filterableColumns}
-          searchPlaceholder={t("operations.searchPlaceholder", "Search by part, operation, operator...")}
-          emptyMessage={t("operations.noResults", "No operations match the current filters")}
+          searchPlaceholder={t("operations.searchPlaceholder")}
+          emptyMessage={t("operations.noResults")}
           loading={isLoading}
           pageSize={isMobile ? 20 : 50}
           pageSizeOptions={[20, 50, 100, 200]}

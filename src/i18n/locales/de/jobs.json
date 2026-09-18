@@ -469,10 +469,12 @@
       "notStarted": "Nicht gestartet",
       "inProgress": "In Bearbeitung",
       "completed": "Abgeschlossen",
-      "onHold": "Wartend"
+      "onHold": "Wartend",
+      "waiting": "Wartet auf früheren Schritt"
     },
     "statusUpdatedDesc": "Arbeitsgangstatus wurde aktualisiert",
-    "operatorAssignedDesc": "Bediener wurde dem Arbeitsgang zugewiesen"
+    "operatorAssignedDesc": "Bediener wurde dem Arbeitsgang zugewiesen",
+    "holdClearsAtTerminal": "Wird aufgehoben, sobald ein Bediener den Arbeitsgang am Terminal startet."
   },
   "issues": {
     "title": "Problemverwaltung",
@@ -727,7 +729,12 @@
     "updating": "Wird aktualisiert...",
     "updateBatch": "Charge aktualisieren",
     "noNestedBatches": "Noch keine verschachtelten Chargen",
-    "updateSuccess": "Charge erfolgreich aktualisiert"
+    "updateSuccess": "Charge erfolgreich aktualisiert",
+    "additionalMetadata": "Zusätzliche Metadaten",
+    "materialRequirements": "Materialbedarf",
+    "noRequirements": "Kein Bedarf gemeldet",
+    "noNestingImage": "Kein Nesting-Bild verfügbar",
+    "add": "Hinzufügen"
   },
   "qrm": {
     "bulletCard": "Bullet Card",
@@ -760,5 +767,32 @@
     "ncCode": "NC-Code",
     "ncCodeDesc": "CNC-Programm vom Teil. Bearbeiten Sie es im Teiledetail.",
     "noNcCode": "Kein NC-Code festgelegt"
+  },
+  "substeps": {
+    "title": "Alle Teilschritte",
+    "subtitle": "Alle Teilschritte aller Arbeitsgänge anzeigen und verwalten",
+    "loadFailed": "Teilschritte konnten nicht geladen werden",
+    "nameRequired": "Name des Teilschritts ist erforderlich",
+    "updateFailed": "Teilschritt konnte nicht aktualisiert werden",
+    "updated": "Teilschritt aktualisiert",
+    "deleteConfirm": "Diesen Teilschritt löschen?",
+    "deleteFailed": "Teilschritt konnte nicht gelöscht werden",
+    "deleted": "Teilschritt gelöscht",
+    "searchPlaceholder": "Nach Auftrag, Teil, Arbeitsgang oder Schrittname suchen...",
+    "allStatuses": "Alle Status",
+    "notStarted": "Nicht gestartet",
+    "inProgress": "In Bearbeitung",
+    "completed": "Abgeschlossen",
+    "blocked": "Blockiert",
+    "showing": "{{shown}} von {{total}} Teilschritten",
+    "stepName": "Schrittname",
+    "seq": "Folge",
+    "actions": "Aktionen",
+    "noMatch": "Keine Teilschritte entsprechen den Filtern",
+    "noneYet": "Noch keine Teilschritte angelegt",
+    "editTitle": "Teilschritt bearbeiten",
+    "notes": "Notizen",
+    "optionalNotes": "Optionale Notizen",
+    "update": "Aktualisieren"
   }
 }

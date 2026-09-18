@@ -86,8 +86,8 @@ The Terminal is built for dedicated screens at a workstation. It works well on t
 Pick your cell from the **cell selector** in the header. The terminal then shows only work for that cell, split into three queues:
 
 - **In Process** (green) — operations you are actively working on right now
-- **In Buffer** (blue) — the next operations ready to start, already at your cell
-- **Expected** (amber) — upcoming work that will arrive at your cell
+- **In Buffer** (blue) — the next operations ready to start: every earlier operation on the part is completed
+- **Expected** (amber) — upcoming work: an earlier operation on the part is still open at another cell. You can still start it unless your admin has switched on **Sequential release**; then Start stays disabled until the previous operation is completed
 
 ### Status bar
 
@@ -111,9 +111,9 @@ This prevents bottlenecks. The system manages work-in-progress limits per cell.
 
 Operations show a backlog label when deadlines are near:
 
-- **Te laat** — overdue, should have been done already
-- **Vandaag** — due today
-- **Binnenkort** — due within a few days
+- **Overdue** — should have been done already
+- **Today** — due today
+- **Soon** — due within a few days
 
 ### Detail sidebar
 

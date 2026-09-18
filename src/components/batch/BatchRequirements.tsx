@@ -55,7 +55,7 @@ export function BatchRequirements({ batchId, requirements }: BatchRequirementsPr
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium flex items-center gap-2">
           <ShoppingCart className="h-4 w-4" />
-          {t("Material Requirements")}
+          {t("batches.materialRequirements")}
         </CardTitle>
         <Dialog open={isRequirementDialogOpen} onOpenChange={setIsRequirementDialogOpen}>
           <DialogTrigger asChild>
@@ -79,8 +79,8 @@ export function BatchRequirements({ batchId, requirements }: BatchRequirementsPr
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsRequirementDialogOpen(false)}>{t("Cancel")}</Button>
-              <Button onClick={handleAddRequirement}>{t("Add")}</Button>
+              <Button variant="outline" onClick={() => setIsRequirementDialogOpen(false)}>{t("common.cancel")}</Button>
+              <Button onClick={handleAddRequirement}>{t("batches.add")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -101,7 +101,7 @@ export function BatchRequirements({ batchId, requirements }: BatchRequirementsPr
             ))}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground">{t("No requirements raised")}</p>
+          <p className="text-xs text-muted-foreground">{t("batches.noRequirements")}</p>
         )}
       </CardContent>
     </Card>

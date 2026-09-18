@@ -1,6 +1,6 @@
 import { DetailPanel } from "@/components/terminal/DetailPanel";
 import type { TerminalJob } from "@/types/terminal";
-import type { OperationWithDetails } from "@/lib/database";
+import type { OperationWithDetails } from "@/lib/db";
 
 // DEV-only harness used to capture docs screenshots of the operator detail
 // panel. The data mirrors the app's bundled demo dataset (mockDataGenerator):
@@ -17,6 +17,8 @@ const job: TerminalJob = {
   hours: 72, // remaining MINUTES (estimated − booked), matching the DB contract
   dueDate: "2026-01-17T00:00:00.000Z",
   status: "in_progress",
+  released: true,
+  startBlocked: false,
   hasPdf: false,
   hasModel: false,
   operationId: "op-3",

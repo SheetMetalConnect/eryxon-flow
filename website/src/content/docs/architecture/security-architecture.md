@@ -83,7 +83,7 @@ The edge-function layer is hardened in several ways:
 
 - shared validation and sanitization helpers are used more consistently
 - wildcard CORS was replaced by environment-driven origin handling
-- internal-only functions such as webhook dispatch and MQTT publish now expect a shared secret token
+- internal-only functions such as webhook dispatch expect a shared secret token
 - error handling is sanitized before responses are returned
 
 For production, set `ALLOWED_ORIGIN` explicitly so browser calls are restricted to the intended app origin.

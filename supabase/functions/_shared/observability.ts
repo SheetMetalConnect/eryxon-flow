@@ -58,7 +58,6 @@ export const PILOT_CRITICAL_EVENT_TYPES = new Set<string>([
   "job.lifecycle",
   "operation.lifecycle",
   "webhook.dispatch_failed",
-  "mqtt.dispatch_failed",
 ]);
 
 /**

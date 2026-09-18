@@ -40,37 +40,13 @@ export const OPERATOR_TERMINAL_MODE_NOTE_PREFIX = "operator-mode:";
 export function getOperatorTerminalWorkModeSettings(
   featureFlags: unknown,
 ): OperatorTerminalWorkModeSettings {
-  const raw =
-    featureFlags &&
-    typeof featureFlags === "object" &&
-    OPERATOR_TERMINAL_MODE_FEATURE_FLAG_KEY in featureFlags
-      ? (featureFlags as Record<string, unknown>)[OPERATOR_TERMINAL_MODE_FEATURE_FLAG_KEY]
-      : null;
-
-  if (!raw || typeof raw !== "object") {
-    return DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS;
+  const raw = (featureFlags as Record<string, unknown> | null)?.[OPERATOR_TERMINAL_MODE_FEATURE_FLAG_KEY];
+  const parsed = raw && typeof raw === "object" ? (raw as Partial<OperatorTerminalWorkModeSettings>) : {};
+  const settings = { ...DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS };
+  for (const key of Object.keys(settings) as (keyof OperatorTerminalWorkModeSettings)[]) {
+    if (typeof parsed[key] === "boolean") settings[key] = parsed[key];
   }
-
-  const parsed = raw as Record<string, unknown>;
-
-  return {
-    enabled:
-      typeof parsed.enabled === "boolean"
-        ? parsed.enabled
-        : DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS.enabled,
-    enforceWorkingHours:
-      typeof parsed.enforceWorkingHours === "boolean"
-        ? parsed.enforceWorkingHours
-        : DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS.enforceWorkingHours,
-    setupPrepEnabled:
-      typeof parsed.setupPrepEnabled === "boolean"
-        ? parsed.setupPrepEnabled
-        : DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS.setupPrepEnabled,
-    setupRequired:
-      typeof parsed.setupRequired === "boolean"
-        ? parsed.setupRequired
-        : DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS.setupRequired,
-  };
+  return settings;
 }
 
 export function mergeOperatorTerminalWorkModeSettings(

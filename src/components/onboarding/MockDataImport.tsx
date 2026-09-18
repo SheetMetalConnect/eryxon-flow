@@ -17,10 +17,13 @@ import {
   BarChart3,
   AlertTriangle,
   ArrowRight,
+  MapPin,
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import type { MockDataProgressStep } from '@/lib/mockDataGenerator';
 
 const loadMockData = () => import('@/lib/mockDataGenerator');
@@ -46,6 +49,7 @@ const PROGRESS_STEP_ICONS: Record<string, React.ElementType> = {
   timeEntries: Clock,
   quantities: BarChart3,
   issues: AlertTriangle,
+  locations: MapPin,
 };
 
 export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
@@ -55,6 +59,7 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
   const [importComplete, setImportComplete] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [progress, setProgress] = useState<MockDataProgressStep | null>(null);
+  const [useLocations, setUseLocations] = useState(true);
 
   const handleProgress = useCallback((step: MockDataProgressStep) => {
     setProgress(step);
@@ -82,11 +87,12 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
         includeQuantityRecords: true,
         includeIssues: true,
         includeCalendar: true,
+        includeLocations: useLocations,
         onProgress: handleProgress,
       });
 
       if (result.success) {
-        setProgress({ step: 11, totalSteps: 11, label: 'complete', percentage: 100 });
+        setProgress({ step: 12, totalSteps: 12, label: 'complete', percentage: 100 });
         setImportComplete(true);
         toast.success(t('onboarding.sampleDataImported'));
       } else {
@@ -154,6 +160,11 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
       titleKey: 'onboarding.progressSteps.resourcesTitle',
       descKey: 'onboarding.progressSteps.resourcesDesc',
     },
+    {
+      icon: MapPin,
+      titleKey: 'onboarding.progressSteps.locationsTitle',
+      descKey: 'onboarding.locationsDescription',
+    },
   ];
 
   const progressStepLabels: Record<string, string> = {
@@ -164,6 +175,7 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
     jobs: t('onboarding.progressSteps.jobs'),
     parts: t('onboarding.progressSteps.parts'),
     operations: t('onboarding.progressSteps.operations'),
+    locations: t('onboarding.progressSteps.locations'),
     resourceLinks: t('onboarding.progressSteps.resourceLinks'),
     timeEntries: t('onboarding.progressSteps.timeEntries'),
     quantities: t('onboarding.progressSteps.quantities'),
@@ -174,7 +186,7 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
   // All step keys in order for showing completed/active/pending
   const allStepKeys = [
     'cells', 'calendar', 'operators', 'resources', 'jobs',
-    'parts', 'operations', 'resourceLinks', 'timeEntries',
+    'parts', 'operations', 'locations', 'resourceLinks', 'timeEntries',
     'quantities', 'issues',
   ];
 
@@ -275,6 +287,16 @@ export function MockDataImport({ onComplete, onSkip }: MockDataImportProps) {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {!isImporting && !importComplete && (
+        <div className="flex items-center justify-between rounded-lg border border-border p-4">
+          <div className="space-y-0.5">
+            <Label htmlFor="use-locations">{t('onboarding.locationsToggle')}</Label>
+            <p className="text-sm text-muted-foreground">{t('onboarding.locationsToggleDescription')}</p>
+          </div>
+          <Switch id="use-locations" checked={useLocations} onCheckedChange={setUseLocations} />
         </div>
       )}
 

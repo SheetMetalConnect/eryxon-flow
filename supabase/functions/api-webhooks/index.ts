@@ -6,10 +6,10 @@ import { WebhookValidator } from "@shared/validation/validators/WebhookValidator
 serveApi(
   createCrudHandler({
     table: 'webhooks',
-    selectFields: 'id, url, events, active, secret_key, created_at',
-    searchFields: ['url'],
+    selectFields: 'id, name, url, events, active, consecutive_failures, disabled_reason, last_delivery_at, last_status_code, created_at, updated_at',
+    searchFields: ['name', 'url'],
     allowedFilters: ['events', 'active'],
-    sortableFields: ['created_at', 'events', 'url'],
+    sortableFields: ['created_at', 'name', 'url'],
     defaultSort: { field: 'created_at', direction: 'desc' },
     softDelete: false,
     // url, events and secret_key are NOT NULL. Validate up front so a missing

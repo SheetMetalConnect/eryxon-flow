@@ -34,7 +34,7 @@ export function OperationLocationTab({
   const profile = useProfile();
   const { activeOperator } = useOperator();
   const { recordPlacement, isRecording } = useRecordPlacement();
-  const { locations } = useStorageLocations();
+  const { locations, occupancy } = useStorageLocations();
   const [pickerOpen, setPickerOpen] = useState(false);
   const tenantId = profile?.tenant_id ?? "";
 
@@ -60,14 +60,18 @@ export function OperationLocationTab({
   const location = placement?.location_id
     ? locations.find((slot) => slot.id === placement.location_id) ?? null
     : null;
+  const nextCellSlots = nextCellId
+    ? occupancy.filter((o) => o.location.cell_id === nextCellId)
+    : [];
+  const nextCellFree = nextCellSlots.reduce((sum, o) => sum + o.available, 0);
 
   return (
     <div className="space-y-4">
       <div className="rounded-lg border border-border bg-muted/20 p-4">
         <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
           {location
-            ? t("locations.panel.currentlyAt", "Currently at")
-            : t("locations.panel.notPlaced", "Not placed yet")}
+            ? t("locations.panel.currentlyAt")
+            : t("locations.panel.notPlaced")}
         </div>
         {location ? (
           <div className="mt-1 flex items-center gap-2 text-base font-semibold text-foreground">
@@ -81,19 +85,23 @@ export function OperationLocationTab({
           </div>
         ) : (
           <p className="mt-1 text-sm text-muted-foreground">
-            {t(
-              "locations.panel.notPlacedHint",
-              "Record where you put this part so the next operator can find it.",
-            )}
+            {t("locations.panel.notPlacedHint")}
           </p>
         )}
       </div>
 
       {nextCellName ? (
-        <div className="flex items-center gap-1.5 px-1 text-sm text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-1.5 px-1 text-sm text-muted-foreground">
           <ArrowRight className="h-4 w-4" />
-          <span>{t("locations.placement.nextCell", "Heading to")}</span>
+          <span>{t("locations.placement.nextCell")}</span>
           <span className="font-semibold text-foreground">{nextCellName}</span>
+          {nextCellSlots.length > 0 ? (
+            <span className={nextCellFree === 0 ? "font-semibold text-destructive" : ""}>
+              {nextCellFree === 0
+                ? t("locations.panel.nextCellFull")
+                : t("locations.panel.nextCellFree", { count: nextCellFree })}
+            </span>
+          ) : null}
         </div>
       ) : null}
 
@@ -104,8 +112,8 @@ export function OperationLocationTab({
       >
         <MapPin className="mr-1.5 h-4 w-4" />
         {location
-          ? t("locations.panel.move", "Move to another slot")
-          : t("locations.panel.record", "Record location")}
+          ? t("locations.panel.move")
+          : t("locations.panel.record")}
       </Button>
 
       <PlacementPickerModal

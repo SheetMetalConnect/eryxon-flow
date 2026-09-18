@@ -1,9 +1,8 @@
-export const DEFAULT_WEBHOOK_RETRY_ATTEMPTS = 3;
+export const WEBHOOK_MAX_ATTEMPTS = 5;
+const BASE_DELAY_MS = 500;
+const MAX_DELAY_MS = 5000;
 
-const BASE_WEBHOOK_RETRY_DELAY_MS = 500;
-const MAX_WEBHOOK_RETRY_DELAY_MS = 2000;
-
-export interface WebhookDeliveryAttemptResult {
+export interface AttemptResult {
   success: boolean;
   retryable: boolean;
   statusCode: number | null;
@@ -11,101 +10,29 @@ export interface WebhookDeliveryAttemptResult {
   error?: string;
 }
 
-export interface WebhookDeliveryResult extends WebhookDeliveryAttemptResult {
+export interface DeliveryResult extends AttemptResult {
   attempts: number;
-  exhaustedRetries: boolean;
-  previousFailures: string[];
 }
 
-interface RetryWebhookDeliveryOptions {
-  maxAttempts?: number;
-  wait?: (delayMs: number) => Promise<void>;
+export function isRetryableStatus(statusCode: number): boolean {
+  return statusCode === 408 || statusCode === 429 || (statusCode >= 500 && statusCode < 600);
 }
 
-function waitForDelay(delayMs: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, delayMs));
+export function retryDelayMs(retryIndex: number): number {
+  return Math.min(BASE_DELAY_MS * 2 ** retryIndex, MAX_DELAY_MS);
 }
 
-function describeWebhookFailure(result: WebhookDeliveryAttemptResult): string {
-  if (result.statusCode !== null) {
-    return result.responseText
-      ? `HTTP ${result.statusCode}: ${result.responseText}`
-      : `HTTP ${result.statusCode}`;
+export async function deliverWithRetry(
+  attempt: () => Promise<AttemptResult>,
+  wait: (ms: number) => Promise<void> = (ms) => new Promise((r) => setTimeout(r, ms)),
+  maxAttempts = WEBHOOK_MAX_ATTEMPTS,
+): Promise<DeliveryResult> {
+  let result = await attempt();
+  let attempts = 1;
+  while (!result.success && result.retryable && attempts < maxAttempts) {
+    await wait(retryDelayMs(attempts - 1));
+    result = await attempt();
+    attempts += 1;
   }
-
-  return result.error ?? "Unknown error";
-}
-
-export function isRetryableWebhookStatusCode(statusCode: number): boolean {
-  return (
-    statusCode === 408 ||
-    statusCode === 429 ||
-    (statusCode >= 500 && statusCode < 600)
-  );
-}
-
-export function calculateWebhookRetryDelayMs(retryIndex: number): number {
-  return Math.min(
-    BASE_WEBHOOK_RETRY_DELAY_MS * 2 ** retryIndex,
-    MAX_WEBHOOK_RETRY_DELAY_MS,
-  );
-}
-
-export async function retryWebhookDelivery(
-  runAttempt: (attemptNumber: number) => Promise<WebhookDeliveryAttemptResult>,
-  options: RetryWebhookDeliveryOptions = {},
-): Promise<WebhookDeliveryResult> {
-  const maxAttempts = options.maxAttempts ?? DEFAULT_WEBHOOK_RETRY_ATTEMPTS;
-  const wait = options.wait ?? waitForDelay;
-  const previousFailures: string[] = [];
-
-  for (let attemptNumber = 1; attemptNumber <= maxAttempts; attemptNumber += 1) {
-    const result = await runAttempt(attemptNumber);
-
-    if (result.success) {
-      return {
-        ...result,
-        attempts: attemptNumber,
-        exhaustedRetries: false,
-        previousFailures,
-      };
-    }
-
-    const failureDescription = describeWebhookFailure(result);
-    const hasRetryBudget = attemptNumber < maxAttempts;
-
-    if (!result.retryable || !hasRetryBudget) {
-      return {
-        ...result,
-        attempts: attemptNumber,
-        exhaustedRetries: result.retryable && !hasRetryBudget,
-        previousFailures,
-      };
-    }
-
-    previousFailures.push(failureDescription);
-    await wait(calculateWebhookRetryDelayMs(attemptNumber - 1));
-  }
-
-  throw new Error("retryWebhookDelivery reached an unexpected terminal state");
-}
-
-export function formatWebhookDeliveryLogMessage(
-  result: WebhookDeliveryResult,
-): string | null {
-  if (result.success) {
-    if (result.attempts === 1) {
-      return null;
-    }
-
-    return `Recovered after ${result.attempts - 1} retries; final attempt ${result.attempts}/${DEFAULT_WEBHOOK_RETRY_ATTEMPTS} succeeded. Prior failures: ${result.previousFailures.join(" | ")}`;
-  }
-
-  const lastFailure = describeWebhookFailure(result);
-
-  if (result.exhaustedRetries) {
-    return `Exhausted retries after ${result.attempts} attempts. Last failure: ${lastFailure}. Prior failures: ${result.previousFailures.join(" | ")}`;
-  }
-
-  return lastFailure;
+  return { ...result, attempts };
 }

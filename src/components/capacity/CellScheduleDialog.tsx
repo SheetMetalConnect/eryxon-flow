@@ -107,12 +107,12 @@ export function CellScheduleDialog({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["capacity"] });
       setEditingId(null);
-      toast.success(t("capacity.updated", "Updated"), {
-        description: t("capacity.allocationUpdated", "Allocation hours updated successfully"),
+      toast.success(t("capacity.updated"), {
+        description: t("capacity.allocationUpdated"),
       });
     },
     onError: (error: Error) => {
-      toast.error(t("common.error", "Error"), {
+      toast.error(t("common.error"), {
         description: error.message,
       });
     },
@@ -129,12 +129,12 @@ export function CellScheduleDialog({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["capacity"] });
-      toast.success(t("capacity.deleted", "Deleted"), {
-        description: t("capacity.allocationDeleted", "Allocation removed from this day"),
+      toast.success(t("capacity.deleted"), {
+        description: t("capacity.allocationDeleted"),
       });
     },
     onError: (error: Error) => {
-      toast.error(t("common.error", "Error"), {
+      toast.error(t("common.error"), {
         description: error.message,
       });
     },

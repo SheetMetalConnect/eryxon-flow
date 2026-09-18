@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { dispatchOperationStarted, dispatchOperationCompleted } from "../event-dispatch";
 import { logger } from '@/lib/logger';
 import { parseOperatorTerminalModeNote } from "@/features/operator-terminal/workModes";
 import { fetchInChunks } from "./chunked";
@@ -400,6 +399,8 @@ export interface OperationPlanUpdate {
   planned_start?: string | null;
   /** Planned end (ISO timestamp) or null to clear. */
   planned_end?: string | null;
+  cell_id?: string;
+  sequence?: number;
 }
 
 /**
@@ -424,6 +425,8 @@ export async function updateOperationPlan(
   if (plan.planned_end !== undefined) {
     patch.planned_end = plan.planned_end;
   }
+  if (plan.cell_id) patch.cell_id = plan.cell_id;
+  if (plan.sequence !== undefined) patch.sequence = Math.max(1, Math.round(plan.sequence));
 
   if (Object.keys(patch).length === 0) return;
 
@@ -444,7 +447,7 @@ export async function startTimeTracking(
   tenantId: string,
   notes?: string,
 ) {
-  const { data, error } = await supabase.rpc("transition_operation", {
+  const { error } = await supabase.rpc("transition_operation", {
     p_tenant_id: tenantId,
     p_operation_id: operationId,
     p_action: "start",
@@ -452,61 +455,25 @@ export async function startTimeTracking(
     p_notes: notes ?? null,
   });
   if (error) throw error;
-  if (!data || typeof data !== "object" || Array.isArray(data)
-      || data.changed !== true || data.previous_status !== "not_started") return;
-  void dispatchCommittedOperation(operationId, tenantId, operatorId, "start",
-    typeof data.operator_name === "string" ? data.operator_name : undefined);
 }
 
 export async function completeOperation(operationId: string, tenantId: string, operatorId?: string) {
-  const { data, error } = await supabase.rpc("transition_operation", {
+  const { error } = await supabase.rpc("transition_operation", {
     p_tenant_id: tenantId,
     p_operation_id: operationId,
     p_action: "complete",
     p_operator_id: operatorId ?? null,
   });
   if (error) throw error;
-  if (data && typeof data === "object" && !Array.isArray(data) && data.changed === false) return;
-  void dispatchCommittedOperation(operationId, tenantId, operatorId, "complete",
-    data && typeof data === "object" && !Array.isArray(data) && typeof data.operator_name === "string" ? data.operator_name : undefined);
 }
 
-async function dispatchCommittedOperation(
-  operationId: string,
-  tenantId: string,
-  operatorId: string | undefined,
-  action: "start" | "complete",
-  actorName?: string,
-) {
-  try {
-    const { data: operation, error } = await supabase.from("operations")
-      .select("id, operation_name, part_id, assigned_operator_id, started_at, completed_at, actual_time, estimated_time, part:parts!part_id(part_number, job:jobs!job_id(id, job_number))")
-      .eq("id", operationId).eq("tenant_id", tenantId).single();
-    if (error) throw error;
-    const effectiveOperator = operatorId ?? operation.assigned_operator_id;
-    const { data: operator, error: operatorError } = effectiveOperator
-      ? await supabase.from("profiles").select("full_name").eq("id", effectiveOperator).eq("tenant_id", tenantId).maybeSingle()
-      : { data: null, error: null };
-    if (operatorError) throw operatorError;
-    const payload = {
-      operation_id: operationId,
-      operation_name: operation.operation_name,
-      part_id: operation.part_id,
-      part_number: operation.part.part_number,
-      job_id: operation.part.job.id,
-      job_number: operation.part.job.job_number,
-      operator_id: effectiveOperator ?? "",
-      operator_name: actorName ?? operator?.full_name ?? "Unknown",
-    };
-    const result = action === "start"
-      ? await dispatchOperationStarted(tenantId, { ...payload, started_at: operation.started_at })
-      : await dispatchOperationCompleted(tenantId, {
-        ...payload, completed_at: operation.completed_at,
-        actual_time: operation.actual_time ?? 0, estimated_time: operation.estimated_time ?? 0,
-      });
-    if (!result.success) logger.error("Database", "Operation event dispatch failed", result.errors);
-  } catch (error) {
-    // The transaction committed; a notification failure must not invite a duplicate mutation.
-    logger.error("Database", "Committed operation event could not be dispatched", error);
-  }
+// Supervisor action: parks an in-progress operation (Yellow Card). Timers close via the RPC.
+export async function holdOperation(operationId: string, tenantId: string) {
+  const { error } = await supabase.rpc("transition_operation", {
+    p_tenant_id: tenantId,
+    p_operation_id: operationId,
+    p_action: "pause",
+  });
+  if (error) throw error;
 }
+

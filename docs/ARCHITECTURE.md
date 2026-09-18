@@ -28,7 +28,6 @@ graph TB
 
     subgraph External["External Systems"]
         ERP[ERP Systems]
-        MQTT[MQTT Broker]
         MCP[MCP Server]
         Webhooks[Webhook Targets]
     end
@@ -50,7 +49,6 @@ graph TB
     ERP -->|"REST API"| EdgeFns
     MCP -->|"Tool calls"| SBClient
     EdgeFns -->|"POST"| Webhooks
-    MQTT -->|"Pub/Sub"| SBRealtime
 ```
 
 ## Frontend Architecture
@@ -148,7 +146,6 @@ graph LR
     subgraph Sources["Data Sources"]
         UI[React UI]
         API[REST API / ERP]
-        MQTT[MQTT]
     end
 
     subgraph Processing
@@ -172,7 +169,6 @@ graph LR
     UI -->|"Direct queries"| SBClient --> PG
     UI -->|"File upload"| S3
     API -->|"Bearer token"| EdgeFn --> PG
-    MQTT --> Realtime
 
     PG --> Realtime -->|"WebSocket"| UI
     PG --> Dashboard & Operator
@@ -267,14 +263,13 @@ eryxon-flow/
 │   │   └── ...              # auth, capacity, onboarding, parts, qrm, terminal
 │   ├── hooks/               # Data fetching & state
 │   │   ├── useRealtimeSubscription  # WebSocket subscriptions
-│   │   ├── useServerPagination      # API pagination
 │   │   └── ...
 │   ├── pages/               # 55 files — Route targets
 │   │   ├── admin/           # Dashboard, Jobs, Parts, Operations, Analytics...
 │   │   └── operator/        # Work queue, time tracking
 │   ├── routes/              # Route definitions + guards
 │   ├── contexts/            # AuthContext, OperatorContext
-│   ├── lib/                 # Utilities (queryClient, logger, scheduler, search)
+│   ├── lib/                 # Utilities (queryClient, logger, scheduler, db/)
 │   ├── integrations/        # Supabase client + generated types
 │   ├── i18n/                # Translations (EN, NL, DE)
 │   ├── config/              # App config, CAD backend, status enums
@@ -288,7 +283,7 @@ eryxon-flow/
 ├── mcp-server/              # MCP server for AI tool integration
 ├── website/                 # Astro documentation site
 ├── scripts/                 # Build & deployment utilities
-├── docs/                    # DBML schema, guides, operations
+├── docs/                    # Contributor internals: ADRs, conventions, DBML schema
 └── .agents/                 # Universal AI agent instructions
 ```
 

@@ -471,8 +471,10 @@
       "notStarted": "Niet gestart",
       "inProgress": "Bezig",
       "completed": "Voltooid",
-      "onHold": "In de wacht"
-    }
+      "onHold": "In de wacht",
+      "waiting": "Wacht op eerdere stap"
+    },
+    "holdClearsAtTerminal": "Vervalt zodra een operator de bewerking op de terminal start."
   },
   "issues": {
     "title": "Probleembeheer",
@@ -727,7 +729,12 @@
     "updating": "Bijwerken...",
     "updateBatch": "Batch bijwerken",
     "noNestedBatches": "Nog geen geneste batches",
-    "updateSuccess": "Batch succesvol bijgewerkt"
+    "updateSuccess": "Batch succesvol bijgewerkt",
+    "additionalMetadata": "Extra metadata",
+    "materialRequirements": "Materiaalbehoefte",
+    "noRequirements": "Geen behoeften gemeld",
+    "noNestingImage": "Geen nestingafbeelding beschikbaar",
+    "add": "Toevoegen"
   },
   "qrm": {
     "bulletCard": "Bullet Card",
@@ -760,5 +767,32 @@
     "ncCode": "NC-code",
     "ncCodeDesc": "CNC-programma van het onderdeel. Bewerk dit op het onderdeeldetail.",
     "noNcCode": "Geen NC-code ingesteld"
+  },
+  "substeps": {
+    "title": "Alle deelstappen",
+    "subtitle": "Bekijk en beheer alle deelstappen van alle bewerkingen",
+    "loadFailed": "Deelstappen laden mislukt",
+    "nameRequired": "Naam van de deelstap is verplicht",
+    "updateFailed": "Deelstap bijwerken mislukt",
+    "updated": "Deelstap bijgewerkt",
+    "deleteConfirm": "Deze deelstap verwijderen?",
+    "deleteFailed": "Deelstap verwijderen mislukt",
+    "deleted": "Deelstap verwijderd",
+    "searchPlaceholder": "Zoek op opdracht, onderdeel, bewerking of stapnaam...",
+    "allStatuses": "Alle statussen",
+    "notStarted": "Niet gestart",
+    "inProgress": "Bezig",
+    "completed": "Afgerond",
+    "blocked": "Geblokkeerd",
+    "showing": "{{shown}} van {{total}} deelstappen",
+    "stepName": "Stapnaam",
+    "seq": "Volg.",
+    "actions": "Acties",
+    "noMatch": "Geen deelstappen voldoen aan je filters",
+    "noneYet": "Nog geen deelstappen aangemaakt",
+    "editTitle": "Deelstap bewerken",
+    "notes": "Notities",
+    "optionalNotes": "Optionele notities",
+    "update": "Bijwerken"
   }
 }

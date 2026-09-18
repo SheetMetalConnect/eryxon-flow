@@ -26,6 +26,19 @@ export default defineConfig({
     processor: unified({ remarkPlugins: [remarkMermaid] }),
   },
   redirects: {
+    "/guides/": "/guides/quick-start/",
+    "/nl/guides/": "/nl/guides/quick-start/",
+    "/de/guides/": "/de/guides/quick-start/",
+    "/architecture/connectivity-mqtt/": "/architecture/connectivity-webhooks/",
+    "/nl/architecture/connectivity-mqtt/": "/architecture/connectivity-webhooks/",
+    "/de/architecture/connectivity-mqtt/": "/architecture/connectivity-webhooks/",
+    "/nl/release-notes/": "/release-notes/",
+    "/de/release-notes/": "/release-notes/",
+    "/guides/deployment/": "/guides/self-hosting/",
+    "/nl/guides/deployment/": "/nl/guides/self-hosting/",
+    "/de/guides/deployment/": "/de/guides/self-hosting/",
+    "/architecture/connectivity-rest-api/": "/api/rest-api-reference/",
+    "/nl/architecture/connectivity-rest-api/": "/api/rest-api-reference/",
     "/articles": "/blog",
     "/roadmap/": "/",
     "/nl/roadmap/": "/nl/",
@@ -51,6 +64,23 @@ export default defineConfig({
       locales,
       sidebar: sidebar.main || [],
       customCss: ["./src/styles/global.css"],
+      // One dark code surface on both page themes; the light syntax theme on the
+      // dark panel was unreadable. Starlight's theme switch stays off for code.
+      expressiveCode: {
+        themes: ["github-dark"],
+        useStarlightDarkModeSwitch: false,
+        useStarlightUiThemeColors: false,
+        defaultProps: { wrap: true },
+        styleOverrides: {
+          borderRadius: "var(--ery-radius-lg)",
+          borderColor: "var(--ery-code-border)",
+          codeFontFamily: "var(--ery-font-mono)",
+          codeFontSize: "0.9rem",
+          codeLineHeight: "1.65",
+          codeBackground: "var(--ery-code-bg)",
+          frames: { shadowColor: "transparent", editorBackground: "var(--ery-code-bg)", terminalBackground: "var(--ery-code-bg)" },
+        },
+      },
       components: {
         Head: "./src/components/override-components/Head.astro",
         Header: "./src/components/override-components/Header.astro",

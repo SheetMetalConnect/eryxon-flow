@@ -38,7 +38,7 @@ needs work in progress, resume needs a pause, completion needs a start. The brow
 API call the same functions, so an ERP integration gets exactly the rules an operator gets.
 
 Restarting a timer no longer fires a second `operation.started` webhook, and a timer action no
-longer rewrites every part of the job. Webhook and MQTT subscribers see the events that happened.
+longer rewrites every part of the job. Webhook subscribers see the events that happened.
 
 ## The PIN means something
 

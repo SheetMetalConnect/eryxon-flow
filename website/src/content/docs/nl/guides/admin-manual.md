@@ -47,7 +47,9 @@ Gebruik dit spaarzaam. Als alles spoed is, is niets spoed.
 
 ### Bewerkingen in wacht zetten
 
-Je kunt elke bewerking in wacht zetten vanuit het bewerkingsdetailpaneel. Een bewerking in wacht blijft zichtbaar in de werkwachtrij maar is gemarkeerd met een wachtbadge zodat operators weten dat ze er niet aan moeten beginnen. Hervat het wanneer de blokkade is opgeheven.
+Open een lopende bewerking en zet de Yellow Card aan. Open timers worden gestopt en de bewerking staat in wacht; ze blijft zichtbaar bij haar cel zodat de stilstand niet verdwijnt. De wacht vervalt zodra een operator de bewerking op de terminal opnieuw start. Alleen een lopende bewerking kan in wacht; alleen een supervisor kan er een afronden vanuit het detailpaneel. Beide acties gebruiken dezelfde databaseregels als de terminal.
+
+Vanuit hetzelfde paneel verplaats je een bewerking naar een andere cel, wijzig je de volgorde, corrigeer je de geplande uren en zet je een gepland venster. Met sequentiële vrijgave aan markeert de bewerkingenlijst een stap als *Wacht op eerdere stap* tot de voorgangers zijn afgerond.
 
 ## Productiecellen (Stadia)
 
@@ -99,6 +101,8 @@ Gebruik dit om knelpunten te herkennen voordat ze de werkvloer bereiken. Als een
 Wanneer een klant de deadline wijzigt, werk de leverdatum bij op de job. De planner pakt de wijziging op bij de volgende run.
 
 ### Fabriekskalender
+
+**Volgorde afdwingen** (Organisatie-instellingen) bepaalt of de bewerkingsvolgorde van een onderdeel wordt afgedwongen. Uit: de terminal toont In Buffer en Verwacht, maar operators mogen elke bewerking starten. Aan: een bewerking kan pas starten als alle eerdere bewerkingen van hetzelfde onderdeel zijn afgerond; de API en MCP-server volgen dezelfde regel.
 
 De fabriekskalender definieert werkdagen en feestdagen. De planner slaat niet-werkdagen automatisch over. Configureer dit in **Instellingen** voordat je je eerste planning draait.
 

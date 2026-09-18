@@ -75,7 +75,7 @@ export function ResourceUsageDisplay({
   if (loading) {
     return compact ? null : (
       <div className="text-sm text-muted-foreground">
-        {t('operations.loadingResources', 'Loading resources...')}
+        {t('operations.loadingResources')}
       </div>
     );
   }
@@ -90,7 +90,7 @@ export function ResourceUsageDisplay({
       <div className={`flex items-center gap-2 ${className}`}>
         <Wrench className="h-4 w-4 text-orange-600" />
         <span className="text-xs text-muted-foreground">
-          {resources.length} {resources.length === 1 ? t('operations.resource', 'resource') : t('operations.resources', 'resources')}
+          {resources.length} {resources.length === 1 ? t('operations.resource') : t('operations.resources')}
         </span>
       </div>
     );
@@ -102,7 +102,7 @@ export function ResourceUsageDisplay({
       {showTitle && (
         <div className="text-sm font-medium mb-3 flex items-center gap-2">
           <Wrench className="h-5 w-5 text-orange-600" />
-          {t('operations.requiredResources', 'Required Resources')}
+          {t('operations.requiredResources')}
         </div>
       )}
       <div className="space-y-3">
@@ -120,13 +120,13 @@ export function ResourceUsageDisplay({
                   </p>
                   {opResource.quantity && opResource.quantity > 1 && (
                     <Badge variant="secondary" className="text-xs">
-                      {t('operations.qty', 'Qty')}: {opResource.quantity}
+                      {t('operations.qty')}: {opResource.quantity}
                     </Badge>
                   )}
                 </div>
                 <div className="text-xs text-muted-foreground space-y-1 ml-6">
                   <p className="capitalize">
-                    <span className="font-medium">{t('operations.type', 'Type')}:</span>{' '}
+                    <span className="font-medium">{t('operations.type')}:</span>{' '}
                     {opResource.resource.type.replace('_', ' ')}
                   </p>
                   {opResource.resource.identifier && (
@@ -138,7 +138,7 @@ export function ResourceUsageDisplay({
                   {opResource.resource.location && (
                     <p>
                       <span className="font-medium">
-                        {t('operations.location', 'Location')}:
+                        {t('operations.location')}:
                       </span>{' '}
                       {opResource.resource.location}
                     </p>

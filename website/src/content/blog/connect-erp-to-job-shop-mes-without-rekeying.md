@@ -100,4 +100,4 @@ What the docs do not claim is a finished packaged connector for every ERP. The p
 
 If your team is evaluating how much mapping work an ERP handoff will require, start with the [REST API Reference](/api/rest-api-reference/) and the [API Payload Reference](/api/payload-reference/) to review the exact request and error formats.
 
-If you are already comparing integration approaches, use [ERP Integration](/features/erp-integration/) for the workflow overview and the [REST API architecture reference](/architecture/connectivity-rest-api/) for the sync modes around `api-erp-sync`.
+If you are already comparing integration approaches, use [ERP Integration](/features/erp-integration/) for the workflow overview and the [REST API architecture reference](/api/rest-api-reference/) for the sync modes around `api-erp-sync`.

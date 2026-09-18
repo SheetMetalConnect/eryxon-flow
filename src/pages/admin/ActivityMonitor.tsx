@@ -40,9 +40,6 @@ import {
   Wrench,
   Circle,
   Loader2,
-  Zap,
-  AlertTriangle,
-  Server,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
@@ -191,10 +188,6 @@ export const ActivityMonitor: React.FC = () => {
         return <CloudDownload className={iconClass} />;
       case "import":
         return <CloudUpload className={iconClass} />;
-      case "mcp_execute":
-        return <Zap className={iconClass} />;
-      case "mcp_error":
-        return <AlertTriangle className={iconClass} />;
       default:
         return <Circle className={iconClass} />;
     }
@@ -219,10 +212,6 @@ export const ActivityMonitor: React.FC = () => {
       case "export":
       case "import":
         return "bg-[hsl(var(--color-warning))]/10 text-[hsl(var(--color-warning))] border-[hsl(var(--color-warning))]/20";
-      case "mcp_execute":
-        return "bg-purple-500/10 text-purple-400 border-purple-500/20";
-      case "mcp_error":
-        return "bg-red-500/10 text-red-400 border-red-500/20";
       default:
         return "bg-[hsl(var(--foreground))]/10 text-[hsl(var(--foreground))]/60 border-[hsl(var(--foreground))]/20";
     }
@@ -244,8 +233,6 @@ export const ActivityMonitor: React.FC = () => {
       case "material":
       case "resource":
         return <Wrench className={iconClass} />;
-      case "mcp_tool":
-        return <Server className={iconClass} />;
       default:
         return <Activity className={iconClass} />;
     }
@@ -317,7 +304,7 @@ export const ActivityMonitor: React.FC = () => {
         title={t("activityMonitor.title")}
         description={t("activityMonitor.description")}
         action={{
-          label: t("common.export", "Export"),
+          label: t("common.export"),
           onClick: handleExport,
           icon: Download,
         }}
@@ -326,10 +313,10 @@ export const ActivityMonitor: React.FC = () => {
       {stats && (
         <PageStatsRow
           stats={[
-            { label: t("activityMonitor.totalActivities", "Total Activities (24h)"), value: stats.total_activities || 0, icon: Activity, color: "primary" },
-            { label: t("activityMonitor.activeUsers", "Active Users (24h)"), value: stats.unique_users || 0, icon: Users, color: "success" },
-            { label: t("activityMonitor.created", "Created (24h)"), value: stats.activities_by_action?.create || 0, icon: Plus, color: "info" },
-            { label: t("activityMonitor.updated", "Updated (24h)"), value: stats.activities_by_action?.update || 0, icon: Edit, color: "warning" },
+            { label: t("activityMonitor.totalActivities"), value: stats.total_activities || 0, icon: Activity, color: "primary" },
+            { label: t("activityMonitor.activeUsers"), value: stats.unique_users || 0, icon: Users, color: "success" },
+            { label: t("activityMonitor.created"), value: stats.activities_by_action?.create || 0, icon: Plus, color: "info" },
+            { label: t("activityMonitor.updated"), value: stats.activities_by_action?.update || 0, icon: Edit, color: "warning" },
           ]}
         />
       )}
@@ -341,7 +328,7 @@ export const ActivityMonitor: React.FC = () => {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder={t("activityMonitor.searchActivities", "Search activities...")}
+                  placeholder={t("activityMonitor.searchActivities")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-9"
@@ -352,10 +339,10 @@ export const ActivityMonitor: React.FC = () => {
             <div className="md:col-span-2">
               <Select value={filterAction} onValueChange={setFilterAction}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("activityMonitor.allActions", "All Actions")} />
+                  <SelectValue placeholder={t("activityMonitor.allActions")} />
                 </SelectTrigger>
                 <SelectContent className="glass-card">
-                  <SelectItem value="all">{t("activityMonitor.allActions", "All Actions")}</SelectItem>
+                  <SelectItem value="all">{t("activityMonitor.allActions")}</SelectItem>
                   {uniqueActions.map((action) => (
                     <SelectItem key={action} value={action}>
                       {t(`activityMonitor.actions.${action}`, action.charAt(0).toUpperCase() + action.slice(1))}
@@ -368,10 +355,10 @@ export const ActivityMonitor: React.FC = () => {
             <div className="md:col-span-2">
               <Select value={filterEntityType} onValueChange={setFilterEntityType}>
                 <SelectTrigger>
-                  <SelectValue placeholder={t("activityMonitor.allEntities", "All Entities")} />
+                  <SelectValue placeholder={t("activityMonitor.allEntities")} />
                 </SelectTrigger>
                 <SelectContent className="glass-card">
-                  <SelectItem value="all">{t("activityMonitor.allEntities", "All Entities")}</SelectItem>
+                  <SelectItem value="all">{t("activityMonitor.allEntities")}</SelectItem>
                   {uniqueEntityTypes.map((type) => (
                     <SelectItem key={type} value={type}>
                       {t(`activityMonitor.entities.${type}`, type.charAt(0).toUpperCase() + type.slice(1))}
@@ -387,10 +374,10 @@ export const ActivityMonitor: React.FC = () => {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="glass-card">
-                  <SelectItem value="25">{t("activityMonitor.last", "Last")} 25</SelectItem>
-                  <SelectItem value="50">{t("activityMonitor.last", "Last")} 50</SelectItem>
-                  <SelectItem value="100">{t("activityMonitor.last", "Last")} 100</SelectItem>
-                  <SelectItem value="200">{t("activityMonitor.last", "Last")} 200</SelectItem>
+                  <SelectItem value="25">{t("activityMonitor.last")} 25</SelectItem>
+                  <SelectItem value="50">{t("activityMonitor.last")} 50</SelectItem>
+                  <SelectItem value="100">{t("activityMonitor.last")} 100</SelectItem>
+                  <SelectItem value="200">{t("activityMonitor.last")} 200</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -403,7 +390,7 @@ export const ActivityMonitor: React.FC = () => {
                   onCheckedChange={setAutoRefresh}
                 />
                 <Label htmlFor="auto-refresh" className="text-sm">
-                  {t("activityMonitor.autoRefresh", "Auto-refresh")}
+                  {t("activityMonitor.autoRefresh")}
                 </Label>
               </div>
               <Button onClick={loadData} variant="ghost" size="icon">
@@ -417,23 +404,23 @@ export const ActivityMonitor: React.FC = () => {
       <Card className="glass-card">
         <div className="p-4 border-b border-border-subtle">
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-semibold">{t("activityMonitor.recentActivity", "Recent Activity")}</h2>
+            <h2 className="text-lg font-semibold">{t("activityMonitor.recentActivity")}</h2>
             <Badge variant="outline" className="bg-white/5">
-              {activities.length} {t("activityMonitor.events", "events")}
+              {activities.length} {t("activityMonitor.events")}
             </Badge>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            {t("activityMonitor.lastUpdated", "Last updated")}: {lastUpdate.toLocaleTimeString()}
-            {autoRefresh && ` (${t("activityMonitor.autoRefreshing", "auto-refreshing every 10s")})`}
+            {t("activityMonitor.lastUpdated")}: {lastUpdate.toLocaleTimeString()}
+            {autoRefresh && ` (${t("activityMonitor.autoRefreshing")})`}
           </p>
         </div>
 
         <div className="divide-y divide-border-subtle">
           {activities.length === 0 ? (
             <div className="py-16 text-center">
-              <p className="text-muted-foreground mb-2">{t("activityMonitor.noActivities", "No activities found")}</p>
+              <p className="text-muted-foreground mb-2">{t("activityMonitor.noActivities")}</p>
               <p className="text-sm text-muted-foreground">
-                {t("activityMonitor.tryAdjusting", "Try adjusting your filters or search query")}
+                {t("activityMonitor.tryAdjusting")}
               </p>
             </div>
           ) : (
@@ -513,7 +500,7 @@ export const ActivityMonitor: React.FC = () => {
         {activities.length >= limit && (
           <div className="p-4 border-t border-border-subtle text-center">
             <Button onClick={() => setLimit(limit + 50)} variant="outline">
-              {t("common.loadMore", "Load More")}
+              {t("common.loadMore")}
             </Button>
           </div>
         )}

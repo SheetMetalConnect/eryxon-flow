@@ -27,7 +27,7 @@ Eryxon Flow is a manufacturing execution system for metalworking job shops: shee
 
 **For operators** it gives a touch-friendly work queue on any tablet, kiosk or phone: clock in with a PIN, see what is next, record what happened.
 
-**For the systems around it** it offers a REST API, webhooks, MQTT and an MCP server, so your ERP or planning tool stays the system of record.
+**For the systems around it** it offers a REST API, webhooks and an MCP server, so your ERP or planning tool stays the system of record.
 
 Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). See [Architecture](docs/ARCHITECTURE.md) for how it fits together and the [Changelog](CHANGELOG.md) for what is new.
 
@@ -48,7 +48,6 @@ Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). Se
 **Integration**
 - REST API with 30+ endpoints (jobs, parts, operations, time entries, webhooks)
 - ERP sync with incremental change detection
-- MQTT connectivity with retry, circuit breaker, dead letter queue
 - Webhook notifications for lifecycle events
 - MCP server for AI assistant integration
 
@@ -59,15 +58,18 @@ Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). Se
 
 ## Quick Start
 
+Requires Node.js 22 and Docker (for the local Supabase stack).
+
 ```bash
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
-cp .env.example .env    # Add your Supabase credentials
 npm ci
-npm run dev             # http://localhost:8080
+npx supabase start      # local Postgres, auth, storage, Edge Functions; prints the API URL and anon key
+cp .env.example .env    # paste that URL and anon key into VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY
+npm run dev             # http://localhost:8080 — the first sign-up creates the workshop
 ```
 
-Requires Node.js 22 and a [Supabase](https://supabase.com) backend.
+`npx supabase stop` shuts the stack down. To develop against a hosted Supabase project instead, put its URL and anon key in `.env` and skip `supabase start`.
 
 | Layer | Tech |
 |-------|------|
@@ -119,7 +121,7 @@ Full docs at **[eryxon.eu](https://eryxon.eu)** — run locally with `cd website
 | Operator Manual | [eryxon.eu/guides/operator-manual](https://eryxon.eu/guides/operator-manual/) |
 | Changelog | [eryxon.eu/guides/changelog](https://eryxon.eu/guides/changelog/) |
 
-Contributor docs live in [`docs/`](docs/): [Architecture](docs/ARCHITECTURE.md), [API Catalog](docs/API_CATALOG.md), [Routes](docs/ROUTE_MAP.md), [Hooks](docs/HOOK_MAP.md), [Conventions](docs/CONVENTIONS.md), [ADRs](docs/decisions/). Versioning and publication: [RELEASING.md](RELEASING.md).
+Contributor docs live in [`docs/`](docs/): [Architecture](docs/ARCHITECTURE.md), [Conventions](docs/CONVENTIONS.md), [ADRs](docs/decisions/). Versioning and publication: [RELEASING.md](RELEASING.md).
 
 ## AI Agent Support
 

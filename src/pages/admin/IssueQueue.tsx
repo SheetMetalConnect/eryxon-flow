@@ -230,7 +230,7 @@ export default function IssueQueue() {
     {
       accessorKey: "severity",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("issues.severityLabel", "Severity")} />
+        <DataTableColumnHeader column={column} title={t("issues.severityLabel")} />
       ),
       cell: ({ row }) => getSeverityBadge(row.getValue("severity")),
       filterFn: (row, id, value) => value.includes(row.getValue(id)),
@@ -238,7 +238,7 @@ export default function IssueQueue() {
     {
       id: "job",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("common.job", "Job")} />
+        <DataTableColumnHeader column={column} title={t("common.job")} />
       ),
       cell: ({ row }) => (
         <span className="font-medium">{row.original.operation?.part?.job?.job_number || "-"}</span>
@@ -248,7 +248,7 @@ export default function IssueQueue() {
     {
       id: "part",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("common.part", "Part")} />
+        <DataTableColumnHeader column={column} title={t("common.part")} />
       ),
       cell: ({ row }) => row.original.operation?.part?.part_number || "-",
       accessorFn: (row) => row.operation?.part?.part_number || "",
@@ -256,7 +256,7 @@ export default function IssueQueue() {
     {
       id: "operation",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("common.operation", "Operation")} />
+        <DataTableColumnHeader column={column} title={t("common.operation")} />
       ),
       cell: ({ row }) => row.original.operation?.operation_name || "-",
       accessorFn: (row) => row.operation?.operation_name || "",
@@ -264,7 +264,7 @@ export default function IssueQueue() {
     {
       accessorKey: "description",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("issues.description", "Description")} />
+        <DataTableColumnHeader column={column} title={t("issues.description")} />
       ),
       cell: ({ row }) => (
         <span className="line-clamp-1 max-w-[200px]">{row.getValue("description")}</span>
@@ -273,7 +273,7 @@ export default function IssueQueue() {
     {
       id: "reporter",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("issues.reporter", "Reporter")} />
+        <DataTableColumnHeader column={column} title={t("issues.reporter")} />
       ),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">{row.original.creator?.full_name || "-"}</span>
@@ -283,7 +283,7 @@ export default function IssueQueue() {
     {
       accessorKey: "created_at",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("common.date", "Date")} />
+        <DataTableColumnHeader column={column} title={t("common.date")} />
       ),
       cell: ({ row }) => (
         <span className="text-sm text-muted-foreground">
@@ -294,7 +294,7 @@ export default function IssueQueue() {
     {
       accessorKey: "status",
       header: ({ column }) => (
-        <DataTableColumnHeader column={column} title={t("common.status", "Status")} />
+        <DataTableColumnHeader column={column} title={t("common.status")} />
       ),
       cell: ({ row }) => getStatusBadge(row.getValue("status")),
       filterFn: (row, id, value) => value.includes(row.getValue(id)),
@@ -304,7 +304,7 @@ export default function IssueQueue() {
   const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
     {
       id: "severity",
-      title: t("issues.severityLabel", "Severity"),
+      title: t("issues.severityLabel"),
       options: [
         { label: t("issues.severity.critical"), value: "critical" },
         { label: t("issues.severity.high"), value: "high" },
@@ -314,7 +314,7 @@ export default function IssueQueue() {
     },
     {
       id: "status",
-      title: t("common.status", "Status"),
+      title: t("common.status"),
       options: [
         { label: t("issues.status.pending"), value: "pending" },
         { label: t("issues.status.approved"), value: "approved" },
@@ -354,15 +354,15 @@ export default function IssueQueue() {
     <div className="p-4 space-y-4">
       <AdminPageHeader
         title={t("issues.issueQueue")}
-        description={t("issues.subtitle", "Review and manage quality issues reported from the shop floor")}
+        description={t("issues.subtitle")}
       />
 
       <PageStatsRow
         stats={[
-          { label: t("issues.totalIssues", "Total Issues"), value: analytics.total, icon: AlertCircle, color: "primary" },
+          { label: t("issues.totalIssues"), value: analytics.total, icon: AlertCircle, color: "primary" },
           { label: t("issues.status.pending"), value: analytics.byStatus.pending, icon: Clock, color: analytics.byStatus.pending > 0 ? "warning" : "muted" },
-          { label: t("issues.criticalPending", "Critical"), value: analytics.criticalPending, icon: AlertOctagon, color: analytics.criticalPending > 0 ? "error" : "muted" },
-          { label: t("issues.resolved", "Resolved"), value: analytics.byStatus.approved + analytics.byStatus.closed, icon: CheckCircle, color: "success" },
+          { label: t("issues.criticalPending"), value: analytics.criticalPending, icon: AlertOctagon, color: analytics.criticalPending > 0 ? "error" : "muted" },
+          { label: t("issues.resolved"), value: analytics.byStatus.approved + analytics.byStatus.closed, icon: CheckCircle, color: "success" },
         ]}
       />
 
@@ -372,14 +372,14 @@ export default function IssueQueue() {
           data={issues}
           filterableColumns={filterableColumns}
           searchableColumns={[
-            { id: "job", title: t("common.job", "Job") },
-            { id: "part", title: t("common.part", "Part") },
-            { id: "operation", title: t("common.operation", "Operation") },
-            { id: "reporter", title: t("issues.reporter", "Reporter") },
-            { id: "description", title: t("issues.description", "Description") },
+            { id: "job", title: t("common.job") },
+            { id: "part", title: t("common.part") },
+            { id: "operation", title: t("common.operation") },
+            { id: "reporter", title: t("issues.reporter") },
+            { id: "description", title: t("issues.description") },
           ]}
-          searchPlaceholder={t("issues.searchPlaceholder", "Search issues...")}
-          emptyMessage={t("issues.noIssuesFound", "No issues found")}
+          searchPlaceholder={t("issues.searchPlaceholder")}
+          emptyMessage={t("issues.noIssuesFound")}
           loading={loading}
           pageSize={20}
           pageSizeOptions={[10, 20, 50, 100]}
@@ -446,20 +446,20 @@ export default function IssueQueue() {
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">
-                    {t("issues.currentLocation", "Current location")}
+                    {t("issues.currentLocation")}
                   </div>
                   <div className="text-sm">
                     {selectedIssue.current_cell?.name ||
-                      t("issues.noLocationCaptured", "Not captured")}
+                      t("issues.noLocationCaptured")}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-muted-foreground mb-1">
-                    {t("issues.intendedNextLocation", "Intended next location")}
+                    {t("issues.intendedNextLocation")}
                   </div>
                   <div className="text-sm">
                     {selectedIssue.intended_next_cell?.name ||
-                      t("issues.noLocationCaptured", "Not captured")}
+                      t("issues.noLocationCaptured")}
                   </div>
                 </div>
               </div>

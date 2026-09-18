@@ -2,7 +2,7 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { render, screen } from "@/test/utils";
-import type { OperationWithDetails } from "@/lib/database";
+import type { OperationWithDetails } from "@/lib/db";
 
 vi.mock("@/hooks/useProfile", () => ({
   useProfile: () => ({

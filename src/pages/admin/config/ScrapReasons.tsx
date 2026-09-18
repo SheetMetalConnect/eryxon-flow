@@ -213,7 +213,7 @@ export default function ConfigScrapReasons() {
                   </div>
                   <div>
                     <div className="text-xl font-bold">{analytics.totalReasons}</div>
-                    <div className="text-xs text-muted-foreground">{t("quality.totalReasons", "Total Reasons")}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.totalReasons")}</div>
                   </div>
                 </div>
               </CardContent>
@@ -227,7 +227,7 @@ export default function ConfigScrapReasons() {
                   </div>
                   <div>
                     <div className="text-xl font-bold text-[hsl(var(--color-success))]">{analytics.activeReasons}</div>
-                    <div className="text-xs text-muted-foreground">{t("quality.activeReasons", "Active")}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.activeReasons")}</div>
                   </div>
                 </div>
               </CardContent>
@@ -241,7 +241,7 @@ export default function ConfigScrapReasons() {
                   </div>
                   <div>
                     <div className="text-xl font-bold">{analytics.usedReasons}</div>
-                    <div className="text-xs text-muted-foreground">{t("quality.usedReasons", "Used")}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.usedReasons")}</div>
                   </div>
                 </div>
               </CardContent>
@@ -261,7 +261,7 @@ export default function ConfigScrapReasons() {
                       "text-xl font-bold",
                       analytics.unusedReasons > 0 && "text-[hsl(var(--color-warning))]"
                     )}>{analytics.unusedReasons}</div>
-                    <div className="text-xs text-muted-foreground">{t("quality.unusedReasons", "Unused")}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.unusedReasons")}</div>
                   </div>
                 </div>
               </CardContent>
@@ -275,7 +275,7 @@ export default function ConfigScrapReasons() {
                   </div>
                   <div>
                     <div className="text-xl font-bold">{analytics.totalUsage}</div>
-                    <div className="text-xs text-muted-foreground">{t("quality.timesUsed", "Times Used")}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.timesUsed")}</div>
                   </div>
                 </div>
               </CardContent>
@@ -291,7 +291,7 @@ export default function ConfigScrapReasons() {
                     <div className="text-xl font-bold text-[hsl(var(--color-error))]">
                       {analytics.totalScrapQty.toLocaleString()}
                     </div>
-                    <div className="text-xs text-muted-foreground">{t("quality.totalScrapped", "Total Scrapped")}</div>
+                    <div className="text-xs text-muted-foreground">{t("quality.totalScrapped")}</div>
                   </div>
                 </div>
               </CardContent>
@@ -304,7 +304,7 @@ export default function ConfigScrapReasons() {
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center gap-2">
                     <TrendingUp className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
-                    {t("quality.topScrapReasons", "Top Scrap Reasons")}
+                    {t("quality.topScrapReasons")}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="pt-0">
@@ -332,7 +332,7 @@ export default function ConfigScrapReasons() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
                   <BarChart3 className="h-4 w-4 text-[hsl(var(--brand-primary))]" />
-                  {t("quality.scrapByCategory", "Scrap by Category")}
+                  {t("quality.scrapByCategory")}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
@@ -353,7 +353,7 @@ export default function ConfigScrapReasons() {
                   ))}
                   {analytics.byCategory.filter((c) => c.totalScrap > 0).length === 0 && (
                     <div className="text-xs text-muted-foreground text-center py-2">
-                      {t("quality.noScrapData", "No scrap data recorded yet")}
+                      {t("quality.noScrapData")}
                     </div>
                   )}
                 </div>
@@ -407,8 +407,8 @@ export default function ConfigScrapReasons() {
                 <TableHead>Description</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-center">{t("quality.usage", "Usage")}</TableHead>
-                <TableHead className="text-center">{t("quality.scrapped", "Scrapped")}</TableHead>
+                <TableHead className="text-center">{t("quality.usage")}</TableHead>
+                <TableHead className="text-center">{t("quality.scrapped")}</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>

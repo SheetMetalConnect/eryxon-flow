@@ -5,7 +5,7 @@ import { DetailPanel } from "@/components/terminal/DetailPanel";
 import { BatchFlowPrompt } from "@/components/operator/BatchFlowPrompt";
 import { TerminalJob } from "@/types/terminal";
 import type { PMIData, GeometryData } from "@/hooks/useCADProcessing";
-import type { OperationWithDetails } from "@/lib/database";
+import type { OperationWithDetails } from "@/lib/db";
 import type { BatchPromptState } from "@/hooks/useOperatorTerminal";
 
 interface OperatorDetailSidebarProps {
@@ -72,7 +72,7 @@ export function OperatorDetailSidebar({
       {collapsed ? (
         <div className="flex flex-1 flex-col items-center justify-center py-4">
           <span className="rotate-180 text-[10px] text-muted-foreground [writing-mode:vertical-lr]">
-            {t("terminal.detailsPanel", "Details Panel")}
+            {t("terminal.detailsPanel")}
           </span>
         </div>
       ) : selectedJob ? (
@@ -106,13 +106,10 @@ export function OperatorDetailSidebar({
             <ChevronLeft className="h-8 w-8 text-muted-foreground/50" />
           </div>
           <h3 className="mb-2 text-xl font-medium text-foreground">
-            {t("terminal.noJobSelected", "No Job Selected")}
+            {t("terminal.noJobSelected")}
           </h3>
           <p className="text-sm">
-            {t(
-              "terminal.noJobSelectedDescription",
-              "Select a job from the list to view details and controls.",
-            )}
+            {t("terminal.noJobSelectedDescription")}
           </p>
         </div>
       )}

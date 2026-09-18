@@ -11,9 +11,9 @@ Eryxon Flow provides multiple connectivity options for integrating with external
 
 Eryxon Flow uses a **Unified Event Dispatcher** to coordinate communication across different protocols.
 
-- **Inbound**: [REST API](/architecture/connectivity-rest-api), Real-time WebSockets, [MCP (AI)](/guides/mcp-setup).
-- **Outbound**: [Webhooks](/architecture/connectivity-mqtt) (HTTP POST), [MQTT](/architecture/connectivity-mqtt) (industrial messaging).
-- **Bidirectional**: ERP Sync, [Model Context Protocol (MCP)](/guides/mcp-setup).
+- **Inbound**: [REST API](/api/rest-api-reference/), Real-time WebSockets, [MCP (AI agents)](/guides/mcp-setup/).
+- **Outbound**: [Webhooks](/api/rest-api-reference/#webhook-events) (signed HTTP POST). A UNS or MQTT bridge subscribes to the webhooks; the app does not publish to brokers itself.
+- **Bidirectional**: ERP Sync, [Model Context Protocol (MCP)](/guides/mcp-setup/).
 
 ---
 
@@ -31,7 +31,7 @@ Authorization: Bearer ery_live_xxxxxxxxxxxxxxxxxxxx
 For the detailed API contract, see [REST API Reference](/api/rest-api-reference/).
 
 ### MCP Authentication
-Model Context Protocol keys are configured separately in the Admin panel to allow AI agents like Claude to securely interact with your shop floor data. See the [MCP Server Setup Guide](/guides/mcp-setup) for complete deployment instructions.
+The MCP server runs with the Supabase service-role key on trusted infrastructure, pinned to one workshop with `TENANT_ID`. Its HTTP transport is protected with a bearer token (`MCP_BEARER`). See the [MCP Server Setup Guide](/guides/mcp-setup/).
 
 ---
 
@@ -52,7 +52,7 @@ The important behavior is:
 
 ## AI Integration (MCP)
 
-The **[Model Context Protocol (MCP)](/guides/mcp-setup)** enables AI agents to interact with Eryxon Flow programmatically through 50 specialized tools across 9 modules.
+The **[Model Context Protocol (MCP)](/guides/mcp-setup/)** server (protocol 2026-07-28) gives AI agents parity with the app through 113 tools that call the same database functions as the terminal, so production rules and webhook events apply identically.
 
 **AI agents can:**
 - Fetch and update jobs/parts
@@ -65,13 +65,13 @@ The **[Model Context Protocol (MCP)](/guides/mcp-setup)** enables AI agents to i
 **Learn more:**
 - [MCP Server Setup Guide](/guides/mcp-setup) - Deployment and configuration
 - [MCP Demo Guide](/api/mcp-demo-guide) - Usage examples and demo scenarios
-- [REST API Documentation](/architecture/connectivity-rest-api) - Underlying API reference
+- [REST API Documentation](/api/rest-api-reference/) - Underlying API reference
 
 ---
 
 ## Event System
 
-All major actions (job created, operation started, issue reported) trigger events in our internal dispatcher, which then forwards the data to configured Webhooks and MQTT brokers simultaneously.
+All major actions (job created, operation started, issue reported) raise events that the dispatcher delivers to the configured webhooks with a signed payload. Delivery runs after the change is committed; a failed delivery never turns a committed change into an error.
 
 ---
 
@@ -87,6 +87,8 @@ All major actions (job created, operation started, issue reported) trigger event
 ### Common Error Codes
 - `401 Unauthorized`: Invalid API key.
 - `402 Payment Required`: Plan limit reached.
+- `404 Not Found`: The record does not exist in your workshop.
+- `409 Conflict`: A production rule refused the change; the message is the rule (for example `Stop active work before starting another operation`).
 - `429 Too Many Requests`: Rate limit exceeded.
 
 ### Rate Limits

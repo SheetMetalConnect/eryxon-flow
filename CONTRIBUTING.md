@@ -8,12 +8,13 @@ report from your shop floor, or a new feature.
 
 ## Quick start
 
+Follow the Quick Start in [README.md](./README.md), then before opening a PR:
+
 ```bash
-npm ci && npm run dev   # App dev server at localhost:8080
-npm run build                # Must pass before any PR
+npm run build                # Must pass
 npm run test:run             # Vitest suite — must stay green
-npm run lint                 # ESLint — zero errors required
-npm run typecheck            # Check all referenced TypeScript projects
+npm run lint                 # ESLint — zero errors
+npm run typecheck            # All referenced TypeScript projects
 ```
 
 The marketing/docs website lives in `website/` with its own `package.json`
@@ -44,7 +45,7 @@ The marketing/docs website lives in `website/` with its own `package.json`
 - **Module limits**: components ≤ 400 lines, hooks ≤ 200, lib ≤ 300 (see
   `docs/CONVENTIONS.md`). Extract before you exceed.
 - **Design system**: solid surfaces, hairline borders, design tokens — no
-  gradients, no glass effects. See `docs/DESIGN_SYSTEM.md`.
+  gradients, no glass effects. See `docs/design-system/README.md`.
 - This is a private repository: keep issues and PRs free of customer names,
   credentials, and commercial details.
 

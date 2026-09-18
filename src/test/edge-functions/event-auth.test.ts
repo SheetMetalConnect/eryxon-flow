@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { authorizeEventRequest, internalEventHeaders } from '../../../supabase/functions/_shared/event-auth';
-import { dispatchWebhookEvent } from '../../../supabase/functions/_shared/events';
 
 const tenantId = '11111111-1111-4111-8111-111111111111';
 const runtimeEnv = new Map<string, string>();
@@ -59,14 +58,4 @@ describe('event authentication', () => {
     expect(transport).toHaveBeenCalledTimes(2);
   });
 
-  it.each([
-    { status: 401, body: { success: false } },
-    { status: 200, body: { success: false } },
-    { status: 200, body: { success: true, failed: 1 } },
-  ])('rejects failed downstream delivery $status/$body.success', async ({ status, body }) => {
-    runtimeEnv.set('INTERNAL_SERVICE_SECRET', 'test-internal-secret');
-    runtimeEnv.set('SUPABASE_URL', 'http://localhost:54321');
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status })));
-    await expect(dispatchWebhookEvent(tenantId, 'job.created', {})).rejects.toThrow();
-  });
 });

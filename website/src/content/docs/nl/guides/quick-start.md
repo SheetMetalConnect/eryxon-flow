@@ -14,13 +14,7 @@ Eryxon Flow snel opstarten.
 ## Vereisten
 
 - Node.js **22.12 of nieuwer**
-- Toegang tot de private broncoderepository
-- Een Supabase-backend die is ingericht voor de broncodeversie die je wilt draaien
-
-Volg de [handleiding voor zelf hosten](/guides/self-hosting/) voor de backend,
-migraties, secrets voor functies en productiehosting. Daar staat de actuele
-installatievolgorde. De stappen hieronder starten een lokale frontend met die
-voorbereide backend.
+- Docker, voor de lokale Supabase-stack (of een gehost Supabase-project)
 
 ## Lokaal starten
 
@@ -28,26 +22,17 @@ voorbereide backend.
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 npm ci
-cp .env.example .env
+npx supabase start      # lokale Postgres, Auth, Storage en Edge Functions; toont de API-URL en anon key
+cp .env.example .env    # zet die URL en anon key in VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY
+npm run dev             # http://localhost:8080
 ```
 
-Vul in `.env` de publieke frontendinstellingen van je backend in:
-
-```dotenv
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-public-key
-VITE_SUPABASE_PROJECT_ID=your-project
-```
-
-Waarden met het voorvoegsel `VITE_` zijn zichtbaar in de browser. Bewaar
-service-role-sleutels en andere geheime gegevens op de backend.
-
-```sh
-npm run dev
-```
-
-Open [localhost:8080](http://localhost:8080) en log in. Als accountregistratie is
-ingeschakeld, maak je eerst je organisatie aan via **Sign Up**.
+De eerste registratie maakt de werkplaats en de beheerder aan. `npx supabase stop`
+zet de lokale stack uit. Wil je tegen een gehost Supabase-project ontwikkelen, zet
+dan die URL en anon key in `.env` en sla `supabase start` over; de
+[handleiding voor zelf hosten](/guides/self-hosting/) behandelt migraties, secrets
+voor functies en productiehosting. Waarden met het voorvoegsel `VITE_` zijn zichtbaar
+in de browser; bewaar service-role-sleutels op de backend.
 
 ## De app gebruiken
 
@@ -55,6 +40,6 @@ Beheerders beheren jobs, onderdelen, bewerkingen en werkcellen. Operators gebrui
 de [Werkwachtrij en Terminal](/nl/guides/operator-manual/) op telefoon, tablet en
 desktop. Alle schermformaten gebruiken dezelfde responsieve interface.
 
-Zie de [deploymenthandleiding](/guides/deployment/) voor ingebruikname in productie.
+Zie de [handleiding voor zelf hosten](/guides/self-hosting/) voor ingebruikname in productie.
 PWA-installatie is optioneel en moet tijdens het bouwen worden ingeschakeld; zie
 [PWA-configuratie](/guides/self-hosting/#optional-pwa-verification).

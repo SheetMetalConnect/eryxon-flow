@@ -58,7 +58,7 @@ SELECT column_name FROM information_schema.columns WHERE table_name = 'your_tabl
 
 ### TanStack Query cache stale
 **Symptom:** UI shows old data after mutation.
-**Fix:** Invalidate the correct query key after mutation. Check `docs/HOOK_MAP.md` for the right key pattern.
+**Fix:** Invalidate the correct query key after mutation. Query keys are defined in `src/lib/queryClient.ts` (`QueryKeys`).
 
 ### i18n key showing raw key text
 **Symptom:** UI shows `jobs.status.in_progress` instead of translated text.

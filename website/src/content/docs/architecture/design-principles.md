@@ -10,7 +10,7 @@ The Eryxon Flow design system is a **modern, multi-theme** UI framework built fo
 Our tagline drives every design decision:
 
 1. **Simple**: A single glass card centered on an ambient stage keeps the focus on the task.
-2. **Beautiful**: Animated gradients, neon pills, and microcopy echo a premium, tech-forward aesthetic.
+2. **Beautiful**: Animated gradients, neon pills, and microcopy echo a polished, technical aesthetic.
 3. **Functional**: Touch-optimized layouts (44px+ targets) remain practical for shop-floor tablets.
 4. **Professional**: Enterprise-grade typography, accessibility, and predictable motion.
 

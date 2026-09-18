@@ -21,7 +21,7 @@ React 18 + Vite + Tailwind + shadcn/ui
     → Supabase Client
     → PostgreSQL + Auth + RLS + Realtime + Storage
     → Edge Functions (Deno) — 30+ REST API endpoints (incl. api-batches, api-batch-lifecycle)
-    → Webhooks + MQTT + MCP Server
+    → Webhooks + MCP Server
 ```
 
 ## Edge Functions — Critical Rules
@@ -36,7 +36,7 @@ All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`
 6. **No heavy validator imports** in function index files — `fkValidator.ts` and `PartValidator.ts` crash the Deno runtime silently (use inline validation instead)
 7. **PostgREST `.in()` on joined tables silently fails** — always query the join table first, then filter by IDs
 8. **Deploy**: `supabase functions deploy <name> --project-ref <ref> --no-verify-jwt`
-9. **Test**: `./scripts/test-api-automated.sh` — 54 tests, must all pass
+9. **Test**: `npm run test:api:e2e` against a running stack (needs `SUPABASE_URL` and `API_KEY`)
 
 ## Shared Modules (`supabase/functions/_shared/`)
 
@@ -93,8 +93,8 @@ against the code** (accurate to what actually ships) and **carry a diagram** whe
 or structure is involved (Mermaid). **No duplicate pages** — one canonical home per topic.
 
 The repo `docs/` folder is **only** for contributor/coding internals that would be out of
-place on a public site: ADRs, code conventions, DB schema diagram, route/hook maps, the
-design-system tooling. If you find a "how the app works" page in `docs/`, move and rewrite
+place on a public site: ADRs, code conventions, DB schema diagram, the design-system
+tooling. If you find a "how the app works" page in `docs/`, move and rewrite
 it onto the website, fix links, and delete the source.
 
 ## Documentation Index (contributor/coding internals only)
@@ -102,11 +102,11 @@ it onto the website, fix links, and delete the source.
 | Document | Purpose |
 |----------|---------|
 | [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) | System architecture with Mermaid dependency graphs |
-| [`docs/ROUTE_MAP.md`](../docs/ROUTE_MAP.md) | All frontend routes with guards and lazy-loading |
-| [`docs/HOOK_MAP.md`](../docs/HOOK_MAP.md) | Hook → table → queryKey dependency map |
 | [`docs/CONVENTIONS.md`](../docs/CONVENTIONS.md) | Code patterns, naming, templates for new files |
 | [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md) | Common AI-agent coding pitfalls and fixes |
 | [`docs/decisions/`](../docs/decisions/) | Architecture Decision Records (ADRs) — why things are the way they are |
+| [`docs/DATABASE_MIGRATIONS.md`](../docs/DATABASE_MIGRATIONS.md) | How to add and replay a migration |
+| [`docs/BACKUP_RESTORE_DRILL.md`](../docs/BACKUP_RESTORE_DRILL.md) | Local backup/restore drill (`npm run drill:restore`) |
 | [`docs/DATABASE_DIAGRAM.dbml`](../docs/DATABASE_DIAGRAM.dbml) | Full database schema (dbdiagram.io compatible) |
 | [`docs/dependency-graph.json`](../docs/dependency-graph.json) | Frontend import map (regenerate: `npm run deps:graph`) |
 

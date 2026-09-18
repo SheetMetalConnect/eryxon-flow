@@ -357,8 +357,8 @@ export default function CapacityMatrix() {
     return (
         <div className="p-4 space-y-4">
             <AdminPageHeader
-                title={t("capacity.title", "Capacity Matrix")}
-                description={t("capacity.description", "View and manage cell capacity across dates")}
+                title={t("capacity.title")}
+                description={t("capacity.description")}
             >
                 <AutoScheduleButton />
                 <div className="flex items-center gap-2">
@@ -376,28 +376,28 @@ export default function CapacityMatrix() {
 
             <div className="flex flex-wrap gap-2">
                 <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                    {t("capacity.load050", "0-50%")}
+                    {t("capacity.load050")}
                 </Badge>
                 <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                    {t("capacity.load5080", "50-80%")}
+                    {t("capacity.load5080")}
                 </Badge>
                 <Badge variant="outline" className="bg-orange-100 text-orange-700 border-orange-200">
-                    {t("capacity.load80100", "80-100%")}
+                    {t("capacity.load80100")}
                 </Badge>
                 <Badge variant="outline" className="bg-red-100 text-red-700 border-red-200">
-                    {t("capacity.overCapacity", "Over Capacity")}
+                    {t("capacity.overCapacity")}
                 </Badge>
                 <Badge variant="outline" className="bg-gray-200 text-gray-500 border-gray-300">
                     <CalendarOff className="h-3 w-3 mr-1" />
-                    {t("capacity.holidayClosure", "Holiday/Closure")}
+                    {t("capacity.holidayClosure")}
                 </Badge>
             </div>
 
             <Card className="glass-card">
                 <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">{t("capacity.workloadOverview", "Workload Overview")}</CardTitle>
+                    <CardTitle className="text-lg">{t("capacity.workloadOverview")}</CardTitle>
                     <CardDescription>
-                        {t("capacity.clickToManage", "Click on a cell to view and manage scheduled operations")}
+                        {t("capacity.clickToManage")}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="overflow-x-auto">
@@ -406,7 +406,7 @@ export default function CapacityMatrix() {
                             <thead>
                                 <tr>
                                     <th className="p-2 text-left border-b min-w-[150px] sticky left-0 bg-background z-10">
-                                        {t("capacity.cell", "Cell")}
+                                        {t("capacity.cell")}
                                     </th>
                                     {dates.map(date => {
                                         const dayInfo = getDayInfo(date);
@@ -440,7 +440,7 @@ export default function CapacityMatrix() {
                                                 {cell.name}
                                             </div>
                                             <div className="text-xs text-muted-foreground ml-5">
-                                                {t("capacity.capacity", "Capacity")}: {cell.capacity_hours_per_day || 8}h/day
+                                                {t("capacity.capacity")}: {cell.capacity_hours_per_day || 8}h/day
                                             </div>
                                         </td>
                                         {dates.map(date => {

@@ -53,7 +53,7 @@ vi.mock('@/integrations/supabase/client', () => ({
 const mockStartBatch = vi.fn();
 const mockStopBatch = vi.fn();
 
-vi.mock('@/lib/database', () => ({
+vi.mock('@/lib/db', () => ({
   startBatchTimeTracking: (...args: any[]) => mockStartBatch(...args),
   stopBatchTimeTracking: (...args: any[]) => mockStopBatch(...args),
 }));

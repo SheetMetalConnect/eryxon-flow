@@ -34,7 +34,7 @@ export function AutoScheduleButton() {
 
     const checkExistingSchedules = async (): Promise<number> => {
         if (!tenantId) {
-            throw new Error(t("capacity.tenantRequired", "Tenant context is required to schedule operations"));
+            throw new Error(t("capacity.tenantRequired"));
         }
 
         let query = supabase
@@ -64,7 +64,7 @@ export function AutoScheduleButton() {
             await runScheduler();
         } catch (error: unknown) {
             logger.error('AutoScheduleButton', 'Error checking schedules', error);
-            toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
+            toast.error(t("capacity.schedulingFailed"), {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
             setLoading(false);
@@ -76,7 +76,7 @@ export function AutoScheduleButton() {
         setShowConfirmDialog(false);
         try {
             if (!tenantId) {
-                throw new Error(t("capacity.tenantRequired", "Tenant context is required to schedule operations"));
+                throw new Error(t("capacity.tenantRequired"));
             }
 
             const [jobsResult, operationsResult, cellsResult, calendarResult] = await Promise.all([
@@ -179,7 +179,7 @@ export function AutoScheduleButton() {
                 }
             }
 
-            toast.success(t("capacity.schedulingComplete", "Scheduling Complete"), {
+            toast.success(t("capacity.schedulingComplete"), {
                 description: t("capacity.operationsScheduled", { count: updatedCount }),
             });
 
@@ -192,7 +192,7 @@ export function AutoScheduleButton() {
 
         } catch (error: unknown) {
             logger.error('AutoScheduleButton', 'Scheduling error', error);
-            toast.error(t("capacity.schedulingFailed", "Scheduling Failed"), {
+            toast.error(t("capacity.schedulingFailed"), {
                 description: error instanceof Error ? error.message : 'Unknown error',
             });
         } finally {
@@ -208,7 +208,7 @@ export function AutoScheduleButton() {
                 ) : (
                     <CalendarClock className="mr-2 h-4 w-4" />
                 )}
-                {t("capacity.autoSchedule", "Auto Schedule")}
+                {t("capacity.autoSchedule")}
             </Button>
 
             <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
@@ -216,7 +216,7 @@ export function AutoScheduleButton() {
                     <AlertDialogHeader>
                         <AlertDialogTitle className="flex items-center gap-2">
                             <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                            {t("capacity.confirmOverwrite", "Confirm Schedule Overwrite")}
+                            {t("capacity.confirmOverwrite")}
                         </AlertDialogTitle>
                         <AlertDialogDescription className="space-y-3">
                             <p>
@@ -227,7 +227,7 @@ export function AutoScheduleButton() {
                             </p>
                             <div className="bg-muted p-3 rounded-md">
                                 <p className="text-sm font-medium text-foreground">
-                                    {t("capacity.existingSchedules", "Existing Schedules")}
+                                    {t("capacity.existingSchedules")}
                                 </p>
                                 <p className="text-sm text-muted-foreground">
                                     {t("capacity.operationsWithDates", {
@@ -237,16 +237,16 @@ export function AutoScheduleButton() {
                                 </p>
                             </div>
                             <p className="text-sm text-muted-foreground">
-                                {t("capacity.overwriteWarning", "This action cannot be undone. The scheduler will recalculate all operation dates based on current capacity settings.")}
+                                {t("capacity.overwriteWarning")}
                             </p>
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                         <AlertDialogCancel>
-                            {t("capacity.cancelScheduling", "Cancel")}
+                            {t("capacity.cancelScheduling")}
                         </AlertDialogCancel>
                         <AlertDialogAction onClick={runScheduler}>
-                            {t("capacity.proceedWithScheduling", "Proceed with Scheduling")}
+                            {t("capacity.proceedWithScheduling")}
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>

@@ -31,7 +31,7 @@ The system tracks manufacturing work through three hierarchical levels:
 
 - **Multi-tenant:** Complete tenant isolation at database and application level
 - **Role-based access:** Admin and Operator roles with different permissions
-- **API-first:** ERP and automation systems integrate through APIs, webhooks, and MQTT
+- **API-first:** ERP and automation systems integrate through the REST API, webhooks and the MCP server
 - **Responsive app shell:** Optimized for desktop admin workflows and tablet operator terminals
 
 ### Data Model Hierarchy
@@ -201,7 +201,7 @@ graph TD
 - CORS enforcement in edge functions
 - Rate limiting
 - Input validation
-- Internal token checks for internal-only webhook and MQTT paths
+- Internal token checks for the internal-only webhook path
 
 **5. Storage Security:**
 - Private buckets
@@ -245,6 +245,22 @@ The REST API currently authenticates through the `Authorization` header rather t
 - Send notifications to Slack/Teams
 - Trigger automated workflows
 - Update external dashboards
+
+## One path for the UI, the API and AI agents
+
+There is no separate "integration layer". The browser talks to Postgres through Supabase with row-level security; the REST API (Edge Functions with API keys) and the MCP server call the same Postgres functions. Production changes go through `transition_operation`, `time_entry_action` and the batch functions, which hold the business rules (one running timer per operator, sequential release, tenant boundaries). Database triggers emit the signed webhooks and notifications, whoever caused the change.
+
+```mermaid
+flowchart LR
+  UI["Operator / admin UI"] --> RLS
+  ERP["ERP or script<br/>(REST, API key)"] --> EF["Edge Functions"] --> RLS
+  AI["Claude or any MCP client<br/>(MCP 2026-07-28, Streamable HTTP or stdio)"] --> MCP["MCP server"] --> EF
+  RLS["Postgres functions + RLS<br/>transition_operation · time_entry_action · batches"] --> EV["Triggers"]
+  EV --> WH["Signed webhooks"]
+  EV --> NT["Notifications"]
+```
+
+An AI agent can therefore plan, release, start, report and query production with the same guards an operator has: it cannot start an unreleased operation, complete work with a timer still running, or see another workshop's data. See the [MCP server reference](/api/mcp-server-reference/) for the tool list.
 
 ## Related Docs
 

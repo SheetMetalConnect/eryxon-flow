@@ -9,8 +9,7 @@ const IssueQueue = lazy(() => import("@/pages/admin/IssueQueue"));
 const FactoryCalendar = lazy(() => import("@/pages/admin/FactoryCalendar"));
 const OrganizationSettings = lazy(() => import("@/pages/admin/OrganizationSettings"));
 const Assignments = lazy(() => import("@/pages/admin/Assignments"));
-const McpServerSettings = lazy(() => import("@/pages/admin/McpServerSettings"));
-const McpSetup = lazy(() => import("@/pages/admin/McpSetup"));
+const McpServer = lazy(() => import("@/pages/admin/McpServer"));
 const DataExport = lazy(() => import("@/pages/admin/DataExport"));
 const DataImport = lazy(() => import("@/pages/admin/DataImport"));
 const Jobs = lazy(() => import("@/pages/admin/Jobs"));
@@ -30,8 +29,6 @@ const StepsTemplatesView = lazy(() => import("@/pages/admin/StepsTemplatesView")
 const ConfigApiKeys = lazy(() => import("@/pages/admin/config/ApiKeys"));
 const ConfigLocations = lazy(() => import("@/pages/admin/config/Locations"));
 const ConfigMaterials = lazy(() => import("@/pages/admin/config/Materials"));
-const ConfigMcpKeys = lazy(() => import("@/pages/admin/config/McpKeys"));
-const ConfigMqttPublishers = lazy(() => import("@/pages/admin/config/MqttPublishers"));
 const ConfigResources = lazy(() => import("@/pages/admin/config/Resources"));
 const ConfigScrapReasons = lazy(() => import("@/pages/admin/config/ScrapReasons"));
 const ConfigStages = lazy(() => import("@/pages/admin/config/Stages"));
@@ -64,10 +61,7 @@ export function AdminRoutes() {
       <Route path="/admin/assignments" element={<AdminRoute><Assignments /></AdminRoute>} />
       <Route path="/admin/config/api-keys" element={<AdminRoute><ConfigApiKeys /></AdminRoute>} />
       <Route path="/admin/config/webhooks" element={<AdminRoute><ConfigWebhooks /></AdminRoute>} />
-      <Route path="/admin/config/mqtt-publishers" element={<AdminRoute><ConfigMqttPublishers /></AdminRoute>} />
-      <Route path="/admin/config/mcp-keys" element={<AdminRoute><ConfigMcpKeys /></AdminRoute>} />
-      <Route path="/admin/mcp-setup" element={<AdminRoute><McpSetup /></AdminRoute>} />
-      <Route path="/admin/config/mcp-server" element={<AdminRoute><McpServerSettings /></AdminRoute>} />
+      <Route path="/admin/mcp" element={<AdminRoute><McpServer /></AdminRoute>} />
       <Route path="/admin/data-export" element={<AdminRoute><DataExport /></AdminRoute>} />
       <Route path="/admin/data-import" element={<AdminRoute><DataImport /></AdminRoute>} />
       <Route path="/admin/jobs" element={<AdminRoute><Jobs /></AdminRoute>} />
@@ -96,7 +90,6 @@ export function AdminRoutes() {
   );
 }
 
-const ApiDocs = lazy(() => import("@/pages/common/ApiDocs"));
 const Pricing = lazy(() => import("@/pages/common/Pricing"));
 const MyPlan = lazy(() => import("@/pages/common/MyPlan"));
 const About = lazy(() => import("@/pages/common/About"));
@@ -106,16 +99,6 @@ const TermsOfService = lazy(() => import("@/pages/common/TermsOfService"));
 export function CommonRoutes() {
   return (
     <>
-      <Route
-        path="/admin/api-docs"
-        element={
-          <ProtectedRoute>
-            <Layout>
-              <LazyRoute><ApiDocs /></LazyRoute>
-            </Layout>
-          </ProtectedRoute>
-        }
-      />
       <Route
         path="/admin/pricing"
         element={
@@ -142,7 +125,6 @@ export function CommonRoutes() {
       <Route path="/terms-of-service" element={<Layout><LazyRoute><TermsOfService /></LazyRoute></Layout>} />
 
       {/* Legacy common redirects */}
-      <Route path="/api-docs" element={<Navigate to="/admin/api-docs" replace />} />
       <Route path="/pricing" element={<Navigate to="/admin/pricing" replace />} />
       <Route path="/my-plan" element={<Navigate to="/admin/my-plan" replace />} />
     </>

@@ -12,6 +12,7 @@ export type MockDataProgressCallback = (progress: MockDataProgressStep) => void;
 
 export interface MockDataOptions {
   includeCells?: boolean;
+  includeLocations?: boolean;
   includeJobs?: boolean;
   includeParts?: boolean;
   includeOperations?: boolean;
@@ -54,7 +55,7 @@ export async function generateMockData(
       `Starting comprehensive mock data generation for tenant: ${tenantId}...`,
     );
 
-    const totalSteps = 11;
+    const totalSteps = 12;
     const reportProgress = (step: number, label: string) => {
       const percentage = Math.round((step / totalSteps) * 100);
       options.onProgress?.({ step, totalSteps, label, percentage });
@@ -88,6 +89,7 @@ export async function generateMockData(
 
     reportProgress(1, 'cells');
     let cellIds: string[] = [];
+    let slotData: Array<{ id: string; cell_id: string | null; capacity: number; sort_order: number | null }> = [];
     const cellIdMap: Record<string, string> = {};
 
     if (options.includeCells) {
@@ -184,7 +186,7 @@ export async function generateMockData(
       // a fresh demo tenant otherwise opens an empty placement picker. Four
       // slots per cell (A1–A4, B1–B4, …) give the module working data to show.
       const slotLetters = ["A", "B", "C", "D", "E", "F"];
-      const storageLocations = (cellData ?? []).flatMap((c, idx) => {
+      const storageLocations = options.includeLocations === false ? [] : (cellData ?? []).flatMap((c, idx) => {
         const letter = slotLetters[idx] ?? `Z${idx}`;
         return [1, 2, 3, 4].map((n) => ({
           tenant_id: tenantId,
@@ -197,13 +199,12 @@ export async function generateMockData(
         }));
       });
       if (storageLocations.length > 0) {
-        const { error: slotError } = await supabase
+        const { data: slotRows, error: slotError } = await supabase
           .from("storage_locations")
-          .insert(storageLocations);
-        if (slotError)
-          logger.warn('MockData', 'Storage locations seed warning:', slotError);
-        else
-          logger.debug('MockData', `Created ${storageLocations.length} demo drop-off slots`);
+          .insert(storageLocations)
+          .select("id, cell_id, capacity, sort_order");
+        if (slotError) logger.warn('MockData', 'Storage locations seed warning:', slotError);
+        slotData = slotRows ?? [];
       }
     }
 
@@ -1669,7 +1670,35 @@ export async function generateMockData(
     }
     logger.debug('MockData', `Created ${templateDefinitions.length} substep templates`);
 
-    reportProgress(8, 'resourceLinks');
+    reportProgress(8, 'locations');
+    if (options.includeLocations !== false) {
+      await supabase.from("tenants").update({ location_tracking_enabled: true }).eq("id", tenantId);
+      // Put every part that already finished a step into a slot of the cell it
+      // heads to next, filling slots in order so the first one shows as full.
+      const opsByPart = new Map<string, typeof operationData>();
+      for (const op of operationData) opsByPart.set(op.part_id, [...(opsByPart.get(op.part_id) ?? []), op]);
+      const used = new Map<string, number>();
+      const placements: Array<{ tenant_id: string; part_id: string; location_id: string; operation_id: string | null }> = [];
+      for (const [partId, ops] of opsByPart) {
+        const doneIdx = ops.findIndex((op) => op.status !== "completed");
+        if (doneIdx <= 0) continue;
+        const slot = slotData
+          .filter((l) => l.cell_id === ops[doneIdx].cell_id)
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          .find((l) => (used.get(l.id) ?? 0) < l.capacity);
+        if (!slot) continue;
+        used.set(slot.id, (used.get(slot.id) ?? 0) + 1);
+        placements.push({ tenant_id: tenantId, part_id: partId, location_id: slot.id, operation_id: ops[doneIdx - 1].id });
+      }
+      if (placements.length > 0) {
+        const { error: placementError } = await supabase.from("part_placements").insert(placements);
+        if (placementError) logger.warn('MockData', 'Part placements seed warning:', placementError);
+      }
+    } else {
+      await supabase.from("tenants").update({ location_tracking_enabled: false }).eq("id", tenantId);
+    }
+
+    reportProgress(9, 'resourceLinks');
     if (
       options.includeResources &&
       operationData.length > 0 &&
@@ -1726,7 +1755,7 @@ export async function generateMockData(
       }
     }
 
-    reportProgress(9, 'timeEntries');
+    reportProgress(10, 'timeEntries');
     if (
       options.includeTimeEntries &&
       operationData.length > 0 &&
@@ -1801,7 +1830,7 @@ export async function generateMockData(
       }
     }
 
-    reportProgress(10, 'quantities');
+    reportProgress(11, 'quantities');
     if (
       options.includeQuantityRecords &&
       operationData.length > 0 &&
@@ -1877,7 +1906,7 @@ export async function generateMockData(
       }
     }
 
-    reportProgress(11, 'issues');
+    reportProgress(12, 'issues');
     if (
       options.includeIssues &&
       operationData.length > 0 &&

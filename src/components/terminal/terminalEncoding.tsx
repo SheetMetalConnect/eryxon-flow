@@ -149,9 +149,9 @@ export function TerminalInstructionFallback({
     >
       <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
       <div className="space-y-0.5">
-        <div className="font-semibold">{t("terminal.instructions.missingTitle", "Instructions optional")}</div>
+        <div className="font-semibold">{t("terminal.instructions.missingTitle")}</div>
         <div className="text-muted-foreground">
-          {t("terminal.instructions.missingBody", "No operator instructions for this cell — follow the routing steps.")}
+          {t("terminal.instructions.missingBody")}
         </div>
       </div>
     </div>

@@ -132,16 +132,14 @@ export default function Assignments() {
         .order("part_number");
 
       if (partsData) {
-        const partsWithCounts = await Promise.all(
-          partsData.map(async (part) => {
-            const { count } = await supabase
-              .from("operations")
-              .select("*", { count: "exact", head: true })
-              .eq("part_id", part.id);
-            return { ...part, _operationCount: count || 0 };
-          }),
-        );
-        setParts(partsWithCounts);
+        const { data: ops } = await supabase
+          .from("operations")
+          .select("part_id")
+          .eq("tenant_id", profile.tenant_id)
+          .is("deleted_at", null);
+        const opCount = new Map<string, number>();
+        for (const { part_id } of ops ?? []) opCount.set(part_id, (opCount.get(part_id) ?? 0) + 1);
+        setParts(partsData.map((part) => ({ ...part, _operationCount: opCount.get(part.id) ?? 0 })));
       }
 
       const { data: operatorsData } = await supabase
@@ -154,29 +152,21 @@ export default function Assignments() {
         .order("full_name");
 
       if (operatorsData) {
-        const operatorsWithCounts = await Promise.all(
-          operatorsData.map(async (op) => {
-            const [{ count: assignmentCount }, { count: activeCount }] =
-              await Promise.all([
-                supabase
-                  .from("assignments")
-                  .select("*", { count: "exact", head: true })
-                  .eq("operator_id", op.id)
-                  .eq("status", "assigned"),
-                supabase
-                  .from("time_entries")
-                  .select("*", { count: "exact", head: true })
-                  .eq("operator_id", op.id)
-                  .is("end_time", null),
-              ]);
-            return {
-              ...op,
-              _assignmentCount: assignmentCount || 0,
-              _activeEntryCount: activeCount || 0,
-            };
-          }),
-        );
-        setOperators(operatorsWithCounts);
+        const [{ data: assigned }, { data: active }] = await Promise.all([
+          supabase.from("assignments").select("operator_id").eq("tenant_id", profile.tenant_id).eq("status", "assigned"),
+          supabase.from("time_entries").select("operator_id").eq("tenant_id", profile.tenant_id).is("end_time", null),
+        ]);
+        const tally = (rows: { operator_id: string | null }[] | null) => {
+          const m = new Map<string, number>();
+          for (const { operator_id } of rows ?? []) if (operator_id) m.set(operator_id, (m.get(operator_id) ?? 0) + 1);
+          return m;
+        };
+        const assignedBy = tally(assigned), activeBy = tally(active);
+        setOperators(operatorsData.map((op) => ({
+          ...op,
+          _assignmentCount: assignedBy.get(op.id) ?? 0,
+          _activeEntryCount: activeBy.get(op.id) ?? 0,
+        })));
       }
 
       try {
@@ -494,10 +484,10 @@ export default function Assignments() {
 
       <PageStatsRow
         stats={[
-          { label: t("assignments.totalAssignments", "Total Assignments"), value: assignmentStats.totalAssignments, icon: UserCheck, color: "primary" },
-          { label: t("assignments.availableParts", "Available Parts"), value: assignmentStats.availableParts, icon: Package, color: "info" },
-          { label: t("assignments.activeOperators", "Active Operators"), value: assignmentStats.activeOperators, icon: UserCog, color: "success" },
-          { label: t("assignments.shopFloorOperators", "Shop Floor Operators"), value: assignmentStats.shopFloorOperators, icon: IdCard, color: "warning" },
+          { label: t("assignments.totalAssignments"), value: assignmentStats.totalAssignments, icon: UserCheck, color: "primary" },
+          { label: t("assignments.availableParts"), value: assignmentStats.availableParts, icon: Package, color: "info" },
+          { label: t("assignments.activeOperators"), value: assignmentStats.activeOperators, icon: UserCog, color: "success" },
+          { label: t("assignments.shopFloorOperators"), value: assignmentStats.shopFloorOperators, icon: IdCard, color: "warning" },
         ]}
       />
 

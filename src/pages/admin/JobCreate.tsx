@@ -30,7 +30,6 @@ import {
 } from "@/components/ui/select";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation } from "react-i18next";
-import { dispatchJobCreated } from "@/lib/event-dispatch";
 
 type Part = {
   id: string;
@@ -149,20 +148,6 @@ export default function JobCreate() {
         }
       }
 
-      // Dispatch job.created event (webhooks + MQTT)
-      const totalOperations = parts.reduce((sum, p) => sum + p.operations.length, 0);
-      dispatchJobCreated(profile.tenant_id, {
-        job_id: job.id,
-        job_number: job.job_number,
-        customer: job.customer || '',
-        parts_count: parts.length,
-        operations_count: totalOperations,
-        created_at: job.created_at,
-      }).then(result => {
-        if (!result.success) {
-          logger.error('JobCreate', 'Failed to dispatch job.created event', result.errors);
-        }
-      });
 
       return job;
     },

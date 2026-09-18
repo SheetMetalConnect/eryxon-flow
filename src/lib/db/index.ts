@@ -1,5 +1,3 @@
-// Domain modules for database operations
-// Split from monolithic database.ts for maintainability
 
 export {
   fetchOperationsWithDetails,
@@ -7,6 +5,7 @@ export {
   fetchOperationDetails,
   startTimeTracking,
   completeOperation,
+  holdOperation,
 } from './operations';
 export type { OperationWithDetails, OperationBatchContext } from './operations';
 

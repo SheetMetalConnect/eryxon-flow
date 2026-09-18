@@ -2,7 +2,7 @@
  * Shared time formatting helpers.
  *
  * These existed as per-component copies (SessionTrackingBar, time-picker,
- * datetime-picker, NotificationsCenter, OrganizationSettings) before being
+ * datetime-picker, OrganizationSettings) before being
  * centralized here. Add new time formatting here rather than inline.
  */
 

@@ -114,7 +114,7 @@ export function ActiveJobProgressCard({
                               `operations.status.${job.status}`,
                               job.status.replace("_", " "),
                             )
-                          : t("common.unknown", "Unknown")}
+                          : t("common.unknown")}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-muted-foreground">

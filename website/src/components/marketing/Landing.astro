@@ -136,7 +136,7 @@ const arrow =
       <div class="mk-code-head">
         <span class="mk-code-lang">cURL</span>
       </div>
-      <pre>{`$ curl https://app.eryxon.eu/api/jobs \\
+      <pre>{`$ curl https://<project>.supabase.co/functions/v1/api-jobs \\
     -H "Authorization: Bearer ery_live_..." \\
     -X POST -H "Content-Type: application/json" \\
     -d '{
@@ -145,12 +145,15 @@ const arrow =
       "parts": [
         { "part_number": "PN-902-A",
           "quantity":   200,
-          "operations": ["cut","bend","weld"] }
+          "operations": [
+            { "operation_name": "Laser cut", "sequence": 1 },
+            { "operation_name": "Bend",      "sequence": 2 },
+            { "operation_name": "Weld",      "sequence": 3 } ] }
       ]
     }'
 
 > 201 Created
-> { "id": "job_01H...", "job_number": "WO-4218" }`}</pre>
+> { "id": "…", "job_number": "WO-4218" }`}</pre>
     </div>
   </div>
 </section>

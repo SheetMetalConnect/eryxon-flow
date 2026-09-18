@@ -1850,134 +1850,6 @@ export type Database = {
           },
         ]
       }
-      mqtt_logs: {
-        Row: {
-          created_at: string | null
-          error_message: string | null
-          event_type: string
-          id: string
-          latency_ms: number | null
-          mqtt_publisher_id: string
-          payload: Json
-          success: boolean
-          topic: string
-        }
-        Insert: {
-          created_at?: string | null
-          error_message?: string | null
-          event_type: string
-          id?: string
-          latency_ms?: number | null
-          mqtt_publisher_id: string
-          payload: Json
-          success?: boolean
-          topic: string
-        }
-        Update: {
-          created_at?: string | null
-          error_message?: string | null
-          event_type?: string
-          id?: string
-          latency_ms?: number | null
-          mqtt_publisher_id?: string
-          payload?: Json
-          success?: boolean
-          topic?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mqtt_logs_mqtt_publisher_id_fkey"
-            columns: ["mqtt_publisher_id"]
-            isOneToOne: false
-            referencedRelation: "mqtt_publishers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mqtt_publishers: {
-        Row: {
-          active: boolean | null
-          broker_url: string
-          created_at: string | null
-          created_by: string | null
-          default_area: string | null
-          default_enterprise: string | null
-          default_site: string | null
-          description: string | null
-          events: string[]
-          id: string
-          last_connected_at: string | null
-          last_error: string | null
-          name: string
-          password: string | null
-          port: number
-          tenant_id: string
-          topic_pattern: string
-          updated_at: string | null
-          use_tls: boolean | null
-          username: string | null
-        }
-        Insert: {
-          active?: boolean | null
-          broker_url: string
-          created_at?: string | null
-          created_by?: string | null
-          default_area?: string | null
-          default_enterprise?: string | null
-          default_site?: string | null
-          description?: string | null
-          events?: string[]
-          id?: string
-          last_connected_at?: string | null
-          last_error?: string | null
-          name: string
-          password?: string | null
-          port?: number
-          tenant_id: string
-          topic_pattern?: string
-          updated_at?: string | null
-          use_tls?: boolean | null
-          username?: string | null
-        }
-        Update: {
-          active?: boolean | null
-          broker_url?: string
-          created_at?: string | null
-          created_by?: string | null
-          default_area?: string | null
-          default_enterprise?: string | null
-          default_site?: string | null
-          description?: string | null
-          events?: string[]
-          id?: string
-          last_connected_at?: string | null
-          last_error?: string | null
-          name?: string
-          password?: string | null
-          port?: number
-          tenant_id?: string
-          topic_pattern?: string
-          updated_at?: string | null
-          use_tls?: boolean | null
-          username?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mqtt_publishers_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mqtt_publishers_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       notifications: {
         Row: {
           created_at: string
@@ -3754,37 +3626,59 @@ export type Database = {
         }
         Relationships: []
       }
-      webhook_logs: {
+      webhook_deliveries: {
         Row: {
-          created_at: string | null
-          error_message: string | null
-          event_type: string
+          attempts: number
+          created_at: string
+          error: string | null
+          event: string
+          event_id: string
           id: string
+          latency_ms: number | null
           payload: Json
+          status: string
           status_code: number | null
+          tenant_id: string
           webhook_id: string
         }
         Insert: {
-          created_at?: string | null
-          error_message?: string | null
-          event_type: string
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          event: string
+          event_id: string
           id?: string
+          latency_ms?: number | null
           payload: Json
+          status: string
           status_code?: number | null
+          tenant_id: string
           webhook_id: string
         }
         Update: {
-          created_at?: string | null
-          error_message?: string | null
-          event_type?: string
+          attempts?: number
+          created_at?: string
+          error?: string | null
+          event?: string
+          event_id?: string
           id?: string
+          latency_ms?: number | null
           payload?: Json
+          status?: string
           status_code?: number | null
+          tenant_id?: string
           webhook_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "webhook_logs_webhook_id_fkey"
+            foreignKeyName: "webhook_deliveries_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "webhook_deliveries_webhook_id_fkey"
             columns: ["webhook_id"]
             isOneToOne: false
             referencedRelation: "webhooks"
@@ -3794,30 +3688,48 @@ export type Database = {
       }
       webhooks: {
         Row: {
-          active: boolean | null
-          created_at: string | null
+          active: boolean
+          consecutive_failures: number
+          created_at: string
+          disabled_reason: string | null
           events: string[]
           id: string
+          last_delivery_at: string | null
+          last_status_code: number | null
+          name: string
           secret_key: string
           tenant_id: string
+          updated_at: string
           url: string
         }
         Insert: {
-          active?: boolean | null
-          created_at?: string | null
+          active?: boolean
+          consecutive_failures?: number
+          created_at?: string
+          disabled_reason?: string | null
           events: string[]
           id?: string
+          last_delivery_at?: string | null
+          last_status_code?: number | null
+          name: string
           secret_key: string
           tenant_id: string
+          updated_at?: string
           url: string
         }
         Update: {
-          active?: boolean | null
-          created_at?: string | null
+          active?: boolean
+          consecutive_failures?: number
+          created_at?: string
+          disabled_reason?: string | null
           events?: string[]
           id?: string
+          last_delivery_at?: string | null
+          last_status_code?: number | null
+          name?: string
           secret_key?: string
           tenant_id?: string
+          updated_at?: string
           url?: string
         }
         Relationships: []
@@ -3940,7 +3852,6 @@ export type Database = {
         Returns: Json
       }
       cleanup_expired_invitations: { Args: never; Returns: number }
-      cleanup_old_mqtt_logs: { Args: never; Returns: undefined }
       clear_demo_data: {
         Args: { p_tenant_id: string }
         Returns: {
@@ -4027,7 +3938,7 @@ export type Database = {
         Returns: undefined
       }
       dispatch_webhook: {
-        Args: { p_data: Json; p_event_type: string; p_tenant_id: string }
+        Args: { p_data: Json; p_event_type: string; p_tenant_id: string; p_webhook_id?: string; p_event_id?: string }
         Returns: undefined
       }
       enable_demo_mode: {
@@ -4589,6 +4500,14 @@ export type Database = {
           success: boolean
           tenant_id: string
         }[]
+      }
+      webhook_redeliver: {
+        Args: { p_delivery_id: string }
+        Returns: undefined
+      }
+      webhook_send_test: {
+        Args: { p_webhook_id: string }
+        Returns: undefined
       }
     }
     Enums: {

@@ -94,7 +94,6 @@
     "packages": "packages",
     "noDeliveryAddress": "No delivery address set",
     "fromParts": "from parts",
-    "status": "Status",
     "createNewJob": "Create New Job",
     "createSuccessDesc": "The job has been created and is ready for production",
     "inProgress": "In Progress",
@@ -151,7 +150,6 @@
     "filterByMaterial": "Filter by Material",
     "filterByStatus": "Filter by Status",
     "filterByType": "Filter by Type",
-    "job": "Job",
     "jobNumber": "Job Number",
     "jobRequired": "Job is required",
     "loadingPartDetails": "Loading part details...",
@@ -177,7 +175,6 @@
     "parentPartOptional": "Parent part (optional)",
     "partCreated": "Part created successfully",
     "partDeleted": "Part deleted successfully",
-    "partDetails": "Part Details",
     "partNumber": "Part Number",
     "partNumberRequired": "Part number is required",
     "partNumberMaterialRequired": "Part number and material are required",
@@ -474,8 +471,10 @@
       "notStarted": "Not Started",
       "inProgress": "In Progress",
       "completed": "Completed",
-      "onHold": "On Hold"
-    }
+      "onHold": "On Hold",
+      "waiting": "Waiting on earlier step"
+    },
+    "holdClearsAtTerminal": "Cleared when an operator starts the operation at the terminal."
   },
   "issues": {
     "title": "Issue Management",
@@ -730,7 +729,12 @@
     "updating": "Updating...",
     "updateBatch": "Update Batch",
     "noNestedBatches": "No nested batches yet",
-    "updateSuccess": "Batch updated successfully"
+    "updateSuccess": "Batch updated successfully",
+    "additionalMetadata": "Additional metadata",
+    "materialRequirements": "Material requirements",
+    "noRequirements": "No requirements raised",
+    "noNestingImage": "No nesting image available",
+    "add": "Add"
   },
   "qrm": {
     "bulletCard": "Bullet Card",
@@ -763,5 +767,32 @@
     "ncCode": "NC code",
     "ncCodeDesc": "CNC program from the part. Edit it on the part detail.",
     "noNcCode": "No NC code set"
+  },
+  "substeps": {
+    "title": "All Substeps",
+    "subtitle": "View and manage all substeps across all operations in your system",
+    "loadFailed": "Failed to load substeps",
+    "nameRequired": "Substep name is required",
+    "updateFailed": "Failed to update substep",
+    "updated": "Substep updated",
+    "deleteConfirm": "Delete this substep?",
+    "deleteFailed": "Failed to delete substep",
+    "deleted": "Substep deleted",
+    "searchPlaceholder": "Search by job, part, operation, or step name...",
+    "allStatuses": "All statuses",
+    "notStarted": "Not started",
+    "inProgress": "In progress",
+    "completed": "Completed",
+    "blocked": "Blocked",
+    "showing": "Showing {{shown}} of {{total}} substeps",
+    "stepName": "Step name",
+    "seq": "Seq",
+    "actions": "Actions",
+    "noMatch": "No substeps match your filters",
+    "noneYet": "No substeps created yet",
+    "editTitle": "Edit substep",
+    "notes": "Notes",
+    "optionalNotes": "Optional notes",
+    "update": "Update"
   }
 }

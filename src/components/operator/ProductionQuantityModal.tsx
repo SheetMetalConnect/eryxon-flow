@@ -70,7 +70,7 @@ export default function ProductionQuantityModal({
 
   const handleSubmit = async (fileIssue: boolean = false) => {
     if (quantityGood <= 0) {
-      toast.error(t("production.enterGoodParts", "Enter good parts made"));
+      toast.error(t("production.enterGoodParts"));
       return;
     }
     if (!profile?.tenant_id) {
@@ -96,7 +96,7 @@ export default function ProductionQuantityModal({
       }]);
       if (error) throw error;
 
-      toast.success(t("production.recorded", "{{count}} good parts recorded", { count: quantityGood }));
+      toast.success(t("production.recorded", { count: quantityGood }));
 
       if (fileIssue && onFileIssue) {
         onFileIssue(remaining);
@@ -122,7 +122,7 @@ export default function ProductionQuantityModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-xs">
         <DialogHeader>
-          <DialogTitle>{t("production.reportTitle", "Report Production")}</DialogTitle>
+          <DialogTitle>{t("production.reportTitle")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
@@ -130,9 +130,9 @@ export default function ProductionQuantityModal({
             <div className="font-medium text-foreground">{partNumber}</div>
             {plannedQuantity && (
               <div>
-                {t("production.target", "Target")}: {plannedQuantity}
+                {t("production.target")}: {plannedQuantity}
                 {previouslyRecordedGood > 0 && (
-                  <span className="ml-1">({previouslyRecordedGood} {t("production.done", "done")})</span>
+                  <span className="ml-1">({previouslyRecordedGood} {t("production.done")})</span>
                 )}
               </div>
             )}
@@ -168,11 +168,11 @@ export default function ProductionQuantityModal({
               {targetAchieved ? (
                 <span className="text-green-600 flex items-center justify-center gap-1">
                   <Check className="h-4 w-4" />
-                  {t("production.targetReached", "Target reached!")}
+                  {t("production.targetReached")}
                 </span>
               ) : plannedQuantity ? (
                 <span className="text-muted-foreground">
-                  {remaining} {t("production.remaining", "remaining")}
+                  {remaining} {t("production.remaining")}
                 </span>
               ) : null}
             </div>
@@ -182,7 +182,7 @@ export default function ProductionQuantityModal({
             <Alert className="border-amber-500/50 bg-amber-500/10">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
               <AlertDescription className="text-amber-700">
-                {t("production.shortfallPrompt", "{{count}} short of target. File an issue?", { count: remaining })}
+                {t("production.shortfallPrompt", { count: remaining })}
               </AlertDescription>
               <div className="flex gap-2 mt-3">
                 <Button
@@ -191,7 +191,7 @@ export default function ProductionQuantityModal({
                   onClick={() => handleSubmit(false)}
                   disabled={isSubmitting}
                 >
-                  {t("common.no", "No")}
+                  {t("common.no")}
                 </Button>
                 <Button
                   variant="default"
@@ -199,7 +199,7 @@ export default function ProductionQuantityModal({
                   onClick={() => handleSubmit(true)}
                   disabled={isSubmitting}
                 >
-                  {t("common.yes", "Yes")}
+                  {t("common.yes")}
                 </Button>
               </div>
             </Alert>
@@ -209,14 +209,14 @@ export default function ProductionQuantityModal({
         {!showShortfallPrompt && (
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
-              {t("common.cancel", "Cancel")}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={() => handleSubmit(false)}
               disabled={isSubmitting || quantityGood <= 0}
               size="lg"
             >
-              {isSubmitting ? t("common.saving", "Saving...") : t("production.report", "Report")}
+              {isSubmitting ? t("common.saving") : t("production.report")}
             </Button>
           </div>
         )}

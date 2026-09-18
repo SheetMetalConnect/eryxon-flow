@@ -13,7 +13,6 @@
     "stages": "Stages",
     "apiKeys": "API Keys",
     "webhooks": "Webhooks",
-    "apiDocs": "API Docs",
     "myActivity": "My Activity",
     "myIssues": "My Issues",
     "jobsManagement": "Jobs Management",
@@ -43,16 +42,14 @@
     "capacity": "Capacity",
     "cells": "Cells",
     "calendar": "Calendar",
-    "mcpSetup": "MCP Setup",
-    "mcpKeys": "MCP Keys",
-    "mcpServer": "MCP Server",
-    "mqttPublishers": "MQTT Publishers",
     "backToAdmin": "Back to Admin",
     "operatorViews": "Operator Views",
     "sections": {
       "overview": "OVERVIEW",
       "operations": "OPERATIONS",
       "data": "DATA"
-    }
+    },
+    "mcp": "MCP server",
+    "apiReference": "API reference"
   }
 }

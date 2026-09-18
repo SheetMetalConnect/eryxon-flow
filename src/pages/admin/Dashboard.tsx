@@ -47,7 +47,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { adminStopTimeTracking, stopAllActiveTimeEntries } from "@/lib/database";
+import { adminStopTimeTracking, stopAllActiveTimeEntries } from "@/lib/db";
 
 interface ActiveWork {
   id: string;
@@ -147,7 +147,23 @@ export default function Dashboard() {
     if (!profile?.tenant_id) return;
 
     try {
-      const { data: activeData } = await supabase
+
+      const startOfDay = new Date();
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const [
+        activeResult,
+        inProgressResult,
+        dueThisWeekResult,
+        cellsHead,
+        issuesResult,
+        totalJobsResult,
+        totalPartsResult,
+        completedTodayResult,
+        activeJobsResult,
+        activeJobsCountResult,
+      ] = await Promise.all([
+        supabase
         .from("time_entries")
         .select(
           `
@@ -167,24 +183,7 @@ export default function Dashboard() {
         )
         .eq("tenant_id", profile.tenant_id)
         .is("end_time", null)
-        .order("start_time", { ascending: false });
-
-      if (activeData) setActiveWork(activeData as unknown as ActiveWork[]);
-
-      const startOfDay = new Date();
-      startOfDay.setHours(0, 0, 0, 0);
-
-      const [
-        inProgressResult,
-        dueThisWeekResult,
-        cellsHead,
-        issuesResult,
-        totalJobsResult,
-        totalPartsResult,
-        completedTodayResult,
-        activeJobsResult,
-        activeJobsCountResult,
-      ] = await Promise.all([
+        .order("start_time", { ascending: false }),
         supabase
           .from("operations")
           .select("id", { count: "exact", head: true })
@@ -256,9 +255,11 @@ export default function Dashboard() {
       if (activeJobsResult.error) {
         throw activeJobsResult.error;
       }
+      const activeData = (activeResult.data ?? []) as unknown as ActiveWork[];
+      setActiveWork(activeData);
 
       setStats({
-        activeWorkers: activeData?.length || 0,
+        activeWorkers: activeData.length,
         inProgressTasks: inProgressResult.count || 0,
         dueThisWeek: dueThisWeekResult.count || 0,
         pendingIssues: issuesResult.count || 0,
@@ -322,6 +323,11 @@ export default function Dashboard() {
   const setupRealtimeSubscription = () => {
     if (!profile?.tenant_id) return;
 
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const reload = () => {
+      clearTimeout(timer);
+      timer = setTimeout(loadData, 500);
+    };
     const channel = supabase
       .channel(`admin-dashboard-${profile.tenant_id}`)
       .on(
@@ -332,9 +338,7 @@ export default function Dashboard() {
           table: "time_entries",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => {
-          loadData();
-        },
+        reload,
       )
       .on(
         "postgres_changes",
@@ -344,9 +348,7 @@ export default function Dashboard() {
           table: "operations",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => {
-          loadData();
-        },
+        reload,
       )
       .on(
         "postgres_changes",
@@ -356,13 +358,12 @@ export default function Dashboard() {
           table: "jobs",
           filter: `tenant_id=eq.${profile.tenant_id}`,
         },
-        () => {
-          loadData();
-        },
+        reload,
       )
       .subscribe();
 
     return () => {
+      clearTimeout(timer);
       supabase.removeChannel(channel);
     };
   };
@@ -393,11 +394,7 @@ export default function Dashboard() {
   const handleWipeDemo = async () => {
     if (!profile?.tenant_id) return;
 
-    if (
-      !confirm(
-        "Are you sure you want to wipe all demo data? This cannot be undone.",
-      )
-    ) {
+    if (!confirm(t("dashboard.wipeConfirm"))) {
       return;
     }
 
@@ -452,7 +449,7 @@ export default function Dashboard() {
     }
 
     if (activeWork.length === 0) {
-      toast.success(t("dashboard.noActiveClockings", "No active clockings"), { description: t("dashboard.noActiveClockingsDescription", "There are no active time entries to stop.") });
+      toast.success(t("dashboard.noActiveClockings"), { description: t("dashboard.noActiveClockingsDescription") });
       return;
     }
 

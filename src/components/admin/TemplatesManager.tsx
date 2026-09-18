@@ -163,7 +163,7 @@ export function TemplatesManager() {
 
     if (error) {
       logger.error('TemplatesManager', 'Error loading templates', error);
-      toast.error(t("Failed to load templates"));
+      toast.error(t("templates.loadFailed"));
     } else {
       setTemplates(data || []);
     }
@@ -244,12 +244,12 @@ export function TemplatesManager() {
     if (!profile?.tenant_id) return;
 
     if (!formData.name.trim()) {
-      toast.error(t("Template name is required"));
+      toast.error(t("templates.nameRequired"));
       return;
     }
 
     if (templateItems.length === 0 || templateItems.some(item => !item.name.trim())) {
-      toast.error(t("All template items must have a name"));
+      toast.error(t("templates.itemsNeedName"));
       return;
     }
 
@@ -284,7 +284,7 @@ export function TemplatesManager() {
 
         if (itemsError) throw itemsError;
 
-        toast.success(t("Template updated successfully"));
+        toast.success(t("templates.updated"));
       } else {
         const { data: template, error: templateError } = await supabase
           .from("substep_templates")
@@ -313,22 +313,22 @@ export function TemplatesManager() {
 
         if (itemsError) throw itemsError;
 
-        toast.success(t("Template created successfully"));
+        toast.success(t("templates.created"));
       }
 
       handleCloseDialog();
       loadTemplates();
     } catch (error) {
       logger.error('TemplatesManager', 'Error saving template', error);
-      toast.error(t("Failed to save template"));
+      toast.error(t("templates.saveFailed"));
     }
   };
 
   const handleDelete = async (template: Template) => {
-    if (!confirm(t("Are you sure you want to delete this template?"))) return;
+    if (!confirm(t("templates.deleteConfirm"))) return;
 
     if (template.is_global) {
-      toast.error(t("Cannot delete global templates"));
+      toast.error(t("templates.cannotDeleteGlobal"));
       return;
     }
 
@@ -339,9 +339,9 @@ export function TemplatesManager() {
 
     if (error) {
       logger.error('TemplatesManager', 'Error deleting template', error);
-      toast.error(t("Failed to delete template"));
+      toast.error(t("templates.deleteFailed"));
     } else {
-      toast.success(t("Template deleted successfully"));
+      toast.success(t("templates.deleted"));
       loadTemplates();
     }
   };
@@ -354,73 +354,63 @@ export function TemplatesManager() {
     );
   }
 
-  const operationTypes = [
-    { value: "cutting", label: "Cutting" },
-    { value: "bending", label: "Bending" },
-    { value: "welding", label: "Welding" },
-    { value: "machining", label: "Machining" },
-    { value: "finishing", label: "Finishing" },
-    { value: "assembly", label: "Assembly" },
-    { value: "inspection", label: "Inspection" },
-    { value: "packaging", label: "Packaging" },
-    { value: "general", label: "General" },
-  ];
+  const operationTypes = ["cutting", "bending", "welding", "machining", "finishing", "assembly", "inspection", "packaging", "general"];
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <div className="text-sm text-muted-foreground">
-          {templates.length} {t("Templates")}
+          {t("templates.count", { count: templates.length })}
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => handleOpenDialog()}>
               <Plus className="h-4 w-4 mr-2" />
-              {t("New Template")}
+              {t("templates.newTemplate")}
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-3xl overflow-hidden flex flex-col">
             <DialogHeader className="shrink-0">
               <DialogTitle>
-                {editingTemplate ? t("Edit Template") : t("New Template")}
+                {editingTemplate ? t("templates.editTemplate") : t("templates.newTemplate")}
               </DialogTitle>
             </DialogHeader>
 
             <div className="flex-1 overflow-y-auto min-h-0 space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="name">{t("Template Name")}</Label>
+                <Label htmlFor="name">{t("templates.name")}</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={t("e.g., Standard Cutting Workflow")}
+                  placeholder={t("templates.namePlaceholder")}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="description">{t("Description")}</Label>
+                <Label htmlFor="description">{t("templates.description")}</Label>
                 <Textarea
                   id="description"
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder={t("Optional description of this template")}
+                  placeholder={t("templates.descriptionPlaceholder")}
                   rows={2}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="operation_type">{t("Operation Type")}</Label>
+                <Label htmlFor="operation_type">{t("templates.operationType")}</Label>
                 <Select
                   value={formData.operation_type}
                   onValueChange={(value) => setFormData({ ...formData, operation_type: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder={t("Select operation type (optional)")} />
+                    <SelectValue placeholder={t("templates.selectOperationType")} />
                   </SelectTrigger>
                   <SelectContent>
                     {operationTypes.map(type => (
-                      <SelectItem key={type.value} value={type.value}>
-                        {t(type.label)}
+                      <SelectItem key={type} value={type}>
+                        {t(`templates.types.${type}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -429,7 +419,7 @@ export function TemplatesManager() {
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <Label>{t("Template Steps")}</Label>
+                  <Label>{t("templates.steps")}</Label>
                   <Button
                     type="button"
                     variant="outline"
@@ -437,7 +427,7 @@ export function TemplatesManager() {
                     onClick={handleAddItem}
                   >
                     <Plus className="h-4 w-4 mr-1" />
-                    {t("Add Step")}
+                    {t("templates.addStep")}
                   </Button>
                 </div>
 
@@ -466,7 +456,7 @@ export function TemplatesManager() {
 
                 {templateItems.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
-                    {t("No steps added yet. Click 'Add Step' to get started.")}
+                    {t("templates.noSteps")}
                   </div>
                 )}
               </div>
@@ -474,10 +464,10 @@ export function TemplatesManager() {
 
             <DialogFooter className="shrink-0 border-t pt-4">
               <Button variant="outline" onClick={handleCloseDialog}>
-                {t("Cancel")}
+                {t("common.cancel")}
               </Button>
               <Button onClick={handleSubmit}>
-                {editingTemplate ? t("Update") : t("Create")}
+                {editingTemplate ? t("substeps.update") : t("common.create")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -541,7 +531,7 @@ export function TemplatesManager() {
 
         {templates.length === 0 && (
           <div className="text-center py-12 text-muted-foreground">
-            {t("No templates created yet. Click 'New Template' to get started.")}
+            {t("templates.noneYet")}
           </div>
         )}
       </div>

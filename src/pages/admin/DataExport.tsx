@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
-import { env } from "@/config/env";
+import { FUNCTIONS_URL } from "@/lib/config";
 import { Download, Archive, FileJson, FileSpreadsheet, Loader2 } from "lucide-react";
 import Papa from "papaparse";
 import JSZip from "jszip";
@@ -29,7 +29,7 @@ const EXPORTABLE_ENTITIES = [
   { id: 'profiles', label: 'User Profiles', description: 'User profiles within tenant' },
   { id: 'api_keys', label: 'API Keys', description: 'API key configurations (hashed)' },
   { id: 'webhooks', label: 'Webhooks', description: 'Webhook configurations' },
-  { id: 'webhook_logs', label: 'Webhook Logs', description: 'Webhook delivery logs' },
+  { id: 'webhook_deliveries', label: 'Webhook Deliveries', description: 'Webhook delivery records' },
 ];
 
 export default function DataExport() {
@@ -68,10 +68,8 @@ export default function DataExport() {
       if (!session) throw new Error('Not authenticated');
 
       const entities = selectedEntities.join(',');
-      const projectId = env('VITE_SUPABASE_PROJECT_ID');
-      const supabaseUrl = env('VITE_SUPABASE_URL') || (projectId ? `https://${projectId}.supabase.co` : "");
       const response = await fetch(
-        `${supabaseUrl}/functions/v1/api-export?entities=${entities}&format=${exportFormat}`,
+        `${FUNCTIONS_URL}/api-export?entities=${entities}&format=${exportFormat}`,
         {
           method: 'GET',
           headers: {

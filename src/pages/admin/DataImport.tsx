@@ -1,7 +1,5 @@
 import { useState, useCallback, useRef } from "react";
-import { Link } from "react-router-dom";
-import { DOCS_ERP_INTEGRATION_URL } from "@/lib/config";
-import { env } from "@/config/env";
+import { DOCS_ERP_INTEGRATION_URL, DOCS_URL, FUNCTIONS_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -287,8 +285,6 @@ export default function DataImport() {
       if (!session) throw new Error('Not authenticated');
 
       const transformedData = transformData();
-      const projectId = env('VITE_SUPABASE_PROJECT_ID');
-      const supabaseUrl = env('VITE_SUPABASE_URL') || (projectId ? `https://${projectId}.supabase.co` : "");
 
       const BATCH_SIZE = 100;
       const batches: Record<string, string | number | boolean | undefined>[][] = [];
@@ -305,7 +301,7 @@ export default function DataImport() {
         const batch = batches[i];
 
         const response = await fetch(
-          `${supabaseUrl}/functions/v1${entityConfig.endpoint}`,
+          `${FUNCTIONS_URL}${entityConfig.endpoint}`,
           {
             method: 'POST',
             headers: {
@@ -389,12 +385,12 @@ export default function DataImport() {
               ERP Integration Guide
             </Button>
           </a>
-          <Link to="/admin/api-docs">
+          <a href={`${DOCS_URL}/api/rest-api-reference/`} target="_blank" rel="noopener noreferrer">
             <Button variant="outline" size="sm" className="h-7 gap-1.5">
               <Code className="h-3.5 w-3.5" />
-              API Documentation
+              {t("dataImport.apiReference")}
             </Button>
-          </Link>
+          </a>
         </AlertDescription>
       </Alert>
 

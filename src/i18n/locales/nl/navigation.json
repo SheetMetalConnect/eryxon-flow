@@ -13,7 +13,6 @@
     "stages": "Productiefasen",
     "apiKeys": "API-sleutels",
     "webhooks": "Webhooks",
-    "apiDocs": "API-documentatie",
     "myActivity": "Mijn activiteit",
     "myIssues": "Mijn problemen",
     "jobsManagement": "Orderbeheer",
@@ -42,10 +41,6 @@
     "capacity": "Capaciteit",
     "cells": "Cellen",
     "calendar": "Kalender",
-    "mcpSetup": "MCP Setup",
-    "mcpKeys": "MCP-sleutels",
-    "mcpServer": "MCP-server",
-    "mqttPublishers": "MQTT Publishers",
     "dataImport": "Gegevensimport",
     "backToAdmin": "Terug naar beheer",
     "operatorViews": "Operatorweergaven",
@@ -53,6 +48,8 @@
       "overview": "OVERZICHT",
       "operations": "BEWERKINGEN",
       "data": "GEGEVENS"
-    }
+    },
+    "mcp": "MCP-server",
+    "apiReference": "API-referentie"
   }
 }

@@ -14,8 +14,6 @@ import { describe, it, expect } from 'vitest';
 
 import {
   getRateLimitConfig,
-  getApiAccessLevel,
-  getPlanDisplayName,
 } from '../../../supabase/functions/_shared/plan-limits.ts';
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
@@ -76,33 +74,3 @@ describe('plan-limits — getRateLimitConfig', () => {
   });
 });
 
-describe('plan-limits — getApiAccessLevel', () => {
-  it('free plan has limited API access', () => {
-    expect(getApiAccessLevel('free')).toBe('limited');
-  });
-
-  it('pro plan has full API access', () => {
-    expect(getApiAccessLevel('pro')).toBe('full');
-  });
-
-  it('premium plan has full API access', () => {
-    expect(getApiAccessLevel('premium')).toBe('full');
-  });
-
-  it('enterprise plan has full API access', () => {
-    expect(getApiAccessLevel('enterprise')).toBe('full');
-  });
-});
-
-describe('plan-limits — getPlanDisplayName', () => {
-  it('returns correct display names for all plans', () => {
-    expect(getPlanDisplayName('free')).toBe('Free');
-    expect(getPlanDisplayName('pro')).toBe('Pro');
-    expect(getPlanDisplayName('premium')).toBe('Premium');
-    expect(getPlanDisplayName('enterprise')).toBe('Enterprise');
-  });
-
-  it('returns "Unknown" for unrecognized plans', () => {
-    expect(getPlanDisplayName('beta' as any)).toBe('Unknown');
-  });
-});

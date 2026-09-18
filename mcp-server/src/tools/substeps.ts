@@ -1,195 +1,87 @@
-/**
- * Substeps domain tools
- * Handles operation substep management
- *
- * Schema: id, tenant_id, operation_id, name, sequence, status (text),
- *         notes, completed_at, completed_by, created_at, updated_at, icon_name
- */
-
-import type { Tool } from "@modelcontextprotocol/sdk/types.js";
-import type { ToolModule, ToolHandler } from "../types/index.js";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { schemas, validateArgs } from "../utils/validation.js";
-import { structuredResponse, errorResponse } from "../utils/response.js";
-import { databaseError } from "../utils/errors.js";
-import { createFetchTool, createUpdateTool } from "../utils/tool-factories.js";
+import * as s from "../schemas.js";
+import { WRITE, IDEMPOTENT_WRITE, DESTRUCTIVE, tool } from "../tool.js";
+import { fetchTool, updateTool } from "./crud.js";
 
-// Fetch substeps for an operation
-// Note: substeps table has no deleted_at column
-const { tool: fetchSubstepsTool, handler: fetchSubstepsHandler } = createFetchTool({
-  tableName: 'substeps',
-  description: 'Fetch substeps for an operation with optional status filter',
-  filterFields: {
-    operation_id: schemas.id,
-    status: z.string().optional(),
-  },
-  orderBy: { column: 'sequence', ascending: true },
-  includeDeleted: true,
-});
-
-// Update substep
-const { tool: updateSubstepTool, handler: updateSubstepHandler } = createUpdateTool({
-  tableName: 'substeps',
-  description: "Update a substep's properties",
-  resourceName: 'substep',
-  updateSchema: z.object({
-    id: schemas.id,
-    name: z.string().optional(),
-    sequence: z.number().int().min(1).optional(),
-    status: z.string().optional(),
-    notes: z.string().optional(),
+export const substepTools = [
+  fetchTool({
+    table: "substeps",
+    title: "Fetch substeps",
+    description: "List the substeps of an operation in sequence order.",
+    filters: { operation_id: s.id, status: z.string().optional() },
+    orderBy: { column: "sequence", ascending: true },
+    softDelete: false,
   }),
-});
-
-// Custom tool definitions
-const addSubstepTool: Tool = {
-  name: "add_substep",
-  description: "Add a substep to an operation",
-  inputSchema: {
-    type: "object",
-    properties: {
-      operation_id: { type: "string", description: "Operation ID to add substep to" },
-      name: { type: "string", description: "Name/description of the substep" },
-      sequence: { type: "number", description: "Sequence/order of the substep (auto-assigned if not provided)" },
+  tool({
+    name: "add_substep",
+    title: "Add substep",
+    description: "Add a substep to an operation; sequence defaults to the next free number.",
+    input: { operation_id: s.id, name: z.string().min(1), sequence: z.number().int().min(1).optional() },
+    output: s.ROW,
+    annotations: WRITE,
+    async handler({ operation_id, name, sequence }, supabase) {
+      if (sequence === undefined) {
+        const { data } = await supabase.from("substeps").select("sequence").eq("operation_id", operation_id)
+          .order("sequence", { ascending: false }).limit(1).maybeSingle();
+        sequence = (data?.sequence ?? 0) + 1;
+      }
+      const { data, error } = await supabase.from("substeps")
+        .insert({ operation_id, name, sequence, status: "not_started" }).select().single();
+      if (error) throw error;
+      return data;
     },
-    required: ["operation_id", "name"],
-  },
-};
-
-const completeSubstepTool: Tool = {
-  name: "complete_substep",
-  description: "Mark a substep as completed",
-  inputSchema: {
-    type: "object",
-    properties: {
-      id: { type: "string", description: "Substep ID to complete" },
+  }),
+  tool({
+    name: "complete_substep",
+    title: "Complete substep",
+    description: "Mark a substep completed.",
+    input: { id: s.id },
+    output: s.ROW,
+    annotations: IDEMPOTENT_WRITE,
+    async handler({ id }, supabase) {
+      const { data, error } = await supabase.from("substeps")
+        .update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", id).select().single();
+      if (error) throw error;
+      return data;
     },
-    required: ["id"],
-  },
-};
-
-const deleteSubstepTool: Tool = {
-  name: "delete_substep",
-  description: "Delete a substep",
-  inputSchema: {
-    type: "object",
-    properties: {
-      id: { type: "string", description: "Substep ID to delete" },
+  }),
+  updateTool({
+    table: "substeps",
+    name: "update_substep",
+    title: "Update substep",
+    description: "Rename, reorder or annotate a substep.",
+    fields: { name: z.string().optional(), sequence: z.number().int().min(1).optional(), status: z.string().optional(), notes: z.string().optional() },
+  }),
+  tool({
+    name: "delete_substep",
+    title: "Delete substep",
+    description: "Delete a substep permanently.",
+    input: { id: s.id },
+    output: s.DELETED,
+    annotations: DESTRUCTIVE,
+    async handler({ id }, supabase) {
+      const { error } = await supabase.from("substeps").delete().eq("id", id);
+      if (error) throw error;
+      return { id, deleted: true };
     },
-    required: ["id"],
-  },
-};
-
-// Custom handlers
-const addSubstepSchema = z.object({
-  operation_id: schemas.id,
-  name: z.string().min(1),
-  sequence: z.number().int().min(1).optional(),
-});
-
-const addSubstep: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const { operation_id, name, sequence } = validateArgs(args, addSubstepSchema);
-
-    // Get next sequence if not provided
-    let finalSequence = sequence;
-    if (typeof finalSequence !== "number") {
-      const { data: maxSeq } = await supabase
-        .from("substeps")
-        .select("sequence")
-        .eq("operation_id", operation_id)
-        .order("sequence", { ascending: false })
-        .limit(1)
-        .single();
-
-      finalSequence = (maxSeq?.sequence ?? 0) + 1;
-    }
-
-    const { data, error } = await supabase
-      .from("substeps")
-      .insert({
-        operation_id,
-        name,
-        sequence: finalSequence,
-        status: "not_started",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      throw databaseError("Failed to add substep", error as Error);
-    }
-
-    return structuredResponse(data, "Substep added successfully");
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-const completeSubstepSchema = z.object({
-  id: schemas.id,
-});
-
-const completeSubstep: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const { id } = validateArgs(args, completeSubstepSchema);
-
-    const { data, error } = await supabase
-      .from("substeps")
-      .update({
-        status: "completed",
-        completed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", id)
-      .select()
-      .single();
-
-    if (error) {
-      throw databaseError("Failed to complete substep", error as Error);
-    }
-
-    return structuredResponse(data, "Substep completed successfully");
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-const deleteSubstepSchema = z.object({
-  id: schemas.id,
-});
-
-const deleteSubstep: ToolHandler = async (args: Record<string, unknown>, supabase: SupabaseClient) => {
-  try {
-    const { id } = validateArgs(args, deleteSubstepSchema);
-
-    const { error } = await supabase.from("substeps").delete().eq("id", id);
-
-    if (error) {
-      throw databaseError("Failed to delete substep", error as Error);
-    }
-
-    return structuredResponse({ id, deleted: true }, "Substep deleted successfully");
-  } catch (error) {
-    return errorResponse(error);
-  }
-};
-
-// Export module
-export const substepsModule: ToolModule = {
-  tools: [
-    fetchSubstepsTool,
-    addSubstepTool,
-    completeSubstepTool,
-    updateSubstepTool,
-    deleteSubstepTool,
-  ],
-  handlers: new Map<string, ToolHandler>([
-    ['fetch_substeps', fetchSubstepsHandler],
-    ['add_substep', addSubstep],
-    ['complete_substep', completeSubstep],
-    ['update_substep', updateSubstepHandler],
-    ['delete_substep', deleteSubstep],
-  ]),
-};
+  }),
+  fetchTool({
+    name: "fetch_substep_templates", table: "substep_templates", title: "Fetch substep templates",
+    description: "Reusable substep checklists per operation type.", select: "*, substep_template_items(id, name, sequence, notes)",
+    filters: { operation_type: z.string().optional() }, orderBy: { column: "name", ascending: true }, softDelete: false,
+  }),
+  tool({
+    name: "apply_substep_template", title: "Apply substep template", description: "Copy a template's items onto an operation as substeps, after its existing ones.",
+    input: { operation_id: s.id, template_id: s.id }, output: { added: z.number() }, annotations: WRITE,
+    async handler({ operation_id, template_id }, supabase) {
+      const { data: items, error } = await supabase.from("substep_template_items").select("name, sequence, notes").eq("template_id", template_id).order("sequence");
+      if (error) throw error;
+      const { data: last } = await supabase.from("substeps").select("sequence").eq("operation_id", operation_id).order("sequence", { ascending: false }).limit(1).maybeSingle();
+      const start = last?.sequence ?? 0;
+      const { data, error: insertError } = await supabase.from("substeps")
+        .insert(items.map((item, index) => ({ operation_id, name: item.name, notes: item.notes, sequence: start + index + 1, status: "not_started" }))).select("id");
+      if (insertError) throw insertError;
+      return { added: data.length };
+    },
+  }),
+];

@@ -560,14 +560,11 @@ GET /functions/v1/api-substeps?operation_id=<uuid>&completed=false
 
 | Field | Type | Required | Constraints |
 |-------|------|----------|-------------|
-| `url` | string | **Yes** | Valid URL |
-| `events` | string[] | **Yes** | Array of event types |
+| `name` | string | **Yes** | Display name |
+| `url` | string | **Yes** | HTTPS URL |
+| `events` | string[] | **Yes** | Event names from the catalogue on [Webhooks](/architecture/connectivity-webhooks/) (`<entity>.<action>`, e.g. `operation.completed`) |
+| `secret_key` | string | **Yes** | Signs every delivery (`X-Eryxon-Signature: t=<unix>,v1=<hmac>`) |
 | `active` | boolean | No | default `true` |
-
-**Available event types:**
-`job.created`, `job.started`, `job.stopped`, `job.resumed`, `job.completed`, `job.updated`,
-`operation.started`, `operation.paused`, `operation.resumed`, `operation.completed`,
-`issue.created`
 
 ### GET - List Webhooks
 
@@ -589,75 +586,9 @@ PATCH /functions/v1/api-webhooks?id=<webhook-id>
 
 ---
 
-## Job Lifecycle API
+## Job status
 
-**Endpoint:** `/functions/v1/api-job-lifecycle`
-
-All lifecycle operations use POST with the operation as the URL path segment.
-
-### Start Job
-
-```
-POST /functions/v1/api-job-lifecycle/start?id=<job-id>
-```
-
-**Precondition:** Status must be `not_started` or `on_hold`
-**Result:** Status becomes `in_progress`, sets `started_at` (first time only)
-**Webhook:** `job.started`
-
-### Stop/Pause Job
-
-```
-POST /functions/v1/api-job-lifecycle/stop?id=<job-id>
-```
-
-**Precondition:** Status must be `in_progress`
-**Result:** Status becomes `on_hold`, sets `paused_at`
-**Webhook:** `job.stopped`
-
-### Complete Job
-
-```
-POST /functions/v1/api-job-lifecycle/complete?id=<job-id>
-```
-
-**Precondition:** Status must be `in_progress`
-**Result:** Status becomes `completed`, sets `completed_at`, calculates `actual_duration`
-**Webhook:** `job.completed`
-
-### Resume Job
-
-```
-POST /functions/v1/api-job-lifecycle/resume?id=<job-id>
-```
-
-**Precondition:** Status must be `on_hold`
-**Result:** Status becomes `in_progress`, sets `resumed_at`, clears `paused_at`
-**Webhook:** `job.resumed`
-
-### State Transition Diagram
-
-```
-not_started ──start──> in_progress ──stop──> on_hold
-                          │                     │
-                          │                     │
-                       complete              resume
-                          │                     │
-                          v                     v
-                      completed            in_progress
-```
-
-### Error Response (Invalid Transition)
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "INVALID_STATE_TRANSITION",
-    "message": "Cannot complete job with status 'not_started'. Job must be 'in_progress'."
-  }
-}
-```
+Job and part status follow their operations (`refresh_production_job`); there is no job lifecycle endpoint. Use the operation lifecycle below.
 
 ---
 
@@ -873,7 +804,7 @@ POST /functions/v1/api-batch-lifecycle/add-operations?id=<batch-id>
 
 ### Webhook Logs API
 
-**Endpoint:** `/functions/v1/api-webhook-logs` - Read-only logs of webhook deliveries.
+**Endpoint:** `/functions/v1/api-webhook-deliveries` - Read-only delivery records (status, attempts, latency, error).
 
 ### Operation Quantities API
 

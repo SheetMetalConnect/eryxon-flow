@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { startTimeTracking, completeOperation } from './operations';
-import { dispatchOperationStarted } from '../event-dispatch';
 import { startBatchTimeTracking, stopBatchTimeTracking } from './batches';
 import { stopTimeTracking, pauseTimeTracking, resumeTimeTracking, adminStopTimeTracking } from './time-tracking';
 
@@ -11,11 +10,9 @@ vi.mock('@/integrations/supabase/client', async () => {
     auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: transport },
   }) };
 });
-vi.mock('../event-dispatch', () => ({ dispatchOperationStarted: vi.fn(), dispatchOperationCompleted: vi.fn() }));
 
 beforeEach(() => {
   transport.mockReset();
-  vi.mocked(dispatchOperationStarted).mockReset().mockResolvedValue({ success: true });
   transport.mockImplementation(async input => new Response(JSON.stringify(
     String(input).includes('/rpc/')
       ? { changed: false, total_minutes: 9, operations: [{ id: 'operation', minutes: 9 }] }
@@ -63,23 +60,6 @@ describe('production lifecycle RPC adapters', () => {
     await stopTimeTracking('operation', 'operator');
     expect(writes()).toHaveLength(1);
     expect(JSON.parse(String(writes()[0][1]?.body))).toMatchObject({ p_action: 'stop', p_tenant_id: 'tenant' });
-  });
-
-  it.each(['not_started', 'in_progress', 'on_hold'])('emits started only on the first lifecycle transition (previous=%s)', async previousStatus => {
-    transport.mockImplementation(async input => {
-      const url = String(input);
-      const data = url.includes('/rpc/')
-        ? { changed: true, previous_status: previousStatus, status: 'in_progress', operator_name: 'Employee' }
-        : url.includes('/operations')
-          ? { id: 'operation', operation_name: 'Cut', part_id: 'part', started_at: '2026-09-07T12:00:00Z', part: { part_number: 'P-1', job: { id: 'job', job_number: 'J-1' } } }
-          : { full_name: 'Employee' };
-      return new Response(JSON.stringify(data), { headers: { 'Content-Type': 'application/json' } });
-    });
-    await startTimeTracking('operation', 'operator', 'tenant');
-    expect(writes()).toHaveLength(1);
-    if (previousStatus === 'not_started') await vi.waitFor(() => expect(dispatchOperationStarted).toHaveBeenCalledWith('tenant', expect.objectContaining({ operation_id: 'operation', operator_name: 'Employee' })));
-    await new Promise(resolve => setTimeout(resolve, 0));
-    expect(dispatchOperationStarted).toHaveBeenCalledTimes(previousStatus === 'not_started' ? 1 : 0);
   });
 
   it('surfaces a rejected transaction without follow-up writes', async () => {

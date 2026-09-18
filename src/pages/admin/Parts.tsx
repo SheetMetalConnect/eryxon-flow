@@ -310,7 +310,7 @@ export default function Parts() {
     },
     {
       id: "route",
-      header: t("qrm.flow", "Route"),
+      header: t("qrm.flow"),
       cell: ({ row }) => <PartFlowCell partId={row.original.id} />,
       size: 140,
     },
@@ -396,7 +396,7 @@ export default function Parts() {
       options: [
         { label: t("parts.status.notStarted"), value: "not_started" },
         { label: t("parts.status.inProgress"), value: "in_progress" },
-        { label: t("parts.status.onHold", "On hold"), value: "on_hold" },
+        { label: t("parts.status.onHold"), value: "on_hold" },
         { label: t("parts.status.completed"), value: "completed" },
       ],
     },
@@ -458,10 +458,10 @@ export default function Parts() {
 
       <PageStatsRow
         stats={[
-          { label: t("parts.totalParts", "Total Parts"), value: partStats.total, icon: Package, color: "primary" },
-          { label: t("parts.inProgress", "In Progress"), value: partStats.active, icon: PlayCircle, color: "warning" },
-          { label: t("parts.completed", "Completed"), value: partStats.completed, icon: CheckCircle2, color: "success" },
-          { label: t("parts.assemblies", "Assemblies"), value: partStats.assemblies, icon: Layers, color: "info" },
+          { label: t("parts.totalParts"), value: partStats.total, icon: Package, color: "primary" },
+          { label: t("parts.inProgress"), value: partStats.active, icon: PlayCircle, color: "warning" },
+          { label: t("parts.completed"), value: partStats.completed, icon: CheckCircle2, color: "success" },
+          { label: t("parts.assemblies"), value: partStats.assemblies, icon: Layers, color: "info" },
         ]}
       />
 

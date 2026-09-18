@@ -702,7 +702,7 @@ async function handleSync(
     duration_ms: totalDuration,
   };
 
-  // Dispatch webhook/MQTT events for completed syncs (non-blocking)
+  // Dispatch webhook events for completed syncs (non-blocking)
   const syncSource = body.source || "erp_api";
 
   // Dispatch per-entity events

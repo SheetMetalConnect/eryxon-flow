@@ -1,7 +1,7 @@
 import { useProfile } from "@/hooks/useProfile";
 import { useTenant } from "@/hooks/useTenant";
 import { useAuthActions } from "@/hooks/useAuthActions";
-import { DOCS_GUIDES_URL } from "@/lib/config";
+import { DOCS_GUIDES_URL, DOCS_URL } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
@@ -35,6 +35,7 @@ import {
   FileUp,
   HelpCircle,
   CreditCard,
+  Bot,
   Code,
   Eye,
   ListTodo,
@@ -58,7 +59,6 @@ import { cn } from "@/lib/utils";
 import { usePendingIssuesCount } from "@/hooks/usePendingIssuesCount";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import AnimatedBackground from "@/components/AnimatedBackground";
-import { McpServerStatus } from "@/components/admin/McpServerStatus";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { useTranslation } from "react-i18next";
 import { GlobalSearch, SearchTriggerButton } from "@/components/GlobalSearch";
@@ -161,13 +161,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const operatorViewItems = [
     {
       path: "/operator/work-queue",
-      label: t("navigation.cellOverview", "Cell Overview"),
+      label: t("navigation.cellOverview"),
       icon: ListTodo,
       exact: true,
     },
     {
       path: "/operator/view",
-      label: t("navigation.terminalView", "Terminal View"),
+      label: t("navigation.terminalView"),
       icon: Eye,
       exact: true,
     },
@@ -238,21 +238,15 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
-      path: "/admin/mcp-setup",
-      label: t("navigation.mcpSetup"),
-      icon: Code,
+      path: "/admin/mcp",
+      label: t("navigation.mcp"),
+      icon: Bot,
       exact: true,
     },
     {
       path: "/admin/config/webhooks",
       label: t("navigation.webhooks"),
       icon: Webhook,
-      exact: true,
-    },
-    {
-      path: "/admin/config/mqtt-publishers",
-      label: t("navigation.mqttPublishers"),
-      icon: Radio,
       exact: true,
     },
     {
@@ -265,12 +259,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       path: "/admin/data-export",
       label: t("navigation.dataExport"),
       icon: FileDown,
-      exact: true,
-    },
-    {
-      path: "/admin/api-docs",
-      label: t("navigation.apiDocs"),
-      icon: Code,
       exact: true,
     },
   ];
@@ -303,6 +291,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   ];
 
   const externalLinks = [
+    {
+      href: `${DOCS_URL}/api/rest-api-reference/`,
+      label: t("navigation.apiReference"),
+      icon: Code,
+    },
     {
       href: DOCS_GUIDES_URL,
       label: t("navigation.docsAndHelp"),
@@ -690,7 +683,6 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           </div>
         )}
         <div className={cn("flex items-center gap-2", collapsed ? "justify-center flex-col" : "justify-between px-1")}>
-          <McpServerStatus />
           <div className="flex items-center gap-1">
             <ThemeToggle variant="dropdown" />
             <LanguageSwitcher />

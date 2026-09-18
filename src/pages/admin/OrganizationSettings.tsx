@@ -22,6 +22,7 @@ import {
   getOperatorTerminalWorkModeSettings,
   mergeOperatorTerminalWorkModeSettings,
 } from '@/features/operator-terminal/workModes';
+import { getSequentialReleaseSetting, mergeSequentialReleaseSetting } from '@/features/operator-terminal/release';
 
 const TIMEZONES = [
   'UTC',
@@ -70,6 +71,7 @@ export default function OrganizationSettings() {
   const [operatorTerminalModes, setOperatorTerminalModes] = useState(
     DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
   );
+  const [sequentialRelease, setSequentialRelease] = useState(false);
 
   const canUseWhitelabeling = tenant && (tenant.plan === 'premium' || tenant.plan === 'enterprise');
 
@@ -114,6 +116,7 @@ export default function OrganizationSettings() {
       });
       setTenantFeatureFlags(data.feature_flags);
       setOperatorTerminalModes(getOperatorTerminalWorkModeSettings(data.feature_flags));
+      setSequentialRelease(getSequentialReleaseSetting(data.feature_flags));
     } catch (error: unknown) {
       logger.error('OrganizationSettings', 'Error loading tenant details', error);
       toast.error(t("organizationSettings.failedToLoad"));
@@ -139,9 +142,9 @@ export default function OrganizationSettings() {
         factory_opening_time: formData.factory_opening_time + ':00',
         factory_closing_time: formData.factory_closing_time + ':00',
         auto_stop_tracking: formData.auto_stop_tracking,
-        feature_flags: mergeOperatorTerminalWorkModeSettings(
-          tenantFeatureFlags,
-          operatorTerminalModes,
+        feature_flags: mergeSequentialReleaseSetting(
+          mergeOperatorTerminalWorkModeSettings(tenantFeatureFlags, operatorTerminalModes),
+          sequentialRelease,
         ),
       };
 
@@ -342,6 +345,22 @@ export default function OrganizationSettings() {
                 </p>
               </div>
             )}
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="sequential_release" className="text-base">
+                  {t('organizationSettings.sequentialRelease.title')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('organizationSettings.sequentialRelease.description')}
+                </p>
+              </div>
+              <Switch
+                id="sequential_release"
+                checked={sequentialRelease}
+                onCheckedChange={setSequentialRelease}
+              />
+            </div>
 
             <div className="rounded-lg border p-4 space-y-4">
               <div className="space-y-1">

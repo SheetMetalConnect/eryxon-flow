@@ -50,110 +50,11 @@ vi.mock('../../../supabase/functions/_shared/rate-limiter.ts', () => ({
 }));
 
 import {
-  extractBearerToken,
-  isValidApiKeyFormat,
-  isTestKey,
-  isLiveKey,
   UnauthorizedError,
   ForbiddenError,
   RateLimitError,
   authenticateApiKey,
 } from '../../../supabase/functions/_shared/auth.ts';
-
-describe('auth — extractBearerToken', () => {
-  it('extracts token from valid Bearer header', () => {
-    expect(extractBearerToken('Bearer abc123')).toBe('abc123');
-  });
-
-  it('extracts full API key from Bearer header', () => {
-    const key = 'ery_live_abcdef1234567890';
-    expect(extractBearerToken(`Bearer ${key}`)).toBe(key);
-  });
-
-  it('returns null for missing header', () => {
-    expect(extractBearerToken(null)).toBeNull();
-  });
-
-  it('returns null for empty header', () => {
-    expect(extractBearerToken('')).toBeNull();
-  });
-
-  it('returns null for non-Bearer auth schemes', () => {
-    expect(extractBearerToken('Basic dXNlcjpwYXNz')).toBeNull();
-    expect(extractBearerToken('Token abc123')).toBeNull();
-  });
-
-  it('returns null for "Bearer" without a space', () => {
-    expect(extractBearerToken('Bearerabc123')).toBeNull();
-  });
-
-  it('preserves the full token value', () => {
-    const token = 'ery_test_' + 'x'.repeat(32);
-    expect(extractBearerToken(`Bearer ${token}`)).toBe(token);
-  });
-});
-
-describe('auth — isValidApiKeyFormat', () => {
-  it('accepts live keys', () => {
-    expect(isValidApiKeyFormat('ery_live_abc123')).toBe(true);
-  });
-
-  it('accepts test keys', () => {
-    expect(isValidApiKeyFormat('ery_test_abc123')).toBe(true);
-  });
-
-  it('rejects keys without ery_ prefix', () => {
-    expect(isValidApiKeyFormat('sk_live_abc123')).toBe(false);
-    expect(isValidApiKeyFormat('pk_test_abc123')).toBe(false);
-  });
-
-  it('rejects empty strings', () => {
-    expect(isValidApiKeyFormat('')).toBe(false);
-  });
-
-  it('rejects partial prefixes', () => {
-    expect(isValidApiKeyFormat('ery_')).toBe(false);
-    expect(isValidApiKeyFormat('ery_li')).toBe(false);
-    expect(isValidApiKeyFormat('ery_tes')).toBe(false);
-  });
-
-  it('rejects keys with wrong mode', () => {
-    expect(isValidApiKeyFormat('ery_staging_abc123')).toBe(false);
-    expect(isValidApiKeyFormat('ery_dev_abc123')).toBe(false);
-  });
-});
-
-describe('auth — isTestKey', () => {
-  it('returns true for test keys', () => {
-    expect(isTestKey('ery_test_abc123')).toBe(true);
-    expect(isTestKey('ery_test_')).toBe(true);
-  });
-
-  it('returns false for live keys', () => {
-    expect(isTestKey('ery_live_abc123')).toBe(false);
-  });
-
-  it('returns false for invalid keys', () => {
-    expect(isTestKey('sk_test_abc')).toBe(false);
-    expect(isTestKey('')).toBe(false);
-  });
-});
-
-describe('auth — isLiveKey', () => {
-  it('returns true for live keys', () => {
-    expect(isLiveKey('ery_live_abc123')).toBe(true);
-    expect(isLiveKey('ery_live_')).toBe(true);
-  });
-
-  it('returns false for test keys', () => {
-    expect(isLiveKey('ery_test_abc123')).toBe(false);
-  });
-
-  it('returns false for invalid keys', () => {
-    expect(isLiveKey('sk_live_abc')).toBe(false);
-    expect(isLiveKey('')).toBe(false);
-  });
-});
 
 describe('auth — custom error classes', () => {
   it('UnauthorizedError has correct name and message', () => {

@@ -137,7 +137,7 @@ export function PlacementPickerModal({
             <div className="mt-1 flex items-center gap-1.5 text-sm">
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
               <span className="text-muted-foreground">
-                {t('locations.placement.nextCell', 'Heading to')}
+                {t('locations.placement.nextCell')}
               </span>
               <span className="font-semibold text-foreground">{nextCellName}</span>
             </div>

@@ -180,7 +180,7 @@ export default function MyActivity() {
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           <p className="text-sm text-muted-foreground">
-            {t("myActivity.loading", "Loading activity")}
+            {t("myActivity.loading")}
           </p>
         </div>
       </OperatorPanel>
@@ -192,10 +192,7 @@ export default function MyActivity() {
       <OperatorPageHeader
         eyebrow={t("navigation.myActivity")}
         title={t("myActivity.title")}
-        description={t(
-          "myActivity.description",
-          "Review the active operator's recent work by day, with completed operations and time captured in the same production workspace format as the queue.",
-        )}
+        description={t("myActivity.description")}
         meta={
           activeOperator ? (
             <OperatorStatusChip

@@ -30,7 +30,7 @@ import { PDFViewer } from "@/components/PDFViewerLazy";
 import { OperationResources } from "./OperationResources";
 import { AssemblyDependencies } from "./AssemblyDependencies";
 import type { PMIData, GeometryData } from "@/hooks/useCADProcessing";
-import { OperationWithDetails } from "@/lib/database";
+import { OperationWithDetails } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/time-utils";
 import IssueForm from "@/components/operator/IssueForm";
@@ -618,6 +618,8 @@ export function DetailPanel({
           {!job.isCurrentUserClocked ? (
             <Button
               onClick={onStart}
+              disabled={job.startBlocked}
+              title={job.startBlocked ? t("production.errors.notReleased") : undefined}
               className="min-h-10 rounded-lg bg-emerald-600 text-sm text-white hover:bg-emerald-700"
             >
               <Play className="mr-1.5 h-4 w-4" />

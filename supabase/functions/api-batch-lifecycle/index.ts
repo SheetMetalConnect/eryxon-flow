@@ -13,7 +13,6 @@ import { createClient } from "@supabase/supabase-js";
 import { authenticateAndSetContext } from "@shared/auth.ts";
 import { corsHeaders } from "@shared/cors.ts";
 import { handleOptions, handleError, throwDatabaseError } from "@shared/validation/errorHandler.ts";
-import { dispatchEvent } from "@shared/events.ts";
 import {
   BatchLifecycleBatch,
   BatchLifecycleOperation,
@@ -350,10 +349,7 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_SERVICE_KEY") ?? ""
   );
   const repository = createRepository(supabase);
-  const service = createBatchLifecycleService(repository, {
-    dispatch: (tenantId, event) =>
-      dispatchEvent(tenantId, event.eventType, event.data),
-  });
+  const service = createBatchLifecycleService(repository);
   const monitor = createAutomatedExceptionMonitor(
     createAutomatedMonitorRepository(supabase),
   );

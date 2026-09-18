@@ -51,17 +51,4 @@ The Capacity Matrix page at **Admin → Capacity Matrix** shows:
 - Only cell capacity is considered, not worker availability or materials
 - No what-if scenario simulation
 
-For complex scheduling needs, use a dedicated APS tool and sync dates via the [REST API](/architecture/connectivity-rest-api/), [CSV Import](/features/csv-import/), or one of the planning adapters below.
-
-## Planning Adapters
-
-Eryxon Flow ships with a planning adapter interface in `src/lib/planning/` that bridges external planning and scheduling tools using ISA-95 aligned vocabulary. Use it to pull work orders and resources from your planner into Eryxon and push start and completion feedback back.
-
-| Adapter | Status | Auth | Capabilities |
-|---------|--------|------|--------------|
-| **FrePPLe** | Beta | Basic Auth | Pull work orders + resources, push order start and completion, pagination handling |
-| **Odoo MRP** | Beta | JSON-RPC | Pull work orders from `mrp.production`, push execution feedback |
-
-Both adapters are **Beta** — interfaces and behavior may still change. The FrePPLe adapter is the more mature of the two; the Odoo adapter is newer. Pilot them on non-critical work first.
-
-Select an adapter at runtime with the `createPlanningAdapter(config)` factory. Adapters are not enabled by default — they are an opt-in integration surface for self-hosted deployments and forks.
+For complex scheduling needs, use a dedicated APS tool and sync dates via the [REST API](/api/rest-api-reference/), [CSV Import](/features/csv-import/), or the [MCP server](/guides/mcp-setup/).

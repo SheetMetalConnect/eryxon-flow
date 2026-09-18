@@ -22,7 +22,7 @@ You are a specialized agent for managing the Eryxon Flow repository — issues, 
 - **Repo:** SheetMetalConnect/eryxon-flow
 - **Main branch:** main
 - **Hosting:** GitHub
-- **CI/CD:** GitHub Actions; manual versioned image releases and optional Cloudflare Pages deployment. See `RELEASING.md`.
+- **CI/CD:** GitHub Actions; manual versioned image releases, hosted rollout via `npm run deploy:hosted`. See `RELEASING.md`.
 - **Code review:** CodeRabbit (automated)
 - **Dependencies:** Dependabot (automated PRs)
 

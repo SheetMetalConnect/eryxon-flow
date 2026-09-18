@@ -12,7 +12,6 @@ import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { Camera, AlertTriangle, Package } from "lucide-react";
-import { dispatchIssueCreated } from "@/lib/event-dispatch";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 import {
@@ -148,7 +147,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
       const typedOperation = operationData as OperationIssueContext | null;
       if (!typedOperation) {
-        throw new Error(t("issues.failedToReportIssue", "Failed to report issue"));
+        throw new Error(t("issues.failedToReportIssue"));
       }
 
       const { data: nextOperations } = await supabase
@@ -218,39 +217,18 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         });
       }
 
-      dispatchIssueCreated(profile.tenant_id, {
-        issue_id: issueId,
-        operation_id: operationId,
-        operation_name: typedOperation.operation_name,
-        part_id: typedOperation.part.id,
-        part_number: typedOperation.part.part_number,
-        job_id: typedOperation.part.job.id,
-        job_number: typedOperation.part.job.job_number,
-        created_by: operatorId,
-        operator_name: operatorName,
-        severity,
-        description: fullDescription,
-        created_at: createdAt,
-      }).then(result => {
-        if (!result.success) {
-          logger.error("IssueForm", "Failed to dispatch issue.created event", result.errors);
-        }
-      });
 
-      toast.success(t("issues.issueReported", "Issue reported"));
+      toast.success(t("issues.issueReported"));
       if (attachmentResult.failedFiles.length > 0 || !attachmentsPersisted) {
         toast.warning(
-          t(
-            "issues.issueReportedPhotosPending",
-            "Issue saved. Photos could not be attached this time.",
-          ),
+          t("issues.issueReportedPhotosPending"),
         );
       }
       resetForm();
       onOpenChange(false);
       onSuccess();
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : t("issues.failedToReportIssue", "Failed to report issue"));
+      toast.error(error instanceof Error ? error.message : t("issues.failedToReportIssue"));
     } finally {
       setLoading(false);
     }
@@ -278,10 +256,10 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-md overflow-hidden flex flex-col">
         <DialogHeader className="shrink-0">
-          <DialogTitle>{t("issues.reportIssue", "Report Issue")}</DialogTitle>
+          <DialogTitle>{t("issues.reportIssue")}</DialogTitle>
           {isShortfall && (
             <DialogDescription className="sr-only">
-              {t("issues.shortfallContext", "Report production shortfall issue")}
+              {t("issues.shortfallContext")}
             </DialogDescription>
           )}
         </DialogHeader>
@@ -290,7 +268,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           <Alert className="shrink-0 border-amber-500/50 bg-amber-500/10">
             <AlertTriangle className="h-4 w-4 text-amber-600" />
             <AlertDescription className="text-amber-700 dark:text-amber-400">
-              {t("issues.shortfallAlert", "Production shortfall detected. Please provide details about why the target quantity was not met.")}
+              {t("issues.shortfallAlert")}
             </AlertDescription>
           </Alert>
         )}
@@ -298,31 +276,31 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         <form onSubmit={handleSubmit} className="flex-1 flex flex-col min-h-0">
           <div className="flex-1 overflow-y-auto min-h-0 space-y-4">
           <div>
-            <Label htmlFor="issueType">{t("issues.issueType", "Issue Type")}</Label>
+            <Label htmlFor="issueType">{t("issues.issueType")}</Label>
             <Select value={issueType} onValueChange={(v: IssueType) => setIssueType(v)}>
               <SelectTrigger id="issueType" className="mt-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="general">{t("issues.type.general", "General Issue")}</SelectItem>
-                <SelectItem value="ncr">{t("issues.type.ncr", "Non-Conformance (NCR)")}</SelectItem>
+                <SelectItem value="general">{t("issues.type.general")}</SelectItem>
+                <SelectItem value="ncr">{t("issues.type.ncr")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {issueType === "ncr" && (
             <div>
-              <Label htmlFor="ncrCategory">{t("issues.ncrCategory", "NCR Category")}</Label>
+              <Label htmlFor="ncrCategory">{t("issues.ncrCategory")}</Label>
               <Select value={ncrCategory} onValueChange={(v: NcrCategory) => setNcrCategory(v)}>
                 <SelectTrigger id="ncrCategory" className="mt-1">
-                  <SelectValue placeholder={t("issues.selectNcrCategory", "Select category")} />
+                  <SelectValue placeholder={t("issues.selectNcrCategory")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="material_defect">{t("issues.ncrCategories.materialDefect", "Material Defect")}</SelectItem>
-                  <SelectItem value="dimensional">{t("issues.ncrCategories.dimensional", "Dimensional Issue")}</SelectItem>
-                  <SelectItem value="surface_finish">{t("issues.ncrCategories.surfaceFinish", "Surface Finish")}</SelectItem>
-                  <SelectItem value="process_error">{t("issues.ncrCategories.processError", "Process Error")}</SelectItem>
-                  <SelectItem value="other">{t("issues.ncrCategories.other", "Other")}</SelectItem>
+                  <SelectItem value="material_defect">{t("issues.ncrCategories.materialDefect")}</SelectItem>
+                  <SelectItem value="dimensional">{t("issues.ncrCategories.dimensional")}</SelectItem>
+                  <SelectItem value="surface_finish">{t("issues.ncrCategories.surfaceFinish")}</SelectItem>
+                  <SelectItem value="process_error">{t("issues.ncrCategories.processError")}</SelectItem>
+                  <SelectItem value="other">{t("issues.ncrCategories.other")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -331,7 +309,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           <div>
             <Label htmlFor="affectedQuantity" className="flex items-center gap-2">
               <Package className="h-4 w-4" />
-              {t("issues.affectedQuantity", "Affected Quantity")}
+              {t("issues.affectedQuantity")}
             </Label>
             <Input
               id="affectedQuantity"
@@ -339,17 +317,17 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
               min="0"
               value={affectedQuantity}
               onChange={(e) => setAffectedQuantity(e.target.value ? parseInt(e.target.value) : "")}
-              placeholder={t("issues.affectedQuantityPlaceholder", "Number of parts affected")}
+              placeholder={t("issues.affectedQuantityPlaceholder")}
               className="mt-1"
             />
           </div>
 
           {hasCategories && (
             <div>
-              <Label htmlFor="category">{t("issues.category", "Category")}</Label>
+              <Label htmlFor="category">{t("issues.category")}</Label>
               <Select value={selectedCategoryId} onValueChange={handleCategoryChange}>
                 <SelectTrigger id="category" className="mt-1">
-                  <SelectValue placeholder={t("issues.selectCategory", "Select category")} />
+                  <SelectValue placeholder={t("issues.selectCategory")} />
                 </SelectTrigger>
                 <SelectContent>
                   {categories.map((cat) => (
@@ -363,29 +341,29 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           )}
 
           <div>
-            <Label htmlFor="severity">{t("issues.severityLabel", "Severity")}</Label>
+            <Label htmlFor="severity">{t("issues.severityLabel")}</Label>
             <Select value={severity} onValueChange={(v: string) => setSeverity(v as "low" | "medium" | "high" | "critical")}>
               <SelectTrigger id="severity" className="mt-1">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">{t("issues.severity.low", "Low")}</SelectItem>
-                <SelectItem value="medium">{t("issues.severity.medium", "Medium")}</SelectItem>
-                <SelectItem value="high">{t("issues.severity.high", "High")}</SelectItem>
-                <SelectItem value="critical">{t("issues.severity.critical", "Critical")}</SelectItem>
+                <SelectItem value="low">{t("issues.severity.low")}</SelectItem>
+                <SelectItem value="medium">{t("issues.severity.medium")}</SelectItem>
+                <SelectItem value="high">{t("issues.severity.high")}</SelectItem>
+                <SelectItem value="critical">{t("issues.severity.critical")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div>
-            <Label htmlFor="description">{t("issues.description", "Description")} *</Label>
+            <Label htmlFor="description">{t("issues.description")} *</Label>
             <Textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder={isShortfall
-                ? t("issues.shortfallDescPlaceholder", "What prevented reaching the target quantity?")
-                : t("issues.describeIssue", "Describe the issue...")}
+                ? t("issues.shortfallDescPlaceholder")
+                : t("issues.describeIssue")}
               rows={4}
               className="mt-1"
               required
@@ -395,10 +373,10 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
           <div className="flex items-center justify-between rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
             <div className="space-y-0.5 pr-3">
               <Label htmlFor="standstill" className="text-sm font-medium text-foreground">
-                {t("issues.standstill", "Is the work at a standstill?")}
+                {t("issues.standstill")}
               </Label>
               <p className="text-xs text-muted-foreground">
-                {t("issues.standstillDesc", "Parks this operation under a Yellow Card until the issue is resolved.")}
+                {t("issues.standstillDesc")}
               </p>
             </div>
             <Switch id="standstill" checked={standstill} onCheckedChange={setStandstill} />
@@ -412,8 +390,8 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
               <Camera className="h-4 w-4" />
               <span className="text-sm">
                 {files && files.length > 0
-                  ? t("issues.filesSelected", "{{count}} photo(s)", { count: files.length })
-                  : t("issues.addPhoto", "Add photo")}
+                  ? t("issues.filesSelected", { count: files.length })
+                  : t("issues.addPhoto")}
               </span>
             </label>
             <input
@@ -435,7 +413,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
               onClick={handleClose}
               className="flex-1"
             >
-              {t("common.cancel", "Cancel")}
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -443,7 +421,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
               className="flex-1"
               size="lg"
             >
-              {loading ? t("common.saving", "Saving...") : t("issues.report", "Report")}
+              {loading ? t("common.saving") : t("issues.report")}
             </Button>
           </div>
         </form>

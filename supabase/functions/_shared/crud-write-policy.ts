@@ -15,7 +15,7 @@ const writableFields: Record<string, string> = {
   operation_quantities: 'material_cert_number material_lot material_supplier metadata notes operation_id quantity_good quantity_produced quantity_rework quantity_scrap recorded_at recorded_by scrap_reason_id',
   scrap_reasons: 'active category code description metadata',
   substep_templates: 'created_by description name operation_type',
-  webhooks: 'active events secret_key url',
+  webhooks: 'active events name secret_key url',
   issues: 'affected_quantity corrective_action created_by current_cell_id description disposition image_paths intended_next_cell_id issue_type ncr_category operation_id preventive_action reported_by_id resolution_notes reviewed_at reviewed_by root_cause severity status title verification_required',
   operation_batches: 'batch_number batch_type cell_id created_by estimated_time external_id external_source layout_image_url material material_requirement_metadata material_requirement_raised nesting_image_url nesting_metadata notes parent_batch_id thickness_mm',
 };

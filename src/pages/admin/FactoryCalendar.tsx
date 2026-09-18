@@ -109,10 +109,10 @@ export default function FactoryCalendar() {
 
   const getDayTypeLabel = (type: DayType): string => {
     const labels: Record<DayType, string> = {
-      working: t("calendar.dayTypes.working", "Working Day"),
-      holiday: t("calendar.dayTypes.holiday", "Holiday"),
-      closure: t("calendar.dayTypes.closure", "Closure"),
-      half_day: t("calendar.dayTypes.halfDay", "Half Day"),
+      working: t("calendar.dayTypes.working"),
+      holiday: t("calendar.dayTypes.holiday"),
+      closure: t("calendar.dayTypes.closure"),
+      half_day: t("calendar.dayTypes.halfDay"),
     };
     return labels[type];
   };
@@ -139,7 +139,7 @@ export default function FactoryCalendar() {
 
     if (error) {
       logger.error('FactoryCalendar', 'Error loading calendar', error);
-      toast.error(t("calendar.messages.loadFailed", "Failed to load calendar"));
+      toast.error(t("calendar.messages.loadFailed"));
     } else {
       setCalendarDays((data || []) as CalendarDay[]);
     }
@@ -212,7 +212,7 @@ export default function FactoryCalendar() {
           .eq("id", existing.id);
 
         if (error) throw error;
-        toast.success(t("calendar.messages.updated", "Calendar updated"));
+        toast.success(t("calendar.messages.updated"));
       } else {
         const { error } = await supabase
           .from("factory_calendar")
@@ -228,14 +228,14 @@ export default function FactoryCalendar() {
           });
 
         if (error) throw error;
-        toast.success(t("calendar.messages.added", "Calendar entry added"));
+        toast.success(t("calendar.messages.added"));
       }
 
       setDialogOpen(false);
       loadCalendarDays();
     } catch (error: unknown) {
       logger.error('FactoryCalendar', 'Error saving calendar', error);
-      toast.error(error instanceof Error ? error.message : t("calendar.messages.saveFailed", "Failed to save"));
+      toast.error(error instanceof Error ? error.message : t("calendar.messages.saveFailed"));
     } finally {
       setSaving(false);
     }
@@ -263,13 +263,13 @@ export default function FactoryCalendar() {
         .eq("id", existing.id);
 
       if (error) throw error;
-      toast.success(t("calendar.messages.deleted", "Calendar entry removed"));
+      toast.success(t("calendar.messages.deleted"));
       setDeleteDialogOpen(false);
       setDialogOpen(false);
       loadCalendarDays();
     } catch (error: unknown) {
       logger.error('FactoryCalendar', 'Error deleting', error);
-      toast.error(t("calendar.messages.deleteFailed", "Failed to delete"));
+      toast.error(t("calendar.messages.deleteFailed"));
     } finally {
       setSaving(false);
     }
@@ -299,10 +299,10 @@ export default function FactoryCalendar() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
-            {t("calendar.title", "Factory Calendar")}
+            {t("calendar.title")}
           </h1>
           <p className="text-muted-foreground text-lg">
-            {t("calendar.description", "Manage holidays, closures, and special working days")}
+            {t("calendar.description")}
           </p>
         </div>
       </div>
@@ -313,7 +313,7 @@ export default function FactoryCalendar() {
         <CardContent className="pt-4 pb-3">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-muted-foreground mr-2">
-              {t("calendar.legend", "Legend")}:
+              {t("calendar.legend")}:
             </span>
             {(['working', 'holiday', 'closure', 'half_day'] as DayType[]).map((type) => (
               <Badge
@@ -427,10 +427,10 @@ export default function FactoryCalendar() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Info className="h-5 w-5" />
-              {t("calendar.specialDays", "Special Days This Month")}
+              {t("calendar.specialDays")}
             </CardTitle>
             <CardDescription>
-              {t("calendar.specialDaysDescription", "Custom calendar entries for this month")}
+              {t("calendar.specialDaysDescription")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -460,7 +460,7 @@ export default function FactoryCalendar() {
                         {day.capacity_multiplier !== null && day.capacity_multiplier !== undefined && (
                           <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <Percent className="h-3 w-3" />
-                            {Math.round(day.capacity_multiplier * 100)}% {t("calendar.capacity", "capacity")}
+                            {Math.round(day.capacity_multiplier * 100)}% {t("calendar.capacity")}
                           </div>
                         )}
                       </div>
@@ -471,7 +471,7 @@ export default function FactoryCalendar() {
                       onClick={() => day.date && handleDateClick(new Date(day.date + 'T00:00:00'))}
                       disabled={!day.date}
                     >
-                      {t("common.edit", "Edit")}
+                      {t("common.edit")}
                     </Button>
                   </div>
                 ))}
@@ -488,14 +488,14 @@ export default function FactoryCalendar() {
               {selectedDate && format(selectedDate, 'EEEE, MMMM d, yyyy')}
             </DialogTitle>
             <DialogDescription>
-              {t("calendar.editDescription", "Configure this day's type and capacity settings")}
+              {t("calendar.editDescription")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto min-h-0 space-y-5">
             <div className="space-y-2">
               <Label className="text-sm font-medium">
-                {t("calendar.form.dayType", "Day Type")}
+                {t("calendar.form.dayType")}
               </Label>
               <Select
                 value={formData.day_type}
@@ -527,13 +527,13 @@ export default function FactoryCalendar() {
 
             <div className="space-y-2">
               <Label htmlFor="name" className="text-sm font-medium">
-                {t("calendar.form.name", "Name / Description")}
+                {t("calendar.form.name")}
               </Label>
               <Input
                 id="name"
                 value={formData.name || ''}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder={t("calendar.form.namePlaceholder", "e.g., Christmas, Factory Maintenance")}
+                placeholder={t("calendar.form.namePlaceholder")}
                 className="w-full"
               />
             </div>
@@ -542,12 +542,12 @@ export default function FactoryCalendar() {
               <div className="space-y-2">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Clock className="h-4 w-4" />
-                  {t("calendar.form.timeOverride", "Time Override")}
+                  {t("calendar.form.timeOverride")}
                 </Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="opening_time" className="text-xs text-muted-foreground">
-                      {t("calendar.form.openingTime", "Opening")}
+                      {t("calendar.form.openingTime")}
                     </Label>
                     <Input
                       id="opening_time"
@@ -559,7 +559,7 @@ export default function FactoryCalendar() {
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="closing_time" className="text-xs text-muted-foreground">
-                      {t("calendar.form.closingTime", "Closing")}
+                      {t("calendar.form.closingTime")}
                     </Label>
                     <Input
                       id="closing_time"
@@ -571,7 +571,7 @@ export default function FactoryCalendar() {
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {t("calendar.form.timeHint", "Leave empty to use default factory hours")}
+                  {t("calendar.form.timeHint")}
                 </p>
               </div>
             )}
@@ -580,7 +580,7 @@ export default function FactoryCalendar() {
               <div className="flex items-center justify-between">
                 <Label className="text-sm font-medium flex items-center gap-2">
                   <Percent className="h-4 w-4" />
-                  {t("calendar.form.capacity", "Capacity")}
+                  {t("calendar.form.capacity")}
                 </Label>
                 <Badge variant="outline" className="font-mono">
                   {Math.round(getCapacityMultiplier() * 100)}%
@@ -598,21 +598,21 @@ export default function FactoryCalendar() {
                 className="w-full"
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>{t("calendar.form.closed", "Closed")}</span>
-                <span>{t("calendar.form.halfCapacity", "Half")}</span>
-                <span>{t("calendar.form.fullCapacity", "Full")}</span>
+                <span>{t("calendar.form.closed")}</span>
+                <span>{t("calendar.form.halfCapacity")}</span>
+                <span>{t("calendar.form.fullCapacity")}</span>
               </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="notes" className="text-sm font-medium">
-                {t("calendar.form.notes", "Notes")}
+                {t("calendar.form.notes")}
               </Label>
               <Textarea
                 id="notes"
                 value={formData.notes || ''}
                 onChange={(e) => setFormData({ ...formData, notes: e.target.value || null })}
-                placeholder={t("calendar.form.notesPlaceholder", "Additional notes...")}
+                placeholder={t("calendar.form.notesPlaceholder")}
                 rows={2}
                 className="resize-none"
               />
@@ -637,7 +637,7 @@ export default function FactoryCalendar() {
               disabled={saving}
               className="flex-1"
             >
-              {t("common.cancel", "Cancel")}
+              {t("common.cancel")}
             </Button>
             <Button
               onClick={handleSave}
@@ -645,7 +645,7 @@ export default function FactoryCalendar() {
               className="flex-1"
             >
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {t("common.save", "Save")}
+              {t("common.save")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -655,15 +655,15 @@ export default function FactoryCalendar() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {t("calendar.deleteDialog.title", "Delete Calendar Entry")}
+              {t("calendar.deleteDialog.title")}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              {t("calendar.deleteDialog.description", "Are you sure you want to remove this calendar entry? The day will revert to default settings.")}
+              {t("calendar.deleteDialog.description")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={saving}>
-              {t("common.cancel", "Cancel")}
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmDelete}
@@ -671,7 +671,7 @@ export default function FactoryCalendar() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {t("common.delete", "Delete")}
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

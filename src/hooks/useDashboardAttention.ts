@@ -71,7 +71,7 @@ export function useDashboardAttention(): DashboardAttention {
   });
 
   if (!data && !isLoading) {
-    logger.debug?.('useDashboardAttention', 'no attention data');
+    logger.debug('useDashboardAttention', 'no attention data');
   }
 
   return {

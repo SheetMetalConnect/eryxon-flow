@@ -16,12 +16,7 @@ Get Eryxon Flow up and running.
 ## Prerequisites
 
 - Node.js **22.12 or newer**
-- Access to the private source repository
-- A Supabase backend configured for the source revision you will run
-
-For backend setup, migrations, function secrets, and production hosting, follow the
-[Self-Hosting Guide](/guides/self-hosting/). It contains the maintained deployment
-sequence. The steps below start a local frontend against that prepared backend.
+- Docker, for the local Supabase stack (or a hosted Supabase project)
 
 ## Run locally
 
@@ -29,26 +24,17 @@ sequence. The steps below start a local frontend against that prepared backend.
 git clone https://github.com/SheetMetalConnect/eryxon-flow.git
 cd eryxon-flow
 npm ci
-cp .env.example .env
+npx supabase start      # local Postgres, Auth, Storage and Edge Functions; prints the API URL and anon key
+cp .env.example .env    # put that URL and anon key in VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY
+npm run dev             # http://localhost:8080
 ```
 
-Edit `.env` with your backend's public frontend settings:
-
-```dotenv
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_PUBLISHABLE_KEY=your-public-key
-VITE_SUPABASE_PROJECT_ID=your-project
-```
-
-Values prefixed with `VITE_` are visible in the browser. Keep service-role keys and
-other private credentials on the backend.
-
-```sh
-npm run dev
-```
-
-Open [localhost:8080](http://localhost:8080) and sign in. If account registration is
-enabled, use **Sign Up** to create your organization first.
+The first sign-up creates the workshop and its admin. `npx supabase stop` shuts the
+local stack down. To develop against a hosted Supabase project instead, put its URL
+and anon key in `.env` and skip `supabase start`; the
+[Self-Hosting Guide](/guides/self-hosting/) covers migrations, function secrets and
+production hosting. Values prefixed with `VITE_` are visible in the browser; keep
+service-role keys on the backend.
 
 ## Start using the app
 
@@ -56,6 +42,6 @@ Administrators manage jobs, parts, operations, and work cells. Operators use the
 [Work Queue and Terminal](/guides/operator-manual/) on phones, tablets, and desktops.
 There is one responsive interface across device sizes.
 
-For production rollout, see the [Deployment Guide](/guides/deployment/). PWA
+For production rollout, see the [Self-Hosting Guide](/guides/self-hosting/). PWA
 installation is optional and must be enabled at build time; see
 [PWA configuration](/guides/self-hosting/#optional-pwa-verification).

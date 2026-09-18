@@ -1,4 +1,4 @@
-import type { OperationWithDetails, OperationBatchContext } from "@/lib/database";
+import type { OperationWithDetails, OperationBatchContext } from "@/lib/db";
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 
@@ -36,7 +36,7 @@ const mockStopTimeTracking = vi.fn().mockResolvedValue(undefined);
 const mockStopBatchTimeTracking = vi.fn().mockResolvedValue(undefined);
 const mockCompleteOperation = vi.fn().mockResolvedValue(undefined);
 
-vi.mock('@/lib/database', () => ({
+vi.mock('@/lib/db', () => ({
   fetchOperationLookupDetails: (...args: any[]) => mockFetchOperationLookupDetails(...args),
   startTimeTracking: (...args: any[]) => mockStartTimeTracking(...args),
   startBatchTimeTracking: (...args: any[]) => mockStartBatchTimeTracking(...args),
@@ -62,6 +62,7 @@ vi.mock('@/integrations/supabase/client', () => ({
       const chain: any = {};
       chain.select = () => chain;
       chain.eq = () => chain;
+      chain.is = () => chain;
       chain.order = () => Promise.resolve(table === 'cells' ? cellsResponse : tenantResponse);
       chain.single = () => Promise.resolve(tenantResponse);
       return chain;
@@ -595,10 +596,14 @@ describe('useOperatorTerminal', () => {
     expect(mockFetchOperationLookupDetails).not.toHaveBeenCalled();
   });
 
-  it('splits not_started jobs into inBuffer (first 5) and expected (rest)', async () => {
-    const ops = Array.from({ length: 8 }, (_, i) =>
-      makeBaseOp({ id: `op-${i}`, part: { ...makeBaseOp().part, id: `p-${i}` } }),
-    );
+  it('puts released operations in the buffer and blocked ones in expected', async () => {
+    const part = (id: string) => ({ ...makeBaseOp().part, id });
+    const ops = [
+      makeBaseOp({ id: 'a1', sequence: 1, part: part('a') }),
+      makeBaseOp({ id: 'a2', sequence: 2, part: part('a') }),
+      makeBaseOp({ id: 'b1', sequence: 1, status: 'completed', part: part('b') }),
+      makeBaseOp({ id: 'b2', sequence: 2, part: part('b') }),
+    ];
 
     mockFetchOperationLookupDetails.mockResolvedValue(ops);
     const { result } = renderHook(() => useOperatorTerminal());
@@ -607,10 +612,37 @@ describe('useOperatorTerminal', () => {
       await result.current.loadData();
     });
 
-    expect(result.current.inBufferJobs).toHaveLength(5);
-    expect(result.current.expectedJobs).toHaveLength(3);
-    expect(result.current.inBufferJobs.every(j => j.status === 'in_buffer')).toBe(true);
-    expect(result.current.expectedJobs.every(j => j.status === 'expected')).toBe(true);
+    expect(result.current.inBufferJobs.map((j) => j.id)).toEqual(['a1', 'b2']);
+    expect(result.current.expectedJobs.map((j) => j.id)).toEqual(['a2']);
+    expect(result.current.expectedJobs[0].startBlocked).toBe(false);
+  });
+
+  it('blocks starting an unreleased operation when sequential release is on', async () => {
+    tenantResponse = {
+      data: { feature_flags: { sequentialRelease: true }, factory_opening_time: null, factory_closing_time: null, timezone: null },
+      error: null,
+    };
+    const part = { ...makeBaseOp().part, id: 'a' };
+    mockFetchOperationLookupDetails.mockResolvedValue([
+      makeBaseOp({ id: 'a1', sequence: 1, part }),
+      makeBaseOp({ id: 'a2', sequence: 2, part }),
+    ]);
+    const { result } = renderHook(() => useOperatorTerminal());
+
+    await act(async () => {
+      await result.current.loadData();
+    });
+    act(() => {
+      result.current.setSelectedJobId('a2');
+    });
+    expect(result.current.selectedJob?.startBlocked).toBe(true);
+
+    await act(async () => {
+      await result.current.handleStart();
+    });
+
+    expect(mockStartTimeTracking).not.toHaveBeenCalled();
+    expect(toast.error).toHaveBeenCalledWith('production.errors.notReleased');
   });
 
   it('shows error toast when startTimeTracking fails', async () => {

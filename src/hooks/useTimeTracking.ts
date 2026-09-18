@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { StaleTime } from "@/lib/queryClient";
 import { useProfile } from "@/hooks/useProfile";
 import { logger } from "@/lib/logger";
 import {
@@ -79,7 +78,7 @@ export function useTimeTracking(from: Date, to: Date): UseTimeTrackingResult {
     queryKey: ["timeTracking", "report", tenantId, fromIso, toIso] as const,
     enabled: Boolean(tenantId),
     // Active entries are counted live; keep the report fresh.
-    staleTime: StaleTime.VERY_SHORT,
+    staleTime: 10_000,
     queryFn: async (): Promise<TimeTrackingRollup> => {
       const { data: rows, error } = await supabase
         .from("time_entries")

@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, it, expect, beforeAll } from 'vitest';
 import i18n from './index';
 
@@ -36,5 +38,44 @@ describe('i18n namespace deep-merge', () => {
       expect(i18n.t('users.title')).not.toBe('users.title');
     }
     await i18n.changeLanguage('en');
+  });
+});
+
+const localesDir = path.resolve(__dirname, 'locales');
+const leafKeys = (obj: unknown, prefix = ''): string[] =>
+  Object.entries(obj as Record<string, unknown>).flatMap(([k, v]) =>
+    v && typeof v === 'object' ? leafKeys(v, `${prefix}${k}.`) : [`${prefix}${k}`],
+  );
+const readLocale = (lng: string, file: string) =>
+  JSON.parse(fs.readFileSync(path.join(localesDir, lng, file), 'utf8'));
+
+describe('i18n locale files', () => {
+  const files = fs.readdirSync(path.join(localesDir, 'en'));
+
+  it.each(files)('%s has the same keys in en, nl and de', (file) => {
+    const en = leafKeys(readLocale('en', file)).sort();
+    for (const lng of ['nl', 'de']) {
+      const other = leafKeys(readLocale(lng, file)).sort();
+      const missing = en.filter((k) => !other.includes(k));
+      const extra = other.filter((k) => !en.includes(k));
+      expect({ lng, missing, extra }).toEqual({ lng, missing: [], extra: [] });
+    }
+  });
+
+  it('every static t("key") in src resolves in en', async () => {
+    await i18n.changeLanguage('en');
+    const srcDir = path.resolve(__dirname, '..');
+    const walk = (dir: string): string[] =>
+      fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+        e.isDirectory() ? walk(path.join(dir, e.name)) : /\.(ts|tsx)$/.test(e.name) && !/\.test\./.test(e.name) ? [path.join(dir, e.name)] : [],
+      );
+    const unresolved: string[] = [];
+    for (const file of walk(srcDir)) {
+      const src = fs.readFileSync(file, 'utf8');
+      for (const [, key] of src.matchAll(/\bt\(\s*["']([^"'\n{}$]+)["']/g)) {
+        if (!i18n.exists(key) && !i18n.exists(`${key}_other`)) unresolved.push(`${path.relative(srcDir, file)}: ${key}`);
+      }
+    }
+    expect(unresolved).toEqual([]);
   });
 });

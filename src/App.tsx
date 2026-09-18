@@ -9,7 +9,6 @@ import { useAuthActions } from "./hooks/useAuthActions";
 import { OperatorProvider } from "./contexts/OperatorContext";
 import { ThemeProvider } from "./theme/ThemeProvider";
 import { NotificationToastProvider } from "./components/NotificationToastProvider";
-import { McpActivityToasts } from "./components/admin/McpActivityToasts";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { PwaUpdatePrompt } from "./components/PwaUpdatePrompt";
 import { Loader2 } from "lucide-react";
@@ -117,7 +116,6 @@ const App = () => (
           <AuthProvider>
             <OperatorProvider>
               <NotificationToastProvider>
-                <McpActivityToasts />
                 <ErrorBoundary>
                   <AppRoutes />
                 </ErrorBoundary>

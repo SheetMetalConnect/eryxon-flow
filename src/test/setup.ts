@@ -44,7 +44,6 @@ Object.defineProperty(windowRef, '__ERYXON_ENV__', {
   value: {
     VITE_SUPABASE_URL: 'https://test.supabase.co',
     VITE_SUPABASE_PUBLISHABLE_KEY: 'test-publishable-key',
-    VITE_SUPABASE_PROJECT_ID: 'test',
   },
 });
 

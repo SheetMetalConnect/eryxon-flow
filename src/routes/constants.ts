@@ -38,17 +38,13 @@ export const ROUTES = {
       STEPS_TEMPLATES: "/admin/config/steps-templates",
       SCRAP_REASONS: "/admin/config/scrap-reasons",
       API_KEYS: "/admin/config/api-keys",
-      MCP_SETUP: "/admin/mcp-setup",
-      MCP_KEYS: "/admin/config/mcp-keys",
+      MCP: "/admin/mcp",
       WEBHOOKS: "/admin/config/webhooks",
-      MQTT_PUBLISHERS: "/admin/config/mqtt-publishers",
-      MCP_SERVER: "/admin/config/mcp-server",
     },
 
   },
 
   COMMON: {
-    API_DOCS: "/admin/api-docs",
     PRICING: "/admin/pricing",
     MY_PLAN: "/admin/my-plan",
     ABOUT: "/admin/about",

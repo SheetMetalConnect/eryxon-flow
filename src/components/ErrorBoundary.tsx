@@ -51,10 +51,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     this.setState({ errorInfo });
 
-    logger.error('Uncaught error in component tree', error, {
-      operation: 'ErrorBoundary',
-      componentStack: errorInfo.componentStack,
-    });
+    logger.error('ErrorBoundary', 'Uncaught error in component tree', { error, componentStack: errorInfo.componentStack });
 
     this.props.onError?.(error, errorInfo);
   }

@@ -136,7 +136,7 @@ export function OperatorWorkQueue({
           {t("terminal.columns.hours")}
         </th>
         <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-          {t("terminal.columns.plannedStart", "Start")}
+          {t("terminal.columns.plannedStart")}
         </th>
         <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
           {t("terminal.columns.dueDate")}
@@ -145,7 +145,7 @@ export function OperatorWorkQueue({
           {t("terminal.columns.files")}
         </th>
         <th className="px-2 py-1.5 text-xs font-semibold text-muted-foreground">
-          {t("terminal.columns.backlogStatus", "Status")}
+          {t("terminal.columns.backlogStatus")}
         </th>
       </tr>
     </thead>
@@ -172,7 +172,7 @@ export function OperatorWorkQueue({
         jobs={inBufferJobs}
         selectedJobId={selectedJobId}
         onSelectJob={onSelectJob}
-        emptyMessage={t("terminal.noBufferJobs", "No jobs in buffer")}
+        emptyMessage={t("terminal.noBufferJobs")}
         variant="buffer"
         tableHead={tableHead}
         totalHours={bufferTotals.hours}
@@ -186,7 +186,7 @@ export function OperatorWorkQueue({
         jobs={expectedJobs}
         selectedJobId={selectedJobId}
         onSelectJob={onSelectJob}
-        emptyMessage={t("terminal.noExpectedJobs", "No expected jobs")}
+        emptyMessage={t("terminal.noExpectedJobs")}
         variant="expected"
         tableHead={tableHead}
         totalHours={expectedTotals.hours}

@@ -300,7 +300,20 @@
     "scrap": "Afkeur",
     "selectReason": "Selecteer reden...",
     "selectScrapReason": "Selecteer een reden voor elke afkeurregel",
-    "totalScrap": "Totaal afkeur"
+    "totalScrap": "Totaal afkeur",
+    "errors": {
+      "activeElsewhere": "Je bent nog ingeklokt op een andere bewerking. Stop die eerst.",
+      "alreadyCompleted": "Deze bewerking is al afgerond.",
+      "notPaused": "Alleen een gepauzeerde bewerking kan hervatten.",
+      "notInProgress": "Alleen een lopende bewerking kan pauzeren.",
+      "standstill": "Los eerst de actieve stilstand op voordat je herstart.",
+      "operatorRequired": "Kies eerst een operator.",
+      "notStarted": "Start de bewerking voordat je hem afrondt.",
+      "timersOpen": "Stop alle lopende timers voordat je afrondt.",
+      "notFound": "Bewerking niet gevonden.",
+      "notReleased": "De vorige bewerking van dit onderdeel is nog niet afgerond."
+    },
+    "switchedFrom": "{{operation}} gestopt en deze gestart."
   },
   "terminalLogin": {
     "welcome": "OPERATOR TERMINAL",
