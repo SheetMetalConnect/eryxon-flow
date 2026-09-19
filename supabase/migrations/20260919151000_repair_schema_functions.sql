@@ -1,6 +1,10 @@
 -- Repair two long-standing RPC failures found by schema linting.
 -- Rollback: restore the preceding function bodies from migration history.
 
+-- The hosted function predates the current output column names. PostgreSQL
+-- requires a drop before an OUT-parameter contract can be corrected.
+DROP FUNCTION IF EXISTS public.get_part_routing(uuid);
+
 CREATE OR REPLACE FUNCTION public.get_part_routing(p_part_id uuid)
 RETURNS TABLE(
   operation_id uuid,
