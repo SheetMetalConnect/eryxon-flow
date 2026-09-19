@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Eryxon Flow REST API",
-    "version": "0.11.4",
+    "version": "0.11.5",
     "description": "Tenant-scoped production execution API for high-mix metal fabrication. Exchange jobs, parts, operations, cells and resources with an ERP, drive production transitions and configure signed outbound webhooks. Every request requires an Eryxon API key.",
     "contact": {
       "name": "Eryxon Flow",

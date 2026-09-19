@@ -4,6 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { QueryKeys } from "@/lib/queryClient";
+import type { TablesUpdate } from "@/integrations/supabase/types";
 import type { Batch, BatchStatus, CreateBatchInput } from "./types";
 
 /**
@@ -112,7 +113,7 @@ export function useUpdateBatchStatus() {
 
   return useMutation({
     mutationFn: async ({ batchId, status }: { batchId: string; status: BatchStatus }) => {
-      const updates: Record<string, string> = { status };
+      const updates: TablesUpdate<"operation_batches"> = { status };
 
       if (status === "in_progress" && profile?.id) {
         updates.started_at = new Date().toISOString();

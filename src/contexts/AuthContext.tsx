@@ -30,6 +30,9 @@ interface TenantInfo {
   status: "active" | "cancelled" | "suspended" | "trial";
   trial_ends_at: string | null;
   working_days_mask: number | null;
+  factory_opening_time: string | null;
+  factory_closing_time: string | null;
+  timezone: string | null;
   // Whitelabeling fields for managed hosting
   whitelabel_enabled: boolean;
   whitelabel_logo_url: string | null;
@@ -208,6 +211,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           status: tenantData.status as TenantInfo['status'],
           trial_ends_at: (tenantData.trial_ends_at as string | null) ?? null,
           working_days_mask: (tenantData.working_days_mask as number | null) ?? null,
+          factory_opening_time: (tenantData.factory_opening_time as string | null) ?? null,
+          factory_closing_time: (tenantData.factory_closing_time as string | null) ?? null,
+          timezone: (tenantData.timezone as string | null) ?? null,
           whitelabel_enabled: (tenantData.whitelabel_enabled as boolean) ?? false,
           whitelabel_logo_url: (tenantData.whitelabel_logo_url as string | null) ?? null,
           whitelabel_app_name: (tenantData.whitelabel_app_name as string | null) ?? null,

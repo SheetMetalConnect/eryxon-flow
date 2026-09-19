@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { formatDuration } from "@/lib/time-utils";
 import { IconDisplay } from "@/components/ui/icon-picker";
 import { OperationTimeSummary } from "./OperationTimeSummary";
+import { Progress } from "@/components/ui/progress";
 
 interface Substep {
   id: string;
@@ -71,6 +72,10 @@ export function OperationRoutePanel({ job, operations }: OperationRoutePanelProp
   const currentSubsteps = substeps[job.operationId] ?? [];
   const instructionSteps = currentSubsteps.filter((substep) => Boolean(substep.notes?.trim()));
   const instruction = job.notes?.trim();
+  const completedOperations = operations.filter((operation) => operation.status === "completed").length;
+  const routeProgress = operations.length > 0
+    ? Math.round((completedOperations / operations.length) * 100)
+    : 0;
 
   return (
     <div className="space-y-5">
@@ -80,6 +85,18 @@ export function OperationRoutePanel({ job, operations }: OperationRoutePanelProp
         producedQuantity={job.producedQuantity ?? 0}
         plannedQuantity={job.quantity}
       />
+
+      {operations.length > 0 ? (
+        <div className="space-y-2 rounded-lg border border-border bg-background/70 p-3">
+          <div className="flex items-center justify-between gap-3 text-xs">
+            <span className="font-semibold text-foreground">{t("terminal.routeProgress")}</span>
+            <span className="font-mono tabular-nums text-muted-foreground">
+              {completedOperations}/{operations.length}
+            </span>
+          </div>
+          <Progress value={routeProgress} className="h-2 bg-muted [&>div]:bg-emerald-500 [&>div]:duration-300 motion-reduce:[&>div]:transition-none" />
+        </div>
+      ) : null}
 
       {instruction || instructionSteps.length ? (
         <div className="space-y-2">
@@ -125,7 +142,7 @@ export function OperationRoutePanel({ job, operations }: OperationRoutePanelProp
               const steps = substeps[operation.id] ?? [];
               const isExpanded = expanded.has(operation.id);
               return (
-                <div key={operation.id} className={cn("rounded-lg border bg-background/80", operation.id === job.operationId && "border-primary/40 bg-primary/5")}>
+                <div key={operation.id} className={cn("rounded-lg border bg-background/80 transition-[border-color,background-color,box-shadow] duration-200 motion-reduce:transition-none", operation.id === job.operationId && "border-primary/40 bg-primary/5 shadow-sm")}>
                   <button
                     type="button"
                     onClick={() => steps.length && setExpanded((current) => {
@@ -153,7 +170,7 @@ export function OperationRoutePanel({ job, operations }: OperationRoutePanelProp
                     </div>
                   </button>
                   {steps.length && isExpanded ? (
-                    <div className="space-y-1 border-t px-3 py-2">
+                    <div className="animate-in space-y-1 border-t px-3 py-2 duration-150 fade-in slide-in-from-top-1 motion-reduce:animate-none">
                       {steps.map((step) => (
                         <div key={step.id} className="flex items-center gap-1.5 text-xs text-muted-foreground">
                           <StatusIcon status={step.status} />

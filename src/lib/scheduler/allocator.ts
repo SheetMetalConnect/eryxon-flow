@@ -4,6 +4,13 @@ import { MAX_SCHEDULING_DAYS, DEFAULT_OPERATION_DURATION_MINUTES } from './types
 import type { CalendarService } from './calendar';
 import type { CapacityTracker } from './capacity';
 
+export interface AllocationResult {
+  allocations: DayAllocation[];
+  endDate: Date;
+  remainingHours: number;
+  complete: boolean;
+}
+
 export class OperationAllocator {
   constructor(
     private calendar: CalendarService,
@@ -22,7 +29,8 @@ export class OperationAllocator {
   }
 
   getOperationDurationHours(op: Operation): number {
-    return (op.estimated_time || DEFAULT_OPERATION_DURATION_MINUTES) / 60;
+    const minutes = op.estimated_time > 0 ? op.estimated_time : DEFAULT_OPERATION_DURATION_MINUTES;
+    return minutes / 60;
   }
 
   allocate(
@@ -30,7 +38,7 @@ export class OperationAllocator {
     operationId: string,
     hoursNeeded: number,
     startDate: Date
-  ): { allocations: DayAllocation[]; endDate: Date } {
+  ): AllocationResult {
     const allocations: DayAllocation[] = [];
     let remaining = hoursNeeded;
     let current = this.findNextWorkingDay(startDate);
@@ -49,7 +57,6 @@ export class OperationAllocator {
         const hours = Math.min(available, remaining);
         const dateStr = format(current, 'yyyy-MM-dd');
         allocations.push({ date: dateStr, hours_allocated: hours, cell_id: cellId, operation_id: operationId });
-        this.capacity.addUsedHours(cellId, dateStr, hours);
         remaining -= hours;
         lastDate = current;
       }
@@ -58,6 +65,14 @@ export class OperationAllocator {
       attempts++;
     }
 
-    return { allocations, endDate: lastDate };
+    const remainingHours = Math.max(0, remaining);
+    const complete = remainingHours === 0;
+    if (complete) {
+      for (const allocation of allocations) {
+        this.capacity.addUsedHours(cellId, allocation.date, allocation.hours_allocated);
+      }
+    }
+
+    return { allocations, endDate: lastDate, remainingHours, complete };
   }
 }

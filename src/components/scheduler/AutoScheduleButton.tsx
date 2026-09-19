@@ -3,13 +3,12 @@ import { Button } from "@/components/ui/button";
 import { CalendarClock, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { groupOperationsByJob, SchedulerService, CalendarDay } from "@/lib/scheduler";
+import { buildOperationScheduleConstraints, buildSchedulePlanPayload, groupOperationsByJob, SchedulerService, CalendarDay } from "@/lib/scheduler";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
 import { useTenant } from "@/hooks/useTenant";
 import { useQueryClient } from "@tanstack/react-query";
-import { QueryKeys } from "@/lib/queryClient";
-import { addDays, addMonths, format } from "date-fns";
+import { addMonths, format } from "date-fns";
 import { logger } from '@/lib/logger';
 import {
     AlertDialog,
@@ -39,7 +38,7 @@ export function AutoScheduleButton() {
 
         let query = supabase
             .from("operations")
-            .select("*", { count: "exact", head: true })
+            .select("id", { count: "exact", head: true })
             .eq("status", "not_started")
             .not("planned_start", "is", null);
         if (tenantId) {
@@ -82,7 +81,7 @@ export function AutoScheduleButton() {
             const [jobsResult, partsResult, operationsResult, cellsResult, calendarResult, allocationsResult] = await Promise.all([
                 supabase
                     .from("jobs")
-                    .select("*")
+                    .select("id, due_date, due_date_override")
                     .eq("tenant_id", tenantId)
                     .is("deleted_at", null)
                     .neq("status", "completed")
@@ -94,19 +93,19 @@ export function AutoScheduleButton() {
                     .is("deleted_at", null),
                 supabase
                     .from("operations")
-                    .select("*")
+                    .select("id, part_id, cell_id, sequence, estimated_time, status, planned_start, planned_end, updated_at")
                     .eq("tenant_id", tenantId)
                     .is("deleted_at", null)
                     .neq("status", "completed")
                     .order("sequence", { ascending: true }),
                 supabase
                     .from("cells")
-                    .select("*")
+                    .select("id, capacity_hours_per_day")
                     .eq("tenant_id", tenantId)
                     .is("deleted_at", null),
                 supabase
                     .from("factory_calendar")
-                    .select("*")
+                    .select("date, day_type, capacity_multiplier")
                     .eq("tenant_id", tenantId)
                     .gte("date", format(new Date(), 'yyyy-MM-dd'))
                     .lte("date", format(addMonths(new Date(), 12), 'yyyy-MM-dd')),
@@ -135,99 +134,73 @@ export function AutoScheduleButton() {
                 capacity_multiplier: d.capacity_multiplier ?? 1,
             })) as CalendarDay[];
 
-            const tenantConfig = tenant as unknown as Record<string, unknown> | null;
             const config = {
-                workingDaysMask: (tenantConfig?.working_days_mask as number) ?? 31,
-                factoryOpeningTime: (tenantConfig?.factory_opening_time as string)?.substring(0, 5) ?? '07:00',
-                factoryClosingTime: (tenantConfig?.factory_closing_time as string)?.substring(0, 5) ?? '17:00',
+                workingDaysMask: tenant?.working_days_mask ?? 31,
+                factoryOpeningTime: tenant?.factory_opening_time?.substring(0, 5) ?? '07:00',
+                factoryClosingTime: tenant?.factory_closing_time?.substring(0, 5) ?? '17:00',
             };
 
             const scheduler = new SchedulerService(cells, calendarDays, config);
-            const activeOperations = operations.filter((operation) => operation.status !== "not_started");
-            const activeOperationIds = new Set(activeOperations.map((operation) => operation.id));
-            scheduler.reserveAllocations(
-                (allocationsResult.data || []).filter((allocation) =>
-                    activeOperationIds.has(allocation.operation_id),
-                ),
-            );
-
-            const earliestStartByPart = new Map<string, Date>();
-            for (const operation of activeOperations) {
-                const nextStart = addDays(
-                    operation.planned_end ? new Date(operation.planned_end) : new Date(),
-                    1,
-                );
-                const current = earliestStartByPart.get(operation.part_id);
-                if (!current || nextStart > current) {
-                    earliestStartByPart.set(operation.part_id, nextStart);
-                }
+            const allExistingAllocations = allocationsResult.data || [];
+            scheduler.reserveAllocations(allExistingAllocations);
+            const allocationsByOperation = new Map<string, typeof allExistingAllocations>();
+            for (const allocation of allExistingAllocations) {
+                const existing = allocationsByOperation.get(allocation.operation_id) ?? [];
+                existing.push(allocation);
+                allocationsByOperation.set(allocation.operation_id, existing);
             }
 
             const notStartedOperations = operations.filter(
                 (operation) => operation.status === "not_started",
             );
+            const now = new Date();
             const scheduledOps = scheduler.scheduleJobs(
                 jobs,
                 groupOperationsByJob(notStartedOperations, parts),
-                new Date(),
-                earliestStartByPart,
+                now,
+                {
+                    constraintsByOperation: buildOperationScheduleConstraints(operations, now),
+                    existingAllocationsByOperation: allocationsByOperation,
+                },
             );
 
-            let updatedCount = 0;
-            const updates = scheduledOps
-                .filter(op => op.planned_start && op.planned_end)
-                .map(op => ({
-                    id: op.id,
-                    planned_start: op.planned_start,
-                    planned_end: op.planned_end
-                }));
-
-            for (const update of updates) {
-                const { error } = await supabase
-                    .from("operations")
-                    .update({
-                        planned_start: update.planned_start,
-                        planned_end: update.planned_end
-                    })
-                    .eq("id", update.id);
-
-                if (!error) updatedCount++;
-            }
-
-            const operationIds = scheduledOps.map(op => op.id);
-            if (operationIds.length > 0) {
-                await supabase
-                    .from("operation_day_allocations")
-                    .delete()
-                    .in("operation_id", operationIds);
-            }
-
-            const resolvedTenantId = tenantId;
-            const allAllocations = scheduledOps.flatMap(op =>
-                op.day_allocations.map(alloc => ({
-                    operation_id: alloc.operation_id,
-                    cell_id: alloc.cell_id,
-                    date: alloc.date,
-                    hours_allocated: alloc.hours_allocated,
-                    start_time: '07:00:00',
-                    end_time: '17:00:00',
-                    tenant_id: resolvedTenantId,
-                }))
+            const scheduledOperationIds = new Set(
+                scheduledOps
+                    .filter((operation) => operation.scheduling_status === 'scheduled')
+                    .map((operation) => operation.id),
             );
+            const retainedAllocations = allExistingAllocations.filter((allocation) =>
+                !scheduledOperationIds.has(allocation.operation_id),
+            );
+            const plan = buildSchedulePlanPayload(
+                scheduledOps,
+                retainedAllocations,
+                config.factoryOpeningTime,
+                config.factoryClosingTime,
+            );
+            const unscheduledCount = scheduledOps.filter(
+                (operation) => operation.scheduling_status === 'unscheduled',
+            ).length;
 
-            if (allAllocations.length > 0) {
-                const { error: allocError } = await supabase
-                    .from("operation_day_allocations")
-                    .insert(allAllocations);
-
-                if (allocError) {
-                    logger.warn('AutoScheduleButton', 'Failed to save day allocations', allocError);
-                }
+            if (plan.operations.length > 0) {
+                const { error } = await supabase.rpc('apply_schedule_plan', {
+                    p_tenant_id: tenantId,
+                    p_operations: plan.operations,
+                    p_allocations: plan.allocations,
+                });
+                if (error) throw error;
             }
 
-            toast.success(t("capacity.schedulingComplete"), {
-                description: t("capacity.operationsScheduled", { count: updatedCount }),
-            });
+            if (plan.operations.length > 0) {
+                toast.success(t("capacity.schedulingComplete"), {
+                    description: t("capacity.operationsScheduled", { count: plan.operations.length }),
+                });
+            }
+            if (unscheduledCount > 0) {
+                toast.warning(t("capacity.schedulingPartial"), {
+                    description: t("capacity.operationsUnscheduled", { count: unscheduledCount }),
+                });
+            }
 
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["capacity"] }),

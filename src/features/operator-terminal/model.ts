@@ -6,7 +6,7 @@ import {
   type OperatorTerminalMode,
   type OperatorTerminalWorkModeSettings,
 } from "./workModes";
-import { isReleased } from "./release";
+import { deriveOperationFlowState, isReleased } from "./release";
 
 export interface TerminalCell {
   id: string;
@@ -109,9 +109,8 @@ export function mapOperationToTerminalJob(
 ): TerminalJob {
   const paths = operation.part.file_paths ?? [];
   const released = isReleased(operation, context.allOperations);
-  let status: TerminalJob["status"] = released ? "in_buffer" : "expected";
-  if (operation.status === "in_progress") status = "in_progress";
-  else if (operation.status === "on_hold") status = "on_hold";
+  const flowState = deriveOperationFlowState(operation, context.allOperations);
+  let status: TerminalJob["status"] = flowState === 'active' ? 'in_progress' : flowState;
   if (operation.active_time_entry && operation.status !== "on_hold") status = "in_progress";
 
   const activeMode = parseOperatorTerminalModeNote(operation.active_time_entry?.notes);

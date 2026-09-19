@@ -1,5 +1,5 @@
 import { useProfile } from "@/hooks/useProfile";
-import { useAllCellsQRMMetrics } from "@/hooks/useQRMMetrics";
+import { useAllCellsQRMMetrics } from "@/hooks/qrm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { logger } from '@/lib/logger';
+import { deriveOperationFlowState } from '@/features/operator-terminal/release';
 
 interface Operation {
   id: string;
@@ -18,6 +19,7 @@ interface Operation {
   estimated_time: number;
   actual_time: number | null;
   cell_id: string;
+  sequence: number;
   part: {
     id: string;
     part_number: string;
@@ -28,6 +30,37 @@ interface Operation {
       due_date: string | null;
     };
   };
+}
+
+function FlowOperationRow({
+  operation,
+  tone,
+  onOpen,
+}: {
+  operation: Operation;
+  tone: "active" | "hold" | "buffer" | "expected";
+  onOpen: () => void;
+}) {
+  const toneClass = {
+    active: "bg-emerald-950/5 hover:bg-emerald-950/10",
+    hold: "bg-amber-950/5 hover:bg-amber-950/10",
+    buffer: "bg-blue-950/5 hover:bg-blue-950/10",
+    expected: "bg-muted/20 hover:bg-muted/30",
+  }[tone];
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`flex w-full items-center justify-between rounded p-2 text-left text-xs transition-colors motion-reduce:transition-none ${toneClass}`}
+    >
+      <span className="font-medium">{operation.part.job.job_number}</span>
+      <span className="text-muted-foreground">{operation.part.part_number}</span>
+      <Badge variant={tone === "active" ? "secondary" : "outline"} className="text-xs">
+        {operation.operation_name}
+      </Badge>
+    </button>
+  );
 }
 
 /**
@@ -47,7 +80,7 @@ export function QRMDashboard() {
       if (!profile?.tenant_id) return [];
       const { data, error } = await supabase
         .from("cells")
-        .select("*")
+        .select("id, name, color, sequence")
         .eq("tenant_id", profile.tenant_id)
         .eq("active", true)
         .order("sequence");
@@ -70,6 +103,7 @@ export function QRMDashboard() {
           estimated_time,
           actual_time,
           cell_id,
+          sequence,
           parts!inner(
             id,
             part_number,
@@ -82,7 +116,7 @@ export function QRMDashboard() {
           )
         `)
         .eq("tenant_id", profile.tenant_id)
-        .in("status", ["not_started", "in_progress"]);
+        .in("status", ["not_started", "in_progress", "on_hold"]);
       
       if (error) {
         logger.error('QRMDashboard', 'Error fetching operations', error);
@@ -97,6 +131,7 @@ export function QRMDashboard() {
         estimated_time: number;
         actual_time: number | null;
         cell_id: string;
+        sequence: number;
         parts: {
           id: string;
           part_number: string;
@@ -116,6 +151,7 @@ export function QRMDashboard() {
         estimated_time: op.estimated_time,
         actual_time: op.actual_time,
         cell_id: op.cell_id,
+        sequence: op.sequence,
         part: {
           id: op.parts.id,
           part_number: op.parts.part_number,
@@ -150,11 +186,15 @@ export function QRMDashboard() {
   };
 
   const groupOperations = (ops: Operation[]) => {
-    return {
-      active: ops.filter((op) => op.status === "in_progress"),
-      buffer: ops.filter((op) => op.status === "not_started").slice(0, 5),
-      expected: ops.filter((op) => op.status === "not_started").slice(5),
-    };
+    const grouped = { active: [] as Operation[], onHold: [] as Operation[], buffer: [] as Operation[], expected: [] as Operation[] };
+    for (const operation of ops) {
+      const state = deriveOperationFlowState(operation, operations);
+      if (state === "active") grouped.active.push(operation);
+      else if (state === "on_hold") grouped.onHold.push(operation);
+      else if (state === "in_buffer") grouped.buffer.push(operation);
+      else if (state === "expected") grouped.expected.push(operation);
+    }
+    return grouped;
   };
 
   if (loading) {
@@ -218,9 +258,11 @@ export function QRMDashboard() {
           return (
             <div key={cell.id} className="border border-border rounded-lg overflow-hidden">
               {/* Cell Header */}
-              <div
-                className="flex items-center justify-between p-3 bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+              <button
+                type="button"
+                className="flex w-full items-center justify-between bg-muted/30 p-3 text-left transition-colors hover:bg-muted/50 motion-reduce:transition-none"
                 onClick={() => toggleCell(cell.id)}
+                aria-expanded={isExpanded}
               >
                 <div className="flex items-center gap-3">
                   {isExpanded ? (
@@ -253,7 +295,7 @@ export function QRMDashboard() {
                     <Badge className="bg-amber-500 text-xs">{t("qrm.warning")}</Badge>
                   )}
                 </div>
-              </div>
+              </button>
 
               {/* Expanded Content */}
               {isExpanded && (
@@ -267,15 +309,31 @@ export function QRMDashboard() {
                       </div>
                       <div className="space-y-1">
                         {grouped.active.map((op) => (
-                          <div
+                          <FlowOperationRow
                             key={op.id}
-                            className="flex items-center justify-between text-xs p-2 bg-emerald-950/5 rounded hover:bg-emerald-950/10 cursor-pointer transition-colors"
-                            onClick={() => navigate(`/admin/operations`)}
-                          >
-                            <span className="font-medium">{op.part.job.job_number}</span>
-                            <span className="text-muted-foreground">{op.part.part_number}</span>
-                            <Badge variant="secondary" className="text-xs">{op.operation_name}</Badge>
-                          </div>
+                            operation={op}
+                            tone="active"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {grouped.onHold.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-amber-600 mb-1.5 flex items-center gap-2">
+                        <div className="h-0.5 w-2 bg-amber-500 rounded" />
+                        {t("qrm.onHold")} ({grouped.onHold.length})
+                      </div>
+                      <div className="space-y-1">
+                        {grouped.onHold.map((op) => (
+                          <FlowOperationRow
+                            key={op.id}
+                            operation={op}
+                            tone="hold"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
                         ))}
                       </div>
                     </div>
@@ -290,15 +348,12 @@ export function QRMDashboard() {
                       </div>
                       <div className="space-y-1">
                         {grouped.buffer.map((op) => (
-                          <div
+                          <FlowOperationRow
                             key={op.id}
-                            className="flex items-center justify-between text-xs p-2 bg-blue-950/5 rounded hover:bg-blue-950/10 cursor-pointer transition-colors"
-                            onClick={() => navigate(`/admin/operations`)}
-                          >
-                            <span className="font-medium">{op.part.job.job_number}</span>
-                            <span className="text-muted-foreground">{op.part.part_number}</span>
-                            <Badge variant="outline" className="text-xs">{op.operation_name}</Badge>
-                          </div>
+                            operation={op}
+                            tone="buffer"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
                         ))}
                       </div>
                     </div>
@@ -313,15 +368,12 @@ export function QRMDashboard() {
                       </div>
                       <div className="space-y-1">
                         {grouped.expected.slice(0, 3).map((op) => (
-                          <div
+                          <FlowOperationRow
                             key={op.id}
-                            className="flex items-center justify-between text-xs p-2 bg-muted/20 rounded hover:bg-muted/30 cursor-pointer transition-colors"
-                            onClick={() => navigate(`/admin/operations`)}
-                          >
-                            <span className="font-medium">{op.part.job.job_number}</span>
-                            <span className="text-muted-foreground">{op.part.part_number}</span>
-                            <Badge variant="outline" className="text-xs">{op.operation_name}</Badge>
-                          </div>
+                            operation={op}
+                            tone="expected"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
                         ))}
                         {grouped.expected.length > 3 && (
                           <div className="text-xs text-muted-foreground text-center p-1">

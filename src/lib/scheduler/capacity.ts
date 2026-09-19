@@ -48,6 +48,15 @@ export class CapacityTracker {
     this.used.get(cellId)!.set(dateStr, current + hours);
   }
 
+  removeUsedHours(cellId: string, dateStr: string, hours: number): void {
+    const days = this.used.get(cellId);
+    if (!days) return;
+    const next = Math.max(0, (days.get(dateStr) ?? 0) - hours);
+    if (next === 0) days.delete(dateStr);
+    else days.set(dateStr, next);
+    if (days.size === 0) this.used.delete(cellId);
+  }
+
   getAvailableCapacity(cellId: string, date: Date): number {
     const total = this.getCellCapacityForDay(cellId, date);
     const dateStr = format(date, 'yyyy-MM-dd');

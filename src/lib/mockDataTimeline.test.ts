@@ -40,7 +40,7 @@ describe("mock data timeline", () => {
     });
   });
 
-  it("moves active work from a weekend to the next working day", () => {
+  it("moves active work from a weekend to the previous working day", () => {
     const planned = createPlannedWindow({
       reference,
       dueAt: "2026-09-28T00:00:00.000Z",
@@ -49,7 +49,51 @@ describe("mock data timeline", () => {
       estimatedMinutes: 60,
     });
 
-    expect(planned.plannedStart).toBe("2026-09-21T08:00:00.000Z");
+    expect(planned.plannedStart).toBe("2026-09-18T08:00:00.000Z");
+    expect(new Date(planned.plannedStart).getTime()).toBeLessThan(reference.getTime());
+  });
+
+  it("skips a half day that is too short for the operation", () => {
+    const planned = createPlannedWindow({
+      reference: new Date("2026-12-20T11:30:00.000Z"),
+      dueAt: "2026-12-29T00:00:00.000Z",
+      sequence: 10,
+      status: "not_started",
+      estimatedMinutes: 270,
+      context: {
+        calendar: createDutchFactoryCalendar(new Date("2026-12-20T11:30:00.000Z")),
+      },
+    });
+
+    expect(planned.plannedStart).toBe("2026-12-28T08:00:00.000Z");
+  });
+
+  it("respects a non-default working-days mask", () => {
+    const planned = createPlannedWindow({
+      reference,
+      dueAt: "2026-09-26T00:00:00.000Z",
+      sequence: 10,
+      status: "not_started",
+      estimatedMinutes: 60,
+      context: { workingDaysMask: 96, calendar: [] },
+    });
+
+    expect(new Date(planned.plannedStart).getUTCDay()).toBe(6);
+  });
+
+  it("does not plan on the Christmas closure", () => {
+    const planned = createPlannedWindow({
+      reference: new Date("2026-12-20T11:30:00.000Z"),
+      dueAt: "2026-12-29T00:00:00.000Z",
+      sequence: 10,
+      status: "not_started",
+      estimatedMinutes: 60,
+      context: {
+        calendar: createDutchFactoryCalendar(new Date("2026-12-20T11:30:00.000Z")),
+      },
+    });
+
+    expect(planned.plannedStart.slice(0, 10)).not.toBe("2026-12-25");
   });
 
   it("builds a rolling Dutch factory calendar", () => {

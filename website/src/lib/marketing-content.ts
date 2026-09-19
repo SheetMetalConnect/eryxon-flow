@@ -4,9 +4,10 @@
  * This is the single source of truth for the localized landing and pricing sections.
  *
  * Voice: calm, practical, short, and direct. Do not add testimonials, performance claims,
- * customer names, or pricing figures. The operating model is:
- *   Hosted demo   — the Community edition, hosted by us, free, 30 days, usage limits.
- *   Community     — self-hosted, source-available (BSL 1.1), single site, free, as-is.
+ * customer names, or unapproved pricing. The operating model is:
+ *   Hosted trial — free for 30 days, usage limits.
+ *   Premium      — hosted production, from EUR 300 per site/month, support included.
+ *   Community    — self-hosted, source-available (BSL 1.1), single site, free, as-is.
  */
 import type { Locale } from "@/lib/locale";
 
@@ -42,9 +43,8 @@ export interface LandingCopy {
   };
   features: { eyebrow: string; h2: string; lead: string; items: FeatureCopy[] };
   how: { eyebrow: string; h2: string; steps: StepCopy[] };
-  api: { eyebrow: string; h2: string; lead: string; bullets: string[] };
+  api: { eyebrow: string; h2: string; lead: string; bullets: string[]; cta: string };
   pricing: { eyebrow: string; h2: string; lead: string; allLink: string };
-  rollout: { eyebrow: string; h2: string; lead: string; cta: string };
   cta: { h2: string; lead: string; ctaPrimary: string; ctaSecondary: string };
 }
 
@@ -55,6 +55,8 @@ export interface PricingCopy {
   plans: {
     /** Hosted demo of the Community edition, free for 30 days with usage limits. */
     demo: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
+    /** Hosted production plan, priced per site with support included. */
+    premium: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
     /** Community, self-hosted, source-available (BSL 1.1), single site. */
     community: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; ctaGuide: string; ctaConsulting: string };
   };
@@ -80,198 +82,177 @@ const productCards: Record<Locale, LandingCopy["product"]["cards"]> = {
 
 const LANDING: Record<Locale, LandingCopy> = {
   en: {
-    title: "Eryxon Flow — shop-floor control for high-mix metal fabrication",
+    title: "Eryxon Flow — shop-floor control for metal fabrication",
     description:
-      "Turn ERP work orders into clear queues for cutting, bending, welding and assembly. Track routing, time, output, scrap, issues and locations from the shop floor, with REST API, signed webhooks and optional MCP access.",
+      "Track high-mix jobs through cutting, bending, welding and assembly. Operators work from clear cell queues while planners see progress, load and problems as they happen.",
     hero: {
-      h1: "Turn ERP orders into clear work at every cell.",
-      lead: "Eryxon Flow is a shop-floor execution layer for high-mix metal fabricators. Planners see which operations are ready and where load is building. Operators work from a tablet at the cell. ERP, automation and approved agents connect through documented interfaces, while production rules stay in the database.",
+      h1: "Keep a grip on every job, from shop floor to planning.",
+      lead: "Track high-mix jobs through cutting, bending, welding and assembly. Operators see what is ready at their cell; planners see what is moving and where work is waiting.",
       ctaPrimary: "Try it hosted",
       ctaSecondary: "Self-host it free",
       ctaTertiary: "Read the docs →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laser cutting", queueTitle: "Work queue", cards: productCards.en },
     features: {
-      eyebrow: "For metal fabrication teams",
-      h2: "Know what is ready, what is running, and what is blocked.",
-      lead: "The planner, operator and connected systems work from the same production state, from the first routing step to reported output.",
+      eyebrow: "Built for the shop floor",
+      h2: "Operators know what is next. Planners see where work is stuck.",
+      lead: "Every cell works from a clear queue while planning keeps sight of progress and load.",
       items: [
-        { title: "Plan from actual status", body: "See load per cell, active work, overdue operations, standstills and issues in one current overview." },
-        { title: "Keep routing in sequence", body: "The buffer follows completed upstream steps. Optional sequential release and WIP limits make the agreed flow visible and enforceable." },
-        { title: "Connect the ERP cleanly", body: "Create and update production work through the REST API or CSV. Signed webhooks send committed changes back to connected systems." },
-        { title: "Give operators a focused queue", body: "Each cell gets a touch-friendly work queue with status, due date, running time and the part's current and next location." },
-        { title: "Trace output and issues", body: "Record time, good quantity, scrap, standstills and quality issues against the operation that produced them." },
-        { title: "Source-available", body: "The source is on GitHub under the Business Source License. Read it, change it, self-host one workshop free. Multi-site and offering it as a service take a commercial licence." },
+        { title: "Queue by cell", body: "Ready, running and overdue work stays visible on the tablet at each cell." },
+        { title: "Routing and WIP", body: "Completed steps release the next operation; WIP limits show where work is building up." },
+        { title: "Production reporting", body: "Record time, good quantity, scrap, standstills and issues against the operation." },
+        { title: "Files and locations", body: "Open drawings and STEP models, and see where each part is now and where it goes next." },
+        { title: "Planning overview", body: "See load, due dates, active work and problems across the shop." },
+        { title: "Source-available", body: "Run one workshop yourself under BSL 1.1, or choose a hosted plan." },
       ],
     },
     how: {
       eyebrow: "How it works",
-      h2: "From ERP order to reported production.",
+      h2: "From planned work to a completed operation.",
       steps: [
-        { n: "01", h: "Bring in the order and routing", b: "Create jobs, parts and operations through the REST API, CSV import or the admin interface." },
-        { n: "02", h: "Execute at the cell", b: "Operators start work, report output, mark operations complete, locate parts and flag problems from the terminal." },
-        { n: "03", h: "Use the result everywhere", b: "Planners see the updated load and signed webhooks notify the ERP, data platform or other subscribed systems." },
+        { n: "01", h: "Set up the work", b: "Create jobs, parts and routings in the app, from a CSV import or through the API." },
+        { n: "02", h: "Run it at the cell", b: "Operators start work, report output and scrap, flag issues and mark operations complete." },
+        { n: "03", h: "Plan from the current status", b: "Progress, load and problems update as the work moves through the shop." },
       ],
     },
     api: {
-      eyebrow: "Built for integration",
-      h2: "One production state for the app and connected systems.",
-      lead: "Use the REST API for inbound work and signed webhooks for committed changes. The optional MCP server exposes the same tenant boundary and production lifecycle rules to approved agents.",
+      eyebrow: "Integrations",
+      h2: "Connect what already runs your shop.",
+      lead: "Bring work in through REST or CSV. Send production changes back with signed webhooks. MCP access is optional.",
       bullets: [
-        "MCP server on the 2026-07-28 specification: stateless Streamable HTTP or stdio",
-        "113 tools with annotations and output schemas; a test proves parity with the REST API",
-        "Destructive tools ask for confirmation in a second round trip",
-        "REST API with bearer keys, 409 with the rule text when a rule blocks a change",
-        "Signed webhooks: 36 events, HMAC signature, retries, delivery log, redeliver",
+        "REST API for jobs, parts and routings",
+        "Signed webhooks for production changes",
+        "Optional MCP access under the same production rules",
       ],
+      cta: "Read the integration docs →",
     },
     pricing: {
       eyebrow: "Pricing",
-      h2: "Two ways to run it.",
-      lead: "Try the hosted instance, or self-host the Community edition free for one workshop.",
+      h2: "Three ways to run it.",
+      lead: "Start with the free hosted trial, choose Premium for production, or self-host the Community edition.",
       allLink: "See full pricing →",
     },
-    rollout: {
-      eyebrow: "Rollout and licensing",
-      h2: "Several sites, or hosting it for others?",
-      lead: "Multi-site use and offering Eryxon Flow as a service take a commercial licence. Rollout help and ERP integration are scoped per shop. Get in touch.",
-      cta: "Contact us",
-    },
     cta: {
-      h2: "Evaluate it against your own production flow.",
-      lead: "Use the hosted trial or self-host the Community edition. Start with one routing, one cell and the systems that need the result.",
+      h2: "Try it with your own production flow.",
+      lead: "Start with one routing and one cell in the hosted trial.",
       ctaPrimary: "Try it hosted",
       ctaSecondary: "Read the self-host guide",
     },
   },
 
   nl: {
-    title: "Eryxon Flow — werkvloerbesturing voor high-mix metaalbewerking",
+    title: "Eryxon Flow — werkvloerbesturing voor de metaalbewerking",
     description:
-      "Maak van ERP-orders duidelijke werkrijen voor snijden, kanten, lassen en assemblage. Registreer routing, tijd, output, afkeur, problemen en locaties op de werkvloer, met REST-API, ondertekende webhooks en optionele MCP-toegang.",
+      "Volg orders door snijden, kanten, lassen en assemblage. Operators werken vanuit een duidelijke wachtrij per cel; planners zien voortgang, belasting en problemen zodra ze ontstaan.",
     hero: {
-      h1: "Maak van ERP-orders duidelijk werk voor elke cel.",
-      lead: "Eryxon Flow is de uitvoeringslaag tussen ERP en werkvloer voor high-mix metaalbedrijven. Planners zien welke bewerkingen klaarstaan en waar de belasting oploopt. Operators werken op een tablet bij de cel. ERP, automatisering en toegelaten agents koppelen via gedocumenteerde interfaces, terwijl productieregels in de database blijven.",
+      h1: "Grip op je orders, van werkvloer tot planning.",
+      lead: "Volg orders door snijden, kanten, lassen en assemblage. Operators zien wat er klaarstaat; planners zien meteen wat loopt en waar werk wacht.",
       ctaPrimary: "Probeer de gehoste versie",
       ctaSecondary: "Gratis zelf hosten",
       ctaTertiary: "Lees de docs →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Lasersnijden", queueTitle: "Werkrij", cards: productCards.nl },
     features: {
-      eyebrow: "Voor metaalbedrijven",
-      h2: "Weet wat klaarstaat, wat draait en wat blokkeert.",
-      lead: "Planner, operator en gekoppelde systemen werken met dezelfde productiestatus, van de eerste routingstap tot de gemelde output.",
+      eyebrow: "Gemaakt voor de werkvloer",
+      h2: "Operators weten wat volgt. Planners zien waar werk vastloopt.",
+      lead: "Elke cel werkt vanuit een duidelijke wachtrij, terwijl de planning zicht houdt op voortgang en belasting.",
       items: [
-        { title: "Plan met de actuele status", body: "Zie belasting per cel, lopend werk, te late bewerkingen, stilstanden en problemen in één actueel overzicht." },
-        { title: "Bewaak de routing", body: "De buffer volgt afgeronde voorgaande stappen. Optionele volgordedwang en WIP-limieten maken de afgesproken flow zichtbaar en afdwingbaar." },
-        { title: "Koppel het ERP gericht", body: "Maak en wijzig productiewerk via de REST-API of CSV. Ondertekende webhooks sturen vastgelegde wijzigingen terug naar gekoppelde systemen." },
-        { title: "Geef operators een gerichte werkrij", body: "Elke cel krijgt een aanraakvriendelijke werkrij met status, leverdatum, looptijd en de huidige en volgende locatie van het onderdeel." },
-        { title: "Herleid output en problemen", body: "Registreer tijd, goede aantallen, afkeur, stilstanden en kwaliteitsproblemen bij de bewerking waar ze ontstonden." },
-        { title: "Source-available", body: "De broncode staat op GitHub onder de Business Source License. Lees hem, pas hem aan, host één werkplaats gratis zelf. Meerdere locaties of aanbieden als dienst vraagt een commerciële licentie." },
+        { title: "Werkwachtrij per cel", body: "Klaarstaand, lopend en te laat werk blijft zichtbaar op de tablet bij de cel." },
+        { title: "Routing en WIP", body: "Afgeronde stappen geven de volgende bewerking vrij; WIP-limieten tonen waar werk zich opstapelt." },
+        { title: "Productie melden", body: "Registreer tijd, goede aantallen, afkeur, stilstand en problemen bij de bewerking." },
+        { title: "Bestanden en locaties", body: "Open tekeningen en STEP-modellen en zie waar onderdelen liggen en waar ze hierna heen gaan." },
+        { title: "Overzicht voor planning", body: "Zie belasting, leverdata, lopend werk en problemen voor de hele werkplaats." },
+        { title: "Source-available", body: "Host één werkplaats zelf onder BSL 1.1, of kies een gehost abonnement." },
       ],
     },
     how: {
       eyebrow: "Zo werkt het",
-      h2: "Van ERP-order naar gemelde productie.",
+      h2: "Van ingepland werk naar een gereedgemelde bewerking.",
       steps: [
-        { n: "01", h: "Haal order en routing binnen", b: "Maak orders, onderdelen en bewerkingen aan via de REST-API, CSV-import of het beheerscherm." },
-        { n: "02", h: "Voer het werk uit bij de cel", b: "Operators starten werk, melden productie, melden bewerkingen gereed, leggen locaties vast en markeren problemen op de terminal." },
-        { n: "03", h: "Gebruik het resultaat in elk systeem", b: "Planners zien de bijgewerkte belasting en ondertekende webhooks informeren ERP, dataplatform of andere abonnees." },
+        { n: "01", h: "Zet het werk klaar", b: "Maak orders, onderdelen en routings aan in de app, via CSV of via de API." },
+        { n: "02", h: "Werk het uit bij de cel", b: "Operators starten werk, melden output en afkeur, markeren problemen en melden bewerkingen gereed." },
+        { n: "03", h: "Plan met de actuele status", b: "Voortgang, belasting en problemen worden bijgewerkt terwijl het werk door de werkplaats gaat." },
       ],
     },
     api: {
-      eyebrow: "Gebouwd voor integratie",
-      h2: "Eén productiestatus voor de app en gekoppelde systemen.",
-      lead: "Gebruik de REST-API voor inkomend werk en ondertekende webhooks voor vastgelegde wijzigingen. De optionele MCP-server stelt dezelfde tenantgrens en productieregels beschikbaar aan toegelaten agents.",
+      eyebrow: "Koppelingen",
+      h2: "Koppel aan wat al in je bedrijf draait.",
+      lead: "Zet werk klaar via REST of CSV. Stuur productiewijzigingen terug met ondertekende webhooks. MCP-toegang is optioneel.",
       bullets: [
-        "MCP-server op de specificatie van 28 juli 2026: stateless Streamable HTTP of stdio",
-        "113 tools met annotaties en output-schema's; een test bewijst pariteit met de REST-API",
-        "Destructieve tools vragen om bevestiging in een tweede ronde",
-        "REST-API met bearer-keys, 409 met de regeltekst als een regel een wijziging blokkeert",
-        "Ondertekende webhooks: 36 events, HMAC-handtekening, herhaling, afleverlog, opnieuw versturen",
+        "REST-API voor orders, onderdelen en routings",
+        "Ondertekende webhooks voor productiewijzigingen",
+        "Optionele MCP-toegang onder dezelfde productieregels",
       ],
+      cta: "Lees de integratiedocumentatie →",
     },
     pricing: {
       eyebrow: "Prijzen",
-      h2: "Twee manieren om het te draaien.",
-      lead: "Probeer de gehoste versie, of host de Community-editie gratis zelf voor één werkplaats.",
+      h2: "Drie manieren om Eryxon Flow te draaien.",
+      lead: "Start met de gratis gehoste proefomgeving, kies Premium voor productie of host de Community-editie zelf.",
       allLink: "Alle prijzen →",
     },
-    rollout: {
-      eyebrow: "Uitrol en licentie",
-      h2: "Meerdere locaties, of hosten voor anderen?",
-      lead: "Gebruik op meerdere locaties en aanbieden als dienst vragen een commerciële licentie. Hulp bij uitrol en ERP-koppeling wordt per bedrijf afgebakend. Neem contact op.",
-      cta: "Neem contact op",
-    },
     cta: {
-      h2: "Toets het aan je eigen productiestroom.",
-      lead: "Gebruik de gehoste proefomgeving of host de Community-editie zelf. Begin met één routing, één cel en de systemen die het resultaat nodig hebben.",
+      h2: "Probeer het met je eigen productiestroom.",
+      lead: "Begin in de gehoste proefomgeving met één routing en één cel.",
       ctaPrimary: "Probeer de gehoste versie",
       ctaSecondary: "Lees de zelfhost-handleiding",
     },
   },
 
   de: {
-    title: "Eryxon Flow — Fertigungssteuerung für High-Mix-Metallbetriebe",
+    title: "Eryxon Flow — Fertigungssteuerung für Metallbetriebe",
     description:
-      "ERP-Aufträge werden zu klaren Arbeitsvorräten für Schneiden, Biegen, Schweißen und Montage. Routing, Zeit, Mengen, Ausschuss, Probleme und Standorte werden in der Fertigung erfasst, mit REST-API, signierten Webhooks und optionalem MCP-Zugang.",
+      "Aufträge durch Schneiden, Abkanten, Schweißen und Montage verfolgen. Bediener arbeiten mit klaren Arbeitsvorräten; die Planung sieht Fortschritt, Auslastung und Probleme sofort.",
     hero: {
-      h1: "Aus ERP-Aufträgen wird klare Arbeit für jede Zelle.",
-      lead: "Eryxon Flow verbindet ERP und Fertigung in High-Mix-Metallbetrieben. Planer sehen, welche Arbeitsgänge bereitstehen und wo sich Last aufbaut. Bediener arbeiten am Tablet in der Zelle. ERP, Automatisierung und freigegebene Agenten nutzen dokumentierte Schnittstellen, während die Produktionsregeln in der Datenbank bleiben.",
+      h1: "Jeden Auftrag im Griff, von der Werkstatt bis zur Planung.",
+      lead: "Verfolgen Sie Aufträge durch Schneiden, Abkanten, Schweißen und Montage. Bediener sehen, was bereitsteht; die Planung sieht sofort, was läuft und wo Arbeit wartet.",
       ctaPrimary: "Gehostet ausprobieren",
       ctaSecondary: "Kostenlos selbst hosten",
       ctaTertiary: "Dokumentation lesen →",
     },
     product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laserschneiden", queueTitle: "Arbeitsvorrat", cards: productCards.de },
     features: {
-      eyebrow: "Für Metallbetriebe",
-      h2: "Wissen, was bereitsteht, was läuft und was blockiert.",
-      lead: "Planung, Bediener und angebundene Systeme arbeiten mit demselben Produktionsstand, vom ersten Routingschritt bis zur gemeldeten Menge.",
+      eyebrow: "Für die Werkstatt gemacht",
+      h2: "Bediener wissen, was als Nächstes kommt. Die Planung sieht, wo es stockt.",
+      lead: "Jede Zelle arbeitet mit einem klaren Arbeitsvorrat; die Planung behält Fortschritt und Auslastung im Blick.",
       items: [
-        { title: "Mit aktuellem Stand planen", body: "Auslastung je Zelle, laufende Arbeit, überfällige Arbeitsgänge, Stillstände und Probleme stehen in einer aktuellen Übersicht." },
-        { title: "Das Routing einhalten", body: "Der Puffer folgt abgeschlossenen Vorgängern. Optionale Reihenfolgeprüfung und WIP-Grenzen machen den vereinbarten Fluss sichtbar und durchsetzbar." },
-        { title: "Das ERP gezielt anbinden", body: "Produktionsarbeit kommt über REST-API oder CSV. Signierte Webhooks geben gespeicherte Änderungen an angebundene Systeme zurück." },
-        { title: "Bedienern einen klaren Vorrat geben", body: "Jede Zelle erhält einen touchfreundlichen Arbeitsvorrat mit Status, Liefertermin, Laufzeit sowie aktuellem und nächstem Standort des Teils." },
-        { title: "Mengen und Probleme zuordnen", body: "Zeit, Gutmenge, Ausschuss, Stillstände und Qualitätsprobleme werden am verursachenden Arbeitsgang erfasst." },
-        { title: "Quelloffen einsehbar", body: "Der Quellcode liegt auf GitHub unter der Business Source License. Lesen, anpassen, eine Werkstatt kostenlos selbst hosten. Mehrere Standorte oder Betrieb als Dienst brauchen eine kommerzielle Lizenz." },
+        { title: "Arbeitsvorrat je Zelle", body: "Bereitstehende, laufende und überfällige Arbeit bleibt am Tablet der Zelle sichtbar." },
+        { title: "Routing und WIP", body: "Abgeschlossene Schritte geben den nächsten Arbeitsgang frei; WIP-Grenzen zeigen, wo sich Arbeit staut." },
+        { title: "Produktion melden", body: "Zeit, Gutmenge, Ausschuss, Stillstände und Probleme werden am Arbeitsgang erfasst." },
+        { title: "Dateien und Standorte", body: "Zeichnungen und STEP-Modelle öffnen und sehen, wo Teile liegen und wohin sie als Nächstes gehen." },
+        { title: "Übersicht für die Planung", body: "Auslastung, Termine, laufende Arbeit und Probleme in der gesamten Werkstatt sehen." },
+        { title: "Source-available", body: "Eine Werkstatt selbst unter BSL 1.1 betreiben oder einen gehosteten Tarif wählen." },
       ],
     },
     how: {
       eyebrow: "So funktioniert es",
-      h2: "Vom ERP-Auftrag zur gemeldeten Produktion.",
+      h2: "Von geplanter Arbeit zum abgeschlossenen Arbeitsgang.",
       steps: [
-        { n: "01", h: "Auftrag und Routing übernehmen", b: "Aufträge, Teile und Arbeitsgänge werden über REST-API, CSV-Import oder die Verwaltung angelegt." },
-        { n: "02", h: "In der Zelle ausführen", b: "Bediener starten Arbeit, melden Mengen und Arbeitsgänge fertig, erfassen Standorte und markieren Probleme am Terminal." },
-        { n: "03", h: "Das Ergebnis weiterverwenden", b: "Die Planung sieht die aktualisierte Last, und signierte Webhooks informieren ERP, Datenplattform oder andere Abonnenten." },
+        { n: "01", h: "Arbeit vorbereiten", b: "Aufträge, Teile und Routings in der App, per CSV oder über die API anlegen." },
+        { n: "02", h: "In der Zelle ausführen", b: "Arbeit starten, Mengen und Ausschuss melden, Probleme markieren und Arbeitsgänge abschließen." },
+        { n: "03", h: "Mit aktuellem Stand planen", b: "Fortschritt, Auslastung und Probleme werden aktualisiert, während die Arbeit durch die Werkstatt läuft." },
       ],
     },
     api: {
-      eyebrow: "Für Integration gebaut",
-      h2: "Ein Produktionsstand für App und angebundene Systeme.",
-      lead: "Die REST-API nimmt Arbeit entgegen, signierte Webhooks melden gespeicherte Änderungen. Der optionale MCP-Server stellt dieselbe Mandantengrenze und dieselben Produktionsregeln für freigegebene Agenten bereit.",
+      eyebrow: "Anbindungen",
+      h2: "An das anbinden, was im Betrieb bereits läuft.",
+      lead: "Arbeit per REST oder CSV übernehmen. Produktionsänderungen mit signierten Webhooks zurückmelden. MCP-Zugang ist optional.",
       bullets: [
-        "MCP-Server nach der Spezifikation vom 28. Juli 2026: zustandsloses Streamable HTTP oder stdio",
-        "113 Tools mit Annotationen und Output-Schemas; ein Test belegt die Parität mit der REST-API",
-        "Destruktive Tools fragen in einer zweiten Runde nach Bestätigung",
-        "REST-API mit Bearer-Keys, 409 mit dem Regeltext, wenn eine Regel eine Änderung blockiert",
-        "Signierte Webhooks: 36 Ereignisse, HMAC-Signatur, Wiederholungen, Zustellprotokoll, erneut senden",
+        "REST-API für Aufträge, Teile und Routings",
+        "Signierte Webhooks für Produktionsänderungen",
+        "Optionaler MCP-Zugang unter denselben Produktionsregeln",
       ],
+      cta: "Integrationsdokumentation lesen →",
     },
     pricing: {
       eyebrow: "Preise",
-      h2: "Zwei Wege, es zu betreiben.",
-      lead: "Gehostet ausprobieren oder die Community-Edition für eine Werkstatt kostenlos selbst hosten.",
+      h2: "Drei Wege, Eryxon Flow zu betreiben.",
+      lead: "Kostenlos gehostet testen, Premium für den Produktivbetrieb wählen oder die Community-Edition selbst betreiben.",
       allLink: "Alle Preise →",
     },
-    rollout: {
-      eyebrow: "Rollout und Lizenz",
-      h2: "Mehrere Standorte, oder Hosting für andere?",
-      lead: "Betrieb an mehreren Standorten und das Anbieten als Dienst brauchen eine kommerzielle Lizenz. Rollout-Hilfe und ERP-Anbindung werden je Betrieb abgegrenzt. Sprechen Sie uns an.",
-      cta: "Kontakt aufnehmen",
-    },
     cta: {
-      h2: "Am eigenen Produktionsfluss prüfen.",
-      lead: "Nutzen Sie die gehostete Testumgebung oder hosten Sie die Community-Edition selbst. Beginnen Sie mit einem Routing, einer Zelle und den Systemen, die das Ergebnis benötigen.",
+      h2: "Mit dem eigenen Produktionsfluss testen.",
+      lead: "Starten Sie in der gehosteten Testumgebung mit einem Routing und einer Zelle.",
       ctaPrimary: "Gehostet ausprobieren",
       ctaSecondary: "Selbsthosting-Anleitung lesen",
     },
@@ -281,35 +262,41 @@ const LANDING: Record<Locale, LandingCopy> = {
 const PRICING: Record<Locale, PricingCopy> = {
   en: {
     title: "Pricing — Eryxon Flow",
-    description: "Self-host the Community edition free, or try the hosted 30-day demo.",
-    hero: { eyebrow: "Pricing", h1: "Community is free.", lead: "Self-host the Community edition free for a single workshop, or try the hosted 30-day demo. Running several sites, or offering it as a service, needs a commercial licence; get in touch." },
+    description: "Try Eryxon Flow free, choose Premium from €300 per site each month, or self-host Community.",
+    hero: { eyebrow: "Pricing", h1: "Choose how you want to run Eryxon Flow.", lead: "Start in the free hosted trial, choose Premium for production, or self-host the Community edition." },
     plans: {
-      demo: { head: "Hosted", name: "Hosted", price: "Free", period: "· 30 days", sub: "A hosted instance to try on your own shop floor. No install, no card. Usage limits apply during the trial.", cta: "Start the 30-day trial",
-        features: [{ text: "Hosted by us, runs in minutes" }, { text: "The full shop-floor core" }, { text: "REST API, webhooks and MCP server" }, { text: "Usage limits during the trial" }] },
-      community: { head: "Community · self-hosted", name: "Community", price: "Free", period: "· single site", sub: "Run it yourself on your own infrastructure, for a single workshop. Source-available under the BSL.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
-        features: [{ text: "Source on GitHub — read, modify, self-host" }, { text: "One production site, no seat limits" }, { text: "The full shop-floor core" }, { text: "REST API, webhooks and MCP server" }, { text: "Provided as-is, community support" }] },
+      demo: { head: "Hosted trial", name: "Hosted trial", price: "Free", period: "· 30 days", sub: "A ready-to-use test environment. No installation or payment card.", cta: "Start free trial",
+        features: [{ text: "Full shop-floor workflow" }, { text: "Imports and integration access" }, { text: "Trial usage limits apply" }] },
+      premium: { head: "Premium · hosted", name: "Premium", price: "From €300", period: "· site / month", sub: "A hosted production environment with support included.", cta: "Request a quote",
+        features: [{ text: "Unlimited users" }, { text: "Support included" }, { text: "Imports and integration access" }] },
+      community: { head: "Community · self-hosted", name: "Community", price: "Free", period: "· one site", sub: "Run Eryxon Flow on your own infrastructure under BSL 1.1.", ctaGuide: "Read the self-hosting guide", ctaConsulting: "Get help with setup",
+        features: [{ text: "One production site, unlimited users" }, { text: "Run and maintain it yourself" }, { text: "Optional one-off setup packages" }] },
     },
   },
   nl: {
     title: "Prijzen — Eryxon Flow",
-    description: "Host de Community-editie gratis zelf, of probeer de gehoste demo van 30 dagen.",
-    hero: { eyebrow: "Prijzen", h1: "Community is gratis.", lead: "Host de Community-editie gratis voor één werkplaats, of probeer de gehoste demo van 30 dagen. Meerdere locaties of aanbieden als dienst vraagt een commerciële licentie; neem contact op." },
+    description: "Probeer Eryxon Flow gratis, kies Premium vanaf € 300 per locatie per maand of host Community zelf.",
+    hero: { eyebrow: "Prijzen", h1: "Kies hoe je Eryxon Flow wilt draaien.", lead: "Start in de gratis gehoste proefomgeving, kies Premium voor productie of host de Community-editie zelf." },
     plans: {
-      demo: { head: "Gehost", name: "Gehost", price: "Gratis", period: "· 30 dagen", sub: "Een gehoste instance om op je eigen werkvloer uit te proberen. Niets installeren, geen creditcard. Tijdens de proefperiode gelden gebruikslimieten.", cta: "Start de proefperiode van 30 dagen",
-        features: [{ text: "Door ons gehost, draait in minuten" }, { text: "De volledige werkvloerkern" }, { text: "REST-API, webhooks en MCP-server" }, { text: "Gebruikslimieten tijdens de proefperiode" }] },
-      community: { head: "Community · zelf gehost", name: "Community", price: "Gratis", period: "· één locatie", sub: "Draai het zelf op je eigen infrastructuur, voor één werkplaats. Source-available onder de BSL.", ctaGuide: "Lees de zelf-hosten-gids", ctaConsulting: "Hulp bij de installatie",
-        features: [{ text: "Broncode op GitHub — inzien, aanpassen, zelf hosten" }, { text: "Eén productielocatie, geen limiet op gebruikers" }, { text: "De volledige werkvloer-kern" }, { text: "REST-API, webhooks en MCP-server" }, { text: "Geleverd as-is, community-support" }] },
+      demo: { head: "Gehoste proefomgeving", name: "Gehoste proefomgeving", price: "Gratis", period: "· 30 dagen", sub: "Een direct bruikbare testomgeving. Geen installatie of creditcard nodig.", cta: "Start gratis",
+        features: [{ text: "Volledige werkvloerfuncties" }, { text: "Import en koppelingen" }, { text: "Gebruikslimieten tijdens de proefperiode" }] },
+      premium: { head: "Premium · gehost", name: "Premium", price: "Vanaf € 300", period: "· locatie / maand", sub: "Een gehoste productieomgeving met ondersteuning inbegrepen.", cta: "Vraag een offerte aan",
+        features: [{ text: "Onbeperkt aantal gebruikers" }, { text: "Ondersteuning inbegrepen" }, { text: "Import en koppelingen" }] },
+      community: { head: "Community · zelf gehost", name: "Community", price: "Gratis", period: "· één locatie", sub: "Draai Eryxon Flow op je eigen infrastructuur onder BSL 1.1.", ctaGuide: "Lees de zelfhosthandleiding", ctaConsulting: "Hulp bij de installatie",
+        features: [{ text: "Eén productielocatie, onbeperkt gebruikers" }, { text: "Zelf beheren en onderhouden" }, { text: "Optionele eenmalige installatiepakketten" }] },
     },
   },
   de: {
     title: "Preise — Eryxon Flow",
-    description: "Hoste die Community-Edition kostenlos selbst oder teste die gehostete 30-Tage-Demo.",
-    hero: { eyebrow: "Preise", h1: "Community ist kostenlos.", lead: "Hoste die Community-Edition kostenlos für eine Werkstatt oder teste die gehostete 30-Tage-Demo. Mehrere Standorte oder das Anbieten als Dienst brauchen eine kommerzielle Lizenz; melde dich." },
+    description: "Eryxon Flow kostenlos testen, Premium ab 300 € pro Standort und Monat wählen oder Community selbst hosten.",
+    hero: { eyebrow: "Preise", h1: "Wählen Sie, wie Sie Eryxon Flow betreiben.", lead: "Starten Sie in der kostenlosen Testumgebung, wählen Sie Premium für den Produktivbetrieb oder betreiben Sie die Community-Edition selbst." },
     plans: {
-      demo: { head: "Gehostet", name: "Gehostet", price: "Kostenlos", period: "· 30 Tage", sub: "Eine gehostete Instanz zum Testen in Ihrer eigenen Werkstatt. Keine Installation, keine Karte. Während des Tests gelten Nutzungslimits.", cta: "30-Tage-Test starten",
-        features: [{ text: "Von uns gehostet, läuft in Minuten" }, { text: "Der volle Werkstattkern" }, { text: "REST-API, Webhooks und MCP-Server" }, { text: "Nutzungslimits während des Tests" }] },
-      community: { head: "Community · selbst gehostet", name: "Community", price: "Kostenlos", period: "· ein Standort", sub: "Betreibe es selbst auf deiner eigenen Infrastruktur, für eine Werkstatt. Source-available unter der BSL.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
-        features: [{ text: "Quellcode auf GitHub — einsehen, anpassen, selbst hosten" }, { text: "Ein Produktionsstandort, kein Nutzerlimit" }, { text: "Der volle Werkstatt-Kern" }, { text: "REST-API, Webhooks und MCP-Server" }, { text: "Bereitgestellt wie besehen, Community-Support" }] },
+      demo: { head: "Gehostete Testumgebung", name: "Gehostete Testumgebung", price: "Kostenlos", period: "· 30 Tage", sub: "Eine sofort nutzbare Testumgebung. Keine Installation oder Kreditkarte nötig.", cta: "Kostenlos starten",
+        features: [{ text: "Vollständiger Werkstattablauf" }, { text: "Importe und Anbindungen" }, { text: "Nutzungslimits während des Tests" }] },
+      premium: { head: "Premium · gehostet", name: "Premium", price: "Ab 300 €", period: "· Standort / Monat", sub: "Eine gehostete Produktionsumgebung mit enthaltenem Support.", cta: "Angebot anfragen",
+        features: [{ text: "Unbegrenzte Nutzerzahl" }, { text: "Support inklusive" }, { text: "Importe und Anbindungen" }] },
+      community: { head: "Community · selbst gehostet", name: "Community", price: "Kostenlos", period: "· ein Standort", sub: "Betreiben Sie Eryxon Flow auf Ihrer eigenen Infrastruktur unter BSL 1.1.", ctaGuide: "Self-Hosting-Anleitung lesen", ctaConsulting: "Hilfe bei der Einrichtung",
+        features: [{ text: "Ein Produktionsstandort, unbegrenzt viele Nutzer" }, { text: "Selbst betreiben und warten" }, { text: "Optionale einmalige Einrichtungspakete" }] },
     },
   },
 };

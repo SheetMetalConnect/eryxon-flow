@@ -130,7 +130,7 @@ Time tracking ties your work to each operation.
 ### How it works
 
 1. **Start** — tap **Start production**. The timer begins and the operation moves to **In Process**.
-2. **Report production** — record the completed quantity.
+2. **Report production** — record the completed quantity. When that reaches the target, **Report & complete** records it and closes the operation in one tap.
 3. **Mark complete** — close the operation and move the part to the next routing step. If your timer is still running, **Stop & complete** closes both in one tap. For short work that does not need a timer, you can mark the operation complete directly.
 
 Only **one individual operation** can be timed at a time. If you scan or start another operation, the terminal shows what is still running and asks whether to switch. The old timer stops only when you confirm and the new operation can start.

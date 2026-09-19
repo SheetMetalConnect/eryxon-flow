@@ -2,12 +2,12 @@
 /*
  * Landing.astro — the marketing homepage body.
  *
- * Section flow: hero → product preview → feature grid → workflow → API → two
- * operating options → rollout → CTA. The `mk-*` classes use the shared `--ery-*`
+ * Section flow: hero → product preview → feature grid → workflow → integrations →
+ * three operating options → CTA. The `mk-*` classes use the shared `--ery-*`
  * token contract from `tokens.css`.
  *
- * Content is locale-driven (`marketing-content.ts`). Per Luke's constraints: NO invented
- * testimonials/stats and NO customer names/logos.
+ * Content is locale-driven (`marketing-content.ts`). Do not use invented testimonials,
+ * statistics, customer names, or customer logos.
  *
  * All CTAs route through the shared CtaButton primitive so the ERY-33 analytics contract holds.
  */
@@ -24,6 +24,8 @@ const p = pricingCopy(locale);
 
 const docsHref = localizePath("/introduction/", locale);
 const selfHostHref = localizePath("/guides/self-hosting/", locale);
+const apiHref = localizePath("/api/rest-api-reference/", locale);
+const premiumHref = "mailto:office@vanenkhuizen.com?subject=Eryxon%20Flow%20Premium";
 
 const check =
   '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
@@ -118,7 +120,7 @@ const arrow =
   </ol>
 </section>
 
-<!-- 5 · API code block, dark band (kit .mk-section-dark .mk-api-grid) -------- -->
+<!-- 5 · Integrations, dark band --------------------------------------------- -->
 <section class="mk-section-dark surface-dark" id="api">
   <div class="mk-api-grid">
     <div>
@@ -130,34 +132,12 @@ const arrow =
           <li><Fragment set:html={check} /><span>{b}</span></li>
         ))}
       </ul>
-    </div>
-    <div class="mk-code">
-      <div class="mk-code-head">
-        <span class="mk-code-lang">cURL</span>
-      </div>
-      <pre>{`$ curl https://<project>.supabase.co/functions/v1/api-jobs \\
-    -H "Authorization: Bearer ery_live_..." \\
-    -X POST -H "Content-Type: application/json" \\
-    -d '{
-      "job_number": "WO-4218",
-      "due_date":   "2027-06-12",
-      "parts": [
-        { "part_number": "PN-902-A",
-          "quantity":   200,
-          "operations": [
-            { "operation_name": "Laser cut", "sequence": 1 },
-            { "operation_name": "Bend",      "sequence": 2 },
-            { "operation_name": "Weld",      "sequence": 3 } ] }
-      ]
-    }'
-
-> 201 Created
-> { "id": "…", "job_number": "WO-4218" }`}</pre>
+      <a class="mk-btn-on-dark mk-api-link" href={apiHref}>{c.api.cta}</a>
     </div>
   </div>
 </section>
 
-<!-- 6 · Hosted trial and self-hosted Community ---------------------------- -->
+<!-- 6 · Hosted trial, Premium and self-hosted Community -------------------- -->
 <section class="mk-section" id="pricing">
   <div class="mk-section-head">
     <span class="mk-section-eyebrow">{c.pricing.eyebrow}</span>
@@ -180,6 +160,21 @@ const arrow =
       </CtaButton>
     </div>
 
+    <!-- Premium: hosted production environment, priced per site -->
+    <div class="mk-tier is-featured">
+      <div class="mk-tier-name">{p.plans.premium.name}</div>
+      <div class="mk-tier-price">{p.plans.premium.price}<span>{p.plans.premium.period}</span></div>
+      <div class="mk-tier-sub">{p.plans.premium.sub}</div>
+      <ul class="mk-tier-features">
+        {p.plans.premium.features.map((f: PlanFeature) => (
+          <li class:list={[f.muted && "muted"]}><Fragment set:html={check} /><span>{f.text}</span></li>
+        ))}
+      </ul>
+      <CtaButton href={premiumHref} ctaId="home_pricing_premium_quote" surface="homepage_pricing" kind="email" variant="primary" locale={locale}>
+        {p.plans.premium.cta}
+      </CtaButton>
+    </div>
+
     <!-- Community: source-available, self-hosted, single site -->
     <div class="mk-tier">
       <div class="mk-tier-name">{p.plans.community.name}</div>
@@ -194,15 +189,6 @@ const arrow =
         {p.plans.community.ctaGuide}
       </CtaButton>
     </div>
-  </div>
-</section>
-
-<!-- 6b · Managed rollout, inline (folded in from the standalone page) -------- -->
-<section class="mk-section mk-rollout" id="managed-rollout">
-  <div class="mk-rollout-intro">
-    <span class="mk-section-eyebrow">{c.rollout.eyebrow}</span>
-    <h2 class="mk-h2">{c.rollout.h2}</h2>
-    <p class="mk-section-lead">{c.rollout.lead}</p>
   </div>
 </section>
 
@@ -465,13 +451,9 @@ const arrow =
 
   /* ---------- API block ---------- */
   .mk-api-grid {
-    max-inline-size: 1180px;
+    max-inline-size: 760px;
     margin-inline: auto;
     padding: 0 var(--ery-pad-section);
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    gap: var(--ery-space-16);
-    align-items: center;
   }
   .mk-api-list {
     list-style: none;
@@ -489,39 +471,7 @@ const arrow =
     color: var(--ery-text-on-dark);
   }
   .mk-api-list :global(svg) { color: var(--ery-brand-on-dark); flex-shrink: 0; }
-  .mk-code {
-    background: var(--ery-code-bg);
-    border: 1px solid var(--ery-code-border);
-    border-radius: var(--ery-radius-lg);
-    overflow: hidden;
-    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
-  }
-  .mk-code-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--ery-space-2) var(--ery-space-4);
-    background: var(--ery-surface-dark);
-    border-block-end: 1px solid var(--ery-code-border);
-  }
-  .mk-code-lang {
-    font-family: var(--ery-font-mono);
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--ery-brand-on-dark);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .mk-code pre {
-    margin: 0;
-    padding: var(--ery-space-5);
-    font-family: var(--ery-font-mono);
-    font-size: var(--ery-text-sm);
-    line-height: 1.65;
-    color: var(--ery-code-text);
-    white-space: pre;
-    overflow: auto;
-  }
+  .mk-api-link { margin-block-start: var(--ery-space-8); }
 
   /* ---------- CTA banner ---------- */
   .mk-cta-banner {
@@ -695,40 +645,9 @@ const arrow =
   }
   .mk-pricing-all a:hover { color: var(--ery-brand-hover); }
 
-  /* ---------- Managed rollout (folded-in section) ---------- */
-  .mk-rollout-intro {
-    max-inline-size: 640px;
-    margin-inline: auto;
-    text-align: center;
-    padding: var(--ery-space-10) var(--ery-space-8);
-    background: var(--ery-surface-subtle);
-    border: 1px solid var(--ery-border);
-    border-radius: var(--ery-radius-lg);
-  }
-  .mk-rollout-intro .mk-section-eyebrow { display: inline-block; }
-  .mk-rollout-intro .mk-h2 { margin-block-start: var(--ery-space-3); }
-  .mk-rollout-intro .mk-section-lead { margin-block-end: var(--ery-space-6); }
-  .mk-rollout-intro :global(.rollout-email-intent) {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: var(--ery-touch-min);
-    padding-inline: var(--ery-space-5);
-    border-radius: var(--ery-radius-sm);
-    background: var(--ery-brand);
-    color: var(--ery-brand-contrast);
-    font-weight: 500;
-    transition: background-color var(--ery-motion-base) var(--ery-ease);
-  }
-  .mk-rollout-intro :global(.rollout-email-intent):hover {
-    background: var(--ery-brand-hover);
-    color: var(--ery-brand-contrast);
-  }
-
   /* ---------- Responsive (kit @media 980px) ---------- */
   @media (max-width: 980px) {
     .mk-feature-grid { grid-template-columns: 1fr 1fr; }
-    .mk-api-grid { grid-template-columns: 1fr; }
     .mk-steps { grid-template-columns: 1fr; }
     .mk-shot-cards { grid-template-columns: 1fr; }
     .mk-cta-wrap { grid-template-columns: 1fr; text-align: center; }

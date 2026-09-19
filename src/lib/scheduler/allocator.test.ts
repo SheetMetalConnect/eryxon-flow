@@ -15,6 +15,8 @@ describe('OperationAllocator', () => {
     expect(result.allocations).toHaveLength(1);
     expect(result.allocations[0].hours_allocated).toBe(4);
     expect(result.allocations[0].date).toBe('2026-03-30');
+    expect(result.complete).toBe(true);
+    expect(result.remainingHours).toBe(0);
   });
 
   it('overflows to next working day when exceeding capacity', () => {
@@ -37,5 +39,17 @@ describe('OperationAllocator', () => {
     const result = alloc.allocate('c1', 'op1', 12, new Date('2026-04-03'));
     expect(result.allocations[0].date).toBe('2026-04-03');
     expect(result.allocations[1].date).toBe('2026-04-06'); // Monday
+  });
+
+  it('reports work that does not fit inside the scheduling horizon', () => {
+    const cal = new CalendarService();
+    const cap = new CapacityTracker([mockCell], cal);
+    const alloc = new OperationAllocator(cal, cap);
+
+    const result = alloc.allocate('c1', 'op1', 3_000, new Date('2026-03-30'));
+
+    expect(result.complete).toBe(false);
+    expect(result.remainingHours).toBeGreaterThan(0);
+    expect(cap.getUsedHours('c1', result.allocations[0].date)).toBe(0);
   });
 });

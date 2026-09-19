@@ -84,6 +84,7 @@ export default function OperationCard({
     return lp.endsWith(".step") || lp.endsWith(".stp");
   });
   const hasHandoffNote = Boolean(operation.notes?.trim());
+  const completionPercentage = Math.min(100, Math.max(0, operation.completion_percentage ?? 0));
 
   return (
     <>
@@ -91,7 +92,7 @@ export default function OperationCard({
         type="button"
         onClick={() => setShowDetail(true)}
         className={cn(
-          "group relative flex w-full overflow-hidden rounded-md border text-left transition-all",
+          "group relative flex w-full overflow-hidden rounded-md border text-left transition-[border-color,box-shadow,background-color,transform] duration-200 motion-reduce:transition-none active:scale-[0.995]",
           "bg-card hover:border-primary/40 hover:shadow-sm",
           isActive
             ? "border-primary/40 bg-primary/[0.03]"
@@ -237,6 +238,11 @@ export default function OperationCard({
               ) : null}
             </div>
           </div>
+          {completionPercentage > 0 && operation.status !== "completed" ? (
+            <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted" role="progressbar" aria-valuenow={completionPercentage} aria-valuemin={0} aria-valuemax={100}>
+              <div className="h-full rounded-full bg-primary transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${completionPercentage}%` }} />
+            </div>
+          ) : null}
         </div>
       </button>
 

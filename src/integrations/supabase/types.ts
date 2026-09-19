@@ -3502,6 +3502,14 @@ export type Database = {
         Args: { p_token: string; p_user_id: string }
         Returns: boolean
       }
+      apply_schedule_plan: {
+        Args: {
+          p_allocations: Json
+          p_operations: Json
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       acknowledge_demo_mode: {
         Args: { p_tenant_id: string }
         Returns: undefined
@@ -3671,6 +3679,10 @@ export type Database = {
           unique_users: number
         }[]
       }
+      get_all_cell_qrm_metrics: {
+        Args: { p_tenant_id: string }
+        Returns: Json
+      }
       get_api_usage_stats: {
         Args: { p_tenant_id?: string }
         Returns: {
@@ -3824,10 +3836,20 @@ export type Database = {
         Args: never
         Returns: {
           company_name: string
+          factory_closing_time: string
+          factory_opening_time: string
           id: string
           name: string
           plan: Database["public"]["Enums"]["subscription_plan"]
           status: Database["public"]["Enums"]["subscription_status"]
+          timezone: string
+          trial_ends_at: string
+          whitelabel_app_name: string
+          whitelabel_enabled: boolean
+          whitelabel_favicon_url: string
+          whitelabel_logo_url: string
+          whitelabel_primary_color: string
+          working_days_mask: number
         }[]
       }
       get_tenant_quota: {
@@ -3970,6 +3992,15 @@ export type Database = {
           trials_live: number
           trials_not_yet_activated: number
         }[]
+      }
+      report_client_error: {
+        Args: {
+          p_component: string
+          p_error_code?: string
+          p_event_type: string
+          p_route?: string
+        }
+        Returns: undefined
       }
       reset_monthly_parts_counters: {
         Args: never

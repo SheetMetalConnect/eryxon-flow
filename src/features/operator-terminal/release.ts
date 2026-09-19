@@ -6,6 +6,8 @@ interface Step {
   status: string;
 }
 
+export type OperationFlowState = 'active' | 'on_hold' | 'in_buffer' | 'expected' | 'completed';
+
 // Released = every earlier step of the same part is completed.
 export function isReleased(operation: Step, all: Step[]) {
   return !all.some(
@@ -14,6 +16,13 @@ export function isReleased(operation: Step, all: Step[]) {
       other.sequence < operation.sequence &&
       other.status !== "completed",
   );
+}
+
+export function deriveOperationFlowState(operation: Step, all: Step[]): OperationFlowState {
+  if (operation.status === 'completed') return 'completed';
+  if (operation.status === 'in_progress') return 'active';
+  if (operation.status === 'on_hold') return 'on_hold';
+  return isReleased(operation, all) ? 'in_buffer' : 'expected';
 }
 
 export function getSequentialReleaseSetting(featureFlags: unknown) {

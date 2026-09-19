@@ -127,6 +127,19 @@ SELECT pg_temp.assert_true(
   'clearing a plan versions the expectation without an active deadline'
 );
 
+UPDATE public.operations
+SET operation_name = 'Renamed demo operation'
+WHERE id = 'd5000000-0000-0000-0000-000000000001';
+
+SELECT pg_temp.assert_true(
+  (SELECT count(*) = 1 FROM public.expectations
+   WHERE entity_id = 'd5000000-0000-0000-0000-000000000001'
+     AND version = 4
+     AND expected_value->>'operation_name' = 'Renamed demo operation'
+     AND superseded_by IS NULL),
+  'renaming an operation versions its active expectation'
+);
+
 RESET ROLE;
 
 INSERT INTO public.assignments (
@@ -350,5 +363,18 @@ SELECT pg_temp.assert_true(
   'demo reset removes marked demo operators'
 );
 
+SELECT public.delete_tenant_data(current_setting('test.tenant_id')::uuid);
 RESET ROLE;
+
+SELECT pg_temp.assert_true(
+  (SELECT count(*) = 0 FROM public.tenants
+   WHERE id = current_setting('test.tenant_id')::uuid),
+  'tenant deletion removes the tenant after child cleanup'
+);
+SELECT pg_temp.assert_true(
+  (SELECT count(*) = 0 FROM public.profiles
+   WHERE id = 'd1000000-0000-0000-0000-000000000001'),
+  'tenant deletion removes tenant profiles'
+);
+
 ROLLBACK;

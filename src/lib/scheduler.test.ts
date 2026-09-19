@@ -494,10 +494,54 @@ describe('SchedulerService', () => {
         jobs,
         operationsByJob,
         new Date('2025-01-06'),
-        earliestStartByPart,
+        { constraintsByOperation: new Map([['next-op', { earliestStart: earliestStartByPart.get('part-1') }]]) },
       );
 
       expect(result[0].day_allocations[0].date).toBe('2025-01-08');
+    });
+
+    it('retains old capacity when an operation cannot be replanned', () => {
+      const oldAllocation = {
+        operation_id: 'too-long',
+        cell_id: 'cell-1',
+        date: '2025-01-06',
+        hours_allocated: 8,
+      };
+      scheduler.reserveAllocations([oldAllocation]);
+      const jobs = [createMockJob({ id: 'job-1' })];
+      const operationsByJob = new Map([
+        ['job-1', [
+          createMockOperation({ id: 'too-long', part_id: 'part-a', estimated_time: 600000 }),
+          createMockOperation({ id: 'other', part_id: 'part-b', estimated_time: 60 }),
+        ]],
+      ]);
+
+      const result = scheduler.scheduleJobs(
+        jobs,
+        operationsByJob,
+        new Date('2025-01-06'),
+        { existingAllocationsByOperation: new Map([['too-long', [oldAllocation]]]) },
+      );
+
+      expect(result.find((operation) => operation.id === 'too-long')?.scheduling_status).toBe('unscheduled');
+      expect(result.find((operation) => operation.id === 'other')?.day_allocations[0].date).toBe('2025-01-07');
+    });
+
+    it('blocks downstream work when a predecessor has no known finish', () => {
+      const jobs = [createMockJob({ id: 'job-1' })];
+      const operationsByJob = new Map([
+        ['job-1', [createMockOperation({ id: 'next-op', sequence: 20 })]],
+      ]);
+
+      const result = scheduler.scheduleJobs(
+        jobs,
+        operationsByJob,
+        new Date('2025-01-06'),
+        { constraintsByOperation: new Map([['next-op', { blockedByPredecessor: true }]]) },
+      );
+
+      expect(result[0].scheduling_failure_reason).toBe('blocked_by_predecessor');
+      expect(result[0].day_allocations).toEqual([]);
     });
 
     it('allows separate part routings to use different cells in parallel', () => {
@@ -603,8 +647,12 @@ describe('SchedulerService - Edge Cases', () => {
     const result = scheduler.scheduleOperations([operation], monday);
 
     expect(result).toHaveLength(1);
-    // Should still produce allocations up to max attempts (365)
-    expect(result[0].day_allocations.length).toBeGreaterThan(0);
+    expect(result[0].scheduling_status).toBe('unscheduled');
+    expect(result[0].scheduling_failure_reason).toBe('insufficient_capacity');
+    expect(result[0].remaining_hours).toBeGreaterThan(0);
+    expect(result[0].day_allocations).toEqual([]);
+    expect(result[0].planned_start).toBeNull();
+    expect(result[0].planned_end).toBeNull();
   });
 
   it('handles start date on non-working day', () => {

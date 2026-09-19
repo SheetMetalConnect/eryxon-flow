@@ -56,7 +56,20 @@ export async function generateMockData(
     }
 
     const referenceDate = new Date();
-    const timeline = createMockDataTimeline(referenceDate);
+    const { data: tenantSchedule, error: tenantScheduleError } = await supabase
+      .from("tenants")
+      .select("working_days_mask, factory_opening_time, factory_closing_time")
+      .eq("id", tenantId)
+      .single();
+    if (tenantScheduleError) throw tenantScheduleError;
+    const factoryCalendar = createDutchFactoryCalendar(referenceDate);
+    const timelineContext = {
+      workingDaysMask: tenantSchedule.working_days_mask ?? 31,
+      openingTime: tenantSchedule.factory_opening_time?.slice(0, 5) ?? "07:00",
+      closingTime: tenantSchedule.factory_closing_time?.slice(0, 5) ?? "17:00",
+      calendar: factoryCalendar,
+    };
+    const timeline = createMockDataTimeline(referenceDate, timelineContext);
 
     logger.debug(
       'MockData',
@@ -218,7 +231,7 @@ export async function generateMockData(
 
     reportProgress(2, 'calendar');
     if (options.includeCalendar) {
-      const calendarEntries = createDutchFactoryCalendar(referenceDate).map(holiday => ({
+      const calendarEntries = factoryCalendar.map(holiday => ({
         tenant_id: tenantId,
         date: holiday.date,
         day_type: holiday.day_type,
@@ -741,6 +754,7 @@ export async function generateMockData(
             sequence: op.seq,
             status: op.status,
             estimatedMinutes,
+            context: timelineContext,
           });
 
           operations.push({

@@ -30,6 +30,9 @@ export function OperationTimeSummary({
   const over = pvb.isOverScheduled;
   const variance = Math.abs(pvb.varianceMinutes);
   const pct = planned > 0 ? Math.min(100, Math.round((totalMinutes / planned) * 100)) : 0;
+  const quantityPct = plannedQuantity > 0
+    ? Math.min(100, Math.round((producedQuantity / plannedQuantity) * 100))
+    : 0;
 
   // Roll the per-session time entries up to one row per operator.
   const byOperator = new Map<string, { name: string; minutes: number; active: boolean }>();
@@ -75,7 +78,7 @@ export function OperationTimeSummary({
           <div className="h-1.5 overflow-hidden rounded-full bg-border">
             <div
               className={cn(
-                "h-full rounded-full",
+                "h-full rounded-full transition-[width,background-color] duration-300 motion-reduce:transition-none",
                 over ? "bg-destructive" : "bg-status-active",
               )}
               style={{ width: `${over ? 100 : pct}%` }}
@@ -96,14 +99,19 @@ export function OperationTimeSummary({
       ) : null}
 
       {plannedQuantity > 0 ? (
-        <div className="flex items-center justify-between border-t border-border pt-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-            {t("terminal.produced")}
-          </span>
-          <span className="font-mono text-sm">
-            <span className="font-semibold text-status-completed">{producedQuantity}</span>
-            <span className="text-muted-foreground"> / {plannedQuantity}</span>
-          </span>
+        <div className="space-y-1.5 border-t border-border pt-2">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+              {t("terminal.produced")}
+            </span>
+            <span className="font-mono text-sm">
+              <span className="font-semibold text-status-completed">{producedQuantity}</span>
+              <span className="text-muted-foreground"> / {plannedQuantity}</span>
+            </span>
+          </div>
+          <div className="h-1.5 overflow-hidden rounded-full bg-border" role="progressbar" aria-valuenow={quantityPct} aria-valuemin={0} aria-valuemax={100}>
+            <div className="h-full rounded-full bg-status-completed transition-[width] duration-300 motion-reduce:transition-none" style={{ width: `${quantityPct}%` }} />
+          </div>
         </div>
       ) : null}
 

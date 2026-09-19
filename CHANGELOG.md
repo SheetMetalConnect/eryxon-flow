@@ -2,6 +2,41 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.11.5] — 2026-09-19
+
+This release shortens the operator completion flow and makes planning updates
+safer under concurrent shop-floor changes.
+
+### Changed
+
+- Operators can report the final quantity and complete the operation in one
+  action. The terminal now shows route, quantity and time progress more clearly.
+- The QRM overview uses the same Active, On hold, In Buffer and Expected rules
+  as the operator terminal and fetches all cell metrics in one request.
+- Demo dates use the tenant working week and seeded factory calendar. Active
+  work is never created with a future start time.
+- The public website now describes the hosted trial, Premium from €300 per site
+  per month, and the free single-site Community edition in concise product copy.
+- Compatible dependency updates were applied to the app, website and MCP server.
+
+### Fixed
+
+- Auto Schedule commits dates and allocations atomically, preserves existing
+  capacity when a row cannot be replanned, and blocks work behind an unfinished
+  predecessor with no known end.
+- The database rechecks cell capacity and operation versions before accepting a
+  plan, preventing stale browser state from overbooking a cell.
+- Planning expectations now follow date and operation-name changes, including a
+  repair for older active expectations.
+- Demo reset and tenant deletion follow a complete child-first cleanup path.
+- Realtime terminal updates are debounced, activity monitoring no longer polls
+  every ten seconds, and client failures record bounded diagnostic metadata.
+
+### Upgrade notes
+
+- Apply `20260919160000_atomic_scheduler_and_flow_metrics.sql` before deploying
+  the frontend.
+
 ## [0.11.4] — 2026-09-19
 
 This patch keeps demo workshops current and makes automatic scheduling follow

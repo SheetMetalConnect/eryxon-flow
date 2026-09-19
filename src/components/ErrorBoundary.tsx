@@ -15,6 +15,7 @@ import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { reportClientError } from '@/lib/clientObservability';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -52,6 +53,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState({ errorInfo });
 
     logger.error('ErrorBoundary', 'Uncaught error in component tree', { error, componentStack: errorInfo.componentStack });
+    void reportClientError('ErrorBoundary', 'component_crash', error);
 
     this.props.onError?.(error, errorInfo);
   }

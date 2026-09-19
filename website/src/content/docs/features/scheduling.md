@@ -11,9 +11,12 @@ Eryxon Flow includes a simple capacity-based scheduler for planning operations a
 2. The scheduler fetches incomplete jobs and their not-started operations; active and completed work keeps its existing plan
 3. Jobs are sorted by due date (respecting any manual overrides)
 4. Operations are allocated to their assigned cells day by day, respecting daily capacity limits
-5. `planned_start` and `planned_end` dates are saved on each operation
+5. Dates and daily allocations are saved together in one transaction
 
 If not-started operations already have planned dates, a confirmation modal warns you before overwriting them.
+Existing allocations remain in place when an operation cannot be replanned. The
+result names how many operations were scheduled and how many still need attention.
+Work behind an active predecessor without a known finish stays unscheduled.
 
 ## Key Concepts
 
@@ -30,7 +33,7 @@ Navigate to **Admin → Factory Calendar** to configure:
 - **Half days** — Reduced capacity (multiplier = 0.5)
 - **Working days** — Full capacity
 
-Calendar entries override the default Monday–Friday working week.
+Calendar entries override the working week configured for the workshop.
 
 ### Due Date Overrides
 

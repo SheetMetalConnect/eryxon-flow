@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getSequentialReleaseSetting, isReleased, mergeSequentialReleaseSetting } from "./release";
+import { deriveOperationFlowState, getSequentialReleaseSetting, isReleased, mergeSequentialReleaseSetting } from "./release";
 
 const step = (part: string, sequence: number, status = "not_started") => ({ part: { id: part }, sequence, status });
 
@@ -17,6 +17,20 @@ describe("isReleased", () => {
   });
   it("ignores other parts", () => {
     expect(isReleased(step("a", 2), [step("b", 1), step("a", 1, "completed"), step("a", 2)])).toBe(true);
+  });
+});
+
+describe("deriveOperationFlowState", () => {
+  it("uses route completion for buffer and expected", () => {
+    const operations = [step("a", 1), step("a", 2)];
+    expect(deriveOperationFlowState(operations[0], operations)).toBe("in_buffer");
+    expect(deriveOperationFlowState(operations[1], operations)).toBe("expected");
+  });
+
+  it("keeps execution states explicit", () => {
+    expect(deriveOperationFlowState(step("a", 1, "in_progress"), [])).toBe("active");
+    expect(deriveOperationFlowState(step("a", 1, "on_hold"), [])).toBe("on_hold");
+    expect(deriveOperationFlowState(step("a", 1, "completed"), [])).toBe("completed");
   });
 });
 

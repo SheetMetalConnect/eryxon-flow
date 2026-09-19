@@ -12,6 +12,7 @@ import {
 } from "@/features/operator-terminal/workModes";
 import { getSequentialReleaseSetting } from "@/features/operator-terminal/release";
 import type { TerminalCell } from "@/features/operator-terminal/model";
+import { useDebouncedCallback } from "@/hooks/useDebounce";
 
 const EMPTY_SCHEDULE: OperatorTerminalSchedule = {
   openingTime: null,
@@ -88,17 +89,19 @@ export function useTerminalData(tenantId: string | undefined, t: TFunction) {
     }
   }, [t, tenantId]);
 
+  const scheduleReload = useDebouncedCallback(loadData, 250);
+
   useEffect(() => {
     void loadData();
     if (!tenantId) return;
-    const reload = (): void => { void loadData(); };
     const channel = supabase.channel("operator-terminal-changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "operations", filter: `tenant_id=eq.${tenantId}` }, reload)
-      .on("postgres_changes", { event: "*", schema: "public", table: "time_entries", filter: `tenant_id=eq.${tenantId}` }, reload)
-      .on("postgres_changes", { event: "*", schema: "public", table: "part_placements", filter: `tenant_id=eq.${tenantId}` }, reload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "operations", filter: `tenant_id=eq.${tenantId}` }, scheduleReload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "time_entries", filter: `tenant_id=eq.${tenantId}` }, scheduleReload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "operation_quantities", filter: `tenant_id=eq.${tenantId}` }, scheduleReload)
+      .on("postgres_changes", { event: "*", schema: "public", table: "part_placements", filter: `tenant_id=eq.${tenantId}` }, scheduleReload)
       .subscribe();
     return () => { void supabase.removeChannel(channel); };
-  }, [loadData, tenantId]);
+  }, [loadData, scheduleReload, tenantId]);
 
   return {
     cells, loading, locationByPart, lookupOperations, operations, producedByOperation,

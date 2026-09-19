@@ -1,5 +1,5 @@
 import { addDays, format } from 'date-fns';
-import type { Job, Operation, Cell, Part, DayAllocation, ScheduledOperation, SchedulerConfig, CalendarDay } from './types';
+import type { Job, Operation, Cell, Part, DayAllocation, ScheduledOperation, SchedulerConfig, CalendarDay, ScheduleJobsOptions } from './types';
 import { CalendarService } from './calendar';
 import { CapacityTracker } from './capacity';
 import { OperationAllocator } from './allocator';
@@ -51,6 +51,16 @@ export class SchedulerService {
     }
   }
 
+  releaseAllocations(allocations: DayAllocation[]): void {
+    for (const allocation of allocations) {
+      this.capacity.removeUsedHours(
+        allocation.cell_id,
+        allocation.date,
+        allocation.hours_allocated,
+      );
+    }
+  }
+
   scheduleOperations(operations: Operation[], startDate = new Date()): ScheduledOperation[] {
     const scheduled: ScheduledOperation[] = [];
     let currentStart = this.allocator.findNextWorkingDay(startDate);
@@ -59,20 +69,39 @@ export class SchedulerService {
       const hours = this.allocator.getOperationDurationHours(op);
       const cellId = op.cell_id;
       if (!cellId) {
-        scheduled.push({ ...op, planned_start: null, planned_end: null, day_allocations: [] });
-        continue;
-      }
-      const { allocations, endDate } = this.allocator.allocate(cellId, op.id, hours, currentStart);
-      if (allocations.length > 0) {
         scheduled.push({
           ...op,
-          planned_start: allocations[0].date + 'T00:00:00.000Z',
-          planned_end: format(endDate, 'yyyy-MM-dd') + 'T23:59:59.999Z',
-          day_allocations: allocations,
+          planned_start: null,
+          planned_end: null,
+          day_allocations: [],
+          scheduling_status: 'unscheduled',
+          scheduling_failure_reason: 'missing_cell',
+          remaining_hours: hours,
         });
-        currentStart = this.allocator.findNextWorkingDay(addDays(endDate, 1));
+        continue;
+      }
+      const result = this.allocator.allocate(cellId, op.id, hours, currentStart);
+      if (result.complete) {
+        scheduled.push({
+          ...op,
+          planned_start: result.allocations[0].date + 'T00:00:00.000Z',
+          planned_end: format(result.endDate, 'yyyy-MM-dd') + 'T23:59:59.999Z',
+          day_allocations: result.allocations,
+          scheduling_status: 'scheduled',
+          scheduling_failure_reason: null,
+          remaining_hours: 0,
+        });
+        currentStart = this.allocator.findNextWorkingDay(addDays(result.endDate, 1));
       } else {
-        scheduled.push({ ...op, planned_start: null, planned_end: null, day_allocations: [] });
+        scheduled.push({
+          ...op,
+          planned_start: null,
+          planned_end: null,
+          day_allocations: [],
+          scheduling_status: 'unscheduled',
+          scheduling_failure_reason: 'insufficient_capacity',
+          remaining_hours: result.remainingHours,
+        });
       }
     }
     return scheduled;
@@ -82,7 +111,7 @@ export class SchedulerService {
     jobs: Job[],
     operationsByJob: Map<string, Operation[]>,
     startDate = new Date(),
-    earliestStartByPart: Map<string, Date> = new Map(),
+    options: ScheduleJobsOptions = {},
   ): ScheduledOperation[] {
     const sortedJobs = [...jobs].sort((a, b) => {
       const dateA = a.due_date_override || a.due_date;
@@ -106,30 +135,75 @@ export class SchedulerService {
         operationsByPart.set(operation.part_id, route);
       }
 
-      for (const [partId, route] of operationsByPart) {
+      for (const route of operationsByPart.values()) {
         route.sort((left, right) => left.sequence - right.sequence || left.id.localeCompare(right.id));
-        let routeCurrentDate = this.allocator.findNextWorkingDay(
-          earliestStartByPart.get(partId) ?? globalStart,
-        );
+        let routeCurrentDate = globalStart;
+        let routeBlocked = false;
 
         for (const op of route) {
           const hours = this.allocator.getOperationDurationHours(op);
           const cellId = op.cell_id;
-          if (!cellId) {
-            allScheduled.push({ ...op, planned_start: null, planned_end: null, day_allocations: [] });
-            continue;
-          }
-          const { allocations, endDate } = this.allocator.allocate(cellId, op.id, hours, routeCurrentDate);
-          if (allocations.length > 0) {
+          const constraint = options.constraintsByOperation?.get(op.id);
+          const existingAllocations = options.existingAllocationsByOperation?.get(op.id) ?? [];
+
+          if (routeBlocked || constraint?.blockedByPredecessor) {
             allScheduled.push({
               ...op,
-              planned_start: allocations[0].date + 'T00:00:00.000Z',
-              planned_end: format(endDate, 'yyyy-MM-dd') + 'T23:59:59.999Z',
-              day_allocations: allocations,
+              planned_start: null,
+              planned_end: null,
+              day_allocations: [],
+              scheduling_status: 'unscheduled',
+              scheduling_failure_reason: 'blocked_by_predecessor',
+              remaining_hours: hours,
             });
-            routeCurrentDate = this.allocator.findNextWorkingDay(addDays(endDate, 1));
+            routeBlocked = true;
+            continue;
+          }
+
+          if (constraint?.earliestStart) {
+            const constrainedStart = this.allocator.findNextWorkingDay(constraint.earliestStart);
+            if (constrainedStart > routeCurrentDate) routeCurrentDate = constrainedStart;
+          }
+
+          if (!cellId) {
+            allScheduled.push({
+              ...op,
+              planned_start: null,
+              planned_end: null,
+              day_allocations: [],
+              scheduling_status: 'unscheduled',
+              scheduling_failure_reason: 'missing_cell',
+              remaining_hours: hours,
+            });
+            routeBlocked = true;
+            continue;
+          }
+
+          this.releaseAllocations(existingAllocations);
+          const result = this.allocator.allocate(cellId, op.id, hours, routeCurrentDate);
+          if (result.complete) {
+            allScheduled.push({
+              ...op,
+              planned_start: result.allocations[0].date + 'T00:00:00.000Z',
+              planned_end: format(result.endDate, 'yyyy-MM-dd') + 'T23:59:59.999Z',
+              day_allocations: result.allocations,
+              scheduling_status: 'scheduled',
+              scheduling_failure_reason: null,
+              remaining_hours: 0,
+            });
+            routeCurrentDate = this.allocator.findNextWorkingDay(addDays(result.endDate, 1));
           } else {
-            allScheduled.push({ ...op, planned_start: null, planned_end: null, day_allocations: [] });
+            this.reserveAllocations(existingAllocations);
+            allScheduled.push({
+              ...op,
+              planned_start: null,
+              planned_end: null,
+              day_allocations: [],
+              scheduling_status: 'unscheduled',
+              scheduling_failure_reason: 'insufficient_capacity',
+              remaining_hours: result.remainingHours,
+            });
+            routeBlocked = true;
           }
         }
       }

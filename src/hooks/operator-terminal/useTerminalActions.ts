@@ -13,6 +13,7 @@ import type { TerminalJob } from "@/types/terminal";
 import { buildOperatorTerminalModeNote, type OperatorTerminalMode, type OperatorTerminalWorkModeSettings } from "@/features/operator-terminal/workModes";
 import type { BatchPromptState } from "@/features/operator-terminal/model";
 import { toast } from "sonner";
+import { reportClientError } from "@/lib/clientObservability";
 
 export interface PendingOperationSwitch {
   from: TerminalJob;
@@ -50,13 +51,14 @@ export function useTerminalActions({
   const [pendingSwitch, setPendingSwitch] = useState<PendingOperationSwitch | null>(null);
   const locked = useRef(false);
 
-  const run = useCallback(async (action: () => Promise<void>) => {
+  const run = useCallback(async (eventType: string, action: () => Promise<void>) => {
     if (locked.current) return;
     locked.current = true;
     setIsActionPending(true);
     try {
       await action();
     } catch (error) {
+      void reportClientError('OperatorTerminal', eventType, error);
       toast.error(productionErrorMessage(error, t));
     } finally {
       locked.current = false;
@@ -121,7 +123,7 @@ export function useTerminalActions({
         toast.error(t(`terminal.batchFlow.unavailable.${batchPrompt.unavailableReason ?? "partial"}`));
         return;
       }
-      await run(async () => {
+      await run('batch_start_failed', async () => {
         await startBatchTimeTracking(batchPrompt.batchId, operatorId, tenantId);
         toast.success(t("terminal.batchFlow.batchStarted", { count: batchPrompt.totalMembers }));
       });
@@ -130,7 +132,7 @@ export function useTerminalActions({
 
     if (!validateOperationStart()) return;
     if (promptSwitch(selectedJob, true)) return;
-    await run(async () => {
+    await run('operation_start_failed', async () => {
       await startTimeTracking(selectedJob.operationId, operatorId, tenantId, startNotes);
       toast.success(t("notifications.success"));
     });
@@ -140,7 +142,7 @@ export function useTerminalActions({
     if (!pendingSwitch || !operatorId || !tenantId || !validateOperationStart(pendingSwitch.to)) return;
     const switching = pendingSwitch;
     setPendingSwitch(null);
-    await run(async () => {
+    await run('operation_switch_failed', async () => {
       await switchOperation(
         switching.from.operationId,
         switching.to.operationId,
@@ -156,7 +158,7 @@ export function useTerminalActions({
 
   const handlePause = useCallback(async () => {
     if (!selectedJob || !operatorId) return;
-    await run(async () => {
+    await run('operation_pause_failed', async () => {
       if (batchPrompt?.isBatchTimerActive && tenantId) {
         await stopBatchTimeTracking(batchPrompt.batchId, operatorId, tenantId);
         toast.success(t("terminal.batchFlow.batchStopped", { count: batchPrompt.totalMembers }));
@@ -172,7 +174,7 @@ export function useTerminalActions({
   const handleComplete = useCallback(async () => {
     if (!selectedJob || !operatorId || !tenantId) return false;
     let completed = false;
-    await run(async () => {
+    await run('operation_complete_failed', async () => {
       await finishOperation(selectedJob.operationId, tenantId, operatorId);
       toast.success(t("production.operationCompleted"));
       setSelectedJobId(null);

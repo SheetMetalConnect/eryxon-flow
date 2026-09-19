@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile } from "@/hooks/useProfile";
-import { Check, Minus, Plus, AlertTriangle } from "lucide-react";
+import { AlertTriangle, Check, Loader2, Minus, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
 
@@ -16,8 +17,9 @@ interface ProductionQuantityModalProps {
   operationName: string;
   partNumber: string;
   plannedQuantity?: number;
-  onSuccess: (quantityGood: number, shouldStopTime: boolean) => void;
+  onSuccess: (quantityGood: number, completeAfterReport: boolean) => void | Promise<void>;
   onFileIssue?: (shortfallQuantity: number) => void;
+  allowComplete?: boolean;
 }
 
 export default function ProductionQuantityModal({
@@ -29,6 +31,7 @@ export default function ProductionQuantityModal({
   plannedQuantity,
   onSuccess,
   onFileIssue,
+  allowComplete = false,
 }: ProductionQuantityModalProps) {
   const { t } = useTranslation();
   const profile = useProfile();
@@ -42,16 +45,11 @@ export default function ProductionQuantityModal({
   const remaining = plannedQuantity ? Math.max(0, plannedQuantity - totalGoodAfter) : 0;
   const targetAchieved = plannedQuantity ? totalGoodAfter >= plannedQuantity : false;
   const hasShortfall = plannedQuantity ? totalGoodAfter < plannedQuantity : false;
+  const quantityProgress = plannedQuantity
+    ? Math.min(100, Math.round((totalGoodAfter / plannedQuantity) * 100))
+    : 0;
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchPreviousQuantities();
-      setQuantityGood(0);
-      setShowShortfallPrompt(false);
-    }
-  }, [isOpen]);
-
-  const fetchPreviousQuantities = async () => {
+  const fetchPreviousQuantities = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from("operation_quantities")
@@ -63,12 +61,20 @@ export default function ProductionQuantityModal({
     } catch (error) {
       logger.error("ProductionQuantityModal", "Error fetching previous quantities", error);
     }
-  };
+  }, [operationId]);
+
+  useEffect(() => {
+    if (isOpen) {
+      void fetchPreviousQuantities();
+      setQuantityGood(0);
+      setShowShortfallPrompt(false);
+    }
+  }, [fetchPreviousQuantities, isOpen]);
 
   const increment = () => setQuantityGood(q => q + 1);
   const decrement = () => setQuantityGood(q => Math.max(0, q - 1));
 
-  const handleSubmit = async (fileIssue: boolean = false) => {
+  const handleSubmit = async (fileIssue = false, completeAfterReport = false) => {
     if (quantityGood <= 0) {
       toast.error(t("production.enterGoodParts"));
       return;
@@ -102,7 +108,7 @@ export default function ProductionQuantityModal({
         onFileIssue(remaining);
       }
 
-      onSuccess(quantityGood, targetAchieved);
+      await onSuccess(quantityGood, completeAfterReport);
       handleClose();
     } catch (error: unknown) {
       logger.error("ProductionQuantityModal", "Error recording production", error);
@@ -128,7 +134,8 @@ export default function ProductionQuantityModal({
 
         <div className="space-y-4 py-2">
           <div className="text-center text-sm text-muted-foreground">
-            <div className="font-medium text-foreground">{partNumber}</div>
+            <div className="font-medium text-foreground">{operationName}</div>
+            <div className="font-mono text-xs">{partNumber}</div>
             {plannedQuantity && (
               <div>
                 {t("production.target")}: {plannedQuantity}
@@ -139,6 +146,16 @@ export default function ProductionQuantityModal({
             )}
           </div>
 
+          {plannedQuantity ? (
+            <div className="space-y-1.5" aria-label={t("production.quantityProgress", { count: quantityProgress })}>
+              <Progress value={quantityProgress} className="h-2 bg-muted" />
+              <div className="flex justify-between text-xs tabular-nums text-muted-foreground">
+                <span>{totalGoodAfter} / {plannedQuantity}</span>
+                <span>{quantityProgress}%</span>
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex items-center justify-center gap-4">
             <Button
               type="button"
@@ -147,6 +164,7 @@ export default function ProductionQuantityModal({
               className="h-14 w-14 rounded-full text-2xl"
               onClick={decrement}
               disabled={quantityGood <= 0}
+              aria-label={t("production.decreaseQuantity")}
             >
               <Minus className="h-6 w-6" />
             </Button>
@@ -159,6 +177,7 @@ export default function ProductionQuantityModal({
               size="icon"
               className="h-14 w-14 rounded-full text-2xl"
               onClick={increment}
+              aria-label={t("production.increaseQuantity")}
             >
               <Plus className="h-6 w-6" />
             </Button>
@@ -207,20 +226,41 @@ export default function ProductionQuantityModal({
           )}
         </div>
 
-        {!showShortfallPrompt && (
-          <div className="flex justify-end gap-2 pt-2">
+        {!showShortfallPrompt ? (
+          <div className="grid gap-2 pt-2 sm:grid-cols-2">
             <Button variant="outline" onClick={handleClose} disabled={isSubmitting}>
               {t("common.cancel")}
             </Button>
-            <Button
-              onClick={() => handleSubmit(false)}
-              disabled={isSubmitting || quantityGood <= 0}
-              size="lg"
-            >
-              {isSubmitting ? t("common.saving") : t("production.report")}
-            </Button>
+            {targetAchieved && allowComplete ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => handleSubmit(false, false)}
+                  disabled={isSubmitting || quantityGood <= 0}
+                >
+                  {t("production.reportOnly")}
+                </Button>
+                <Button
+                  onClick={() => handleSubmit(false, true)}
+                  disabled={isSubmitting || quantityGood <= 0}
+                  className="bg-emerald-600 text-white transition-colors hover:bg-emerald-700 motion-reduce:transition-none sm:col-span-2"
+                >
+                  {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+                  {isSubmitting ? t("common.saving") : t("production.reportAndComplete")}
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => handleSubmit(false, false)}
+                disabled={isSubmitting || quantityGood <= 0}
+                size="lg"
+              >
+                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isSubmitting ? t("common.saving") : t("production.report")}
+              </Button>
+            )}
           </div>
-        )}
+        ) : null}
       </DialogContent>
     </Dialog>
   );

@@ -133,17 +133,7 @@ export const ActivityMonitor: React.FC = () => {
   }, [loadData]);
 
   useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      loadData();
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [autoRefresh, loadData]);
-
-  useEffect(() => {
-    if (!profile) return;
+    if (!profile || !autoRefresh) return;
 
     const channel = supabase
       .channel("activity_log_changes")
@@ -165,7 +155,20 @@ export const ActivityMonitor: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [profile, loadData]);
+  }, [autoRefresh, profile, loadData]);
+
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") void loadData();
+    };
+    window.addEventListener("online", refreshWhenVisible);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+    return () => {
+      window.removeEventListener("online", refreshWhenVisible);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [autoRefresh, loadData]);
 
   const getActionIcon = (action: string) => {
     const iconClass = "h-3.5 w-3.5";

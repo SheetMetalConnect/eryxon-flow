@@ -39,5 +39,9 @@ SELECT has_function_privilege('authenticated','public.transition_operation(uuid,
 SELECT CASE WHEN :'ok'='t' THEN 1 ELSE 1/0 END;
 SELECT has_function_privilege('authenticated','public.switch_operation(uuid,uuid,uuid,uuid,text)','EXECUTE') AS ok \gset
 SELECT CASE WHEN :'ok'='t' THEN 1 ELSE 1/0 END;
+SELECT has_function_privilege('authenticated','public.apply_schedule_plan(uuid,jsonb,jsonb)','EXECUTE') AS ok \gset
+SELECT CASE WHEN :'ok'='t' THEN 1 ELSE 1/0 END;
+SELECT has_function_privilege('authenticated','public.report_client_error(text,text,text,text)','EXECUTE') AS ok \gset
+SELECT CASE WHEN :'ok'='t' THEN 1 ELSE 1/0 END;
 RESET ROLE;
 ROLLBACK;

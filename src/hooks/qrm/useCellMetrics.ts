@@ -50,10 +50,10 @@ export function useCellQRMMetrics(
       if (rpcError) throw rpcError;
       setMetrics(data as unknown as CellQRMMetrics);
     } catch (err) {
-      setError(err as Error);
-      logger.error("Failed to fetch cell QRM metrics", err, {
-        operation: "useCellQRMMetrics",
-        entityType: "cell",
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      logger.error("useCellQRMMetrics", "Failed to fetch cell QRM metrics", {
+        error,
         entityId: cellId,
         tenantId,
       });
@@ -111,8 +111,7 @@ export function useCellQRMMetrics(
       )
       .subscribe((status) => {
         if (status === "CHANNEL_ERROR") {
-          logger.error("Realtime subscription error", undefined, {
-            operation: "useCellQRMMetrics",
+          logger.error("useCellQRMMetrics", "Realtime subscription error", {
             channelName: `qrm-cell-${cellId}`,
           });
         }
@@ -149,68 +148,20 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
     setError(null);
 
     try {
-      const { data: cells, error: cellsError } = await supabase
-        .from("cells")
-        .select("id")
-        .eq("tenant_id", tenantId)
-        .eq("active", true);
-
-      if (cellsError) throw cellsError;
-
-      const metricsPromises = (cells || []).map(async (cell) => {
-        const { data, error: rpcError } = await supabase.rpc(
-          "get_cell_qrm_metrics",
-          {
-            cell_id_param: cell.id,
-            tenant_id_param: tenantId,
-          }
-        );
-
-        if (rpcError) {
-          throw new Error(
-            `Failed to fetch metrics for cell ${cell.id}: ${rpcError.message}`
-          );
-        }
-
-        return { cellId: cell.id, data: data as unknown as CellQRMMetrics };
+      const { data, error: rpcError } = await supabase.rpc("get_all_cell_qrm_metrics", {
+        p_tenant_id: tenantId,
       });
+      if (rpcError) throw rpcError;
 
-      const results = await Promise.allSettled(metricsPromises);
-
-      const failures = results.filter(
-        (r): r is PromiseRejectedResult => r.status === "rejected"
-      );
-
-      if (failures.length > 0) {
-          const errorMessages = failures
-          .map((f) => f.reason?.message || "Unknown error")
-          .join("; ");
-        throw new Error(`Failed to fetch cell metrics: ${errorMessages}`);
-      }
-
-      const successResults = results
-        .filter(
-          (r): r is PromiseFulfilledResult<{
-            cellId: string;
-            data: CellQRMMetrics;
-          }> => r.status === "fulfilled"
-        )
-        .map((r) => r.value);
-
-      const metricsMap = successResults.reduce(
-        (acc, { cellId, data }) => {
-          if (data) acc[cellId] = data;
-          return acc;
-        },
-        {} as Record<string, CellQRMMetrics>
-      );
+      const metrics = Array.isArray(data) ? data as unknown as CellQRMMetrics[] : [];
+      const metricsMap = Object.fromEntries(metrics.map((metric) => [metric.cell_id, metric]));
 
       setCellsMetrics(metricsMap);
     } catch (err) {
-      setError(err as Error);
-      logger.error("Failed to fetch all cells QRM metrics", err, {
-        operation: "useAllCellsQRMMetrics",
-        entityType: "cell",
+      const error = err instanceof Error ? err : new Error(String(err));
+      setError(error);
+      logger.error("useAllCellsQRMMetrics", "Failed to fetch all cells QRM metrics", {
+        error,
         tenantId,
       });
     } finally {
@@ -256,8 +207,7 @@ export function useAllCellsQRMMetrics(tenantId: string | null) {
       )
       .subscribe((status) => {
         if (status === "CHANNEL_ERROR") {
-          logger.error("Realtime subscription error", undefined, {
-            operation: "useAllCellsQRMMetrics",
+          logger.error("useAllCellsQRMMetrics", "Realtime subscription error", {
             channelName: `qrm-all-cells-${tenantId}`,
           });
         }

@@ -95,7 +95,7 @@ Below the header, tabs hold the detail (only the ones with something to show app
 
 When the part has a 3D model or a drawing, **3D** and **PDF** tabs appear too — they load only when you open them, so the panel stays fast. Tap **Expand** for a full-screen view.
 
-The **action bar** is pinned to the bottom in thumb reach: **Start / Pause**, **Report production**, **Mark complete**, and **Report issue**. The order is explicit: report the completed quantity, then mark the operation complete. **Mark complete** is also available for short operations that do not need a timer. When a timer is running, it reads **Stop & complete** and closes the timer and operation in one transaction.
+The **action bar** is pinned to the bottom in thumb reach: **Start / Pause**, **Report production**, **Mark complete**, and **Report issue**. The order is explicit: report the completed quantity, then mark the operation complete. When the reported quantity reaches the target, **Report & complete** does both in one tap. **Mark complete** remains available for short operations that do not need a timer. When a timer is running, **Stop & complete** closes the timer and operation in one transaction.
 
 Only one individual operation can run per operator. If you scan or start another operation while a timer is running, the terminal names the current and next operation and asks you to confirm the switch. Confirming stops the old timer and starts the new one in one transaction, so a rejected start cannot leave the old operation stopped.
 

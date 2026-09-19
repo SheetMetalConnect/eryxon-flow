@@ -12,6 +12,13 @@ export interface FactoryCalendarSeed {
   notes?: string;
 }
 
+export interface MockTimelineContext {
+  workingDaysMask?: number;
+  calendar?: FactoryCalendarSeed[];
+  openingTime?: string;
+  closingTime?: string;
+}
+
 function startOfUtcDay(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
@@ -30,16 +37,36 @@ function dateKey(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
 
-function moveToWorkingDay(date: Date, direction: 1 | -1): Date {
+function timeToMinutes(value: string): number {
+  const [hours, minutes] = value.slice(0, 5).split(":").map(Number);
+  return hours * 60 + minutes;
+}
+
+function isMaskWorkingDay(date: Date, workingDaysMask: number): boolean {
+  const maskBits = [64, 1, 2, 4, 8, 16, 32];
+  return (workingDaysMask & maskBits[date.getUTCDay()]) !== 0;
+}
+
+function moveToWorkingDay(
+  date: Date,
+  direction: 1 | -1,
+  context: MockTimelineContext = {},
+  requiredMinutes = 0,
+): Date {
   let candidate = startOfUtcDay(date);
 
   while (true) {
-    const day = candidate.getUTCDay();
-    const calendarEntry = calendarForYear(candidate.getUTCFullYear()).find(
+    const calendarEntry = (context.calendar ?? calendarForYear(candidate.getUTCFullYear())).find(
       (entry) => entry.date === dateKey(candidate),
     );
     const closed = calendarEntry?.day_type === "holiday" || calendarEntry?.day_type === "closure";
-    if (day !== 0 && day !== 6 && !closed) return candidate;
+    const explicitlyWorking = calendarEntry?.day_type === "half_day";
+    const defaultWorking = isMaskWorkingDay(candidate, context.workingDaysMask ?? 31);
+    const opening = calendarEntry?.opening_time ?? context.openingTime ?? "07:00";
+    const closing = calendarEntry?.closing_time ?? context.closingTime ?? "17:00";
+    const availableMinutes = Math.max(0, timeToMinutes(closing) - timeToMinutes(opening))
+      * (calendarEntry?.opening_time || calendarEntry?.closing_time ? 1 : calendarEntry?.capacity_multiplier ?? 1);
+    if (!closed && (explicitlyWorking || defaultWorking) && availableMinutes >= requiredMinutes) return candidate;
     candidate = addUtcDays(candidate, direction);
   }
 }
@@ -137,10 +164,10 @@ interface TimelineJob {
   dueAt: string;
 }
 
-export function createMockDataTimeline(reference = new Date()) {
+export function createMockDataTimeline(reference = new Date(), context: MockTimelineContext = {}) {
   const at = (days: number, hour = 0) => {
     const direction = days < 0 ? -1 : 1;
-    return atUtcHour(moveToWorkingDay(addUtcDays(reference, days), direction), hour).toISOString();
+    return atUtcHour(moveToWorkingDay(addUtcDays(reference, days), direction, context), hour).toISOString();
   };
   const job = (createdDays: number, dueDays: number): TimelineJob => ({
     createdAt: at(createdDays, 9),
@@ -166,12 +193,14 @@ export function createPlannedWindow({
   sequence,
   status,
   estimatedMinutes,
+  context = {},
 }: {
   reference?: Date;
   dueAt: string;
   sequence: number;
   status: OperationStatus;
   estimatedMinutes: number;
+  context?: MockTimelineContext;
 }): { plannedStart: string; plannedEnd: string } {
   let day: Date;
 
@@ -179,17 +208,22 @@ export function createPlannedWindow({
     day = moveToWorkingDay(
       addUtcDays(reference, -Math.max(1, 7 - Math.floor(sequence / 10))),
       -1,
+      context,
+      estimatedMinutes,
     );
   } else if (status === "in_progress" || status === "on_hold") {
-    day = moveToWorkingDay(reference, 1);
+    day = moveToWorkingDay(addUtcDays(reference, -1), -1, context, estimatedMinutes);
   } else {
     const daysBeforeDue = Math.max(1, 6 - Math.floor(sequence / 10));
     const candidate = addUtcDays(new Date(dueAt), -daysBeforeDue);
-    const tomorrow = moveToWorkingDay(addUtcDays(reference, 1), 1);
-    day = moveToWorkingDay(candidate < tomorrow ? tomorrow : candidate, 1);
+    const tomorrow = moveToWorkingDay(addUtcDays(reference, 1), 1, context, estimatedMinutes);
+    day = moveToWorkingDay(candidate < tomorrow ? tomorrow : candidate, 1, context, estimatedMinutes);
   }
 
-  const start = atUtcHour(day, 8);
+  const calendarEntry = context.calendar?.find((entry) => entry.date === dateKey(day));
+  const startMinute = timeToMinutes(calendarEntry?.opening_time ?? context.openingTime ?? "08:00");
+  const start = atUtcHour(day, Math.floor(startMinute / 60));
+  start.setUTCMinutes(startMinute % 60);
   const end = new Date(start.getTime() + Math.max(30, estimatedMinutes) * 60 * 1000);
 
   return {

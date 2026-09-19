@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useTenant } from '@/hooks/useTenant';
 import { supabase } from '@/integrations/supabase/client';
-import type { Json } from '@/integrations/supabase/types';
+import type { Json, TablesUpdate } from '@/integrations/supabase/types';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -133,7 +133,7 @@ export default function OrganizationSettings() {
     setSaving(true);
 
     try {
-      const updateData: Record<string, unknown> = {
+      const updateData: TablesUpdate<'tenants'> = {
         name: formData.name,
         company_name: formData.company_name,
         abbreviation: formData.abbreviation.toUpperCase() || null,
