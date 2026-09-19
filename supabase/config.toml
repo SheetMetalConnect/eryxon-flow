@@ -61,9 +61,6 @@ verify_jwt = false
 [functions.api-issues]
 verify_jwt = false
 
-[functions.api-job-lifecycle]
-verify_jwt = false
-
 [functions.api-jobs]
 verify_jwt = false
 
