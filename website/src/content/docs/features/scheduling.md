@@ -8,12 +8,12 @@ Eryxon Flow includes a simple capacity-based scheduler for planning operations a
 ## How It Works
 
 1. **Click Auto Schedule** on the Capacity Matrix page
-2. The scheduler fetches all incomplete jobs and their operations
+2. The scheduler fetches incomplete jobs and their not-started operations; active and completed work keeps its existing plan
 3. Jobs are sorted by due date (respecting any manual overrides)
 4. Operations are allocated to their assigned cells day by day, respecting daily capacity limits
 5. `planned_start` and `planned_end` dates are saved on each operation
 
-If operations already have planned dates, a confirmation modal warns you before overwriting.
+If not-started operations already have planned dates, a confirmation modal warns you before overwriting them.
 
 ## Key Concepts
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { SchedulerService, CalendarDay, SchedulerConfig } from './scheduler';
+import { groupOperationsByJob, SchedulerService, CalendarDay, SchedulerConfig } from './scheduler';
 import { addDays, format, startOfDay } from 'date-fns';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -65,10 +65,11 @@ const createMockOperation = (overrides: Partial<{
   cell_id: string | null;
   estimated_time: number | null;
   sequence: number;
+  part_id: string;
 }> = {}) => ({
   id: overrides.id ?? 'op-1',
   tenant_id: 'tenant-1',
-  part_id: 'part-1',
+  part_id: overrides.part_id ?? 'part-1',
   cell_id: 'cell_id' in overrides ? overrides.cell_id : 'cell-1',
   operation_name: 'Test Operation',
   sequence: overrides.sequence ?? 10,
@@ -407,6 +408,7 @@ describe('SchedulerService', () => {
 
       // Job 2 should be scheduled first (earlier due date)
       expect(result).toHaveLength(2);
+      expect(result.map((operation) => operation.id)).toEqual(['op-job2', 'op-job1']);
     });
 
     it('handles jobs with no due date', () => {
@@ -459,6 +461,61 @@ describe('SchedulerService', () => {
 
       expect(new Date(secondOpStartDate) >= new Date(firstOpEndDate)).toBe(true);
     });
+
+    it('reserves active capacity before planning downstream work', () => {
+      scheduler.reserveAllocations([
+        {
+          operation_id: 'active-op',
+          cell_id: 'cell-1',
+          date: '2025-01-06',
+          hours_allocated: 8,
+        },
+      ]);
+      const jobs = [createMockJob({ id: 'job-1' })];
+      const operationsByJob = new Map([
+        ['job-1', [createMockOperation({ id: 'next-op', estimated_time: 480 })]],
+      ]);
+
+      const result = scheduler.scheduleJobs(jobs, operationsByJob, new Date('2025-01-06'));
+
+      expect(result[0].day_allocations[0].date).toBe('2025-01-07');
+    });
+
+    it('starts a route after its active predecessor', () => {
+      const jobs = [createMockJob({ id: 'job-1' })];
+      const operationsByJob = new Map([
+        ['job-1', [createMockOperation({ id: 'next-op', part_id: 'part-1' })]],
+      ]);
+      const earliestStartByPart = new Map([
+        ['part-1', new Date('2025-01-08')],
+      ]);
+
+      const result = scheduler.scheduleJobs(
+        jobs,
+        operationsByJob,
+        new Date('2025-01-06'),
+        earliestStartByPart,
+      );
+
+      expect(result[0].day_allocations[0].date).toBe('2025-01-08');
+    });
+
+    it('allows separate part routings to use different cells in parallel', () => {
+      const jobs = [createMockJob({ id: 'job-1' })];
+      const operationsByJob = new Map([
+        ['job-1', [
+          createMockOperation({ id: 'part-a-op', part_id: 'part-a', cell_id: 'cell-1' }),
+          createMockOperation({ id: 'part-b-op', part_id: 'part-b', cell_id: 'cell-2' }),
+        ]],
+      ]);
+
+      const result = scheduler.scheduleJobs(jobs, operationsByJob, new Date('2025-01-06'));
+
+      expect(result.map((operation) => operation.day_allocations[0].date)).toEqual([
+        '2025-01-06',
+        '2025-01-06',
+      ]);
+    });
   });
 
   describe('getCapacitySummary', () => {
@@ -505,6 +562,23 @@ describe('SchedulerService', () => {
       // Total should be cell-1 (8) + cell-2 (6) = 14
       expect(daySummary?.total).toBe(14);
     });
+  });
+});
+
+describe('groupOperationsByJob', () => {
+  it('groups operations through their part and keeps routing sequence', () => {
+    const operations = [
+      createMockOperation({ id: 'op-20', sequence: 20 }),
+      createMockOperation({ id: 'op-10', sequence: 10 }),
+    ];
+    const grouped = groupOperationsByJob(operations, [
+      { id: 'part-1', job_id: 'job-1' },
+    ]);
+
+    expect(grouped.get('job-1')?.map((operation) => operation.id)).toEqual([
+      'op-10',
+      'op-20',
+    ]);
   });
 });
 

@@ -1,5 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
+import {
+  createDutchFactoryCalendar,
+  createMockDataTimeline,
+  createPlannedWindow,
+} from "@/lib/mockDataTimeline";
 
 export interface MockDataProgressStep {
   step: number;
@@ -49,6 +54,9 @@ export async function generateMockData(
     if (!tenantId || tenantId.trim() === "") {
       throw new Error("tenant_id is required and cannot be empty");
     }
+
+    const referenceDate = new Date();
+    const timeline = createMockDataTimeline(referenceDate);
 
     logger.debug(
       'MockData',
@@ -210,44 +218,7 @@ export async function generateMockData(
 
     reportProgress(2, 'calendar');
     if (options.includeCalendar) {
-      const dutchHolidays: Array<{ date: string; day_type: string; name: string; capacity_multiplier: number; opening_time?: string; closing_time?: string; notes?: string }> = [
-        { date: '2025-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
-        { date: '2025-04-18', day_type: 'holiday', name: 'Goede Vrijdag', capacity_multiplier: 0 },
-        { date: '2025-04-20', day_type: 'holiday', name: 'Eerste Paasdag', capacity_multiplier: 0 },
-        { date: '2025-04-21', day_type: 'holiday', name: 'Tweede Paasdag', capacity_multiplier: 0 },
-        { date: '2025-04-26', day_type: 'holiday', name: 'Koningsdag', capacity_multiplier: 0, notes: 'Koningsdag valt op zondag, gevierd op zaterdag' },
-        { date: '2025-05-05', day_type: 'holiday', name: 'Bevrijdingsdag', capacity_multiplier: 0 },
-        { date: '2025-05-29', day_type: 'holiday', name: 'Hemelvaartsdag', capacity_multiplier: 0 },
-        { date: '2025-05-30', day_type: 'closure', name: 'Brugdag Hemelvaart', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
-        { date: '2025-06-08', day_type: 'holiday', name: 'Eerste Pinksterdag', capacity_multiplier: 0 },
-        { date: '2025-06-09', day_type: 'holiday', name: 'Tweede Pinksterdag', capacity_multiplier: 0 },
-        { date: '2025-12-24', day_type: 'half_day', name: 'Kerstavond', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
-        { date: '2025-12-25', day_type: 'holiday', name: 'Eerste Kerstdag', capacity_multiplier: 0 },
-        { date: '2025-12-26', day_type: 'holiday', name: 'Tweede Kerstdag', capacity_multiplier: 0 },
-        { date: '2025-12-29', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
-        { date: '2025-12-30', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
-        { date: '2025-12-31', day_type: 'half_day', name: 'Oudejaarsdag', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
-        { date: '2026-01-01', day_type: 'holiday', name: 'Nieuwjaarsdag', capacity_multiplier: 0 },
-        { date: '2026-01-02', day_type: 'closure', name: 'Brugdag Nieuwjaar', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
-        { date: '2026-04-03', day_type: 'holiday', name: 'Goede Vrijdag', capacity_multiplier: 0 },
-        { date: '2026-04-05', day_type: 'holiday', name: 'Eerste Paasdag', capacity_multiplier: 0 },
-        { date: '2026-04-06', day_type: 'holiday', name: 'Tweede Paasdag', capacity_multiplier: 0 },
-        { date: '2026-04-27', day_type: 'holiday', name: 'Koningsdag', capacity_multiplier: 0 },
-        { date: '2026-05-05', day_type: 'holiday', name: 'Bevrijdingsdag', capacity_multiplier: 0 },
-        { date: '2026-05-14', day_type: 'holiday', name: 'Hemelvaartsdag', capacity_multiplier: 0 },
-        { date: '2026-05-15', day_type: 'closure', name: 'Brugdag Hemelvaart', capacity_multiplier: 0, notes: 'Fabriek gesloten - brugdag' },
-        { date: '2026-05-24', day_type: 'holiday', name: 'Eerste Pinksterdag', capacity_multiplier: 0 },
-        { date: '2026-05-25', day_type: 'holiday', name: 'Tweede Pinksterdag', capacity_multiplier: 0 },
-        { date: '2026-12-24', day_type: 'half_day', name: 'Kerstavond', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
-        { date: '2026-12-25', day_type: 'holiday', name: 'Eerste Kerstdag', capacity_multiplier: 0 },
-        { date: '2026-12-26', day_type: 'holiday', name: 'Tweede Kerstdag', capacity_multiplier: 0 },
-        { date: '2026-12-28', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
-        { date: '2026-12-29', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
-        { date: '2026-12-30', day_type: 'closure', name: 'Kerstvakantie', capacity_multiplier: 0, notes: 'Fabriek gesloten tussen Kerst en Nieuwjaar' },
-        { date: '2026-12-31', day_type: 'half_day', name: 'Oudejaarsdag', capacity_multiplier: 0.5, opening_time: '08:00', closing_time: '12:00', notes: 'Fabriek sluit om 12:00' },
-      ];
-
-      const calendarEntries = dutchHolidays.map(holiday => ({
+      const calendarEntries = createDutchFactoryCalendar(referenceDate).map(holiday => ({
         tenant_id: tenantId,
         date: holiday.date,
         day_type: holiday.day_type,
@@ -366,27 +337,27 @@ export async function generateMockData(
     reportProgress(5, 'jobs');
     let jobIds: string[] = [];
     const jobIdMap: Record<string, string> = {};
+    const jobDueDateMap: Record<string, string> = {};
+    const jobNumbers = {
+      frame: `WO-${timeline.lotYear}-1047`,
+      cleanroom: `WO-${timeline.lotYear}-1089`,
+      energyStorage: `WO-${timeline.lotYear}-1124`,
+      precision: `WO-${timeline.lotYear}-1156`,
+      aerospace: `WO-${timeline.lotYear}-1178`,
+      medical: `WO-${timeline.lotYear}-1195`,
+    };
 
     if (options.includeJobs) {
-      const oct15 = new Date("2025-10-15T09:00:00Z");
-      const oct20 = new Date("2025-10-20T14:30:00Z");
-      const nov05 = new Date("2025-11-05T08:15:00Z");
-      const nov18 = new Date("2025-11-18T10:45:00Z");
-      const jan10 = new Date("2026-01-10T00:00:00Z");
-      const jan17 = new Date("2026-01-17T00:00:00Z");
-      const jan24 = new Date("2026-01-24T00:00:00Z");
-      const jan31 = new Date("2026-01-31T00:00:00Z");
-
       const jobs = [
         {
           tenant_id: tenantId,
-          job_number: "WO-2025-1047",
+          job_number: jobNumbers.frame,
           customer: "Van den Berg Machinebouw B.V.",
           notes:
             "Hydraulische hefframe - Urgente levering voor offshore project",
           status: "completed" as const,
-          due_date: jan10.toISOString(),
-          created_at: oct15.toISOString(),
+          due_date: timeline.jobs.completed.dueAt,
+          created_at: timeline.jobs.completed.createdAt,
           metadata: {
             orderValue: "€24.500",
             contactPerson: "Ing. P. van den Berg",
@@ -395,12 +366,12 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_number: "WO-2025-1089",
+          job_number: jobNumbers.cleanroom,
           customer: "TechnoStaal Engineering",
           notes: "RVS bedieningspanelen voor cleanroom - ISO klasse 5 vereist",
           status: "in_progress" as const,
-          due_date: jan17.toISOString(),
-          created_at: oct20.toISOString(),
+          due_date: timeline.jobs.inProgress[0].dueAt,
+          created_at: timeline.jobs.inProgress[0].createdAt,
           metadata: {
             orderValue: "€18.750",
             contactPerson: "M. Schouten",
@@ -409,12 +380,12 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_number: "WO-2025-1124",
+          job_number: jobNumbers.energyStorage,
           customer: "De Jong Installatietechniek",
           notes: "Aluminium behuizingen voor energieopslag - Herhaalorder Q4",
           status: "in_progress" as const,
-          due_date: jan24.toISOString(),
-          created_at: nov05.toISOString(),
+          due_date: timeline.jobs.inProgress[1].dueAt,
+          created_at: timeline.jobs.inProgress[1].createdAt,
           metadata: {
             orderValue: "€31.200",
             contactPerson: "R. de Jong",
@@ -423,13 +394,13 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_number: "WO-2025-1156",
+          job_number: jobNumbers.precision,
           customer: "HighTech Precision B.V.",
           notes:
             "Precisie framewerk voor semiconductor equipment - Tolerantie ±0.05mm",
           status: "in_progress" as const,
-          due_date: jan31.toISOString(),
-          created_at: nov18.toISOString(),
+          due_date: timeline.jobs.inProgress[2].dueAt,
+          created_at: timeline.jobs.inProgress[2].createdAt,
           metadata: {
             orderValue: "€67.800",
             contactPerson: "Dr. K. Vermeer",
@@ -439,12 +410,12 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_number: "WO-2025-1178",
+          job_number: jobNumbers.aerospace,
           customer: "Luchtvaart Componenten Nederland",
           notes: "Luchtvaart beugels - AS9100 certificering vereist",
           status: "in_progress" as const,
-          due_date: new Date("2026-02-15T00:00:00Z").toISOString(),
-          created_at: new Date("2025-11-20T11:00:00Z").toISOString(),
+          due_date: timeline.jobs.inProgress[3].dueAt,
+          created_at: timeline.jobs.inProgress[3].createdAt,
           metadata: {
             orderValue: "€42.500",
             contactPerson: "Ir. M. de Vries",
@@ -455,12 +426,12 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_number: "WO-2025-1195",
+          job_number: jobNumbers.medical,
           customer: "MedTech Solutions B.V.",
           notes: "Medische apparatuur behuizing - EN ISO 13485",
           status: "not_started" as const,
-          due_date: new Date("2026-02-28T00:00:00Z").toISOString(),
-          created_at: new Date("2025-11-22T09:30:00Z").toISOString(),
+          due_date: timeline.jobs.notStarted.dueAt,
+          created_at: timeline.jobs.notStarted.createdAt,
           metadata: {
             orderValue: "€28.900",
             contactPerson: "Dr. L. Bakker",
@@ -481,6 +452,7 @@ export async function generateMockData(
       jobIds = jobData?.map((j) => j.id) || [];
       jobData?.forEach((j, idx) => {
         jobIdMap[jobs[idx].job_number] = j.id;
+        jobDueDateMap[jobs[idx].job_number] = jobs[idx].due_date;
       });
 
       logger.debug('MockData', 'Created 6 realistic Dutch customer jobs');
@@ -494,7 +466,7 @@ export async function generateMockData(
       const parentParts = [
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1047"],
+          job_id: jobIdMap[jobNumbers.frame],
           part_number: "HF-FRAME-001",
           material: "S355J2",
           notes: "Hoofdframe hydraulische hef - Gelast constructiestaal",
@@ -510,7 +482,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1089"],
+          job_id: jobIdMap[jobNumbers.cleanroom],
           part_number: "CR-PANEL-A1",
           material: "RVS 316L",
           notes: "Bedieningspaneel voorzijde - Cleanroom ISO 5",
@@ -527,7 +499,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1124"],
+          job_id: jobIdMap[jobNumbers.energyStorage],
           part_number: "ESS-BOX-TOP",
           material: "AlMg3",
           notes: "Deksel energieopslag behuizing - Parent assembly",
@@ -543,7 +515,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1156"],
+          job_id: jobIdMap[jobNumbers.precision],
           part_number: "HTP-FRAME-MAIN",
           material: "RVS 304",
           notes: "Precisie framewerk - CMM inspectie verplicht",
@@ -561,7 +533,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1178"],
+          job_id: jobIdMap[jobNumbers.aerospace],
           part_number: "FK-BRACKET-A1",
           material: "Aluminium 7075-T6",
           notes: "Luchtvaart beugel - AS9100 traceability",
@@ -579,7 +551,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1195"],
+          job_id: jobIdMap[jobNumbers.medical],
           part_number: "PH-MED-HOUSING",
           material: "RVS 316L",
           notes: "Medische behuizing - biocompatibel",
@@ -618,7 +590,7 @@ export async function generateMockData(
       const childParts = [
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1047"],
+          job_id: jobIdMap[jobNumbers.frame],
           part_number: "HF-BRACKET-002",
           material: "S355J2",
           notes: "Montagebeugels zijkant - Child of HF-FRAME-001",
@@ -633,7 +605,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1089"],
+          job_id: jobIdMap[jobNumbers.cleanroom],
           part_number: "CR-PANEL-B1",
           material: "RVS 316L",
           notes: "Bedieningspaneel zijkant - Child of CR-PANEL-A1",
@@ -649,7 +621,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1124"],
+          job_id: jobIdMap[jobNumbers.energyStorage],
           part_number: "ESS-BOX-SIDE",
           material: "AlMg3",
           notes: "Zijpaneel behuizing - Child of ESS-BOX-TOP",
@@ -664,7 +636,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1156"],
+          job_id: jobIdMap[jobNumbers.precision],
           part_number: "HTP-MOUNT-PLT",
           material: "RVS 304",
           notes: "Montageplaat precisie - Child of HTP-FRAME-MAIN",
@@ -680,7 +652,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1178"],
+          job_id: jobIdMap[jobNumbers.aerospace],
           part_number: "FK-BRACKET-B1",
           material: "Aluminium 7075-T6",
           notes: "Verstevigingsbeugel - Child of FK-BRACKET-A1",
@@ -696,7 +668,7 @@ export async function generateMockData(
         },
         {
           tenant_id: tenantId,
-          job_id: jobIdMap["WO-2025-1195"],
+          job_id: jobIdMap[jobNumbers.medical],
           part_number: "PH-MED-COVER",
           material: "RVS 316L",
           notes: "Deksel medische behuizing - Child of PH-MED-HOUSING",
@@ -757,11 +729,20 @@ export async function generateMockData(
           operation_name: string;
           description: string;
           estimated_hours: number;
-          status: string;
+          status: "not_started" | "in_progress" | "completed" | "on_hold";
           metadata?: Record<string, unknown>;
         }>,
       ) => {
         routing.forEach((op) => {
+          const estimatedMinutes = Math.round(op.estimated_hours * 60);
+          const planned = createPlannedWindow({
+            reference: referenceDate,
+            dueAt: jobDueDateMap[jobNumber],
+            sequence: op.seq,
+            status: op.status,
+            estimatedMinutes,
+          });
+
           operations.push({
             tenant_id: tenantId,
             part_id: partId,
@@ -770,7 +751,14 @@ export async function generateMockData(
             notes: op.description, // Map description to notes field
             sequence: op.seq,
             status: op.status,
-            estimated_time: Math.round(op.estimated_hours * 60), // Convert hours to minutes
+            estimated_time: estimatedMinutes,
+            planned_start: planned.plannedStart,
+            planned_end: planned.plannedEnd,
+            started_at: op.status === "not_started" ? null : planned.plannedStart,
+            completed_at: op.status === "completed" ? planned.plannedEnd : null,
+            completion_percentage:
+              op.status === "completed" ? 100 : op.status === "in_progress" ? 40 : 0,
+            actual_time: op.status === "completed" ? Math.round(estimatedMinutes * 0.95) : 0,
             metadata: op.metadata || {},
           });
         });
@@ -781,7 +769,7 @@ export async function generateMockData(
         createOperationRouting(
           frame001.id,
           "HF-FRAME-001",
-          "WO-2025-1047",
+          jobNumbers.frame,
           "S355J2",
           [
             {
@@ -862,7 +850,7 @@ export async function generateMockData(
         createOperationRouting(
           bracket002.id,
           "HF-BRACKET-002",
-          "WO-2025-1047",
+          jobNumbers.frame,
           "S355J2",
           [
             {
@@ -907,7 +895,7 @@ export async function generateMockData(
         createOperationRouting(
           crPanelA1.id,
           "CR-PANEL-A1",
-          "WO-2025-1089",
+          jobNumbers.cleanroom,
           "RVS 316L",
           [
             {
@@ -988,7 +976,7 @@ export async function generateMockData(
         createOperationRouting(
           crPanelB1.id,
           "CR-PANEL-B1",
-          "WO-2025-1089",
+          jobNumbers.cleanroom,
           "RVS 316L",
           [
             {
@@ -1041,7 +1029,7 @@ export async function generateMockData(
         createOperationRouting(
           essTop.id,
           "ESS-BOX-TOP",
-          "WO-2025-1124",
+          jobNumbers.energyStorage,
           "AlMg3",
           [
             {
@@ -1105,7 +1093,7 @@ export async function generateMockData(
         createOperationRouting(
           essSide.id,
           "ESS-BOX-SIDE",
-          "WO-2025-1124",
+          jobNumbers.energyStorage,
           "AlMg3",
           [
             {
@@ -1151,7 +1139,7 @@ export async function generateMockData(
         createOperationRouting(
           asmlFrame.id,
           "HTP-FRAME-MAIN",
-          "WO-2025-1156",
+          jobNumbers.precision,
           "RVS 304",
           [
             {
@@ -1231,7 +1219,7 @@ export async function generateMockData(
         createOperationRouting(
           asmlMount.id,
           "HTP-MOUNT-PLT",
-          "WO-2025-1156",
+          jobNumbers.precision,
           "RVS 304",
           [
             {
@@ -1270,7 +1258,7 @@ export async function generateMockData(
         createOperationRouting(
           fkBracketA1.id,
           "FK-BRACKET-A1",
-          "WO-2025-1178",
+          jobNumbers.aerospace,
           "Aluminium 7075-T6",
           [
             {
@@ -1333,7 +1321,7 @@ export async function generateMockData(
         createOperationRouting(
           fkBracketB1.id,
           "FK-BRACKET-B1",
-          "WO-2025-1178",
+          jobNumbers.aerospace,
           "Aluminium 7075-T6",
           [
             {
@@ -1379,7 +1367,7 @@ export async function generateMockData(
         createOperationRouting(
           phMedHousing.id,
           "PH-MED-HOUSING",
-          "WO-2025-1195",
+          jobNumbers.medical,
           "RVS 316L",
           [
             {
@@ -1455,7 +1443,7 @@ export async function generateMockData(
         createOperationRouting(
           phMedCover.id,
           "PH-MED-COVER",
-          "WO-2025-1195",
+          jobNumbers.medical,
           "RVS 316L",
           [
             {
@@ -1774,7 +1762,7 @@ export async function generateMockData(
           .slice(0, numOperators);
 
         for (const operatorId of selectedOperators) {
-          const baseDate = new Date("2025-10-15T08:00:00Z");
+          const baseDate = new Date(timeline.timeEntriesFrom);
           const daysOffset = Math.floor(Math.random() * 45); // 45 days range
           const startHour = 8 + Math.floor(Math.random() * 8); // Between 8:00 and 16:00
 
@@ -1798,13 +1786,13 @@ export async function generateMockData(
               notes: numOperators > 1 ? "Teamwork met collega" : null,
             });
           } else if (op.status === "in_progress") {
-            // For in-progress, some have end time, some don't
             const hasEnded = Math.random() > 0.3;
+            const activeStart = new Date(referenceDate.getTime() - 60 * 60 * 1000);
             timeEntries.push({
               tenant_id: tenantId,
               operation_id: op.id,
               operator_id: operatorId,
-              start_time: startTime.toISOString(),
+              start_time: hasEnded ? startTime.toISOString() : activeStart.toISOString(),
               end_time: hasEnded ? endTime.toISOString() : null,
               duration: hasEnded ? durationMinutes : null,
               time_type: "productive",
@@ -1860,7 +1848,7 @@ export async function generateMockData(
               ]
             : null;
 
-        const recordDate = new Date("2025-10-20T00:00:00Z");
+        const recordDate = new Date(timeline.quantityRecordsFrom);
         recordDate.setDate(
           recordDate.getDate() + Math.floor(Math.random() * 40),
         );
@@ -1880,7 +1868,7 @@ export async function generateMockData(
             scrapQty > 0
               ? `${scrapQty} stuks afgekeurd: ${scrapReason?.code}`
               : null,
-          material_lot: `LOT-2025-${Math.floor(Math.random() * 9000) + 1000}`,
+          material_lot: `LOT-${timeline.lotYear}-${Math.floor(Math.random() * 9000) + 1000}`,
           material_supplier: [
             "Thyssenkrupp",
             "Tata Steel",
@@ -1962,7 +1950,7 @@ export async function generateMockData(
 
       selectedOps.forEach((op, idx) => {
         const template = issueTemplates[idx % issueTemplates.length];
-        const createdDate = new Date("2025-11-01T00:00:00Z");
+        const createdDate = new Date(timeline.issuesFrom);
         createdDate.setDate(
           createdDate.getDate() + Math.floor(Math.random() * 25),
         );
@@ -2081,6 +2069,14 @@ export async function clearMockData(
     }
 
     logger.debug('MockData', `Clearing all mock data for tenant: ${tenantId}...`);
+
+    if (useDatabaseFunction) {
+      const { error } = await supabase.rpc("clear_demo_data", {
+        p_tenant_id: tenantId,
+      });
+      if (error) throw error;
+      return { success: true };
+    }
 
     // CRITICAL: Delete in reverse order of dependencies
     // All deletions MUST include tenant_id filter to prevent cross-tenant contamination

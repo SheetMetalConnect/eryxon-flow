@@ -2,6 +2,37 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.11.4] — 2026-09-19
+
+This patch keeps demo workshops current and makes automatic scheduling follow
+job routing and cell capacity.
+
+### Changed
+
+- Demo jobs, operations, production records and factory calendars now use one
+  rolling timeline relative to the seed date. Work-order and material-lot years
+  follow the current year.
+- Auto Schedule plans not-started work by job due date and routing. Active and
+  completed operations keep their existing plan.
+- Demo operations include planned dates and status timestamps, so a fresh
+  workshop is usable in the terminal, dashboard and capacity views immediately.
+
+### Fixed
+
+- Replanning an operation now versions and supersedes its completion expectation
+  instead of leaving the original expected date active.
+- Demo reset removes dependent planning, expectation, batch, location and
+  operator records in foreign-key-safe order while preserving the tenant,
+  administrator profiles and configuration.
+- Factory-wide scheduling no longer serializes every operation into one queue.
+- Part-routing RPC results now return task status through their documented text
+  contract, and tenant deletion uses the current webhook delivery table.
+
+### Upgrade notes
+
+- Apply `20260919150000_dynamic_demo_data_consistency.sql` and
+  `20260919151000_repair_schema_functions.sql` before deploying the frontend.
+
 ## [0.11.3] — 2026-09-19
 
 This patch makes the operator terminal's production actions explicit and

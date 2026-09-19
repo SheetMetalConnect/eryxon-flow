@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { CalendarClock, Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { SchedulerService, CalendarDay } from "@/lib/scheduler";
+import { groupOperationsByJob, SchedulerService, CalendarDay } from "@/lib/scheduler";
 import { useTranslation } from "react-i18next";
 import { useProfile } from "@/hooks/useProfile";
 import { useTenant } from "@/hooks/useTenant";
 import { useQueryClient } from "@tanstack/react-query";
 import { QueryKeys } from "@/lib/queryClient";
-import { addMonths, format } from "date-fns";
+import { addDays, addMonths, format } from "date-fns";
 import { logger } from '@/lib/logger';
 import {
     AlertDialog,
@@ -40,7 +40,7 @@ export function AutoScheduleButton() {
         let query = supabase
             .from("operations")
             .select("*", { count: "exact", head: true })
-            .neq("status", "completed")
+            .eq("status", "not_started")
             .not("planned_start", "is", null);
         if (tenantId) {
             query = query.eq("tenant_id", tenantId);
@@ -79,35 +79,53 @@ export function AutoScheduleButton() {
                 throw new Error(t("capacity.tenantRequired"));
             }
 
-            const [jobsResult, operationsResult, cellsResult, calendarResult] = await Promise.all([
+            const [jobsResult, partsResult, operationsResult, cellsResult, calendarResult, allocationsResult] = await Promise.all([
                 supabase
                     .from("jobs")
                     .select("*")
                     .eq("tenant_id", tenantId)
-                    .neq("status", "completed"),
+                    .is("deleted_at", null)
+                    .neq("status", "completed")
+                    .order("due_date", { ascending: true }),
+                supabase
+                    .from("parts")
+                    .select("id, job_id")
+                    .eq("tenant_id", tenantId)
+                    .is("deleted_at", null),
                 supabase
                     .from("operations")
                     .select("*")
                     .eq("tenant_id", tenantId)
-                    .neq("status", "completed"),
+                    .is("deleted_at", null)
+                    .neq("status", "completed")
+                    .order("sequence", { ascending: true }),
                 supabase
                     .from("cells")
                     .select("*")
-                    .eq("tenant_id", tenantId),
+                    .eq("tenant_id", tenantId)
+                    .is("deleted_at", null),
                 supabase
                     .from("factory_calendar")
                     .select("*")
                     .eq("tenant_id", tenantId)
                     .gte("date", format(new Date(), 'yyyy-MM-dd'))
-                    .lte("date", format(addMonths(new Date(), 12), 'yyyy-MM-dd'))
+                    .lte("date", format(addMonths(new Date(), 12), 'yyyy-MM-dd')),
+                supabase
+                    .from("operation_day_allocations")
+                    .select("operation_id, cell_id, date, hours_allocated")
+                    .eq("tenant_id", tenantId)
+                    .gte("date", format(new Date(), 'yyyy-MM-dd')),
             ]);
 
             if (jobsResult.error) throw jobsResult.error;
+            if (partsResult.error) throw partsResult.error;
             if (operationsResult.error) throw operationsResult.error;
             if (cellsResult.error) throw cellsResult.error;
             if (calendarResult.error) throw calendarResult.error;
+            if (allocationsResult.error) throw allocationsResult.error;
 
             const jobs = jobsResult.data || [];
+            const parts = partsResult.data || [];
             const operations = operationsResult.data || [];
             const cells = cellsResult.data || [];
 
@@ -125,7 +143,35 @@ export function AutoScheduleButton() {
             };
 
             const scheduler = new SchedulerService(cells, calendarDays, config);
-            const scheduledOps = scheduler.scheduleOperations(operations);
+            const activeOperations = operations.filter((operation) => operation.status !== "not_started");
+            const activeOperationIds = new Set(activeOperations.map((operation) => operation.id));
+            scheduler.reserveAllocations(
+                (allocationsResult.data || []).filter((allocation) =>
+                    activeOperationIds.has(allocation.operation_id),
+                ),
+            );
+
+            const earliestStartByPart = new Map<string, Date>();
+            for (const operation of activeOperations) {
+                const nextStart = addDays(
+                    operation.planned_end ? new Date(operation.planned_end) : new Date(),
+                    1,
+                );
+                const current = earliestStartByPart.get(operation.part_id);
+                if (!current || nextStart > current) {
+                    earliestStartByPart.set(operation.part_id, nextStart);
+                }
+            }
+
+            const notStartedOperations = operations.filter(
+                (operation) => operation.status === "not_started",
+            );
+            const scheduledOps = scheduler.scheduleJobs(
+                jobs,
+                groupOperationsByJob(notStartedOperations, parts),
+                new Date(),
+                earliestStartByPart,
+            );
 
             let updatedCount = 0;
             const updates = scheduledOps

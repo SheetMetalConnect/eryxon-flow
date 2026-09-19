@@ -3,6 +3,7 @@ import { Database } from '@/integrations/supabase/types';
 export type Job = Database['public']['Tables']['jobs']['Row'];
 export type Operation = Database['public']['Tables']['operations']['Row'];
 export type Cell = Database['public']['Tables']['cells']['Row'];
+export type Part = Database['public']['Tables']['parts']['Row'];
 
 export const MAX_SCHEDULING_DAYS = 365;
 export const DEFAULT_OPERATION_DURATION_MINUTES = 60;
