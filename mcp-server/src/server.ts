@@ -5,7 +5,7 @@ import { run } from "./tool.js";
 import { allTools } from "./tools/index.js";
 import { stateCodec } from "./state.js";
 
-export const VERSION = "3.0.0";
+export const VERSION = "3.0.1";
 export const PROTOCOL_VERSION = "2026-07-28";
 
 const HOUR = 3_600_000;

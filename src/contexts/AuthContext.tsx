@@ -30,7 +30,7 @@ interface TenantInfo {
   status: "active" | "cancelled" | "suspended" | "trial";
   trial_ends_at: string | null;
   working_days_mask: number | null;
-  // Whitelabeling fields (premium feature)
+  // Whitelabeling fields for managed hosting
   whitelabel_enabled: boolean;
   whitelabel_logo_url: string | null;
   whitelabel_app_name: string | null;

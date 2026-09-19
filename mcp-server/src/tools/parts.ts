@@ -1,6 +1,6 @@
 import { z } from "zod";
 import * as s from "../schemas.js";
-import { READ, WRITE, tool } from "../tool.js";
+import { READ, WRITE, tenantOf, tool } from "../tool.js";
 import { createTool, deleteTool, fetchTool, updateTool } from "./crud.js";
 
 const fields = {
@@ -62,14 +62,34 @@ export const partTools = [
   tool({
     name: "get_part_routing",
     title: "Part routing",
-    description: "The operations of a part in sequence with cell, status and hours (get_part_routing).",
+    description: "The operations of a part in sequence with cell, status and hours.",
     input: { part_id: s.id },
     output: { routing: z.array(z.record(z.string(), z.unknown())) },
     annotations: READ,
     async handler({ part_id }, supabase) {
-      const { data, error } = await supabase.rpc("get_part_routing", { p_part_id: part_id });
+      await tenantOf(supabase, "parts", part_id);
+      const { data, error } = await supabase.from("operations")
+        .select("id, operation_name, cell_id, sequence, notes, status, estimated_time, actual_time, cells(name)")
+        .eq("part_id", part_id)
+        .is("deleted_at", null)
+        .order("sequence");
       if (error) throw error;
-      return { routing: data ?? [] };
+      return {
+        routing: (data ?? []).map((operation) => {
+          const cell = Array.isArray(operation.cells) ? operation.cells[0] : operation.cells;
+          return {
+            operation_id: operation.id,
+            operation_name: operation.operation_name,
+            cell_id: operation.cell_id,
+            cell_name: cell?.name ?? null,
+            sequence: operation.sequence,
+            notes: operation.notes,
+            status: operation.status,
+            estimated_hours: (operation.estimated_time ?? 0) / 60,
+            actual_hours: (operation.actual_time ?? 0) / 60,
+          };
+        }),
+      };
     },
   }),
   tool({

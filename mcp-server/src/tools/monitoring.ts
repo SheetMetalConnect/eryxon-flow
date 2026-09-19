@@ -1,6 +1,6 @@
 import { z } from "zod";
 import * as s from "../schemas.js";
-import { READ, WRITE, IDEMPOTENT_WRITE, tool } from "../tool.js";
+import { READ, WRITE, IDEMPOTENT_WRITE, tenantOf, tool } from "../tool.js";
 import { fetchTool } from "./crud.js";
 
 export const monitoringTools = [
@@ -17,16 +17,21 @@ export const monitoringTools = [
     input: { tenant_id: s.id, user_id: s.id, type: z.string().min(1), severity: z.enum(["info", "warning", "error", "success"]).default("info"), title: z.string().min(1), message: z.string().min(1), link: z.string().optional(), reference_type: z.string().optional(), reference_id: s.id.optional() },
     output: { id: z.string() }, annotations: WRITE,
     async handler(args, supabase) {
+      await tenantOf(supabase, "profiles", args.user_id);
       const { data, error } = await supabase.rpc("create_notification", { p_tenant_id: args.tenant_id, p_user_id: args.user_id, p_type: args.type, p_severity: args.severity, p_title: args.title, p_message: args.message, p_link: args.link ?? null, p_reference_type: args.reference_type ?? null, p_reference_id: args.reference_id ?? null });
       if (error) throw error;
       return { id: String(data) };
     },
   }),
   tool({
-    name: "mark_notification_read", title: "Mark notification read", description: "Mark one notification as read (mark_notification_read).",
+    name: "mark_notification_read", title: "Mark notification read", description: "Mark one notification as read.",
     input: { notification_id: s.id }, output: { ok: z.boolean() }, annotations: IDEMPOTENT_WRITE,
     async handler({ notification_id }, supabase) {
-      const { error } = await supabase.rpc("mark_notification_read", { p_notification_id: notification_id });
+      const { error } = await supabase.from("notifications")
+        .update({ read: true, read_at: new Date().toISOString() })
+        .eq("id", notification_id)
+        .select("id")
+        .single();
       if (error) throw error;
       return { ok: true };
     },
@@ -35,6 +40,7 @@ export const monitoringTools = [
     name: "get_cell_wip", title: "Cell WIP metrics", description: "QRM metrics for one cell: current WIP against its limit and the next-cell capacity signal the terminal shows (get_cell_qrm_metrics, check_next_cell_capacity).",
     input: { cell_id: s.id, tenant_id: s.id }, output: { metrics: z.unknown(), next_cell: z.unknown() }, annotations: READ,
     async handler({ cell_id, tenant_id }, supabase) {
+      await tenantOf(supabase, "cells", cell_id);
       const [metrics, next] = await Promise.all([
         supabase.rpc("get_cell_qrm_metrics", { cell_id_param: cell_id, tenant_id_param: tenant_id }),
         supabase.rpc("check_next_cell_capacity", { current_cell_id: cell_id, tenant_id_param: tenant_id }),
@@ -53,10 +59,12 @@ export const monitoringTools = [
     input: { part_id: s.id, location_id: s.id, operation_id: s.id.optional(), placed_by: s.id.optional() },
     output: s.ROW, annotations: WRITE,
     async handler({ part_id, location_id, operation_id, placed_by }, supabase) {
+      const actorId = placed_by ?? process.env.MCP_ACTOR_ID ?? null;
+      if (actorId) await tenantOf(supabase, "profiles", actorId);
       const now = new Date().toISOString();
       const { error: closeError } = await supabase.from("part_placements").update({ removed_at: now }).eq("part_id", part_id).is("removed_at", null);
       if (closeError) throw closeError;
-      const { data, error } = await supabase.from("part_placements").insert({ part_id, location_id, operation_id: operation_id ?? null, placed_by: placed_by ?? process.env.MCP_ACTOR_ID ?? null, placed_at: now }).select().single();
+      const { data, error } = await supabase.from("part_placements").insert({ part_id, location_id, operation_id: operation_id ?? null, placed_by: actorId, placed_at: now }).select().single();
       if (error) throw error;
       return data as Record<string, unknown>;
     },

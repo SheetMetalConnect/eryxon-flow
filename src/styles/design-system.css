@@ -261,7 +261,7 @@
     --sidebar-border: var(--neutral-700);
     --sidebar-ring: var(--brand-accent);
 
-    /* Navigation - Premium white/transparent */
+    /* Navigation - white/transparent */
     --nav-active-bg: 0 0% 100% / 0.12;              /* White 12% opacity */
     --nav-active-fg: 0 0% 100%;                     /* Pure white */
     --nav-hover-bg: 0 0% 100% / 0.06;               /* White 6% opacity */
@@ -810,7 +810,7 @@
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.08);
   }
 
-  /* Onboarding card - Premium auth experience - Antigravity spec (v3.2 compact) */
+  /* Onboarding card - Antigravity spec (v3.2 compact) */
   .onboarding-card {
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -1213,7 +1213,7 @@
     transform: scale(0.98);
   }
 
-  /* Premium Navigation Styles - Transparent white with glow */
+  /* Transparent navigation with glow */
   .nav-item-active {
     position: relative;
     background: hsl(var(--nav-active-bg)) !important;
@@ -2123,7 +2123,7 @@
 }
 
 /* ============================================================================
-   ONBOARDING PROGRESS BAR - Premium SaaS experience
+   ONBOARDING PROGRESS BAR
    ============================================================================ */
 
 /* Progress bar track */
@@ -2237,7 +2237,7 @@
   50% { box-shadow: 0 0 16px hsl(var(--brand-primary) / 0.5); }
 }
 
-/* Onboarding stepper - premium horizontal steps */
+/* Onboarding stepper - horizontal steps */
 .onboarding-stepper {
   display: flex;
   align-items: center;
@@ -2345,7 +2345,7 @@
 }
 
 /* ============================================================================
-   SONNER TOAST NOTIFICATIONS - Premium Progress Bar
+   SONNER TOAST NOTIFICATIONS - Progress Bar
    ============================================================================ */
 
 /* Progress bar animation - shrinks from 100% to 0% */

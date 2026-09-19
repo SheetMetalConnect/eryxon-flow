@@ -47,7 +47,7 @@ Set the server up first: [MCP Server Setup](/guides/mcp-setup/). Tool names belo
 - "Create operator Piet with PIN 4711." → `create_operator`
 - "Block starting an operation before the previous one is done." → `update_workshop_settings` with `{"feature_flags": {"sequentialRelease": true}}`
 - "Send operation.completed events to https://erp.example/hook." → `create_webhook`
-- "Friday 3 October is a holiday." → `set_calendar_day`
+- "Friday 2 October 2026 is a holiday." → `set_calendar_day`
 
 ## Scenario 7: shift handover
 

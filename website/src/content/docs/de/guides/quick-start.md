@@ -7,7 +7,7 @@ Eryxon Flow schnell einrichten.
 
 > **Einfach ausprobieren?** Öffnen Sie die [gehostete Version auf app.eryxon.eu](https://app.eryxon.eu) - keine Einrichtung nötig. Eine kostenlose 30-Tage-Testversion.
 
-> Selbst-Hosting betreibt die kostenlose **Community**-Edition, Quelltext verfügbar unter der Business Source License 1.1 — kostenlos selbst hostbar für einen einzelnen Betrieb. Der Betrieb an mehreren Standorten erfordert eine kommerzielle Lizenz; siehe [Editionen & Preise](/pricing/).
+> Selbst-Hosting betreibt die kostenlose **Community**-Edition, Quelltext verfügbar unter der Business Source License 1.1 — kostenlos selbst hostbar für einen einzelnen Betrieb. Der Betrieb an mehreren Standorten erfordert eine kommerzielle Lizenz; siehe [Editionen & Preise](/de/pricing/).
 
 ---
 

@@ -82,7 +82,7 @@ Die Leiste unter der Kopfzeile zeigt:
 - Einen laufenden Timer seit dem Start
 - Diagonale Streifenmuster, die sich je nach Status ändern: grün bei aktiver Arbeit, gelbe Streifen wenn nicht eingestempelt, Rot-zu-Grün-Verlauf bei einem Eilauftrag
 
-### POLCA-Zellensignale
+### Kapazitätssignale der nächsten Zelle
 
 Die Zellenspalte zeigt ein Signal für jeden Arbeitsgang: die **aktuelle Zelle** und die **nächste Zelle** in der Arbeitsfolge, mit einem Kapazitätsindikator:
 
@@ -143,6 +143,6 @@ Die Problemmeldung geht sofort in die Admin-Problemwarteschlange.
 ## Tipps
 
 - Starten Sie immer Ihren Timer, bevor Sie mit der physischen Arbeit beginnen.
-- Prüfen Sie die POLCA-Signale, bevor Sie einen Arbeitsgang abschließen. Wenn die nächste Zelle PAUSE zeigt, fragen Sie Ihren Vorgesetzten.
+- Prüfen Sie das Signal der nächsten Zelle, bevor Sie einen Arbeitsgang abschließen. Wenn sie PAUSE zeigt, fragen Sie Ihren Vorgesetzten.
 - Melden Sie Probleme in dem Moment, in dem Sie sie entdecken. Ein Foto sagt mehr als tausend Worte.
 - Wenn Ihr Bildschirm leer aussieht, setzen Sie zuerst alle Filter zurück.

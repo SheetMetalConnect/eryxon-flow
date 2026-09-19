@@ -55,7 +55,7 @@ cd mcp-server
 docker compose up
 ```
 
-`.env` needs `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` and `MCP_BEARER`; add `TENANT_ID` and `MCP_ACTOR_ID` as above. The endpoint is `POST http://host:3001/mcp`; clients send `Authorization: Bearer <MCP_BEARER>` on every request. The endpoint is stateless (no session id), so several instances can run behind a plain load balancer; give them one shared `MCP_STATE_KEY` so a multi-round-trip confirmation can be answered by any instance. `GET /health` returns the version, protocol, tool count and whether the database answers.
+`.env` needs `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `TENANT_ID` and `MCP_BEARER`; add `MCP_ACTOR_ID` when writes need a default author. The endpoint is `POST http://host:3001/mcp`; clients send `Authorization: Bearer <MCP_BEARER>` on every request. The endpoint is stateless (no session id), so several instances can run behind a plain load balancer; give them one shared `MCP_STATE_KEY` so a multi-round-trip confirmation can be answered by any instance. `GET /health` returns the version, protocol, tool count and whether the database answers.
 
 | Variable | Default | Purpose |
 |----------|---------|---------|
@@ -70,9 +70,9 @@ docker compose up
 
 ```bash
 node dist/index.js --version
-# eryxon-flow-mcp 3.0.0 (MCP 2026-07-28)
+# eryxon-flow-mcp 3.0.1 (MCP 2026-07-28)
 curl http://localhost:3001/health
-# {"status":"ok","version":"3.0.0","protocol":"2026-07-28","tools":113}
+# {"status":"ok","version":"3.0.1","protocol":"2026-07-28","tools":113}
 ```
 
 Then ask the agent: "Show the jobs in progress" (uses `fetch_jobs` with `status: in_progress`) or "What is running on the floor right now?" (reads `eryxon://timers`).
@@ -80,7 +80,7 @@ Then ask the agent: "Show the jobs in progress" (uses `fetch_jobs` with `status:
 ## Troubleshooting
 
 - **Server not found in the client**: use absolute paths, run `npm run build`, restart the client.
-- **`SUPABASE_URL and SUPABASE_SERVICE_KEY are required`**: the environment block is missing or the client did not pass it.
+- **`SUPABASE_URL, SUPABASE_SERVICE_KEY and TENANT_ID are required`**: the environment block is incomplete or the client did not pass it.
 - **`MCP_BEARER is required when MCP_BIND_PUBLIC=true`**: set a long random token before exposing the HTTP port.
 - **Tool result with `INVALID_STATE_TRANSITION`**: the database refused the transition; the message is the production rule (operator already clocked on another operation, standstill open, previous operation not completed). This is expected behaviour, not a fault.
 - **`created_by is required`**: pass the profile id in the call or set `MCP_ACTOR_ID`.
@@ -90,5 +90,5 @@ Then ask the agent: "Show the jobs in progress" (uses `fetch_jobs` with `status:
 ## Security
 
 - Never commit the service key; pass it through the environment.
-- Set `TENANT_ID`: without it the service-role client is not pinned to one workshop.
+- Set `TENANT_ID`. The server refuses to start without it.
 - Expose HTTP only behind TLS with `MCP_BEARER` set.

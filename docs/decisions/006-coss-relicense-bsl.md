@@ -1,10 +1,14 @@
 # ADR-006: Relicense to the Business Source License 1.1 (COSS model)
 
-**Status:** Accepted
+**Status:** Superseded by the simplified licensing model in 0.10.1
 **Date:** 2026-07-05
 **Context:** Licensing / Product
 
 ## Decision
+
+> Historical decision. Eryxon Flow no longer presents a separate Premium edition.
+> The BSL single-site grant remains; multi-site use and offering the software as a
+> service require a commercial licence.
 
 Relicense Eryxon Flow from Apache 2.0 to the **Business Source License 1.1 (BSL)**,
 with a **single-site Additional Use Grant** and a **Change License of GNU GPL v2.0

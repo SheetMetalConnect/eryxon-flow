@@ -20,13 +20,13 @@ Beugel Assemblage (Ouder)
 Elk onderdeel wordt individueel gevolgd met eigen bewerkingen.
 
 ### Wat is QRM?
-**Quick Response Manufacturing (QRM)** is een methodologie om doorlooptijden te verkorten. Eryxon Flow gebruikt het om **OHW (Onderhanden Werk)** te beheren. Als een cel "Op Capaciteit" staat, voorkomt het systeem overproductie door stroomopwaartse voltooiingen te blokkeren.
+**Quick Response Manufacturing (QRM)** is een methodologie om doorlooptijden te verkorten. Eryxon Flow ondersteunt dat met OHW-limieten en signalen voor de capaciteit van de volgende cel. Een cel kan optioneel de voltooiing van de voorgaande bewerking blokkeren zodra de OHW-limiet is bereikt.
 
 ### Wat is een bullet card?
 Een **bullet card** is de spoedmarkering op een onderdeel. Wanneer ingeschakeld, springt het onderdeel naar de top van elke wachtrij en tabel. Alle bewerkingen op dat onderdeel erven de spoedindicator. Gebruik spaarzaam — als alles spoed is, is niets spoed.
 
 ### Wat is POLCA?
-**POLCA** (Paired-cell Overlapping Loops of Cards with Authorization) is een werklastbeheersysteem. In Eryxon Flow verschijnt het als GO/PAUZE-signalen op de terminal. **GO** betekent dat de volgende cel capaciteit heeft. **PAUZE** betekent dat de volgende cel vol zit — wacht met voltooien om ophoping te voorkomen.
+**POLCA** (Paired-cell Overlapping Loops of Cards with Authorization) is een werklastbeheersysteem. Eryxon Flow implementeert geen volledig POLCA-systeem of gekoppelde kaartlussen. Het gebruikt wel het verwante idee van GO/PAUZE-signalen: **GO** betekent dat de volgende cel capaciteit heeft; **PAUZE** betekent dat de ingestelde OHW-limiet is bereikt.
 
 ### Wat zijn cellen en stadia?
 **Cellen** (ook wel **stadia** genoemd) vertegenwoordigen fysieke werkstations of afdelingen in je werkplaats — zoals "Laser 1", "Kantbank", "Lassen" of "Assemblage". Bewerkingen worden aan cellen toegewezen. Elke cel heeft een OHW-limiet en capaciteitsuren.
@@ -38,7 +38,7 @@ Een visueel overzicht van de belasting per cel per dag. Elke cel is een rij, elk
 Operators tikken **Start** om een timer te starten en **Stop** om deze te pauzeren. Er kan slechts een bewerking tegelijk getimed worden. Het starten van een nieuwe bewerking stopt automatisch de vorige. De lopende timer is altijd zichtbaar in de statusbalk.
 
 ### Wat zijn issues (NCR's)?
-Issues zijn kwaliteitsproblemen die operators melden vanuit actieve bewerkingen — verkeerd materiaal, beschadigde onderdelen, machineproblemen, tekeningfouten. Ze hebben een ernst (laag/gemiddeld/hoog/kritiek) en kunnen foto's bevatten. Issues zijn informatief — ze blokkeren het werk niet.
+Issues zijn kwaliteitsproblemen die operators melden vanuit actieve bewerkingen — verkeerd materiaal, beschadigde onderdelen, machineproblemen, tekeningfouten. Ze hebben een ernst (laag/gemiddeld/hoog/kritiek) en kunnen foto's bevatten. Een issue blokkeert werk alleen wanneer het als stilstand is gemarkeerd.
 
 ### Wat is metadata?
 Bewerkingen en jobs ondersteunen **aangepaste JSON-metadata** — machine-instellingen, buighoeken, lasparameters, gereedschapsvereisten. Dit zijn vrije velden die je kunt invullen naar behoefte van je werkplaats.
@@ -49,6 +49,6 @@ Voor gedetailleerde instructies, zie:
 
 - **[Handleiding Operator](/nl/guides/operator-manual/)** - Dagelijkse workflow, Terminal-info, Tijdregistratie.
 - **[Handleiding Admin](/nl/guides/admin-manual/)** - Job-aanmaak, Gebruikers, Instellingen.
-- **[Kwaliteitsbeheer](/guides/quality-management/)** - Uitvalregistratie en Dashboards.
-- **[Probleemoplossing](/guides/troubleshooting/)** - Veelvoorkomende fouten en oplossingen.
-- **[Zelf Hosten](/guides/self-hosting/)** - Installatiehandleiding.
+- **[Kwaliteitsbeheer](/nl/guides/quality-management/)** - Uitvalregistratie en Dashboards.
+- **[Probleemoplossing](/nl/guides/troubleshooting/)** - Veelvoorkomende fouten en oplossingen.
+- **[Zelf Hosten](/nl/guides/self-hosting/)** - Installatiehandleiding.

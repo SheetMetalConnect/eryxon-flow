@@ -96,7 +96,7 @@ describe('useSubscription', () => {
 
       expect(result.current.getPlanDisplayName('free')).toBe('Hosted Trial');
       expect(result.current.getPlanDisplayName('pro')).toBe('Pro Plan');
-      expect(result.current.getPlanDisplayName('premium')).toBe('Premium');
+      expect(result.current.getPlanDisplayName('premium')).toBe('Managed Hosting');
       expect(result.current.getPlanDisplayName('enterprise')).toBe(
         'Managed Hosting'
       );

@@ -119,11 +119,11 @@ graph TB
         time[api-time-entries]
         materials[api-materials]
         resources[api-resources]
-        lifecycle["api-job-lifecycle<br/>api-operation-lifecycle<br/>api-batch-lifecycle"]
+        lifecycle["api-operation-lifecycle<br/>api-batch-lifecycle"]
         batches[api-batches]
         sync[api-erp-sync]
         webhooks[api-webhooks]
-        other["api-cells, api-assignments,<br/>api-templates, api-substeps,<br/>api-export, api-scrap-reasons,<br/>api-key-generate, api-upload-url,<br/>api-parts-images, api-webhook-logs,<br/>api-operation-quantities"]
+        other["api-cells, api-assignments,<br/>api-templates, api-substeps,<br/>api-export, api-scrap-reasons,<br/>api-key-generate, api-upload-url,<br/>api-parts-images, api-webhook-deliveries,<br/>api-operation-quantities"]
     end
 
     HTTP --> handler
@@ -194,7 +194,7 @@ graph TB
     subgraph Isolation["Data Isolation"]
         RLS["Row-Level Security<br/>Every table has tenant_id"]
         SoftDelete["Soft deletes<br/>deleted_at IS NULL"]
-        PlanLimits["Plan-based quotas<br/>free/pro/premium/enterprise"]
+        PlanLimits["Hosted quota enforcement<br/>stored plan keys"]
     end
 
     APIKey --> Prefix --> Hash --> RPC --> RLS
@@ -294,7 +294,7 @@ eryxon-flow/
 | CRUD Builder | `_shared/crud-builder.ts` | Config-driven CRUD: pass table name + options, get pagination/filters/search/sync |
 | API Handler Factory | `_shared/handler.ts` | `serveApi(handler)` wraps CORS, auth, error handling around any endpoint |
 | Prefix Auth | `_shared/auth.ts` | API keys use 12-char prefix lookup + SHA-256 hash for O(1) auth |
-| Plan Limits | `_shared/plan-limits.ts` | Quota checks per tenant plan (free/pro/premium/enterprise) |
+| Plan Limits | `_shared/plan-limits.ts` | Hosted quota checks using the stored tenant plan key |
 | Soft Deletes | All tables | `deleted_at` + `deleted_by` columns, filtered by default in queries |
 | ERP Sync | `api-erp-sync/`, crud-builder | `external_id` + `external_source` + `sync_hash` for idempotent sync |
 | Realtime | `useRealtimeSubscription` | Supabase Realtime channels for live UI updates |

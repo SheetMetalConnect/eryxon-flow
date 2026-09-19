@@ -39,7 +39,7 @@ if (transport === "stdio") {
     if (path === "/health") {
       const { error } = await supabase.from("jobs").select("id", { count: "exact", head: true }).limit(1);
       res.writeHead(error ? 503 : 200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ status: error ? "degraded" : "ok", version: VERSION, protocol: PROTOCOL_VERSION, tools: allTools.length, ...(error ? { database: error.message } : {}) }));
+      res.end(JSON.stringify({ status: error ? "degraded" : "ok", version: VERSION, protocol: PROTOCOL_VERSION, tools: allTools.length }));
       return;
     }
     if (path !== "/mcp") {

@@ -19,7 +19,7 @@ ERP integrations need API key auth (not OAuth/JWT). Keys must be fast to verify,
 - Keys are never stored in plaintext — only SHA-256 hash + prefix
 - Constant-time comparison prevents timing attacks
 - `last_used_at` updated asynchronously (non-blocking)
-- Rate limiting is plan-aware (free/pro/premium/enterprise)
+- Rate limiting uses the tenant's stored hosted-plan key
 
 **Negative:**
 - Key rotation requires generating new key (no in-place rotation)

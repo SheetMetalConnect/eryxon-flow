@@ -1,5 +1,5 @@
 /**
- * OperatorStatusBar — Premium top bar that reflects operator state.
+ * OperatorStatusBar — persistent top bar that reflects operator state.
  *
  * States:
  * - idle (yellow stripes)  — not clocked on, operator should be working

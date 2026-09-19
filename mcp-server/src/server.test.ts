@@ -35,7 +35,7 @@ describe("protocol 2026-07-28", () => {
     const { status, body } = await rpc(handlerWith(okRows()), "server/discover");
     expect(status).toBe(200);
     expect(body.result.supportedVersions).toEqual([PROTOCOL_VERSION]);
-    expect(body.result._meta["io.modelcontextprotocol/serverInfo"]).toEqual({ name: "eryxon-flow", version: "3.0.0" });
+    expect(body.result._meta["io.modelcontextprotocol/serverInfo"]).toEqual({ name: "eryxon-flow", version: "3.0.1" });
   });
 
   it("rejects the 2025 initialize handshake", async () => {

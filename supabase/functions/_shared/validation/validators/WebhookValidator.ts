@@ -11,8 +11,7 @@
 import { BaseValidator } from "../BaseValidator.ts";
 import { ValidationContext, ValidationError } from "../types.ts";
 
-// http(s) URL, since webhooks are delivered over HTTP.
-const URL_PATTERN = /^https?:\/\/.+/i;
+const URL_PATTERN = /^https:\/\/.+/i;
 
 export interface WebhookData {
   url: string;
@@ -33,7 +32,7 @@ export class WebhookValidator extends BaseValidator<WebhookData> {
   ): ValidationError[] {
     const errors: ValidationError[] = [];
 
-    // Required: url (must be an http(s) URL)
+    // Required: URL. The database and dispatcher both require HTTPS.
     const urlError = this.validateString(entity, "url", index, {
       required: true,
       minLength: 1,

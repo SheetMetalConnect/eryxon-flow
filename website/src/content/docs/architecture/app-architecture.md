@@ -248,7 +248,7 @@ The REST API currently authenticates through the `Authorization` header rather t
 
 ## One path for the UI, the API and AI agents
 
-There is no separate "integration layer". The browser talks to Postgres through Supabase with row-level security; the REST API (Edge Functions with API keys) and the MCP server call the same Postgres functions. Production changes go through `transition_operation`, `time_entry_action` and the batch functions, which hold the business rules (one running timer per operator, sequential release, tenant boundaries). Database triggers emit the signed webhooks and notifications, whoever caused the change.
+The browser talks to Postgres through Supabase with row-level security. The REST API uses Edge Functions with API keys; the MCP server uses a service role and is pinned to one workshop. Production lifecycle changes go through `transition_operation`, `time_entry_action` and the batch functions, which hold rules such as one running timer per operator and sequential release. Database triggers emit signed webhooks and notifications after committed changes, regardless of which interface caused them.
 
 ```mermaid
 flowchart LR

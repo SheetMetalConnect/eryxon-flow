@@ -1,14 +1,10 @@
 /*
- * Marketing copy, per locale (ERY-60 fidelity pass, v0.6 — locale buildout).
+ * Marketing copy for the English, Dutch, and German landing pages.
  *
- * Single source of truth for the EN / NL / DE marketing surfaces (landing + pricing). The
- * page routes are locale-agnostic shells (`pages/index.astro`, `pages/pricing/index.astro`
- * for `en`; `pages/[locale]/...` for `nl`/`de`) that pull their copy from here so the same
- * kit-faithful markup serves all three languages.
+ * This is the single source of truth for the localized landing and pricing sections.
  *
- * Voice: kit voice — calm, utilitarian, short, direct. NL is nl-NL (Dutch directness, no
- * AI filler). DE is plain Hochdeutsch. No invented testimonials/stats, no customer names
- * (Luke's hard rule), and no pricing figures (kept out of the repo). COSS model:
+ * Voice: calm, practical, short, and direct. Do not add testimonials, performance claims,
+ * customer names, or pricing figures. The operating model is:
  *   Hosted demo   — the Community edition, hosted by us, free, 30 days, usage limits.
  *   Community     — self-hosted, source-available (BSL 1.1), single site, free, as-is.
  */
@@ -57,59 +53,70 @@ export interface PricingCopy {
   description: string;
   hero: { eyebrow: string; h1: string; lead: string };
   plans: {
-    /** Tier 1 — hosted demo of the Community edition, free, 30 days, usage limits. CTA links to the app. */
+    /** Hosted demo of the Community edition, free for 30 days with usage limits. */
     demo: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; cta: string };
-    /** Tier 3 — Community, self-hosted, source-available (BSL 1.1), single site. CTA = guide + consulting. */
+    /** Community, self-hosted, source-available (BSL 1.1), single site. */
     community: { head: string; name: string; price: string; period: string; sub: string; features: PlanFeature[]; ctaGuide: string; ctaConsulting: string };
   };
 }
 
-/* ---------- shared, locale-invariant product-preview data ---------- */
-const productCards = [
-  { wo: "WO-4218", op: "Laser cut", meta: "PN-902-A · Stainless 304", tag: "TODAY", tagCls: "today", stripe: "active" },
-  { wo: "WO-4225", op: "TIG weld assembly", meta: "PN-1021 · Stainless 304", tag: "SOON", tagCls: "soon", stripe: "pending" },
-  { wo: "WO-4221", op: "Press brake bend", meta: "PN-887 · Mild steel", tag: "OVERDUE", tagCls: "overdue", stripe: "on-hold" },
-];
+const productCards: Record<Locale, LandingCopy["product"]["cards"]> = {
+  en: [
+    { wo: "WO-4218", op: "Laser cut", meta: "PN-902-A · Stainless 304", tag: "TODAY", tagCls: "today", stripe: "active" },
+    { wo: "WO-4225", op: "TIG weld assembly", meta: "PN-1021 · Stainless 304", tag: "SOON", tagCls: "soon", stripe: "pending" },
+    { wo: "WO-4221", op: "Press brake bend", meta: "PN-887 · Mild steel", tag: "OVERDUE", tagCls: "overdue", stripe: "on-hold" },
+  ],
+  nl: [
+    { wo: "WO-4218", op: "Lasersnijden", meta: "PN-902-A · RVS 304", tag: "VANDAAG", tagCls: "today", stripe: "active" },
+    { wo: "WO-4225", op: "TIG-lassen", meta: "PN-1021 · RVS 304", tag: "BINNENKORT", tagCls: "soon", stripe: "pending" },
+    { wo: "WO-4221", op: "Kanten", meta: "PN-887 · Constructiestaal", tag: "TE LAAT", tagCls: "overdue", stripe: "on-hold" },
+  ],
+  de: [
+    { wo: "WO-4218", op: "Laserschneiden", meta: "PN-902-A · Edelstahl 304", tag: "HEUTE", tagCls: "today", stripe: "active" },
+    { wo: "WO-4225", op: "WIG-Schweißen", meta: "PN-1021 · Edelstahl 304", tag: "BALD", tagCls: "soon", stripe: "pending" },
+    { wo: "WO-4221", op: "Abkanten", meta: "PN-887 · Baustahl", tag: "ÜBERFÄLLIG", tagCls: "overdue", stripe: "on-hold" },
+  ],
+};
 
 const LANDING: Record<Locale, LandingCopy> = {
   en: {
-    title: "Eryxon Flow — MES for job shops, ready for agents",
+    title: "Eryxon Flow — shop-floor control for high-mix metal fabrication",
     description:
-      "Eryxon Flow tracks every job through cutting, bending, welding and assembly. Operators work a tablet at the machine. Your ERP and your AI agent work the same rules through the REST API and an MCP server. Source-available; self-host one workshop free.",
+      "Turn ERP work orders into clear queues for cutting, bending, welding and assembly. Track routing, time, output, scrap, issues and locations from the shop floor, with REST API, signed webhooks and optional MCP access.",
     hero: {
-      h1: "Run the shop floor. Let agents and ERP run it with you.",
-      lead: "Eryxon Flow is the MES for job shops of 10 to 150 people. Operators work a tablet at the machine, planners see the load per cell as it changes. The REST API and the MCP server go through the same database rules as the screen, so an ERP or an AI agent can plan, start, report and query production without a project.",
+      h1: "Turn ERP orders into clear work at every cell.",
+      lead: "Eryxon Flow is a shop-floor execution layer for high-mix metal fabricators. Planners see which operations are ready and where load is building. Operators work from a tablet at the cell. ERP, automation and approved agents connect through documented interfaces, while production rules stay in the database.",
       ctaPrimary: "Try it hosted",
       ctaSecondary: "Self-host it free",
       ctaTertiary: "Read the docs →",
     },
-    product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laser cutting", queueTitle: "Work queue", cards: productCards },
+    product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laser cutting", queueTitle: "Work queue", cards: productCards.en },
     features: {
-      eyebrow: "For the people who run the shop",
-      h2: "Three things an owner wants to know before lunch.",
-      lead: "Where every job is, whether the flow is under control, and how much integration work it takes. Eryxon Flow answers all three from one database.",
+      eyebrow: "For metal fabrication teams",
+      h2: "Know what is ready, what is running, and what is blocked.",
+      lead: "The planner, operator and connected systems work from the same production state, from the first routing step to reported output.",
       items: [
-        { title: "See the shop", body: "Load per cell, who is clocked on what, what is overdue, what is blocked by a standstill. One dashboard, live, on any screen." },
-        { title: "Control the flow", body: "In Buffer means the earlier steps are done. A switch enforces the sequence for the whole shop. WIP limits per cell signal when the next cell is full. One running timer per operator, enforced by the database." },
-        { title: "Integrate without a project", body: "Push jobs from your ERP over the REST API or a CSV. Signed webhooks tell your other systems the moment work changes. No middleware, no consultant on retainer." },
-        { title: "Tablets at the machine", body: "A work queue per cell. Big buttons for gloved hands, status, due date and running time readable from a metre away. Drop-off slots show where a part is and where it goes next." },
-        { title: "3D in the browser", body: "Open the part model next to the job. Measure it, rotate it, nothing to install on the terminal." },
+        { title: "Plan from actual status", body: "See load per cell, active work, overdue operations, standstills and issues in one current overview." },
+        { title: "Keep routing in sequence", body: "The buffer follows completed upstream steps. Optional sequential release and WIP limits make the agreed flow visible and enforceable." },
+        { title: "Connect the ERP cleanly", body: "Create and update production work through the REST API or CSV. Signed webhooks send committed changes back to connected systems." },
+        { title: "Give operators a focused queue", body: "Each cell gets a touch-friendly work queue with status, due date, running time and the part's current and next location." },
+        { title: "Trace output and issues", body: "Record time, good quantity, scrap, standstills and quality issues against the operation that produced them." },
         { title: "Source-available", body: "The source is on GitHub under the Business Source License. Read it, change it, self-host one workshop free. Multi-site and offering it as a service take a commercial licence." },
       ],
     },
     how: {
       eyebrow: "How it works",
-      h2: "From ERP push to planner dashboard in three steps.",
+      h2: "From ERP order to reported production.",
       steps: [
-        { n: "01", h: "Bring your jobs in", b: "Push jobs from your ERP over the API, drop in a CSV, or let an agent create them. Parts, steps and routing line up the same way every time." },
-        { n: "02", h: "The floor works the queue", b: "Each cell has its tablet. Tap a job to start the clock, log good and scrap, flag a problem. The planner sees it the same second." },
-        { n: "03", h: "Planners and agents watch the load", b: "One dashboard shows the load per cell, what runs tight and what was flagged. An agent reads the same numbers through MCP and can act on them under the same rules." },
+        { n: "01", h: "Bring in the order and routing", b: "Create jobs, parts and operations through the REST API, CSV import or the admin interface." },
+        { n: "02", h: "Execute at the cell", b: "Operators start and stop work, report quantities, locate parts and flag problems from the terminal." },
+        { n: "03", h: "Use the result everywhere", b: "Planners see the updated load and signed webhooks notify the ERP, data platform or other subscribed systems." },
       ],
     },
     api: {
-      eyebrow: "Agent-ready",
-      h2: "An agent works your MES the way an operator does.",
-      lead: "The screen, the REST API and the MCP server all call the same database functions. Whatever starts an operation, the timer rule, the sequence rule and the tenant boundary apply, and the same webhook fires. Claude, Claude Code or any MCP client connects with one command.",
+      eyebrow: "Built for integration",
+      h2: "One production state for the app and connected systems.",
+      lead: "Use the REST API for inbound work and signed webhooks for committed changes. The optional MCP server exposes the same tenant boundary and production lifecycle rules to approved agents.",
       bullets: [
         "MCP server on the 2026-07-28 specification: stateless Streamable HTTP or stdio",
         "113 tools with annotations and output schemas; a test proves parity with the REST API",
@@ -131,51 +138,51 @@ const LANDING: Record<Locale, LandingCopy> = {
       cta: "Contact us",
     },
     cta: {
-      h2: "Put it on your own shop floor this week.",
-      lead: "Start the hosted instance, or pull the Docker image and self-host. Connect your ERP or your agent the same afternoon.",
+      h2: "Evaluate it against your own production flow.",
+      lead: "Use the hosted trial or self-host the Community edition. Start with one routing, one cell and the systems that need the result.",
       ctaPrimary: "Try it hosted",
       ctaSecondary: "Read the self-host guide",
     },
   },
 
   nl: {
-    title: "Eryxon Flow — MES voor de metaalbewerking, klaar voor agents",
+    title: "Eryxon Flow — werkvloerbesturing voor high-mix metaalbewerking",
     description:
-      "Eryxon Flow volgt elke order door snijden, kanten, lassen en assemblage. Operators werken op een tablet bij de machine. Je ERP en je AI-agent werken met dezelfde regels via de REST-API en een MCP-server. Source-available; host één werkplaats gratis zelf.",
+      "Maak van ERP-orders duidelijke werkrijen voor snijden, kanten, lassen en assemblage. Registreer routing, tijd, output, afkeur, problemen en locaties op de werkvloer, met REST-API, ondertekende webhooks en optionele MCP-toegang.",
     hero: {
-      h1: "Stuur de werkvloer. Laat agents en ERP meesturen.",
-      lead: "Eryxon Flow is het MES voor metaalbedrijven van 10 tot 150 man. Operators werken op een tablet bij de machine, planners zien de belasting per cel zodra die verandert. De REST-API en de MCP-server lopen door dezelfde databaseregels als het scherm. Een ERP of een AI-agent plant, start, meldt en bevraagt de productie zonder project.",
+      h1: "Maak van ERP-orders duidelijk werk voor elke cel.",
+      lead: "Eryxon Flow is de uitvoeringslaag tussen ERP en werkvloer voor high-mix metaalbedrijven. Planners zien welke bewerkingen klaarstaan en waar de belasting oploopt. Operators werken op een tablet bij de cel. ERP, automatisering en toegelaten agents koppelen via gedocumenteerde interfaces, terwijl productieregels in de database blijven.",
       ctaPrimary: "Probeer de gehoste versie",
       ctaSecondary: "Gratis zelf hosten",
       ctaTertiary: "Lees de docs →",
     },
-    product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Lasersnijden", queueTitle: "Werkrij", cards: productCards },
+    product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Lasersnijden", queueTitle: "Werkrij", cards: productCards.nl },
     features: {
-      eyebrow: "Voor wie het bedrijf runt",
-      h2: "Drie dingen die een eigenaar vóór de lunch wil weten.",
-      lead: "Waar elke order is, of de flow onder controle is, en hoeveel integratiewerk het kost. Eryxon Flow beantwoordt alle drie vanuit één database.",
+      eyebrow: "Voor metaalbedrijven",
+      h2: "Weet wat klaarstaat, wat draait en wat blokkeert.",
+      lead: "Planner, operator en gekoppelde systemen werken met dezelfde productiestatus, van de eerste routingstap tot de gemelde output.",
       items: [
-        { title: "Zie de werkplaats", body: "Belasting per cel, wie op wat is ingeklokt, wat te laat is, wat vastzit door een stilstand. Eén dashboard, live, op elk scherm." },
-        { title: "Houd de flow in de hand", body: "In Buffer betekent dat de eerdere stappen klaar zijn. Eén schakelaar dwingt de volgorde af voor de hele werkplaats. WIP-limieten per cel geven aan wanneer de volgende cel vol is. Eén lopende timer per operator, afgedwongen door de database." },
-        { title: "Integreren zonder project", body: "Zet orders vanuit je ERP over de REST-API of via een CSV. Ondertekende webhooks melden je andere systemen direct wanneer werk verandert. Geen middleware, geen consultant op afroep." },
-        { title: "Tablets bij de machine", body: "Een werkrij per cel. Grote knoppen voor handschoenen, status, leverdatum en looptijd leesbaar vanaf een meter. Afleverplekken tonen waar een onderdeel ligt en waar het heen moet." },
-        { title: "3D in de browser", body: "Open het model naast de order. Meten, draaien, niets installeren op de terminal." },
+        { title: "Plan met de actuele status", body: "Zie belasting per cel, lopend werk, te late bewerkingen, stilstanden en problemen in één actueel overzicht." },
+        { title: "Bewaak de routing", body: "De buffer volgt afgeronde voorgaande stappen. Optionele volgordedwang en WIP-limieten maken de afgesproken flow zichtbaar en afdwingbaar." },
+        { title: "Koppel het ERP gericht", body: "Maak en wijzig productiewerk via de REST-API of CSV. Ondertekende webhooks sturen vastgelegde wijzigingen terug naar gekoppelde systemen." },
+        { title: "Geef operators een gerichte werkrij", body: "Elke cel krijgt een aanraakvriendelijke werkrij met status, leverdatum, looptijd en de huidige en volgende locatie van het onderdeel." },
+        { title: "Herleid output en problemen", body: "Registreer tijd, goede aantallen, afkeur, stilstanden en kwaliteitsproblemen bij de bewerking waar ze ontstonden." },
         { title: "Source-available", body: "De broncode staat op GitHub onder de Business Source License. Lees hem, pas hem aan, host één werkplaats gratis zelf. Meerdere locaties of aanbieden als dienst vraagt een commerciële licentie." },
       ],
     },
     how: {
       eyebrow: "Zo werkt het",
-      h2: "Van ERP-push naar plannersdashboard in drie stappen.",
+      h2: "Van ERP-order naar gemelde productie.",
       steps: [
-        { n: "01", h: "Haal je orders binnen", b: "Zet orders vanuit je ERP over de API, laad een CSV, of laat een agent ze aanmaken. Onderdelen, stappen en routing staan elke keer op dezelfde manier klaar." },
-        { n: "02", h: "De vloer werkt de rij af", b: "Elke cel heeft zijn tablet. Tik een order aan om de klok te starten, meld goed en afkeur, markeer een probleem. De planner ziet het dezelfde seconde." },
-        { n: "03", h: "Planners en agents bewaken de belasting", b: "Eén dashboard toont de belasting per cel, wat krap loopt en wat gemarkeerd is. Een agent leest dezelfde cijfers via MCP en handelt onder dezelfde regels." },
+        { n: "01", h: "Haal order en routing binnen", b: "Maak orders, onderdelen en bewerkingen aan via de REST-API, CSV-import of het beheerscherm." },
+        { n: "02", h: "Voer het werk uit bij de cel", b: "Operators starten en stoppen werk, melden aantallen, leggen locaties vast en markeren problemen op de terminal." },
+        { n: "03", h: "Gebruik het resultaat in elk systeem", b: "Planners zien de bijgewerkte belasting en ondertekende webhooks informeren ERP, dataplatform of andere abonnees." },
       ],
     },
     api: {
-      eyebrow: "Klaar voor agents",
-      h2: "Een agent bedient je MES zoals een operator dat doet.",
-      lead: "Het scherm, de REST-API en de MCP-server roepen dezelfde databasefuncties aan. Wie of wat een bewerking ook start: de timerregel, de volgorderegel en de tenantgrens gelden, en dezelfde webhook vuurt. Claude, Claude Code of elke MCP-client koppelt met één commando.",
+      eyebrow: "Gebouwd voor integratie",
+      h2: "Eén productiestatus voor de app en gekoppelde systemen.",
+      lead: "Gebruik de REST-API voor inkomend werk en ondertekende webhooks voor vastgelegde wijzigingen. De optionele MCP-server stelt dezelfde tenantgrens en productieregels beschikbaar aan toegelaten agents.",
       bullets: [
         "MCP-server op de specificatie van 28 juli 2026: stateless Streamable HTTP of stdio",
         "113 tools met annotaties en output-schema's; een test bewijst pariteit met de REST-API",
@@ -197,51 +204,51 @@ const LANDING: Record<Locale, LandingCopy> = {
       cta: "Neem contact op",
     },
     cta: {
-      h2: "Zet het deze week op je eigen werkvloer.",
-      lead: "Start de gehoste versie, of trek het Docker-image binnen en host zelf. Koppel je ERP of je agent dezelfde middag.",
+      h2: "Toets het aan je eigen productiestroom.",
+      lead: "Gebruik de gehoste proefomgeving of host de Community-editie zelf. Begin met één routing, één cel en de systemen die het resultaat nodig hebben.",
       ctaPrimary: "Probeer de gehoste versie",
       ctaSecondary: "Lees de zelfhost-handleiding",
     },
   },
 
   de: {
-    title: "Eryxon Flow — MES für Lohnfertiger, bereit für Agenten",
+    title: "Eryxon Flow — Fertigungssteuerung für High-Mix-Metallbetriebe",
     description:
-      "Eryxon Flow verfolgt jeden Auftrag durch Schneiden, Biegen, Schweißen und Montage. Bediener arbeiten am Tablet an der Maschine. ERP und KI-Agent arbeiten über REST-API und MCP-Server nach denselben Regeln. Quelloffen einsehbar; eine Werkstatt kostenlos selbst hosten.",
+      "ERP-Aufträge werden zu klaren Arbeitsvorräten für Schneiden, Biegen, Schweißen und Montage. Routing, Zeit, Mengen, Ausschuss, Probleme und Standorte werden in der Fertigung erfasst, mit REST-API, signierten Webhooks und optionalem MCP-Zugang.",
     hero: {
-      h1: "Führen Sie die Fertigung. Lassen Sie Agenten und ERP mitführen.",
-      lead: "Eryxon Flow ist das MES für Lohnfertiger mit 10 bis 150 Mitarbeitern. Bediener arbeiten am Tablet an der Maschine, Planer sehen die Auslastung je Zelle, sobald sie sich ändert. REST-API und MCP-Server laufen durch dieselben Datenbankregeln wie der Bildschirm. Ein ERP oder ein KI-Agent plant, startet, meldet und fragt die Produktion ab, ohne Projekt.",
+      h1: "Aus ERP-Aufträgen wird klare Arbeit für jede Zelle.",
+      lead: "Eryxon Flow verbindet ERP und Fertigung in High-Mix-Metallbetrieben. Planer sehen, welche Arbeitsgänge bereitstehen und wo sich Last aufbaut. Bediener arbeiten am Tablet in der Zelle. ERP, Automatisierung und freigegebene Agenten nutzen dokumentierte Schnittstellen, während die Produktionsregeln in der Datenbank bleiben.",
       ctaPrimary: "Gehostet ausprobieren",
       ctaSecondary: "Kostenlos selbst hosten",
       ctaTertiary: "Dokumentation lesen →",
     },
-    product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laserschneiden", queueTitle: "Arbeitsvorrat", cards: productCards },
+    product: { url: "app.eryxon.eu/operator/work-queue", cell: "● Laserschneiden", queueTitle: "Arbeitsvorrat", cards: productCards.de },
     features: {
-      eyebrow: "Für die, die den Betrieb führen",
-      h2: "Drei Dinge, die ein Inhaber vor dem Mittag wissen will.",
-      lead: "Wo jeder Auftrag steht, ob der Fluss unter Kontrolle ist und wie viel Integrationsarbeit es kostet. Eryxon Flow beantwortet alle drei aus einer Datenbank.",
+      eyebrow: "Für Metallbetriebe",
+      h2: "Wissen, was bereitsteht, was läuft und was blockiert.",
+      lead: "Planung, Bediener und angebundene Systeme arbeiten mit demselben Produktionsstand, vom ersten Routingschritt bis zur gemeldeten Menge.",
       items: [
-        { title: "Die Werkstatt sehen", body: "Auslastung je Zelle, wer an was eingestempelt ist, was überfällig ist, was durch einen Stillstand blockiert ist. Ein Dashboard, live, auf jedem Bildschirm." },
-        { title: "Den Fluss steuern", body: "Im Puffer heißt: die früheren Schritte sind fertig. Ein Schalter erzwingt die Reihenfolge für die ganze Werkstatt. WIP-Grenzen je Zelle zeigen, wenn die nächste Zelle voll ist. Ein laufender Timer je Bediener, von der Datenbank erzwungen." },
-        { title: "Integrieren ohne Projekt", body: "Aufträge aus dem ERP über die REST-API oder als CSV übergeben. Signierte Webhooks melden anderen Systemen sofort, wenn sich Arbeit ändert. Keine Middleware, kein Berater auf Abruf." },
-        { title: "Tablets an der Maschine", body: "Ein Arbeitsvorrat je Zelle. Große Tasten für Handschuhe, Status, Liefertermin und Laufzeit aus einem Meter lesbar. Ablageplätze zeigen, wo ein Teil liegt und wohin es geht." },
-        { title: "3D im Browser", body: "Das Modell neben dem Auftrag öffnen. Messen, drehen, nichts auf dem Terminal installieren." },
+        { title: "Mit aktuellem Stand planen", body: "Auslastung je Zelle, laufende Arbeit, überfällige Arbeitsgänge, Stillstände und Probleme stehen in einer aktuellen Übersicht." },
+        { title: "Das Routing einhalten", body: "Der Puffer folgt abgeschlossenen Vorgängern. Optionale Reihenfolgeprüfung und WIP-Grenzen machen den vereinbarten Fluss sichtbar und durchsetzbar." },
+        { title: "Das ERP gezielt anbinden", body: "Produktionsarbeit kommt über REST-API oder CSV. Signierte Webhooks geben gespeicherte Änderungen an angebundene Systeme zurück." },
+        { title: "Bedienern einen klaren Vorrat geben", body: "Jede Zelle erhält einen touchfreundlichen Arbeitsvorrat mit Status, Liefertermin, Laufzeit sowie aktuellem und nächstem Standort des Teils." },
+        { title: "Mengen und Probleme zuordnen", body: "Zeit, Gutmenge, Ausschuss, Stillstände und Qualitätsprobleme werden am verursachenden Arbeitsgang erfasst." },
         { title: "Quelloffen einsehbar", body: "Der Quellcode liegt auf GitHub unter der Business Source License. Lesen, anpassen, eine Werkstatt kostenlos selbst hosten. Mehrere Standorte oder Betrieb als Dienst brauchen eine kommerzielle Lizenz." },
       ],
     },
     how: {
       eyebrow: "So funktioniert es",
-      h2: "Vom ERP-Push zum Planer-Dashboard in drei Schritten.",
+      h2: "Vom ERP-Auftrag zur gemeldeten Produktion.",
       steps: [
-        { n: "01", h: "Aufträge hereinholen", b: "Aufträge aus dem ERP über die API übergeben, eine CSV laden oder einen Agenten anlegen lassen. Teile, Schritte und Routing stehen jedes Mal gleich bereit." },
-        { n: "02", h: "Die Halle arbeitet den Vorrat ab", b: "Jede Zelle hat ihr Tablet. Auftrag antippen, Uhr starten, Gut- und Ausschussmenge melden, Problem markieren. Der Planer sieht es in derselben Sekunde." },
-        { n: "03", h: "Planer und Agenten überwachen die Auslastung", b: "Ein Dashboard zeigt die Auslastung je Zelle, was knapp läuft und was markiert wurde. Ein Agent liest dieselben Zahlen über MCP und handelt nach denselben Regeln." },
+        { n: "01", h: "Auftrag und Routing übernehmen", b: "Aufträge, Teile und Arbeitsgänge werden über REST-API, CSV-Import oder die Verwaltung angelegt." },
+        { n: "02", h: "In der Zelle ausführen", b: "Bediener starten und stoppen Arbeit, melden Mengen, erfassen Standorte und markieren Probleme am Terminal." },
+        { n: "03", h: "Das Ergebnis weiterverwenden", b: "Die Planung sieht die aktualisierte Last, und signierte Webhooks informieren ERP, Datenplattform oder andere Abonnenten." },
       ],
     },
     api: {
-      eyebrow: "Bereit für Agenten",
-      h2: "Ein Agent bedient Ihr MES wie ein Bediener.",
-      lead: "Bildschirm, REST-API und MCP-Server rufen dieselben Datenbankfunktionen auf. Egal, wer einen Arbeitsgang startet: Timer-Regel, Reihenfolge-Regel und Mandantengrenze gelten, und derselbe Webhook feuert. Claude, Claude Code oder jeder MCP-Client verbindet sich mit einem Befehl.",
+      eyebrow: "Für Integration gebaut",
+      h2: "Ein Produktionsstand für App und angebundene Systeme.",
+      lead: "Die REST-API nimmt Arbeit entgegen, signierte Webhooks melden gespeicherte Änderungen. Der optionale MCP-Server stellt dieselbe Mandantengrenze und dieselben Produktionsregeln für freigegebene Agenten bereit.",
       bullets: [
         "MCP-Server nach der Spezifikation vom 28. Juli 2026: zustandsloses Streamable HTTP oder stdio",
         "113 Tools mit Annotationen und Output-Schemas; ein Test belegt die Parität mit der REST-API",
@@ -263,8 +270,8 @@ const LANDING: Record<Locale, LandingCopy> = {
       cta: "Kontakt aufnehmen",
     },
     cta: {
-      h2: "Diese Woche in Ihrer eigenen Halle.",
-      lead: "Gehostete Instanz starten oder Docker-Image ziehen und selbst hosten. ERP oder Agent am selben Nachmittag anbinden.",
+      h2: "Am eigenen Produktionsfluss prüfen.",
+      lead: "Nutzen Sie die gehostete Testumgebung oder hosten Sie die Community-Edition selbst. Beginnen Sie mit einem Routing, einer Zelle und den Systemen, die das Ergebnis benötigen.",
       ctaPrimary: "Gehostet ausprobieren",
       ctaSecondary: "Selbsthosting-Anleitung lesen",
     },

@@ -38,9 +38,9 @@ describe('WebhookValidator (issue #909)', () => {
     expect(fields).toContain('events');
   });
 
-  it('rejects a non-http url', () => {
+  it.each(['ftp://example.com', 'http://example.com/hook'])('rejects a non-HTTPS url: %s', (url) => {
     const result = new WebhookValidator().validate(
-      { url: 'ftp://example.com', events: ['job.created'], secret_key: 'whsec_abc123' } as never,
+      { url, events: ['job.created'], secret_key: 'whsec_abc123' } as never,
       ctx,
     );
     expect(result.valid).toBe(false);

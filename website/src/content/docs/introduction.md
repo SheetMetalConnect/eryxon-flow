@@ -30,18 +30,18 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
 
 - **Operators** get a touch-friendly work queue: pull work by stage, log time, view STEP and PDF files, and report issues from the floor.
 - **Admins** get real-time visibility: who is working on what, issue approvals, due-date overrides, and stage/material configuration.
-- **Technical evaluators** get an API- and MCP-native system. The UI, the REST API and the MCP server call the same Postgres functions and row-level security rules, and every change fires the same signed webhooks. An MCP client such as Claude can plan, release, start, report and query production with the guards an operator has. It self-hosts on Supabase.
+- **Technical evaluators** get documented REST, webhook and MCP interfaces. Production lifecycle actions share database-enforced rules, MCP access is pinned to one workshop, and committed changes emit the same signed webhook events. It self-hosts on Supabase.
 
 ## What It Does
 
-Eryxon tracks jobs, parts, and tasks through production with a mobile and tablet-first interface. Data comes from your ERP via API.
+Eryxon tracks jobs, parts, and operations through production with a responsive operator interface. Data can come from your ERP through the API.
 
 ### For Operators
 The interface shows what to work on, grouped by materials and manufacturing stages—organized the way your shop runs, not the way accountants think. 
-- **Visual indicators** (colors, images) make tasks instantly recognizable. 
+- **Visual indicators** (colors, images) make operations easy to recognize.
 - **STEP file viewer** shows the geometry. 
 - **PDF viewer** shows the drawings. 
-- Start and stop time on tasks. 
+- Start and stop time on operations.
 - Report issues when something's wrong. 
 
 Everything needed, nothing extra.
@@ -68,14 +68,14 @@ Work is displayed **kanban-style** with visual columns per stage. Operators see 
 - **Real-time updates**—changes appear immediately on all screens.
 
 ### Flexible Data
-Jobs, parts, and tasks support **custom JSON metadata**—machine settings, bend sequences, welding parameters. Define reusable resources like molds, tooling, fixtures, or materials, then link them to work. Operators see what's required and any custom instructions in the task view.
+Jobs, parts, and operations support **custom JSON metadata**—machine settings, bend sequences, welding parameters. Define reusable resources like molds, tooling, fixtures, or materials, then link them to work. Operators see what is required and any custom instructions in the operation view.
 
 ---
 
 ## Users & Roles
 
 ### Operators
-See their work queue, start/stop time tracking, mark tasks complete, view files, and report quality issues.
+See their work queue, start and stop time tracking, complete operations, view files, and report quality issues.
 
 ### Admins
 Do everything operators can, plus: assign specific work to specific people, manage issues, override dates, and configure stages/materials/templates.
@@ -94,22 +94,22 @@ Track who's on-site and what they're working on in real-time. No guessing, no de
 
 ## Integration-First Architecture
 
-**100% API-driven.** Your ERP pushes jobs, parts, and tasks via the [REST API](/api/rest-api-reference/). Eryxon sends completion events back via [signed webhooks](/architecture/connectivity-webhooks). The [MCP server](/guides/mcp-setup) (Live) enables AI/automation integration with Claude Desktop and other AI tools, with stdio for local clients and Streamable HTTP for trusted self-hosted deployments.
+Your ERP can create jobs, parts, and operations through the [REST API](/api/rest-api-reference/). Eryxon emits production changes through [signed webhooks](/architecture/connectivity-webhooks). The optional [MCP server](/guides/mcp-setup) exposes the same production rules to approved automation, over stdio or authenticated Streamable HTTP.
 
 ### File handling
 Request a signed upload URL from the API, upload STEP and PDF files directly to Supabase Storage, then reference the file path when creating jobs or parts. Large files (5-50MB typical) upload directly to storage—no timeouts, no API bottlenecks.
 
 ### Custom metadata
-Include JSON payloads on jobs, parts, and tasks for your specific needs—tooling requirements, mold numbers, machine settings, material specifications, anything your shop needs to track.
+Include JSON payloads on jobs, parts, and operations for your specific needs—tooling requirements, mold numbers, machine settings or material specifications.
 
 ### ERP & Planning Integrations
 Partners like **Sheet Metal Connect e.U.** build integrations for common ERP systems, or build your own against the [REST API](/api/rest-api-reference/) and [payload reference](/api/payload-reference/). See [ERP Integration](/features/erp-integration/).
 
 ### Assembly Tracking
-Parts can have parent-child relationships. Visual grouping shows assemblies with nested components. Non-blocking dependency warnings remind operators when child parts should be complete before starting assembly tasks—but they can override if needed.
+Parts can have parent-child relationships. Visual grouping shows assemblies with nested components. Non-blocking dependency warnings remind operators when child parts should be complete before starting assembly operations, but they can override if needed.
 
 ### Issue Reporting
-Operators create issues (NCRs) from active tasks with description, severity, and optional photos. Simple approval workflow: pending → approved/rejected → closed. Issues are informational—they don't block work from continuing.
+Operators create issues (NCRs) from active operations with a description, severity and optional photos. The approval flow is pending → approved/rejected → closed. An issue blocks work only when it is marked as a standstill.
 
 ---
 

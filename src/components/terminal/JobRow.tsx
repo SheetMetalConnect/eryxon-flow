@@ -105,7 +105,7 @@ export function JobRow({ job, isSelected, onClick, variant }: JobRowProps) {
         </Badge>
       </td>
 
-      {/* Cell — POLCA signal: current → next cell with GO/PAUSE */}
+      {/* Cell — next-cell capacity signal: current → next with GO/PAUSE */}
       <td className="whitespace-nowrap px-2 py-1.5">
         <TerminalCellInfo
           operationId={job.operationId}

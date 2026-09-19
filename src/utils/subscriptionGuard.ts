@@ -87,7 +87,7 @@ export function getSubscriptionMessage(result: SubscriptionAccessResult): string
     case 'payment_failed':
       return 'Your account is pending approval. Please wait for activation or contact support.';
     case 'subscription_cancelled':
-      return 'Your subscription has been cancelled. Upgrade to restore access to premium features.';
+      return 'Your subscription has been cancelled. Contact support to restore access.';
     case 'subscription_required':
       return 'Subscription required to access this feature.';
     case 'no_subscription':

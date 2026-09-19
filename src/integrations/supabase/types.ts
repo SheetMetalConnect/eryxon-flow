@@ -1509,309 +1509,6 @@ export type Database = {
         }
         Relationships: []
       }
-      mcp_authentication_keys: {
-        Row: {
-          allowed_tools: Json | null
-          created_at: string | null
-          created_by: string | null
-          description: string | null
-          enabled: boolean
-          environment: string
-          id: string
-          key_hash: string
-          key_prefix: string
-          last_used_at: string | null
-          name: string
-          rate_limit: number | null
-          tenant_id: string
-          updated_at: string | null
-          usage_count: number | null
-        }
-        Insert: {
-          allowed_tools?: Json | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          enabled?: boolean
-          environment?: string
-          id?: string
-          key_hash: string
-          key_prefix: string
-          last_used_at?: string | null
-          name: string
-          rate_limit?: number | null
-          tenant_id: string
-          updated_at?: string | null
-          usage_count?: number | null
-        }
-        Update: {
-          allowed_tools?: Json | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          enabled?: boolean
-          environment?: string
-          id?: string
-          key_hash?: string
-          key_prefix?: string
-          last_used_at?: string | null
-          name?: string
-          rate_limit?: number | null
-          tenant_id?: string
-          updated_at?: string | null
-          usage_count?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_authentication_keys_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mcp_authentication_keys_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mcp_endpoints: {
-        Row: {
-          created_at: string | null
-          created_by: string | null
-          enabled: boolean | null
-          id: string
-          last_used_at: string | null
-          name: string
-          tenant_id: string
-          token_hash: string
-          token_prefix: string
-          usage_count: number | null
-        }
-        Insert: {
-          created_at?: string | null
-          created_by?: string | null
-          enabled?: boolean | null
-          id?: string
-          last_used_at?: string | null
-          name: string
-          tenant_id: string
-          token_hash: string
-          token_prefix: string
-          usage_count?: number | null
-        }
-        Update: {
-          created_at?: string | null
-          created_by?: string | null
-          enabled?: boolean | null
-          id?: string
-          last_used_at?: string | null
-          name?: string
-          tenant_id?: string
-          token_hash?: string
-          token_prefix?: string
-          usage_count?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_endpoints_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mcp_endpoints_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mcp_key_usage_logs: {
-        Row: {
-          created_at: string | null
-          error_message: string | null
-          id: string
-          ip_address: unknown
-          key_id: string | null
-          response_time_ms: number | null
-          success: boolean
-          tenant_id: string
-          tool_arguments: Json | null
-          tool_name: string
-          user_agent: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          ip_address?: unknown
-          key_id?: string | null
-          response_time_ms?: number | null
-          success: boolean
-          tenant_id: string
-          tool_arguments?: Json | null
-          tool_name: string
-          user_agent?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          ip_address?: unknown
-          key_id?: string | null
-          response_time_ms?: number | null
-          success?: boolean
-          tenant_id?: string
-          tool_arguments?: Json | null
-          tool_name?: string
-          user_agent?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_key_usage_logs_key_id_fkey"
-            columns: ["key_id"]
-            isOneToOne: false
-            referencedRelation: "mcp_authentication_keys"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "mcp_key_usage_logs_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mcp_server_config: {
-        Row: {
-          created_at: string | null
-          enabled: boolean
-          features: Json | null
-          id: string
-          last_connected_at: string | null
-          server_name: string
-          server_version: string
-          supabase_url: string
-          tenant_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          enabled?: boolean
-          features?: Json | null
-          id?: string
-          last_connected_at?: string | null
-          server_name?: string
-          server_version?: string
-          supabase_url: string
-          tenant_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          enabled?: boolean
-          features?: Json | null
-          id?: string
-          last_connected_at?: string | null
-          server_name?: string
-          server_version?: string
-          supabase_url?: string
-          tenant_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_server_config_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: true
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mcp_server_health: {
-        Row: {
-          created_at: string | null
-          error_message: string | null
-          id: string
-          last_check: string | null
-          metadata: Json | null
-          response_time_ms: number | null
-          status: string
-          tenant_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          last_check?: string | null
-          metadata?: Json | null
-          response_time_ms?: number | null
-          status: string
-          tenant_id: string
-        }
-        Update: {
-          created_at?: string | null
-          error_message?: string | null
-          id?: string
-          last_check?: string | null
-          metadata?: Json | null
-          response_time_ms?: number | null
-          status?: string
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_server_health_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      mcp_server_logs: {
-        Row: {
-          created_at: string | null
-          event_type: string
-          id: string
-          message: string
-          metadata: Json | null
-          tenant_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          event_type: string
-          id?: string
-          message: string
-          metadata?: Json | null
-          tenant_id: string
-        }
-        Update: {
-          created_at?: string | null
-          event_type?: string
-          id?: string
-          message?: string
-          metadata?: Json | null
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "mcp_server_logs_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       monthly_reset_logs: {
         Row: {
           created_at: string
@@ -3843,10 +3540,6 @@ export type Database = {
       }
       cancel_invitation: { Args: { p_invitation_id: string }; Returns: boolean }
       check_jobs_due_soon: { Args: never; Returns: number }
-      check_mcp_tool_permission: {
-        Args: { p_key_id: string; p_tool_name: string }
-        Returns: boolean
-      }
       check_next_cell_capacity: {
         Args: { current_cell_id: string; tenant_id_param: string }
         Returns: Json
@@ -3882,15 +3575,6 @@ export type Database = {
           p_tenant_id: string
         }
         Returns: string
-      }
-      create_mcp_endpoint: {
-        Args: { p_name: string; p_tenant_id?: string }
-        Returns: {
-          endpoint_id: string
-          endpoint_name: string
-          token: string
-          token_prefix: string
-        }[]
       }
       create_notification: {
         Args: {
@@ -3938,27 +3622,18 @@ export type Database = {
         Returns: undefined
       }
       dispatch_webhook: {
-        Args: { p_data: Json; p_event_type: string; p_tenant_id: string; p_webhook_id?: string; p_event_id?: string }
+        Args: {
+          p_data: Json
+          p_event_id?: string
+          p_event_type: string
+          p_tenant_id: string
+          p_webhook_id?: string
+        }
         Returns: undefined
       }
       enable_demo_mode: {
         Args: { p_tenant_id: string; p_user_id?: string }
         Returns: undefined
-      }
-      generate_mcp_key: {
-        Args: {
-          p_allowed_tools?: Json
-          p_created_by?: string
-          p_description?: string
-          p_environment?: string
-          p_name: string
-          p_tenant_id: string
-        }
-        Returns: {
-          api_key: string
-          key_id: string
-          key_prefix: string
-        }[]
       }
       generate_sync_hash: { Args: { payload: Json }; Returns: string }
       generate_tenant_abbreviation: {
@@ -4043,29 +3718,6 @@ export type Database = {
           highest_severity: Database["public"]["Enums"]["issue_severity"]
           pending_count: number
           total_count: number
-        }[]
-      }
-      get_mcp_key_stats: {
-        Args: { p_key_id: string }
-        Returns: {
-          avg_response_time_ms: number
-          failed_requests: number
-          last_24h_requests: number
-          most_used_tools: Json
-          successful_requests: number
-          total_requests: number
-        }[]
-      }
-      get_mcp_server_config: {
-        Args: never
-        Returns: {
-          enabled: boolean
-          features: Json
-          id: string
-          last_connected_at: string
-          server_name: string
-          server_version: string
-          supabase_url: string
         }[]
       }
       get_my_tenant_subscription: {
@@ -4260,29 +3912,6 @@ export type Database = {
         }
         Returns: undefined
       }
-      log_mcp_key_usage: {
-        Args: {
-          p_error_message?: string
-          p_ip_address?: unknown
-          p_key_id: string
-          p_response_time_ms?: number
-          p_success?: boolean
-          p_tenant_id: string
-          p_tool_arguments?: Json
-          p_tool_name: string
-          p_user_agent?: string
-        }
-        Returns: string
-      }
-      log_mcp_server_activity: {
-        Args: {
-          p_event_type: string
-          p_message: string
-          p_metadata?: Json
-          p_tenant_id: string
-        }
-        Returns: string
-      }
       log_storage_operation: {
         Args: {
           p_file_path: string
@@ -4322,15 +3951,6 @@ export type Database = {
         Args: { p_job_id: string; p_tenant_id: string }
         Returns: undefined
       }
-      regenerate_mcp_token: {
-        Args: { p_endpoint_id: string }
-        Returns: {
-          endpoint_id: string
-          endpoint_name: string
-          token: string
-          token_prefix: string
-        }[]
-      }
       report_hosted_trial_summary: {
         Args: {
           p_expiring_window_days?: number
@@ -4360,10 +3980,19 @@ export type Database = {
           tenant_id: string
         }[]
       }
-      reset_operator_pin: {
-        Args: { p_new_pin: string; p_operator_id: string }
-        Returns: boolean
-      }
+      reset_operator_pin:
+        | {
+            Args: { p_new_pin: string; p_operator_id: string }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              p_new_pin: string
+              p_operator_id: string
+              p_tenant_id: string
+            }
+            Returns: boolean
+          }
       resolve_exception: {
         Args: {
           p_corrective_action?: string
@@ -4445,17 +4074,12 @@ export type Database = {
         }
         Returns: Json
       }
-      unlock_operator: { Args: { p_operator_id: string }; Returns: boolean }
-      update_mcp_server_health: {
-        Args: {
-          p_error_message?: string
-          p_metadata?: Json
-          p_response_time_ms?: number
-          p_status: string
-          p_tenant_id: string
-        }
-        Returns: string
-      }
+      unlock_operator:
+        | { Args: { p_operator_id: string }; Returns: boolean }
+        | {
+            Args: { p_operator_id: string; p_tenant_id: string }
+            Returns: boolean
+          }
       update_tenant_feature_flags: {
         Args: { p_flags: Json; p_tenant_id: string }
         Returns: Json
@@ -4467,25 +4091,6 @@ export type Database = {
           p_tenant_id: string
         }
         Returns: undefined
-      }
-      validate_mcp_key: {
-        Args: { p_api_key: string }
-        Returns: {
-          allowed_tools: Json
-          environment: string
-          key_id: string
-          rate_limit: number
-          tenant_id: string
-        }[]
-      }
-      validate_mcp_token: {
-        Args: { p_token: string }
-        Returns: {
-          endpoint_id: string
-          endpoint_name: string
-          tenant_id: string
-          valid: boolean
-        }[]
       }
       verify_operator_pin: {
         Args: { p_employee_id: string; p_pin: string }
@@ -4501,14 +4106,17 @@ export type Database = {
           tenant_id: string
         }[]
       }
-      webhook_redeliver: {
-        Args: { p_delivery_id: string }
-        Returns: undefined
+      webhook_event_name: {
+        Args: {
+          p_entity: string
+          p_new_status: string
+          p_old_status: string
+          p_op: string
+        }
+        Returns: string
       }
-      webhook_send_test: {
-        Args: { p_webhook_id: string }
-        Returns: undefined
-      }
+      webhook_redeliver: { Args: { p_delivery_id: string }; Returns: undefined }
+      webhook_send_test: { Args: { p_webhook_id: string }; Returns: undefined }
     }
     Enums: {
       app_role: "operator" | "admin"
@@ -4584,12 +4192,12 @@ export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4613,11 +4221,11 @@ export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4638,11 +4246,11 @@ export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4663,11 +4271,11 @@ export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
@@ -4680,11 +4288,11 @@ export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }

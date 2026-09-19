@@ -505,63 +505,10 @@ if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "operations" ]]; then
   fi
 fi
 
-# ── 5. Job Lifecycle Tests ─────────────────────────────────────────────────────
+# ── 5. Operation Lifecycle Tests ───────────────────────────────────────────────
 
 if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "lifecycle" ]]; then
-  log_section "5. Job Lifecycle API"
-
-  if [[ -n "$CREATED_JOB_ID" ]]; then
-    # 5.1 Start job (not_started -> in_progress)
-    RESP=$(api_call POST "api-job-lifecycle/start?id=${CREATED_JOB_ID}")
-    assert_status "POST /lifecycle/start - Start job" "200" "$RESP" || true
-    assert_contains "POST /lifecycle/start - Status is in_progress" '"new_status":"in_progress"' "$RESP" || true
-
-    # 5.2 Try to start again (should fail - already in_progress)
-    RESP=$(api_call POST "api-job-lifecycle/start?id=${CREATED_JOB_ID}")
-    assert_status "POST /lifecycle/start - Double start returns 400" "400" "$RESP" || true
-    assert_contains "POST /lifecycle/start - Invalid transition error" "INVALID_STATE_TRANSITION" "$RESP" || true
-
-    # 5.3 Stop job (in_progress -> on_hold)
-    RESP=$(api_call POST "api-job-lifecycle/stop?id=${CREATED_JOB_ID}")
-    assert_status "POST /lifecycle/stop - Stop job" "200" "$RESP" || true
-    assert_contains "POST /lifecycle/stop - Status is on_hold" '"new_status":"on_hold"' "$RESP" || true
-
-    # 5.4 Resume job (on_hold -> in_progress)
-    RESP=$(api_call POST "api-job-lifecycle/resume?id=${CREATED_JOB_ID}")
-    assert_status "POST /lifecycle/resume - Resume job" "200" "$RESP" || true
-    assert_contains "POST /lifecycle/resume - Status is in_progress" '"new_status":"in_progress"' "$RESP" || true
-
-    # 5.5 Complete job (in_progress -> completed)
-    RESP=$(api_call POST "api-job-lifecycle/complete?id=${CREATED_JOB_ID}")
-    assert_status "POST /lifecycle/complete - Complete job" "200" "$RESP" || true
-    assert_contains "POST /lifecycle/complete - Status is completed" '"new_status":"completed"' "$RESP" || true
-
-    # 5.6 Try to start completed job (should fail)
-    RESP=$(api_call POST "api-job-lifecycle/start?id=${CREATED_JOB_ID}")
-    assert_status "POST /lifecycle/start - Cannot start completed job" "400" "$RESP" || true
-
-    # 5.7 Invalid operation name
-    RESP=$(api_call POST "api-job-lifecycle/invalid_op?id=${CREATED_JOB_ID}")
-    assert_status "POST /lifecycle/invalid - Returns 400" "400" "$RESP" || true
-  else
-    echo -e "  ${YELLOW}SKIP${NC} Job lifecycle tests (no job ID)"
-    TESTS_SKIPPED=$((TESTS_SKIPPED + 5))
-    TOTAL_TESTS=$((TOTAL_TESTS + 5))
-  fi
-
-  # 5.8 Missing job ID
-  RESP=$(api_call POST "api-job-lifecycle/start")
-  assert_status "POST /lifecycle/start - Missing ID returns 400" "400" "$RESP" || true
-
-  # 5.9 Non-existent job ID
-  RESP=$(api_call POST "api-job-lifecycle/start?id=00000000-0000-0000-0000-000000000000")
-  assert_status "POST /lifecycle/start - Non-existent ID returns 404" "404" "$RESP" || true
-fi
-
-# ── 6. Operation Lifecycle Tests ───────────────────────────────────────────────
-
-if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "lifecycle" ]]; then
-  log_section "6. Operation Lifecycle API"
+  log_section "5. Operation Lifecycle API"
 
   if [[ -n "$CREATED_OPERATION_ID" ]]; then
     # 6.1 Start operation
@@ -595,10 +542,10 @@ if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "lifecycle" ]]; then
   assert_status "POST /op-lifecycle/start - Missing ID returns 400" "400" "$RESP" || true
 fi
 
-# ── 7. Issues / NCR API Tests ─────────────────────────────────────────────────
+# ── 6. Issues / NCR API Tests ─────────────────────────────────────────────────
 
 if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "issues" ]]; then
-  log_section "7. Issues / NCR API"
+  log_section "6. Issues / NCR API"
 
   # 7.1 List issues
   RESP=$(api_call GET "api-issues?limit=5")
@@ -661,10 +608,10 @@ if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "issues" ]]; then
   assert_status "GET /api-issues?severity=high - Filter issues" "200" "$RESP" || true
 fi
 
-# ── 8. Substeps API Tests ─────────────────────────────────────────────────────
+# ── 7. Substeps API Tests ─────────────────────────────────────────────────────
 
 if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "substeps" ]]; then
-  log_section "8. Substeps API"
+  log_section "7. Substeps API"
 
   # 8.1 List substeps
   RESP=$(api_call GET "api-substeps?limit=5")
@@ -696,10 +643,10 @@ if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "substeps" ]]; then
   fi
 fi
 
-# ── 9. Webhooks API Tests ─────────────────────────────────────────────────────
+# ── 8. Webhooks API Tests ─────────────────────────────────────────────────────
 
 if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "webhooks" ]]; then
-  log_section "9. Webhooks API"
+  log_section "8. Webhooks API"
 
   # 9.1 List webhooks
   RESP=$(api_call GET "api-webhooks?limit=5")
@@ -733,10 +680,10 @@ if [[ "$ENDPOINT_FILTER" == "all" || "$ENDPOINT_FILTER" == "webhooks" ]]; then
   assert_status "GET /api-webhooks?active=true - Filter webhooks" "200" "$RESP" || true
 fi
 
-# ── 10. CORS / OPTIONS Tests ──────────────────────────────────────────────────
+# ── 9. CORS / OPTIONS Tests ──────────────────────────────────────────────────
 
 if [[ "$ENDPOINT_FILTER" == "all" ]]; then
-  log_section "10. CORS / OPTIONS"
+  log_section "9. CORS / OPTIONS"
 
   RESP=$(curl -s -w "\n%{http_code}" -X OPTIONS "${BASE_URL}/api-jobs" \
     -H "Origin: https://example.com" \

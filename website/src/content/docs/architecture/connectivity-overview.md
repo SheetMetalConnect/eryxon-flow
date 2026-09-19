@@ -9,7 +9,7 @@ Eryxon Flow provides multiple connectivity options for integrating with external
 
 ## Integration Architecture
 
-Eryxon Flow uses a **Unified Event Dispatcher** to coordinate communication across different protocols.
+Eryxon Flow keeps inbound commands and outbound events separate.
 
 - **Inbound**: [REST API](/api/rest-api-reference/), Real-time WebSockets, [MCP (AI agents)](/guides/mcp-setup/).
 - **Outbound**: [Webhooks](/api/rest-api-reference/#webhook-events) (signed HTTP POST). A UNS or MQTT bridge subscribes to the webhooks; the app does not publish to brokers itself.
@@ -52,7 +52,7 @@ The important behavior is:
 
 ## AI Integration (MCP)
 
-The **[Model Context Protocol (MCP)](/guides/mcp-setup/)** server (protocol 2026-07-28) gives AI agents parity with the app through 113 tools that call the same database functions as the terminal, so production rules and webhook events apply identically.
+The optional **[Model Context Protocol (MCP)](/guides/mcp-setup/)** server (protocol 2026-07-28) exposes 113 tools. Production lifecycle tools use the same database functions as the terminal; other access remains pinned to one workshop with `TENANT_ID`.
 
 **AI agents can:**
 - Fetch and update jobs/parts
@@ -95,12 +95,7 @@ All major actions (job created, operation started, issue reported) raise events 
 
 **Self-hosted:** No rate limits. You control the infrastructure.
 
-**Cloud (eryxon.eu):** Limits are enforced per tenant plan:
-
-- Free: 100 requests/day
-- Pro: 1,000 requests/day
-- Premium: 10,000 requests/day
-- Enterprise: no daily limit
+**Hosted trial (eryxon.eu):** Usage limits are shown in the app and may change as the service is developed. Commercial hosting terms are agreed separately.
 
 ## Related Docs
 

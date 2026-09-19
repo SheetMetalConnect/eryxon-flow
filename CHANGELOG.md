@@ -2,6 +2,40 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.11.1] — 2026-09-19
+
+This patch hardens the MCP and webhook boundaries introduced in 0.11.0 and
+brings the public website and technical documentation back in line with the
+running product.
+
+### Changed
+
+- The landing page now leads with ERP-connected shop-floor execution for
+  high-mix metal fabricators. AI-agent access remains an optional integration,
+  not the product headline.
+- Public documentation, code comments and examples now use the current API
+  surface, licensing model, operating options and plan names.
+- MCP builds remove the previous `dist` tree before compilation.
+
+### Fixed
+
+- MCP server 3.0.1 requires `TENANT_ID`, scopes the workshop record correctly,
+  rejects cross-workshop RPC arguments and validates parent ownership before
+  accessing join tables. Operator creation, PIN reset, unlock, routing and
+  notifications now work with a service-role connection without relying on an
+  end-user session.
+- Webhook configuration accepts HTTPS endpoints only. Dispatch rejects localhost
+  subdomains and does not follow redirects, closing routes to private targets.
+- Legacy `premium` tenant values display as managed hosting instead of exposing
+  a retired public plan name.
+- Patched the Vitest and `js-yaml` development dependencies flagged by the
+  repository dependency audit.
+
+### Upgrade notes
+
+- Apply `20260919120000_mcp_operator_tenant_scope.sql` before running MCP server
+  3.0.1. Set `TENANT_ID`; the server now refuses to start without it.
+
 ## [0.11.0] — 2026-09-18
 
 Eryxon Flow 0.11.0 is the agent-ready release. Everything an operator or planner
@@ -107,7 +141,7 @@ and were rebuilt for production use. The MQTT publisher is gone.
   signature, MCP clients must speak protocol 2026-07-28, and API clients must
   handle `409` for rule violations.
 - The MCP server reads `MCP_BEARER`, `MCP_ACTOR_ID`, `TENANT_ID`,
-  `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; generate the `.env` from
+  `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`; generate the `.env` from
   `/admin/mcp`.
 - Hosted project: enable leaked-password protection in Authentication settings
   (not a code change).
@@ -186,7 +220,7 @@ moved into Community.
 - Added a persistent PR feedback loop covering late comments, unresolved threads,
   current-head checks, and changes during review. CodeRabbit is configured for
   assertive incremental reviews; bot availability is verified per PR.
-- The GitHub repository is private. Dependency updates are enabled for the app,
+- At the time of this release, the GitHub repository was private. Dependency updates are enabled for the app,
   documentation, MCP server, and Actions. Release and development instructions
   describe the current GitHub plan's protection limits.
 - Upgraded the documentation toolchain to Astro 7 and compatible Starlight,

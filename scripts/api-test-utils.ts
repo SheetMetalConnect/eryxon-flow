@@ -548,41 +548,6 @@ async function runStandaloneTests() {
       assert.status(resp, 422);
     });
 
-    // ── Lifecycle tests ──
-    if (jobId) {
-      console.log("\n\x1b[36m── Job Lifecycle ──\x1b[0m");
-
-      await test("Start job", async () => {
-        const resp = await client.post(`api-job-lifecycle/start?id=${jobId}`, {});
-        assert.status(resp, 200);
-        assert.fieldEquals(resp, "data.new_status", "in_progress");
-      });
-
-      await test("Double start returns 400", async () => {
-        const resp = await client.post(`api-job-lifecycle/start?id=${jobId}`, {});
-        assert.status(resp, 400);
-        assert.error(resp, "INVALID_STATE_TRANSITION");
-      });
-
-      await test("Stop job", async () => {
-        const resp = await client.post(`api-job-lifecycle/stop?id=${jobId}`, {});
-        assert.status(resp, 200);
-        assert.fieldEquals(resp, "data.new_status", "on_hold");
-      });
-
-      await test("Resume job", async () => {
-        const resp = await client.post(`api-job-lifecycle/resume?id=${jobId}`, {});
-        assert.status(resp, 200);
-        assert.fieldEquals(resp, "data.new_status", "in_progress");
-      });
-
-      await test("Complete job", async () => {
-        const resp = await client.post(`api-job-lifecycle/complete?id=${jobId}`, {});
-        assert.status(resp, 200);
-        assert.fieldEquals(resp, "data.new_status", "completed");
-      });
-    }
-
     if (operationId) {
       console.log("\n\x1b[36m── Operation Lifecycle ──\x1b[0m");
 

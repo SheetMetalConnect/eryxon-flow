@@ -1,6 +1,6 @@
 import { z } from "zod";
 import * as s from "../schemas.js";
-import { READ, WRITE, IDEMPOTENT_WRITE, actor, tool } from "../tool.js";
+import { READ, WRITE, IDEMPOTENT_WRITE, ToolError, tenantOf, tool } from "../tool.js";
 import { createTool, deleteTool, fetchTool, updateTool } from "./crud.js";
 import { bucket } from "./issues.js";
 
@@ -38,9 +38,17 @@ export const qualityTools = [
     annotations: WRITE,
     async handler({ scrap_reasons, recorded_by, ...report }, supabase) {
       if (report.quantity_good + report.quantity_scrap + report.quantity_rework === 0) throw new Error("Report at least one quantity");
+      const actorId = recorded_by ?? process.env.MCP_ACTOR_ID ?? null;
+      if (actorId) await tenantOf(supabase, "profiles", actorId);
+      const reasonIds = [...new Set(scrap_reasons.map((reason) => reason.scrap_reason_id))];
+      if (reasonIds.length > 0) {
+        const { data: reasons, error: reasonLookup } = await supabase.from("scrap_reasons").select("id").in("id", reasonIds);
+        if (reasonLookup) throw reasonLookup;
+        if (reasons.length !== reasonIds.length) throw new ToolError("INVALID_REFERENCE", "Every scrap reason must belong to this tenant");
+      }
       const { data, error } = await supabase.from("operation_quantities").insert({
         ...report, quantity_produced: report.quantity_good + report.quantity_scrap + report.quantity_rework,
-        scrap_reason_id: scrap_reasons[0]?.scrap_reason_id ?? null, recorded_by: recorded_by ?? process.env.MCP_ACTOR_ID ?? null, recorded_at: new Date().toISOString(),
+        scrap_reason_id: scrap_reasons[0]?.scrap_reason_id ?? null, recorded_by: actorId, recorded_at: new Date().toISOString(),
       }).select().single();
       if (error) throw error;
       if (scrap_reasons.length > 0) {

@@ -2,10 +2,9 @@
 /*
  * Landing.astro — the marketing homepage body.
  *
- * Section flow: hero → product-frame mockup → feature grid → how-it-works (3 steps) → dark API
- * code block → pricing (3 tiers) → managed-rollout contact → dark CTA banner. The `mk-*` classes
- * map to the site `--ery-*` token contract (same approach as `pricing/index.astro`), so the token
- * authority stays in `tokens.css`.
+ * Section flow: hero → product preview → feature grid → workflow → API → two
+ * operating options → rollout → CTA. The `mk-*` classes use the shared `--ery-*`
+ * token contract from `tokens.css`.
  *
  * Content is locale-driven (`marketing-content.ts`). Per Luke's constraints: NO invented
  * testimonials/stats and NO customer names/logos.
@@ -158,7 +157,7 @@ const arrow =
   </div>
 </section>
 
-<!-- 6 · Pricing, inline (kit .mk-pricing-grid / .mk-tier, three tiers) ------- -->
+<!-- 6 · Hosted trial and self-hosted Community ---------------------------- -->
 <section class="mk-section" id="pricing">
   <div class="mk-section-head">
     <span class="mk-section-eyebrow">{c.pricing.eyebrow}</span>
@@ -166,7 +165,7 @@ const arrow =
     <p class="mk-section-lead">{c.pricing.lead}</p>
   </div>
   <div class="mk-pricing-grid">
-    <!-- Tier 1 — Hosted demo (Community edition, free, 30 days, usage limits) -->
+    <!-- Hosted demo: Community edition, 30 days, usage limits -->
     <div class="mk-tier">
       <div class="mk-tier-name">{p.plans.demo.name}</div>
       <div class="mk-tier-price">{p.plans.demo.price}<span>{p.plans.demo.period}</span></div>
@@ -181,7 +180,7 @@ const arrow =
       </CtaButton>
     </div>
 
-    <!-- Tier 3 — Community self-hosted (source-available, BSL 1.1, single site) -->
+    <!-- Community: source-available, self-hosted, single site -->
     <div class="mk-tier">
       <div class="mk-tier-name">{p.plans.community.name}</div>
       <div class="mk-tier-price">{p.plans.community.price}<span>{p.plans.community.period}</span></div>

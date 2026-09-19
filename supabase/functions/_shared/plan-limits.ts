@@ -4,12 +4,8 @@
  * This module provides utilities for enforcing subscription plan limits
  * across all API endpoints.
  *
- * Plan Limits (hosted tiers + free self-hosted; app is source-available under the BSL 1.1):
- * - Free:       25 jobs/mo, 250 parts/mo, 1GB storage, limited API (no webhooks, no MCP)
- * - Pro:        500 jobs/mo, 5000 parts/mo, 10GB storage, full API + webhooks + MCP
- * - Premium:    2000 jobs/mo, 20000 parts/mo, 100GB storage, SSO/SAML, priority support
- * - Enterprise: Unlimited, their infrastructure, custom scope
- * - Self-hosted: Unlimited (configured via env, not enforced)
+ * The database keeps the historical free/pro/premium/enterprise keys for hosted
+ * quota records. Public plan names and commercial terms are not defined here.
  */
 
 import { SupabaseClient } from "@supabase/supabase-js";
@@ -30,6 +26,12 @@ export interface QuotaCheckResult {
   remaining?: number;
   limit?: number;
   current?: number;
+}
+
+function displayPlan(plan: PlanLimits['plan']): string {
+  if (plan === 'free') return 'hosted trial';
+  if (plan === 'pro') return 'hosted';
+  return 'managed hosting';
 }
 
 /**
@@ -78,7 +80,7 @@ export async function canCreateJob(
     };
   }
 
-  // Premium/Enterprise has unlimited jobs
+  // A null quota is unlimited.
   if (limits.max_jobs === null) {
     return {
       allowed: true,
@@ -90,7 +92,7 @@ export async function canCreateJob(
   if (limits.current_jobs >= limits.max_jobs) {
     return {
       allowed: false,
-      reason: `Job limit reached. Your ${limits.plan} plan allows ${limits.max_jobs} jobs. Please upgrade your plan to create more jobs.`,
+      reason: `Job limit reached. Your ${displayPlan(limits.plan)} plan allows ${limits.max_jobs} jobs. Please contact support to change the limit.`,
       limit: limits.max_jobs,
       current: limits.current_jobs,
       remaining: 0,
@@ -122,7 +124,7 @@ export async function canCreateParts(
     };
   }
 
-  // Premium/Enterprise has unlimited parts
+  // A null quota is unlimited.
   if (limits.max_parts_per_month === null) {
     return {
       allowed: true,
@@ -138,10 +140,10 @@ export async function canCreateParts(
 
     return {
       allowed: false,
-      reason: `Monthly parts limit reached. Your ${limits.plan} plan allows ${limits.max_parts_per_month} parts per month. ` +
+      reason: `Monthly parts limit reached. Your ${displayPlan(limits.plan)} plan allows ${limits.max_parts_per_month} parts per month. ` +
               `You have ${remaining} parts remaining this month. ` +
               `This operation requires ${quantity} parts. ` +
-              `Please upgrade your plan or wait until next month.`,
+              `Please contact support or wait until next month.`,
       limit: limits.max_parts_per_month,
       current: limits.current_month_parts,
       remaining,
@@ -162,7 +164,7 @@ export async function canCreateParts(
  * Conservative daily limits (MVP - can increase later):
  * - Free: 100 requests/day (very limited for evaluation)
  * - Pro: 1,000 requests/day (production use)
- * - Premium: 10,000 requests/day (fair use high-volume)
+ * - Legacy premium key: 10,000 requests/day
  * - Enterprise: No limit (custom infrastructure)
  */
 export function getRateLimitConfig(plan: 'free' | 'pro' | 'premium' | 'enterprise'): {

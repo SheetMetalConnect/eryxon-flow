@@ -1,7 +1,7 @@
 /* ============================================================
    slides/slides.css
    Eryxon presentation deck — 1920×1080
-   Mostly calm functional slides + 2 premium marketing splashes
+   Mostly calm functional slides + 2 marketing splashes
    ============================================================ */
 
 deck-stage {
@@ -112,7 +112,7 @@ deck-stage section {
 }
 
 /* ============================================================
-   ANTIGRAVITY (premium splash — title + closing slides)
+   ANTIGRAVITY (title + closing slides)
    ============================================================ */
 section.antigrav {
   background: #0a1020;

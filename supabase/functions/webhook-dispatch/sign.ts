@@ -6,13 +6,45 @@ export async function signWebhook(secret: string, body: string, timestamp = Math
   return `t=${timestamp},v1=${hex}`;
 }
 
-const PRIVATE_HOST = /^(localhost|.*\.local|.*\.internal|127\..*|10\..*|192\.168\..*|169\.254\..*|172\.(1[6-9]|2\d|3[01])\..*|0\.0\.0\.0|\[?::1\]?|\[?fc[0-9a-f]{2}:.*|\[?fd[0-9a-f]{2}:.*|\[?fe80:.*)$/i;
+function isPrivateHost(hostname: string): boolean {
+  const host = hostname.toLowerCase().replace(/^\[|\]$/g, "");
+
+  if (
+    host === "localhost" ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".local") ||
+    host.endsWith(".internal") ||
+    host === "::" ||
+    host === "::1" ||
+    host.startsWith("::ffff:") ||
+    /^(fc|fd|fe[89ab])/i.test(host)
+  ) {
+    return true;
+  }
+
+  const octets = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/)?.slice(1).map(Number);
+  if (!octets || octets.some((octet) => octet > 255)) return false;
+
+  const [first, second] = octets;
+  return (
+    first === 0 ||
+    first === 10 ||
+    first === 127 ||
+    (first === 100 && second >= 64 && second <= 127) ||
+    (first === 169 && second === 254) ||
+    (first === 172 && second >= 16 && second <= 31) ||
+    (first === 192 && second === 0) ||
+    (first === 192 && second === 168) ||
+    (first === 198 && (second === 18 || second === 19)) ||
+    first >= 224
+  );
+}
 
 // Hosted instances must not be turned into a scanner of the operator's private network.
 export function isAllowedTarget(url: string, allowPrivate: boolean): boolean {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "https:" && (allowPrivate || !PRIVATE_HOST.test(parsed.hostname));
+    return parsed.protocol === "https:" && (allowPrivate || !isPrivateHost(parsed.hostname));
   } catch {
     return false;
   }

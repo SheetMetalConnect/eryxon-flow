@@ -1,6 +1,6 @@
 {
   "name": "eryxon-flow-mcp-server",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "MCP server for Eryxon Flow: production tools for AI agents over stdio or Streamable HTTP",
   "license": "BUSL-1.1",
   "type": "module",
@@ -9,7 +9,7 @@
     "eryxon-mcp": "./dist/index.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsc",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
@@ -30,7 +30,7 @@
     "@types/node": "^25.5.0",
     "tsx": "^4.21.0",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.2"
+    "vitest": "^4.1.11"
   },
   "engines": {
     "node": ">=22"

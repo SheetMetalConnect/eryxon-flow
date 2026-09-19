@@ -20,7 +20,7 @@ This system covers every Eryxon surface in one shared visual language.
 | **eryxon.eu — Marketing / docs** | Desktop | Light | [`SheetMetalConnect/eryx-site`](https://github.com/SheetMetalConnect/eryx-site) |
 | **Future Eryxon products** (connectors, UNS tools, visualisers, schedulers) | varies | follows the system | — |
 
-**Eryxon Flow** is the flagship: a Manufacturing Execution System (MES) for high-mix, low-volume job shops — sheet metal, machine shops, custom fabrication. It tracks jobs through cutting, bending, welding, assembly, finishing; runs on touch-friendly operator terminals; and includes a 3D STEP viewer, capacity planning (QRM / WIP dashboards), webhooks, an MCP server and a 30+ endpoint REST API.
+**Eryxon Flow** is the flagship: a Manufacturing Execution System (MES) for high-mix, low-volume job shops — sheet metal, machine shops, custom fabrication. It tracks jobs through cutting, bending, welding, assembly and finishing; runs on touch-friendly operator terminals; and includes a 3D STEP viewer, capacity planning (QRM / WIP dashboards), webhooks, an MCP server and a documented REST API.
 
 > **License copy reminder.** Eryxon Flow is **source-available under the
 > Business Source License 1.1 (BSL 1.1)**. Say "source-available", "Business
@@ -28,16 +28,10 @@ This system covers every Eryxon surface in one shared visual language.
 > to self-host for a single workshop). Do not describe it as "open source",
 > "Apache 2.0", or "free for any use" — that is no longer true.
 
-### Source repos (browse for deeper context)
-
-The system below was derived from these repositories. The reader of this
-README likely **does not** have access to private repos — references are
-preserved so anyone who does can deepen the work.
+### Source repository
 
 - **`SheetMetalConnect/eryxon-flow`** — flagship MES app (public).
   https://github.com/SheetMetalConnect/eryxon-flow
-- **`SheetMetalConnect/eryx-site`** — legacy ERYX marketing site (private).
-  https://github.com/SheetMetalConnect/eryx-site
 
 Local mirrors of the relevant source files are in `_source/` for offline
 inspection. Anything in `_source/` is reference material, **not** part of the
@@ -87,7 +81,7 @@ like good documentation, not marketing.
 | Awesome! Job created 🎉 | Job WO-4218 created. |
 | Oops, something went wrong | Time entry already open on PN-902 — stop it first. |
 | Our revolutionary platform unifies your shop floor. | Track jobs across cutting, bending, welding, and assembly from one tablet. |
-| Proprietary MES, license per seat | Source-available MES for fabricators. Self-host the Community edition for a single site, or contact sales for Premium. |
+| Proprietary MES, license per seat | Source-available MES for fabricators. Self-host the Community edition for one site, or discuss a commercial rollout. |
 | Welcome back, John! Ready to crush some jobs? | Hi John. 4 operations on your queue. |
 
 ---

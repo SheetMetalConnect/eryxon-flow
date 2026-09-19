@@ -42,7 +42,7 @@ describe("signature", () => {
 describe("target guard", () => {
   it("blocks private networks and plain http on hosted instances", () => {
     expect(isAllowedTarget("https://erp.example.com/hook", false)).toBe(true);
-    for (const url of ["http://erp.example.com", "https://localhost/x", "https://127.0.0.1/x", "https://10.1.2.3/x", "https://192.168.1.5/x", "https://172.20.0.1/x", "https://[::1]/x", "https://printer.local/x", "not a url"]) {
+    for (const url of ["http://erp.example.com", "https://localhost/x", "https://hooks.localhost/x", "https://127.0.0.1/x", "https://10.1.2.3/x", "https://192.168.1.5/x", "https://172.20.0.1/x", "https://[::1]/x", "https://[::ffff:127.0.0.1]/x", "https://[::]/x", "https://[fe90::1]/x", "https://printer.local/x", "not a url"]) {
       expect(isAllowedTarget(url, false), url).toBe(false);
     }
     expect(isAllowedTarget("https://192.168.1.5/x", true)).toBe(true);

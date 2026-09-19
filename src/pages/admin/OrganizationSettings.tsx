@@ -60,7 +60,7 @@ export default function OrganizationSettings() {
     factory_opening_time: '07:00',
     factory_closing_time: '17:00',
     auto_stop_tracking: false,
-    // Whitelabeling fields (premium feature)
+    // Whitelabeling fields for managed hosting
     whitelabel_enabled: false,
     whitelabel_logo_url: '',
     whitelabel_app_name: '',
@@ -148,7 +148,7 @@ export default function OrganizationSettings() {
         ),
       };
 
-      // Only include whitelabeling fields for premium/enterprise plans
+      // Only include whitelabeling fields for managed plans
       if (canUseWhitelabeling) {
         updateData.whitelabel_enabled = formData.whitelabel_enabled;
         updateData.whitelabel_logo_url = formData.whitelabel_logo_url || null;
@@ -476,7 +476,7 @@ export default function OrganizationSettings() {
             {!canUseWhitelabeling && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
                 <Crown className="h-3.5 w-3.5 text-amber-500" />
-                <span className="text-xs font-medium text-amber-500">Premium</span>
+                <span className="text-xs font-medium text-amber-500">Managed</span>
               </div>
             )}
           </div>
@@ -601,7 +601,7 @@ export default function OrganizationSettings() {
               </div>
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  Whitelabeling is available on Premium and Enterprise plans.
+                  Whitelabeling is available with managed hosting.
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Customize the application with your company logo, name, and brand colors.
@@ -675,7 +675,13 @@ export default function OrganizationSettings() {
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Current Plan</span>
-              <span className="text-sm capitalize">{tenant.plan}</span>
+              <span className="text-sm">
+                {tenant.plan === 'free'
+                  ? 'Hosted Trial'
+                  : tenant.plan === 'pro'
+                    ? 'Pro'
+                    : 'Managed Hosting'}
+              </span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Status</span>
@@ -683,7 +689,7 @@ export default function OrganizationSettings() {
             </div>
             {tenant.plan === 'free' && (
               <p className="text-xs text-muted-foreground pt-2">
-                Contact us to upgrade to Pro or Premium plans
+                Contact us about managed hosting
               </p>
             )}
           </CardContent>

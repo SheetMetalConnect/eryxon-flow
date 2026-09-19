@@ -46,7 +46,7 @@ Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). Se
 - Issue tracking and quality management (NCR)
 
 **Integration**
-- REST API with 30+ endpoints (jobs, parts, operations, time entries, webhooks)
+- REST API for jobs, parts, operations, time entries and webhooks
 - ERP sync with incremental change detection
 - Webhook notifications for lifecycle events
 - MCP server for AI assistant integration
@@ -89,7 +89,7 @@ Use the versioned image or immutable digest recorded in a GitHub release. Config
 
 ## API
 
-30+ REST endpoints with filtering, pagination, search, and webhook notifications.
+REST endpoints with filtering, pagination, search, and signed webhook notifications.
 
 ```bash
 # List jobs

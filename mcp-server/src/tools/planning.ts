@@ -194,6 +194,12 @@ export const planningTools = [
         ids = data.map((o) => o.id);
       }
       if (ids.length === 0) return { assigned: 0 };
+      ids = [...new Set(ids)];
+      const { data: tenantOperations, error: operationError } = await supabase.from("operations").select("id").in("id", ids);
+      if (operationError) throw operationError;
+      if (tenantOperations.length !== ids.length) {
+        throw new ToolError("INVALID_REFERENCE", "Every operation must belong to this tenant");
+      }
       const { data, error: assignError } = await supabase.from("operation_resources")
         .upsert(ids.map((operation_id) => ({ resource_id: resource.id, operation_id, quantity, notes })), { onConflict: "operation_id,resource_id" })
         .select("operation_id");

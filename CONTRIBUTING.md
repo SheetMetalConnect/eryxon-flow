@@ -46,7 +46,7 @@ The marketing/docs website lives in `website/` with its own `package.json`
   `docs/CONVENTIONS.md`). Extract before you exceed.
 - **Design system**: solid surfaces, hairline borders, design tokens — no
   gradients, no glass effects. See `docs/design-system/README.md`.
-- This is a private repository: keep issues and PRs free of customer names,
+- This is a public repository: keep issues and PRs free of customer names,
   credentials, and commercial details.
 
 ## Translations

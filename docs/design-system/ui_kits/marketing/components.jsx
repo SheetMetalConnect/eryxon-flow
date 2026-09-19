@@ -166,8 +166,8 @@ function ApiBlock() {
           <span className="mk-section-eyebrow on-dark">REST + Webhooks</span>
           <h2 className="mk-h2 on-dark">An API your ERP can actually talk to.</h2>
           <p className="mk-section-lead on-dark">
-            30+ endpoints with filtering, pagination, search, and webhook
-            dispatch. Built for ERP-to-MES sync — not just point-and-click.
+            Documented endpoints for jobs, parts, operations, files, and
+            webhooks. Built for controlled ERP-to-shop-floor integration.
           </p>
           <ul className="mk-api-list">
             <li>{M.check} Bearer-token auth with scoped API keys</li>

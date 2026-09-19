@@ -22,4 +22,32 @@ describe("tenant-scoped client", () => {
     await createTenantScopedClient(client, "tenant-a").from("parts").select("id").eq("status", "completed");
     expect(new URL(String(transport.mock.calls[0][0])).searchParams.get("tenant_id")).toBe("eq.tenant-a");
   });
+
+  it("scopes the tenants table by its id", async () => {
+    const transport = vi.fn<typeof fetch>().mockResolvedValue(new Response("[]", { headers: { "Content-Type": "application/json" } }));
+    const client = createClient("http://localhost:54321", "test-key", {
+      auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: transport },
+    });
+    await createTenantScopedClient(client, "tenant-a").from("tenants").select("id, name");
+    const params = new URL(String(transport.mock.calls[0][0])).searchParams;
+    expect(params.get("id")).toBe("eq.tenant-a");
+    expect(params.has("tenant_id")).toBe(false);
+  });
+
+  it("leaves indirect join tables to their parent-scoped tool handlers", async () => {
+    const transport = vi.fn<typeof fetch>().mockResolvedValue(new Response("[]", { headers: { "Content-Type": "application/json" } }));
+    const client = createClient("http://localhost:54321", "test-key", {
+      auth: { persistSession: false, autoRefreshToken: false }, global: { fetch: transport },
+    });
+    await createTenantScopedClient(client, "tenant-a").from("operation_resources").select("operation_id").eq("resource_id", "resource");
+    expect(new URL(String(transport.mock.calls[0][0])).searchParams.has("tenant_id")).toBe(false);
+  });
+
+  it("rejects RPC arguments for another tenant", () => {
+    const client = createClient("http://localhost:54321", "test-key");
+    const scoped = createTenantScopedClient(client, "tenant-a");
+    expect(() => scoped.rpc("seed_default_scrap_reasons", { p_tenant_id: "tenant-b" })).toThrow(
+      "cannot target a different tenant",
+    );
+  });
 });

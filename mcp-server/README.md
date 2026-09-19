@@ -1,8 +1,8 @@
 # Eryxon Flow MCP Server
 
-MCP server for Eryxon Flow, protocol revision **2026-07-28** only. It gives an AI agent the same production capabilities as the app: jobs, parts and routings, the operation lifecycle, batches, output and scrap reporting, issues and Yellow Cards, cells, resources, operators, calendar, webhooks and workshop settings. Every write goes through the database functions the app uses (`transition_operation`, `time_entry_action`, `transition_batch`, `add_batch_operations`), so production rules and webhook events behave identically.
+MCP server for Eryxon Flow, protocol revision **2026-07-28** only. It exposes jobs, parts and routings, the operation lifecycle, batches, output and scrap reporting, issues and Yellow Cards, cells, resources, operators, calendar, webhooks and workshop settings. Lifecycle tools use the database functions the app uses (`transition_operation`, `time_entry_action`, `transition_batch`, `add_batch_operations`); all other access is pinned to one workshop through `TENANT_ID`.
 
-Built on `@modelcontextprotocol/server` and `@modelcontextprotocol/node` 2.0 (`McpServer`, `createMcpHandler`, `serveStdio`). Version 3.0.0.
+Built on `@modelcontextprotocol/server` and `@modelcontextprotocol/node` 2.0 (`McpServer`, `createMcpHandler`, `serveStdio`). Version 3.0.1.
 
 ## Run
 
@@ -10,13 +10,13 @@ Built on `@modelcontextprotocol/server` and `@modelcontextprotocol/node` 2.0 (`M
 npm ci
 npm run build
 SUPABASE_URL=https://your-project.supabase.co SUPABASE_SERVICE_KEY=... TENANT_ID=<workshop uuid> npm start
-node dist/index.js --version   # eryxon-flow-mcp 3.0.0 (MCP 2026-07-28)
+node dist/index.js --version   # eryxon-flow-mcp 3.0.1 (MCP 2026-07-28)
 ```
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
 | `SUPABASE_URL`, `SUPABASE_SERVICE_KEY` | yes | | Service-role access; run only on trusted infrastructure |
-| `TENANT_ID` | recommended | | Pins every query and insert to one workshop |
+| `TENANT_ID` | yes | | Pins every query, write and tenant-aware RPC to one workshop |
 | `MCP_ACTOR_ID` | for attributed writes | | Profile id stamped on issues (`created_by`), assignments (`assigned_by`), reports (`recorded_by`) when the call gives none |
 | `MCP_STATE_KEY` | multi-instance HTTP | random per process | HMAC key that seals `requestState` between rounds of a multi-round-trip tool |
 | `MCP_TRANSPORT` | no | `stdio` | `stdio` or `http` |
@@ -39,7 +39,7 @@ Claude Desktop (`claude_desktop_config.json`):
 }
 ```
 
-HTTP: `docker compose up` with `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `MCP_BEARER` in `.env`. The endpoint is `POST http://host:3001/mcp`, stateless: every request builds a fresh server, there is no session id, so any number of instances can sit behind a plain load balancer (set one `MCP_STATE_KEY` for all of them). `GET /health` reports database reachability, version, protocol and tool count.
+HTTP: `docker compose up` with `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `TENANT_ID` and `MCP_BEARER` in `.env`. The endpoint is `POST http://host:3001/mcp`, stateless: every request builds a fresh server, there is no session id, so any number of instances can sit behind a plain load balancer (set one `MCP_STATE_KEY` for all of them). `GET /health` reports database reachability, version, protocol and tool count.
 
 ## Contract
 

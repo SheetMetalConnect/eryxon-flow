@@ -13,21 +13,21 @@ import erpShot from "@/assets/overview.png";
 
 <LandingPage
   title="ERP-connected production for job shops — Eryxon Flow"
-  description="Keep the office ERP and the shop floor in sync. Eryxon Flow connects to your ERP over the REST API and webhooks so production data flows both ways."
+  description="Connect ERP work orders to shop-floor execution. Eryxon Flow accepts production work over the REST API and emits signed webhooks as operations progress."
   slug="erp-connected-production"
   eyebrow="ERP-connected production"
-  headline="Keep your ERP and your shop floor in sync"
-  intro="Jobs live in the ERP, but the floor runs on paper travelers and whiteboards. Eryxon connects to your ERP over the REST API and webhooks, so job state, progress, and completions flow both ways without double entry."
+  headline="Connect ERP work orders to shop-floor execution"
+  intro="The ERP remains the system of record while Eryxon Flow handles execution at each production cell. Your integration creates jobs and routings through the REST API, then receives signed webhook events as work starts, changes and completes."
   primary={{ label: "Get started for free", href: "https://app.eryxon.eu", ctaId: "landing_erp_primary_hosted", kind: "hosted_app", external: true }}
   secondary={{ label: "See the REST API reference", href: "/api/rest-api-reference/", ctaId: "landing_erp_secondary_api", kind: "docs" }}
 >
   <figure class="proof">
     <img src={erpShot.src} width={erpShot.width} height={erpShot.height} alt="Job and capacity overview board synced from the ERP" loading="lazy" />
-    <figcaption>One board for job state across cells — fed by the ERP, updated from the floor.</figcaption>
+    <figcaption>One board for production status across cells, fed by the ERP and updated from the floor.</figcaption>
   </figure>
   <ul class="points">
-    <li><strong>Two-way sync.</strong> Push jobs in from the ERP; send progress and completions back over webhooks.</li>
-    <li><strong>No double entry.</strong> Operators clock work once, on the floor, and the office sees it.</li>
+    <li><strong>Documented interfaces.</strong> Create jobs through the REST API and consume progress events through signed webhooks.</li>
+    <li><strong>One execution record.</strong> Operators record work at the cell; connected systems can use that committed production state.</li>
     <li><strong>Source-available.</strong> Read and modify the source, and self-host the Community edition free for a single workshop.</li>
   </ul>
 </LandingPage>

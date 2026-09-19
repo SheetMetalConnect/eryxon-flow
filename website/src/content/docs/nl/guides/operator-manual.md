@@ -82,7 +82,7 @@ De balk onder de koptekst toont:
 - Een lopende timer sinds je bent gestart
 - Diagonale streeppatronen die veranderen op basis van je status: groen tijdens actief werken, oranje strepen wanneer je niet bent ingeklokt, rood-naar-groen kleurverloop wanneer je aan een spoedorder werkt
 
-### POLCA-celsignalen
+### Capaciteitssignalen voor de volgende cel
 
 De Cel-kolom toont een signaal voor elke bewerking: de **huidige cel** en de **volgende cel** in de routing, met een capaciteitsindicator:
 
@@ -143,6 +143,6 @@ De issue gaat onmiddellijk naar de admin Issue-wachtrij.
 ## Tips
 
 - Start altijd je timer voordat je aan het fysieke werk begint.
-- Controleer de POLCA-signalen voordat je een bewerking voltooit. Als de volgende cel PAUZE toont, vraag je leidinggevende.
+- Controleer het signaal van de volgende cel voordat je een bewerking voltooit. Als die cel PAUZE toont, vraag je leidinggevende.
 - Meld issues op het moment dat je ze ziet. Een foto zegt meer dan duizend woorden.
 - Als je scherm leeg lijkt, wis dan eerst alle filters.

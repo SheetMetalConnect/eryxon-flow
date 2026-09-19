@@ -36,6 +36,7 @@ async function deliver(supabase: any, endpoint: Endpoint, envelope: Envelope, lo
             "X-Eryxon-Delivery-Id": deliveryId,
           },
           body,
+          redirect: "manual",
           signal: AbortSignal.timeout(10_000),
         });
         const responseText = (await response.text()).slice(0, RESPONSE_EXCERPT);

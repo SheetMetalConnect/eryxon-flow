@@ -5,7 +5,7 @@ description: "Complete API and integration reference for Eryxon Flow."
 
 ## Overview
 
-Eryxon Flow is a **100% API-driven** manufacturing execution system. Your ERP system pushes jobs, parts, and tasks via REST API. Eryxon sends completion events back via webhooks. The MCP server enables AI/automation integration.
+The Eryxon Flow REST API lets an ERP or integration create and update jobs, parts and operations. Eryxon emits committed production changes through signed webhooks. The optional MCP server exposes the supported production and configuration actions to approved automation.
 
 Most integration endpoints use Eryxon API keys (`ery_live_...` or `ery_test_...`). Admin browser endpoints such as `api-export` use the signed-in Supabase user session token.
 
@@ -764,7 +764,7 @@ The full catalogue, payload shape, signature verification and retry behaviour ar
 
 ## MCP Server Integration
 
-The MCP server exposes the same capabilities as this API to AI agents, calling the same database functions. See the [MCP Server Reference](/api/mcp-server-reference/) for the tool list and the [MCP Server Setup Guide](/guides/mcp-setup/) for deployment.
+The MCP server covers the REST resources and production actions for approved automation. Lifecycle tools use the same database functions as the terminal, while all access is pinned to one workshop. See the [MCP Server Reference](/api/mcp-server-reference/) for the tool list and the [MCP Server Setup Guide](/guides/mcp-setup/) for deployment.
 
 ---
 
@@ -772,13 +772,8 @@ The MCP server exposes the same capabilities as this API to AI agents, calling t
 
 **Self-hosted:** No usage limits. You control the infrastructure.
 
-**Cloud (eryxon.eu):** API requests are rate-limited per day based on your plan:
-
-| Plan | Requests per day |
-|------|-----------------|
-| free | 100 |
-| pro | 1,000 |
-| premium | 10,000 |
-| enterprise | no daily limit |
+**Hosted trial (eryxon.eu):** API requests have a daily limit. The current
+allowance and usage are shown in the app; commercial hosting terms are agreed
+separately.
 
 When you exceed your rate limit, the API returns `429 Too Many Requests`.

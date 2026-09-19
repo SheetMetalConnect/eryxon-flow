@@ -7,7 +7,7 @@ Eryxon Flow snel opstarten.
 
 > **Gewoon verkennen?** Open de [hosted versie op app.eryxon.eu](https://app.eryxon.eu) - geen installatie nodig. Een gratis proefperiode van 30 dagen.
 
-> Zelf hosten draait de gratis **Community**-editie, broncode-beschikbaar onder de Business Source License 1.1 — gratis zelf te hosten voor één werkplaats. Gebruik op meerdere locaties vereist een commerciële licentie; zie [Edities & Prijzen](/pricing/).
+> Zelf hosten draait de gratis **Community**-editie, broncode-beschikbaar onder de Business Source License 1.1 — gratis zelf te hosten voor één werkplaats. Gebruik op meerdere locaties vereist een commerciële licentie; zie [Edities & Prijzen](/nl/pricing/).
 
 ---
 

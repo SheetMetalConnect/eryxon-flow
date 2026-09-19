@@ -1,7 +1,9 @@
 import { z } from "zod";
 import * as s from "../schemas.js";
-import { READ, IDEMPOTENT_WRITE, WRITE, DESTRUCTIVE, actor, tool } from "../tool.js";
+import { READ, IDEMPOTENT_WRITE, WRITE, DESTRUCTIVE, actor, tenantOf, tool } from "../tool.js";
 import { createTool, deleteTool, fetchTool, updateTool } from "./crud.js";
+
+const httpsUrl = z.string().url().refine((value) => new URL(value).protocol === "https:", "HTTPS URL required");
 
 const cellFields = {
   name: z.string().min(1).optional(), sequence: z.number().int().min(0).optional(), color: z.string().optional(), description: z.string().optional(),
@@ -28,6 +30,10 @@ export const configTools = [
     name: "unassign_resource", title: "Unassign resource", description: "Remove a resource assignment from an operation.",
     input: { resource_id: s.id, operation_id: s.id }, output: { removed: z.boolean() }, annotations: DESTRUCTIVE,
     async handler({ resource_id, operation_id }, supabase) {
+      await Promise.all([
+        tenantOf(supabase, "resources", resource_id),
+        tenantOf(supabase, "operations", operation_id),
+      ]);
       const { error } = await supabase.from("operation_resources").delete().eq("resource_id", resource_id).eq("operation_id", operation_id);
       if (error) throw error;
       return { removed: true };
@@ -43,26 +49,30 @@ export const configTools = [
     name: "list_operators", title: "List operators", description: "Shop-floor operators (PIN accounts) with lock state (list_operators).",
     input: {}, output: { data: z.array(z.record(z.string(), z.unknown())) }, annotations: READ,
     async handler(_args, supabase) {
-      const { data, error } = await supabase.rpc("list_operators");
+      const { data, error } = await supabase.from("operators")
+        .select("id, employee_id, full_name, active, locked_until, last_login_at, created_at")
+        .order("full_name");
       if (error) throw error;
       return { data: data ?? [] };
     },
   }),
   tool({
     name: "create_operator", title: "Create operator", description: "Create a shop-floor operator with a PIN (create_operator_with_pin).",
-    input: { tenant_id: s.id, employee_id: z.string().min(1), full_name: z.string().min(1), pin: z.string().min(4).max(8), role: z.enum(["operator", "admin"]).default("operator") },
+    input: { tenant_id: s.id, employee_id: z.string().min(1), full_name: z.string().min(1), pin: z.string().regex(/^\d{4,6}$/) },
     output: { id: z.string() }, annotations: WRITE,
-    async handler({ tenant_id, employee_id, full_name, pin, role }, supabase) {
-      const { data, error } = await supabase.rpc("create_operator_with_pin", { p_tenant_id: tenant_id, p_employee_id: employee_id, p_full_name: full_name, p_pin: pin, p_role: role });
+    async handler({ tenant_id, employee_id, full_name, pin }, supabase) {
+      const { data, error } = await supabase.rpc("create_operator_with_pin", { p_tenant_id: tenant_id, p_full_name: full_name, p_pin: pin, p_employee_id: employee_id });
       if (error) throw error;
-      return typeof data === "object" && data !== null ? (data as Record<string, unknown>) : { id: String(data) };
+      return { id: String(data) };
     },
   }),
   tool({
     name: "reset_operator_pin", title: "Reset operator PIN", description: "Set a new PIN for an operator (reset_operator_pin).",
-    input: { operator_id: s.id, pin: z.string().min(4).max(8) }, output: { ok: z.boolean() }, annotations: IDEMPOTENT_WRITE,
+    input: { operator_id: s.id, pin: z.string().regex(/^\d{4,6}$/) }, output: { ok: z.boolean() }, annotations: IDEMPOTENT_WRITE,
     async handler({ operator_id, pin }, supabase) {
-      const { data, error } = await supabase.rpc("reset_operator_pin", { p_operator_id: operator_id, p_new_pin: pin });
+      const { data, error } = await supabase.rpc("reset_operator_pin", {
+        p_tenant_id: await tenantOf(supabase, "operators", operator_id), p_operator_id: operator_id, p_new_pin: pin,
+      });
       if (error) throw error;
       return { ok: Boolean(data) };
     },
@@ -71,7 +81,9 @@ export const configTools = [
     name: "unlock_operator", title: "Unlock operator", description: "Clear a PIN lockout (unlock_operator).",
     input: { operator_id: s.id }, output: { ok: z.boolean() }, annotations: IDEMPOTENT_WRITE,
     async handler({ operator_id }, supabase) {
-      const { data, error } = await supabase.rpc("unlock_operator", { p_operator_id: operator_id });
+      const { data, error } = await supabase.rpc("unlock_operator", {
+        p_tenant_id: await tenantOf(supabase, "operators", operator_id), p_operator_id: operator_id,
+      });
       if (error) throw error;
       return { ok: Boolean(data) };
     },
@@ -112,14 +124,15 @@ export const configTools = [
 
   fetchTool({ table: "webhooks", title: "Fetch webhooks", description: "Outbound webhook subscriptions.", filters: { active: z.boolean().optional() }, orderBy: { column: "created_at" }, softDelete: false }),
   createTool({ table: "webhooks", name: "create_webhook", title: "Create webhook", description: "Subscribe an HTTPS URL to events. Every delivery is signed with the secret (X-Eryxon-Signature: t=<unix>,v1=<hmac>).",
-    fields: { name: z.string().min(1), url: z.string().url(), events: z.array(s.webhookEvent).min(1), secret_key: z.string().min(16), active: z.boolean().default(true) } }),
-  updateTool({ table: "webhooks", name: "update_webhook", title: "Update webhook", description: "Change name, URL, events, secret or activation.", fields: { name: z.string().min(1).optional(), url: z.string().url().optional(), events: z.array(s.webhookEvent).min(1).optional(), secret_key: z.string().min(16).optional(), active: z.boolean().optional() } }),
+    fields: { name: z.string().min(1), url: httpsUrl, events: z.array(s.webhookEvent).min(1), secret_key: z.string().min(16), active: z.boolean().default(true) } }),
+  updateTool({ table: "webhooks", name: "update_webhook", title: "Update webhook", description: "Change name, URL, events, secret or activation.", fields: { name: z.string().min(1).optional(), url: httpsUrl.optional(), events: z.array(s.webhookEvent).min(1).optional(), secret_key: z.string().min(16).optional(), active: z.boolean().optional() } }),
   deleteTool({ table: "webhooks", name: "delete_webhook", title: "Delete webhook", description: "Remove a webhook subscription.", softDelete: false }),
   fetchTool({ table: "webhook_deliveries", title: "Fetch webhook deliveries", description: "Delivery records per webhook: event, outcome, status code, attempts, latency and error.", filters: { webhook_id: s.id.optional(), status: z.enum(["delivered", "failed"]).optional(), event: s.webhookEvent.optional() }, orderBy: { column: "created_at" }, softDelete: false }),
   tool({
     name: "send_test_webhook", title: "Send test webhook", description: "Deliver a signed test event to a webhook (webhook_send_test); the result shows up in fetch_webhook_deliveries.",
     input: { webhook_id: s.id }, output: { sent: z.boolean() }, annotations: WRITE,
     async handler({ webhook_id }, supabase) {
+      await tenantOf(supabase, "webhooks", webhook_id);
       const { error } = await supabase.rpc("webhook_send_test", { p_webhook_id: webhook_id });
       if (error) throw error;
       return { sent: true };
@@ -129,6 +142,7 @@ export const configTools = [
     name: "redeliver_webhook", title: "Redeliver webhook event", description: "Deliver a failed or past delivery again (webhook_redeliver).",
     input: { delivery_id: s.id }, output: { redelivered: z.boolean() }, annotations: IDEMPOTENT_WRITE,
     async handler({ delivery_id }, supabase) {
+      await tenantOf(supabase, "webhook_deliveries", delivery_id);
       const { error } = await supabase.rpc("webhook_redeliver", { p_delivery_id: delivery_id });
       if (error) throw error;
       return { redelivered: true };

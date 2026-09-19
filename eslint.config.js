@@ -7,8 +7,7 @@ import tseslint from "typescript-eslint";
 export default tseslint.config(
   {
     ignores: [
-      "dist",
-      "website/dist",
+      "**/dist/**",
       "website/.astro",
       "website/astro.config.mjs",
       "android/app/src/main/assets/public/**",

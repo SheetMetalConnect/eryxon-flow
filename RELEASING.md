@@ -1,7 +1,7 @@
 # Development and releases
 
-The repository is private. Community retains the Business Source License 1.1;
-“Community” does not mean that the current version has an open-source license.
+The repository is public and source-available under the Business Source License 1.1.
+The Change Date controls when each release moves to its Change License.
 Keep customer information and credentials out of code,
 issues, pull requests, release notes, and fixtures.
 
@@ -32,9 +32,8 @@ Use `gh pr merge --match-head-commit <reviewed SHA>` to avoid merging new commit
 that arrived after review. Recheck after merging for late feedback and open a
 follow-up fix when needed. Do not describe a skipped bot review as a completed one.
 
-`.coderabbit.yaml` configures assertive reviews and incremental reviews on every
-push without automatically pausing. CodeRabbit has reviewed earlier PRs, but its
-access and plan must also support this now-private repository. Configuration alone
+.coderabbit.yaml configures assertive reviews and incremental reviews on every
+push without automatically pausing. Configuration alone
 does not install or activate the app; verify its response on the current PR.
 See the [CodeRabbit review controls](https://docs.coderabbit.ai/configuration/auto-review).
 
@@ -139,13 +138,12 @@ migrations, all Edge Functions, and a Vercel production deployment. It prints th
 Supabase and Vercel targets first. Never run `vercel` from a parent directory: the
 CLI links and uploads whatever directory it is started in.
 
-## GitHub configuration limits
+## GitHub configuration
 
 Actions use read-only default permissions and narrowly scoped write permissions.
-Dependabot alerts, security fixes, and grouped version updates are enabled.
-On the current user-account plan, the private-repository rulesets API returns
-HTTP 403 requiring GitHub Pro. Branch protection and required reviews are therefore
-not server-enforced. Do not describe manual review conventions as enforced rules.
+Dependabot alerts, security fixes, and grouped version updates are enabled. Verify
+rulesets and required reviews against the live repository settings before describing
+them as enforced.
 
 Package visibility is independent of repository visibility. The existing
 `ghcr.io/sheetmetalconnect/eryxon-flow:latest` package is publicly pullable; the

@@ -1,5 +1,5 @@
 /**
- * TerminalCellInfo — Standalone POLCA cell signal for terminal rows.
+ * TerminalCellInfo — Standalone next-cell capacity signal for terminal rows.
  *
  * Shows the next cell in routing with a GO/PAUSE capacity signal.
  * For "expected" rows, shows where the part actually IS now (upstream cell).
@@ -182,7 +182,7 @@ export function TerminalCellInfo({
     );
   }
 
-  // For process/buffer: show current → next cell with POLCA signal
+  // For process/buffer: show current → next cell with its capacity signal
   if (data.isLastStep) {
     return (
       <div className="flex items-center gap-1.5">
@@ -230,7 +230,7 @@ function CellDot({ color }: { color: string }) {
   );
 }
 
-/** POLCA GO/PAUSE signal icon with capacity tooltip */
+/** GO/PAUSE signal icon with capacity tooltip */
 function PolcaSignal({
   freeSlots,
   nextCellName,

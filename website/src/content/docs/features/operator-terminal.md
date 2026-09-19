@@ -39,7 +39,7 @@ What is on its way. An earlier operation on the part is still open at another ce
 
 Each section shows **totals** at the bottom: total time and total pieces. Time reads in plain units — `45m`, `1h 20m`, `2h` — never minutes mislabelled as hours.
 
-## POLCA Cell Signal
+## Next-Cell Capacity Signal
 
 Every operation in your queue shows a cell signal like **Laser → Zetten: GO** or **Zetten → Lassen: PAUSE**.
 
@@ -59,7 +59,7 @@ The backlog column tells you how urgent each operation is:
 | **Today** | Due today. Finish before end of shift. |
 | **Soon** | Due soon. Coming up in the next few days. |
 
-Combined with the POLCA signal, this helps you decide what to pick up next: overdue GO items first, then today's GO items, then the rest.
+Combined with the next-cell signal, this helps you decide what to pick up next: overdue GO items first, then today's GO items, then the rest.
 
 ## Bullet Cards
 
@@ -114,7 +114,7 @@ The terminal follows the device theme, so a workstation in a bright hall and a t
 ## Tips for Daily Use
 
 - Start your shift by checking the **In Buffer** section. That is your immediate work.
-- Watch the POLCA signals. Working on GO items keeps the whole shop moving.
+- Watch the next-cell signals. Working on GO items keeps the whole shop moving.
 - If everything shows PAUSE, flag your foreman — it usually means a downstream bottleneck.
 - Use the detail panel to double-check dimensions or instructions before starting a cut.
 - Bullet Cards (red border) always come first, regardless of other signals.

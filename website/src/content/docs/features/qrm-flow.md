@@ -7,9 +7,9 @@ Work piles up between stations. Bottlenecks form. Due dates slip. Sound familiar
 
 Eryxon Flow tackles this with **Quick Response Manufacturing (QRM)** principles baked into the terminal and planning screens. The goal is simple: reduce the time work spends *not* being worked on.
 
-## The POLCA Principle
+## A POLCA-Inspired Principle
 
-POLCA (Paired-cell Overlapping Loops of Cards with Authorization) is a flow control method designed for job shops — environments where every order follows a different route through different cells.
+POLCA (Paired-cell Overlapping Loops of Cards with Authorization) is a flow control method designed for job shops — environments where every order follows a different route through different cells. Eryxon Flow does not implement POLCA card loops or paired-cell authorization; it adopts the simpler next-cell capacity idea.
 
 The core idea: **only release work to a cell if that cell can absorb it.**
 
@@ -29,6 +29,8 @@ When a cell approaches or exceeds its WIP limit, the terminal shows a clear sign
 - **PAUSE** (red) — next cell is full, pick something else
 
 These signals appear on every operation row in the terminal, showing the next cell in that part's routing along with its current load. Operators don't need to walk the floor or call ahead — the information is right there.
+
+When a cell has **Enforce limit** enabled, a PAUSE signal also blocks the previous operation from completing. Without that setting, the signal is advisory.
 
 ### Terminal Queue Sections
 
@@ -79,8 +81,8 @@ The result: shorter lead times, fewer bottlenecks, and due dates that actually h
 
 ## Limitations
 
-- POLCA signals are based on operation count against WIP limits, not on estimated hours
-- WIP limits are per-cell, not per cell-pair (simplified from academic POLCA)
+- Next-cell signals are based on operation count against WIP limits, not on estimated hours
+- WIP limits are per cell, not per cell pair; this is not a full POLCA implementation
 - The system shows signals and information — it doesn't block operators from starting work against a PAUSE signal
 - Rush orders override flow control by design; too many rush orders will defeat the purpose
 

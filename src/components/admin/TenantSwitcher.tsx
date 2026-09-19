@@ -111,11 +111,14 @@ export const TenantSwitcher: React.FC<TenantSwitcherProps> = ({
   const getPlanLabel = (plan: string) => {
     switch (plan) {
       case "premium":
-        return "Premium";
+      case "enterprise":
+        return "Managed";
       case "pro":
         return "Pro";
+      case "self_hosted":
+        return "Self-hosted";
       default:
-        return "Free";
+        return "Trial";
     }
   };
 

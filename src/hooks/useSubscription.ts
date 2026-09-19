@@ -98,8 +98,8 @@ export const useSubscription = () => {
     const planNames: Record<SubscriptionPlan, string> = {
       free: 'Hosted Trial',
       pro: 'Pro Plan',
-      premium: 'Premium', // legacy SaaS — Luke + select clients, not publicly offered
-      enterprise: 'Managed Hosting', // custom tenant: own DB, isolation, backups, whitelabel
+      premium: 'Managed Hosting',
+      enterprise: 'Managed Hosting',
       self_hosted: 'Self-Hosted',
     };
     return planNames[plan] || 'Unknown Plan';
@@ -126,7 +126,7 @@ export const useSubscription = () => {
     return Math.min((current / max) * 100, 100);
   };
 
-  const canUpgrade = subscription?.plan !== 'premium';
+  const canUpgrade = subscription?.plan === 'free' || subscription?.plan === 'pro';
 
   return {
     subscription,

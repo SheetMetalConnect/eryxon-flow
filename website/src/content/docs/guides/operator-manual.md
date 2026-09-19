@@ -98,7 +98,7 @@ The bar below the header shows:
 - A running timer since you started
 - Diagonal stripe patterns that change based on your state: green while actively working, amber stripes when not clocked on, red-to-green gradient when working on a rush order
 
-### POLCA cell signals
+### Next-cell capacity signals
 
 The Cell column shows a signal for each operation: the **current cell** and the **next cell** in the routing, with a capacity indicator:
 
@@ -159,6 +159,6 @@ The issue goes to the admin Issue Queue immediately.
 ## Tips
 
 - Always start your timer before you begin physical work.
-- Check the POLCA signals before completing an operation. If the next cell shows PAUSE, ask your supervisor.
+- Check the next-cell signal before completing an operation. If the next cell shows PAUSE, ask your supervisor.
 - Report issues the moment you spot them. A photo is worth a thousand words.
 - If your screen looks empty, clear all filters first.

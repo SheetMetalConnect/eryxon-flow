@@ -74,6 +74,12 @@ export const substepTools = [
     name: "apply_substep_template", title: "Apply substep template", description: "Copy a template's items onto an operation as substeps, after its existing ones.",
     input: { operation_id: s.id, template_id: s.id }, output: { added: z.number() }, annotations: WRITE,
     async handler({ operation_id, template_id }, supabase) {
+      const [template, operation] = await Promise.all([
+        supabase.from("substep_templates").select("id").eq("id", template_id).single(),
+        supabase.from("operations").select("id").eq("id", operation_id).single(),
+      ]);
+      if (template.error) throw template.error;
+      if (operation.error) throw operation.error;
       const { data: items, error } = await supabase.from("substep_template_items").select("name, sequence, notes").eq("template_id", template_id).order("sequence");
       if (error) throw error;
       const { data: last } = await supabase.from("substeps").select("sequence").eq("operation_id", operation_id).order("sequence", { ascending: false }).limit(1).maybeSingle();
