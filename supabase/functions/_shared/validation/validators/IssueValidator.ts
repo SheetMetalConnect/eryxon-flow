@@ -10,19 +10,16 @@ const ISSUE_TYPES = ["general", "ncr"];
 const ISSUE_STATUSES = ["pending", "approved", "rejected", "closed"];
 const ISSUE_SEVERITIES = ["low", "medium", "high", "critical"];
 const NCR_CATEGORIES = [
-  "material",
-  "process",
-  "equipment",
-  "design",
-  "supplier",
-  "documentation",
+  "material_defect",
+  "dimensional",
+  "surface_finish",
+  "process_error",
   "other",
 ];
 const NCR_DISPOSITIONS = [
-  "use_as_is",
-  "rework",
-  "repair",
   "scrap",
+  "rework",
+  "use_as_is",
   "return_to_supplier",
 ];
 
@@ -40,7 +37,7 @@ export interface IssueData {
   verified_by_id?: string;
   ncr_number?: string;
   ncr_category?: string;
-  ncr_disposition?: string;
+  disposition?: string;
   root_cause?: string;
   corrective_action?: string;
   preventive_action?: string;
@@ -202,10 +199,10 @@ export class IssueValidator extends BaseValidator<IssueData> {
       }
 
       // NCR disposition validation
-      if (entity.ncr_disposition !== undefined) {
+      if (entity.disposition !== undefined) {
         const dispositionError = this.validateEnum(
           entity,
-          "ncr_disposition",
+          "disposition",
           NCR_DISPOSITIONS,
           index,
           false,

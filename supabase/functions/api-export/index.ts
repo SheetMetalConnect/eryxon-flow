@@ -80,7 +80,7 @@ serveApi(async (req: Request, ctx: HandlerContext) => {
 
       // Determine which fields to select
       const selectFields = table === 'api_keys'
-        ? 'id, name, prefix, active, created_at, last_used_at, tenant_id'
+        ? 'id, name, key_prefix, active, created_at, last_used_at, tenant_id'
         : '*';
 
       // Paginate through all records

@@ -28,22 +28,22 @@ Kies het pad dat past bij uw evaluatie van Eryxon Flow.
 
 ## Past het bij uw werkplaats?
 
-- **Operators** krijgen een touchvriendelijke werkwachtrij: werk per stadium pullen, tijd loggen, STEP/PDF bekijken en issues op de werkvloer melden.
-- **Admins** krijgen realtime zicht: wie waaraan werkt, issue-goedkeuringen, datum-overschrijvingen en configuratie van stadia/materialen.
+- **Operators** krijgen een touchvriendelijke werkwachtrij: werk per cel pullen, tijd registreren, STEP/PDF bekijken en issues op de werkvloer melden.
+- **Admins** krijgen realtime zicht: wie waaraan werkt, issue-goedkeuringen, datum-overschrijvingen en configuratie van cellen en middelen.
 - **Technische evaluatoren** krijgen een API- en MCP-native systeem. De UI, de REST API en de MCP-server roepen dezelfde Postgres-functies en rijbeveiligingsregels aan, en elke wijziging vuurt dezelfde ondertekende webhooks af. Een MCP-client zoals Claude kan productie plannen, vrijgeven, starten, rapporteren en bevragen met dezelfde bewaking als een operator.
 
 > **Probeer het nu:** Open de <a href="https://app.eryxon.eu" data-cta-id="docs_intro_hosted_try_now_nl" data-cta-surface="docs_intro" data-cta-kind="hosted_app" data-cta-locale="nl">hosted versie op app.eryxon.eu</a> — geen installatie vereist.
 
 ## Wat Het Doet
 
-Eryxon volgt orders, onderdelen en taken door de productie met een mobiele en tablet-vriendelijke interface. Gegevens komen via een API uit uw ERP.
+Eryxon volgt orders, onderdelen en bewerkingen door de productie met een mobiele en tabletvriendelijke interface. Gegevens kunnen via de API uit uw ERP komen.
 
 ### Voor Operators
-De interface toont waaraan gewerkt moet worden, gegroepeerd op materialen en productiestadia—georganiseerd zoals uw werkplaats draait, niet zoals accountants denken. 
-- **Visuele indicatoren** (kleuren, afbeeldingen) maken taken direct herkenbaar. 
+De interface toont waaraan gewerkt moet worden, gegroepeerd op materialen en productiecellen—georganiseerd zoals uw werkplaats draait, niet zoals accountants denken.
+- **Visuele indicatoren** (kleuren, afbeeldingen) maken bewerkingen direct herkenbaar.
 - **STEP-file viewer** toont de geometrie. 
 - **PDF-viewer** toont de tekeningen. 
-- Start- en stoptijd op taken registreren. 
+- Start- en stoptijd op bewerkingen registreren.
 - Issues melden als er iets mis is. 
 
 Alles wat nodig is, niets extra's.
@@ -53,32 +53,32 @@ Zie in realtime wie waaraan werkt.
 - Drag-and-drop om specifiek werk aan specifieke mensen toe te wijzen. 
 - Issues beoordelen en goedkeuren. 
 - Datums overschrijven indien nodig. 
-- Stadia, materialen en sjablonen configureren. 
+- Cellen, middelen en sjablonen configureren.
 
 Echt inzicht in de activiteiten op de werkvloer zonder de vloer op te hoeven gaan.
 
 ### Werkorganisatie
-Werk wordt **kanban-stijl** weergegeven met visuele kolommen per stadium. Operators zien wat beschikbaar is en "pullen" werk wanneer ze klaar zijn—niet "gepushed" door een planning. Stadia vertegenwoordigen productie-zones (snijden, buigen, lassen, assemblage).
+Werk wordt **kanban-stijl** weergegeven met visuele kolommen per cel. Operators zien wat beschikbaar is en pullen werk wanneer ze klaar zijn. Cellen vertegenwoordigen productiezones zoals snijden, buigen, lassen en assemblage.
 
 **Quick Response Manufacturing (QRM)** principes zijn ingebouwd: 
-- Visuele indicatoren tonen wanneer te veel orders of onderdelen in hetzelfde stadium zijn. 
-- Beperk onderhanden werk (WIP) per stadium om de doorloop te behouden. 
-- Volg de voortgang per stadium-voltooiing, niet alleen individuele bewerkingstijden. 
+- Visuele indicatoren tonen wanneer te veel orders of onderdelen in dezelfde cel zijn.
+- Beperk onderhanden werk (WIP) per cel om de doorloop te behouden.
+- Volg de voortgang door de routing, niet alleen individuele bewerkingstijden.
 - Handmatige tijdregistratie toont wat er nog rest, niet alleen wat er gedaan is. 
 - **Real-time updates**—wijzigingen verschijnen onmiddellijk op alle schermen.
 
 ### Flexibele Data
-Orders, onderdelen en taken ondersteunen **aangepaste JSON-metadata**—machine-instellingen, buigsequenties, lasparameters. Definieer herbruikbare middelen zoals mallen, gereedschappen, opspanningen of materialen en koppel ze aan het werk. Operators zien wat er nodig is en eventuele aangepaste instructies in de taakweergave.
+Orders, onderdelen en bewerkingen ondersteunen **aangepaste JSON-metadata**—machine-instellingen, buigsequenties en lasparameters. Definieer herbruikbare middelen zoals mallen, gereedschappen of opspanningen en koppel ze aan het werk. Operators zien wat nodig is en eventuele instructies in de bewerkingsweergave.
 
 ---
 
 ## Gebruikers & Rollen
 
 ### Operators
-Zien hun werkwachtrij, registreren start/stop tijden, markeren taken als voltooid, bekijken bestanden en melden kwaliteitsproblemen.
+Zien hun werkwachtrij, registreren start- en stoptijden, voltooien bewerkingen, bekijken bestanden en melden kwaliteitsproblemen.
 
 ### Admins
-Kunnen alles wat operators kunnen, plus: specifiek werk toewijzen aan specifieke mensen, issues beheren, datums overschrijven en stadia/materialen/sjablonen configureren. Dagelijkse drag-and-drop toewijzing zet het juiste werk bij de juiste mensen. Omdat mensen ertoe doen.
+Kunnen alles wat operators kunnen, plus: werk toewijzen, issues beheren, datums overschrijven en cellen, middelen en sjablonen configureren.
 
 > **Let op:** Operator-accounts kunnen worden gemarkeerd als machines voor autonome processen.
 
@@ -92,31 +92,31 @@ Volg in realtime wie er aanwezig is en waaraan zij werken. Geen gegis, geen vert
 
 ## Integratie-Eerste Architectuur
 
-**100% API-gedreven.** Uw ERP stuurt orders, onderdelen en taken via de [REST API](/api/rest-api-reference/). Eryxon stuurt voltooiingsgebeurtenissen terug via ondertekende webhooks. De MCP-server (Live) maakt AI/automatisering-integratie mogelijk met stdio voor lokale clients en Streamable HTTP voor vertrouwde zelfgehoste deployments.
+Uw ERP kan orders, onderdelen en bewerkingen aanmaken via de [REST API](/api/rest-api-reference/). Eryxon stuurt vastgelegde productiewijzigingen terug via [ondertekende webhooks](/architecture/connectivity-webhooks). De optionele [MCP-server](/guides/mcp-setup/) stelt dezelfde productieregels beschikbaar aan goedgekeurde automatisering via stdio of geauthenticeerde Streamable HTTP.
 
 ### Bestandsafhandeling
 Vraag een ondertekende upload-URL aan via de API, upload STEP- en PDF-bestanden rechtstreeks naar Supabase Storage en verwijs vervolgens naar het bestandspad bij het maken van orders of onderdelen. Grote bestanden (typisch 5-50MB) worden rechtstreeks naar de storage geüpload—geen timeouts, geen API-knelpunten.
 
 ### Aangepaste metadata
-Voeg JSON-payloads toe aan orders, onderdelen en taken voor uw specifieke behoeften—gereedschapsvereisten, malnummers, machine-instellingen, materiaalspecificaties, alles wat uw werkplaats moet bijhouden.
+Voeg JSON-metadata toe aan orders, onderdelen en bewerkingen voor gereedschapsvereisten, malnummers, machine-instellingen en materiaalspecificaties.
 
 ### ERP- & Planning-Integraties
-Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. Of bouw uw eigen integratie met onze GitHub starter kits met voorbeeldcode en documentatie.
+Partners zoals **Sheet Metal Connect e.U.** bouwen integraties voor gangbare ERP-systemen. U kunt ook zelf integreren via de [REST API](/api/rest-api-reference/) en [payloadreferentie](/api/payload-reference/).
 
 ### Assemblage Volgen
-Onderdelen kunnen ouder-kind relaties hebben. Visuele groepering toont assemblages met geneste componenten. Niet-blokkerende afhankelijkheidswaarschuwingen herinneren operators eraan wanneer onderdelen voltooid moeten zijn voordat assemblage-taken worden gestart—maar ze kunnen dit overschrijven indien nodig.
+Onderdelen kunnen ouder-kindrelaties hebben. Visuele groepering toont assemblages met geneste componenten. Niet-blokkerende afhankelijkheidswaarschuwingen herinneren operators eraan wanneer onderdelen voltooid moeten zijn voordat assemblagebewerkingen starten.
 
 ### Issue Rapportage
-Operators maken issues (NCR's) aan vanuit actieve taken met een beschrijving, ernst en optionele foto's. Eenvoudige goedkeuringsworkflow: in behandeling → goedgekeurd/afgewezen → gesloten. Issues zijn informatief—ze blokkeren de voortgang van het werk niet.
+Operators maken issues (NCR's) aan vanuit actieve bewerkingen met een beschrijving, ernst en optionele foto's. De workflow is in behandeling → goedgekeurd/afgewezen → gesloten. Een issue blokkeert werk alleen wanneer het als stilstand is gemarkeerd.
 
 ---
 
 ## Wat We Niet Doen (Bewust)
 
 *   **Geen financiële tracking.** We volgen de tijd besteed aan werk, niet de kosten, prijzen of marges.
-*   **Geen inkoop.** Taken kunnen als extern worden gemarkeerd (uitbesteed werk) en de status kan via de API worden gevolgd, maar er is geen inkoopbeheer of leveranciers-transacties.
+*   **Geen inkoop.** Bewerkingen kunnen uitbesteed werk vertegenwoordigen en via de API worden gevolgd, maar er is geen inkoopbeheer of leveranciersflow.
 *   **Geen BOM-beheer.** We volgen wat er geproduceerd moet worden, niet de itemdetails of voorraad. Onderdelen kunnen ouder-kind links hebben voor assemblage-visualisatie, maar geen multi-level BOM's die niet in de productie leven.
-*   **Geen planning.** Datums komen meestal uit uw ERP, maar admins kunnen deze handmatig overschrijven. We berekenen of optimaliseren geen planningen—u houdt de controle.
+*   **Eenvoudige planning.** De capaciteitsplanner kan bewerkingen over cellen verdelen met de fabriekskalender en werkdagen. Het is geen APS-optimizer; datums kunnen ook uit het ERP komen en admins kunnen vervaldata overschrijven.
 *   **Geen rapportages.** Alleen real-time statistiekenpanelen. Geen ingebouwde historische analyses—maar alle data is toegankelijk via API/MCP voor uw eigen rapportages.
 
 ---

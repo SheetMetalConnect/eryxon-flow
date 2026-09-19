@@ -1,11 +1,5 @@
 personality = "friendly"
 
-[mcp_servers]
-
-[mcp_servers.supabase]
-url = "https://mcp.supabase.com/mcp?project_ref=vatgianzotsurljznsry"
-bearer_token_env_var = "SUPABASE_ACCESS_TOKEN"
-
 [features]
 multi_agent = true
 

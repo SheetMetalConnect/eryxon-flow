@@ -7,15 +7,15 @@ Set the server up first: [MCP Server Setup](/guides/mcp-setup/). Tool names belo
 
 ## Scenario 1: an order from scratch
 
-1. "Create job JOB-2026-0042 for customer Acme, due next Friday." → `create_job`
+1. "Create job JOB-2026-0042 for customer Example Fabrication, due next Friday." → `create_job`
 2. "Add part BRACKET-01, 12 pieces, S235 3 mm, with routing laser cutting → bending → powder coating." → `create_part` with `operations` (cells looked up with `fetch_cells`)
 3. "Show the routing." → `get_part_routing`
 4. "Mark the whole job as a rush order." → `prioritize_job`
 
 ## Scenario 2: production on the floor
 
-1. "Start laser cutting on BRACKET-01 for operator Jan." → `start_operation` with `operator_id`
-2. "Jan is done, 12 good, 0 scrap." → `report_production`, then `complete_operation`
+1. "Start laser cutting on BRACKET-01 for Operator A." → `start_operation` with `operator_id`
+2. "Operator A is done, 12 good, 0 scrap." → `report_production`, then `complete_operation`
 3. "Start bending now." → `start_operation`. With sequential release on and laser cutting not completed the tool returns `INVALID_STATE_TRANSITION: Previous operation must be completed first`.
 4. "Who is clocked on right now?" → resource `eryxon://timers` or `fetch_active_time_entries`
 

@@ -1420,8 +1420,15 @@ CREATE OR REPLACE FUNCTION "public"."dispatch_webhook"("p_tenant_id" "uuid", "p_
 DECLARE
   v_supabase_url text;
 BEGIN
-  -- Get Supabase URL from environment
-  v_supabase_url := 'https://vatgianzotsurljznsry.supabase.co';
+  SELECT decrypted_secret INTO v_supabase_url
+    FROM vault.decrypted_secrets
+   WHERE name = 'project_url'
+   LIMIT 1;
+
+  IF NULLIF(v_supabase_url, '') IS NULL THEN
+    RAISE WARNING 'dispatch_webhook: vault secret project_url is required; skipped %', p_event_type;
+    RETURN;
+  END IF;
   
   -- Call webhook-dispatch edge function via pg_net
   PERFORM net.http_post(
@@ -9904,7 +9911,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
 
 
 

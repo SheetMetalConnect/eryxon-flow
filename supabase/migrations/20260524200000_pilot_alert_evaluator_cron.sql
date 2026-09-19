@@ -12,8 +12,7 @@
 --     The function reads it via vault.decrypted_secrets at invocation time.
 --   - CRON_SECRET env var set on the pilot-alert-evaluator function, equal to
 --     the Vault secret above.
---   - Optional base_url override via the app.pilot_alert.base_url GUC; otherwise
---     falls back to the project URL already used by dispatch_webhook.
+--   - Vault secret named 'project_url' holding the deployment's Supabase URL.
 --   - pg_cron + pg_net enabled (already enabled in this project).
 --
 -- Idempotent: unschedules any prior job of the same name before re-registering.
@@ -28,9 +27,11 @@ DECLARE
   v_base_url    text;
   v_cron_secret text;
 BEGIN
-  v_base_url    := coalesce(
-                     current_setting('app.pilot_alert.base_url', true),
-                     'https://vatgianzotsurljznsry.supabase.co');
+  SELECT decrypted_secret
+    INTO v_base_url
+    FROM vault.decrypted_secrets
+   WHERE name = 'project_url'
+   LIMIT 1;
 
   SELECT decrypted_secret
     INTO v_cron_secret
@@ -38,8 +39,8 @@ BEGIN
    WHERE name = 'pilot_alert_cron_secret'
    LIMIT 1;
 
-  IF v_cron_secret IS NULL OR v_cron_secret = '' THEN
-    RAISE WARNING 'pilot-alert-evaluator: vault secret pilot_alert_cron_secret not set; skipping invocation';
+  IF NULLIF(v_base_url, '') IS NULL OR NULLIF(v_cron_secret, '') IS NULL THEN
+    RAISE WARNING 'pilot-alert-evaluator: vault secrets project_url and pilot_alert_cron_secret are required; skipping invocation';
     RETURN;
   END IF;
 

@@ -1,5 +1,6 @@
 import { serveApi } from "@shared/handler.ts";
 import { createCrudHandler } from "@shared/crud-builder.ts";
+import { validateCrudWrite } from "@shared/crud-write-policy.ts";
 import type { HandlerContext } from "@shared/handler.ts";
 import {
   BadRequestError,
@@ -252,6 +253,12 @@ async function handleCreateBatch(
   const normalizedBatchData = normalizeBatchImageFields(batchData, tenantId);
   const operationIds = normalizeOperationIds(operation_ids);
 
+  await validateCrudWrite(
+    "operation_batches",
+    normalizedBatchData,
+    tenantId,
+    supabase,
+  );
   await validateBatchReferences(supabase, tenantId, normalizedBatchData);
   await assertOperationsBelongToTenant(supabase, tenantId, operationIds);
   await assertOperationsUnassigned(supabase, tenantId, operationIds);
@@ -323,6 +330,12 @@ async function handleUpdateBatch(
 
   const normalizedBody = normalizeBatchImageFields(body, tenantId);
 
+  await validateCrudWrite(
+    "operation_batches",
+    normalizedBody,
+    tenantId,
+    supabase,
+  );
   await validateBatchReferences(supabase, tenantId, normalizedBody, batchId);
 
   const updateData = { ...normalizedBody };

@@ -28,8 +28,8 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
 
 ## Is it right for your shop?
 
-- **Operators** get a touch-friendly work queue: pull work by stage, log time, view STEP and PDF files, and report issues from the floor.
-- **Admins** get real-time visibility: who is working on what, issue approvals, due-date overrides, and stage/material configuration.
+- **Operators** get a touch-friendly work queue: pull work by cell, log time, view STEP and PDF files, and report issues from the floor.
+- **Admins** get real-time visibility: who is working on what, issue approvals, due-date overrides, and cell/resource configuration.
 - **Technical evaluators** get documented REST, webhook and MCP interfaces. Production lifecycle actions share database-enforced rules, MCP access is pinned to one workshop, and committed changes emit the same signed webhook events. It self-hosts on Supabase.
 
 ## What It Does
@@ -37,7 +37,7 @@ Pick the route that matches where you are in evaluating Eryxon Flow.
 Eryxon tracks jobs, parts, and operations through production with a responsive operator interface. Data can come from your ERP through the API.
 
 ### For Operators
-The interface shows what to work on, grouped by materials and manufacturing stages—organized the way your shop runs, not the way accountants think. 
+The interface shows what to work on, grouped by materials and production cells—organized the way your shop runs, not the way accountants think.
 - **Visual indicators** (colors, images) make operations easy to recognize.
 - **STEP file viewer** shows the geometry. 
 - **PDF viewer** shows the drawings. 
@@ -51,19 +51,19 @@ See who's working on what in real-time.
 - Assign specific work to specific people.
 - Review and approve issues. 
 - Override dates when needed. 
-- Configure stages, materials, and templates. 
+- Configure cells, resources, and templates.
 
 Real visibility into shopfloor activity without walking the floor.
 
 ### Work Organization
-Work is displayed **kanban-style** with visual columns per stage. Operators see what's available and pull work when ready—not pushed by a schedule. Stages represent manufacturing zones (cutting, bending, welding, assembly).
+Work is displayed **kanban-style** with visual columns per cell. Operators see what's available and pull work when ready—not pushed by a schedule. Cells represent manufacturing zones such as cutting, bending, welding, and assembly.
 
 ![Kanban work queue organized by production stage](../../assets/step-2.png)
 
 **Quick Response Manufacturing (QRM)** principles are built in: 
-- Visual indicators show when too many jobs or parts are in the same stage. 
-- Limit work in progress per stage to maintain flow. 
-- Track progress by stage completion, not just individual operation times. 
+- Visual indicators show when too many jobs or parts are in the same cell.
+- Limit work in progress per cell to maintain flow.
+- Track progress through the routing, not just individual operation times.
 - Time tracking shows what's remaining, not just what's done.
 - **Real-time updates**—changes appear immediately on all screens.
 
@@ -78,7 +78,7 @@ Jobs, parts, and operations support **custom JSON metadata**—machine settings,
 See their work queue, start and stop time tracking, complete operations, view files, and report quality issues.
 
 ### Admins
-Do everything operators can, plus: assign specific work to specific people, manage issues, override dates, and configure stages/materials/templates.
+Do everything operators can, plus: assign specific work to specific people, manage issues, override dates, and configure cells, resources, and templates.
 
 > **Note:** Operator accounts can be flagged as machines for autonomous processes.
 
@@ -116,7 +116,7 @@ Operators create issues (NCRs) from active operations with a description, severi
 ## What We Don't Do (By Design)
 
 *   **No financial tracking.** We track time spent on work, not costs, prices, or margins.
-*   **No purchasing.** Tasks can be marked as external (subcontract work) and status tracked via API, but no PO management or vendor transactions.
+*   **No purchasing.** Operations can represent subcontract work and be tracked through the API, but there is no PO management or vendor transaction flow.
 *   **No BOM management.** We track what to produce, not item details or inventory. Parts can have parent-child links for assembly visualization, but not multi-level BOMs that do not live in production.
 *   **Simple scheduling.** A built-in capacity-based scheduler can auto-allocate operations across cells, respecting factory calendar and working days. It's not an APS optimizer—dates can also come from your ERP, and admins can manually override due dates at any time.
 *   **No reports.** Real-time stat panels only. No built-in historical analytics—but all data accessible via [REST API](/api/rest-api-reference/) or [MCP server](/guides/mcp-setup) for your own reporting and AI-powered insights.

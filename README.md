@@ -100,7 +100,7 @@ curl https://your-project.supabase.co/functions/v1/api-jobs \
 curl -X POST https://your-project.supabase.co/functions/v1/api-jobs \
   -H "Authorization: Bearer ery_live_your_api_key" \
   -H "Content-Type: application/json" \
-  -d '{"job_number":"WO-001","customer":"Acme","parts":[...]}'
+  -d '{"job_number":"WO-001","customer":"Example Fabrication","parts":[...]}'
 ```
 
 Full API reference: [eryxon.eu/api/rest-api-reference](https://eryxon.eu/api/rest-api-reference/)

@@ -1,65 +1,58 @@
 ---
 title: "API Payload Reference"
-description: "Payload schemas, field constraints, and copy-paste examples for Eryxon Flow APIs."
+description: "Current request fields and copy-paste examples for Eryxon Flow integration endpoints."
 ---
 
 # API Payload Reference
 
-This document provides exact payload schemas, field constraints, and copy-paste examples for every API endpoint. Use this as a quick reference when integrating with the Eryxon API.
+This page covers the main ERP and production payloads. The [REST API reference](/api/rest-api-reference/) documents routes, filters, responses and lifecycle rules. The machine-readable contract is available from `/openapi.json` in the app.
 
----
+All examples use placeholder UUIDs and companies. Replace them with records from the same workshop as the API key.
 
-## Jobs API
+## Authentication
 
-**Endpoint:** `POST /functions/v1/api-jobs`
+```http
+Authorization: Bearer ery_live_your_api_key
+Content-Type: application/json
+```
 
-### POST - Create Job (with nested parts & operations)
+Create and revoke keys under **Admin > API keys**. Do not put a key in browser code, documentation or a public repository.
 
-This is the primary endpoint for ERP integration. Creates a job with all parts and operations in a single call.
+## Jobs
+
+### Create a job with parts and operations
+
+`POST /functions/v1/api-jobs`
 
 ```json
 {
   "job_number": "JOB-2026-001",
-  "customer": "ACME Corp",
+  "customer": "Example Fabrication",
   "due_date": "2026-12-31",
-  "priority": 1,
-  "notes": "Rush order - customer priority",
+  "notes": "Release after material receipt",
   "metadata": {
-    "po_number": "PO-12345",
-    "erp_ref": "SAP-001"
+    "purchase_order": "PO-12345"
   },
   "parts": [
     {
       "part_number": "PART-001",
-      "material": "Aluminum 6061-T6",
+      "material": "Aluminium 6061-T6",
       "quantity": 10,
-      "description": "Main housing",
       "drawing_no": "DWG-001-A",
-      "cnc_program_name": "HOUSING_V2",
+      "notes": "Deburr before inspection",
       "operations": [
         {
-          "operation_name": "CNC Milling",
+          "operation_name": "Laser cut",
+          "cell_id": "10000000-0000-4000-8000-000000000001",
           "sequence": 1,
-          "estimated_time_minutes": 120,
-          "setup_time_minutes": 15,
-          "instructions": "Use 0.5 inch end mill, coolant on"
+          "estimated_time": 20,
+          "setup_time": 5
         },
         {
-          "operation_name": "Deburr",
+          "operation_name": "Bend",
+          "cell_id": "10000000-0000-4000-8000-000000000002",
           "sequence": 2,
-          "estimated_time_minutes": 30
-        }
-      ]
-    },
-    {
-      "part_number": "PART-002",
-      "material": "Steel 4140",
-      "quantity": 5,
-      "operations": [
-        {
-          "operation_name": "Turning",
-          "sequence": 1,
-          "estimated_time_minutes": 60
+          "estimated_time": 30
         }
       ]
     }
@@ -67,908 +60,262 @@ This is the primary endpoint for ERP integration. Creates a job with all parts a
 }
 ```
 
-#### Field Reference
+Writable job fields are `job_number`, `customer`, `due_date`, `due_date_override`, `notes`, `metadata`, delivery fields, external IDs and derived-state override fields. Normal integrations should let operation transitions derive job status and the current cell.
 
-| Field | Type | Required | Constraints | Notes |
-|-------|------|----------|-------------|-------|
-| `job_number` | string | **Yes** | 1-255 chars, unique per tenant | Primary identifier |
-| `customer` | string | No | max 255 chars | Customer name |
-| `due_date` | string | No | ISO 8601 date | e.g. `"2026-12-31"` |
-| `priority` | integer | No | >= 0 | Higher = more urgent |
-| `notes` | string | No | - | Free text |
-| `status` | string | No | enum | `not_started` (default), `in_progress`, `on_hold`, `completed` |
-| `metadata` | object | No | JSON object | Arbitrary key-value data |
-| `current_cell_id` | UUID | No | must exist in cells | Current work cell |
-| `parts` | array | **Yes** | min 1 item | See Parts fields below |
+Each nested part needs `part_number` and `quantity`. Each nested operation needs `operation_name` and `sequence`. UUID references must belong to the authenticated workshop.
 
-#### Nested Part Fields (within Job creation)
+### Update a job
 
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `part_number` | string | **Yes** | 1-255 chars, unique within job |
-| `quantity` | integer | **Yes** | >= 1 |
-| `material` | string | No | - |
-| `description` | string | No | - |
-| `drawing_no` | string | No | max 255 chars |
-| `cnc_program_name` | string | No | max 255 chars |
-| `parent_part_id` | UUID | No | must exist, same job |
-| `current_cell_id` | UUID | No | must exist in cells |
-| `material_id` | UUID | No | must exist in materials |
-| `operations` | array | **Yes** | min 1 item |
-
-#### Nested Operation Fields (within Part creation)
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `operation_name` | string | **Yes** | 1-255 chars |
-| `sequence` | integer | **Yes** | >= 1, unique within part |
-| `cell_id` | UUID | No | must exist in cells |
-| `assigned_operator_id` | UUID | No | must exist in profiles |
-| `estimated_time_minutes` | number | No | >= 0 |
-| `setup_time_minutes` | number | No | >= 0 |
-| `instructions` | string | No | - |
-
-#### Success Response (201)
+`PATCH /functions/v1/api-jobs?id=<job-id>`
 
 ```json
 {
-  "success": true,
-  "data": {
-    "job": {
-      "id": "550e8400-e29b-41d4-a716-446655440000",
-      "job_number": "JOB-2026-001",
-      "customer": "ACME Corp",
-      "status": "not_started",
-      "parts": [
-        {
-          "id": "...",
-          "part_number": "PART-001",
-          "operations": [
-            {
-              "id": "...",
-              "operation_name": "CNC Milling"
-            }
-          ]
-        }
-      ]
-    }
-  }
+  "customer": "Example Fabrication",
+  "due_date_override": "2027-01-05",
+  "notes": "Customer-approved date change"
 }
 ```
 
-### GET - List Jobs
+### Synchronize by external ID
 
-```
-GET /functions/v1/api-jobs?status=in_progress&customer=ACME&limit=50&offset=0&sort=due_date&order=asc
-```
-
-| Param | Type | Default | Notes |
-|-------|------|---------|-------|
-| `id` | UUID | - | Get single job by ID |
-| `status` | string | - | `not_started`, `in_progress`, `on_hold`, `completed` |
-| `customer` | string | - | Fuzzy match (partial) |
-| `job_number` | string | - | Fuzzy match (partial) |
-| `priority` | integer | - | Exact match |
-| `search` | string | - | Full-text across job_number, customer |
-| `sort` | string | `created_at` | `job_number`, `customer`, `due_date`, `created_at`, `status`, `priority` |
-| `order` | string | `desc` | `asc` or `desc` |
-| `limit` | integer | 100 | 1-1000 |
-| `offset` | integer | 0 | Pagination offset |
-
-### PATCH - Update Job
-
-```
-PATCH /functions/v1/api-jobs?id=<job-id>
-```
+`PUT /functions/v1/api-jobs/sync`
 
 ```json
 {
-  "status": "in_progress",
-  "customer": "Updated Customer",
-  "due_date": "2025-01-15",
-  "notes": "Updated notes",
-  "metadata": {"updated": true}
-}
-```
-
-**Allowed update fields:** `status`, `customer`, `due_date`, `due_date_override`, `notes`, `metadata`
-
-### DELETE - Delete Job (soft delete)
-
-```
-DELETE /functions/v1/api-jobs?id=<job-id>
-```
-
-Sets `deleted_at` timestamp. Job no longer appears in queries.
-
-### PUT /sync - Sync single job by external ID
-
-```
-PUT /functions/v1/api-jobs/sync
-```
-
-```json
-{
-  "external_id": "SAP-JOB-001",
-  "external_source": "sap",
+  "external_id": "ERP-JOB-001",
+  "external_source": "erp",
   "job_number": "JOB-2026-001",
-  "customer": "ACME Corp",
-  "parts": [...]
+  "customer": "Example Fabrication"
 }
 ```
 
-**Required:** `external_id`, `external_source`
+For multiple records, call `POST /functions/v1/api-jobs/bulk-sync` with an `items` array. The same `/sync` and `/bulk-sync` pattern is available for parts, operations, cells and resources.
 
-### POST /bulk-sync - Bulk sync jobs
+## Parts
 
-```
-POST /functions/v1/api-jobs/bulk-sync
-```
+### Create a part
+
+`POST /functions/v1/api-parts`
 
 ```json
 {
-  "items": [
+  "job_id": "33333333-3333-3333-3333-333333333333",
+  "part_number": "PART-002",
+  "material": "S355MC",
+  "quantity": 25,
+  "drawing_no": "DWG-002-B",
+  "cnc_program_name": "PART-002-R2",
+  "material_lot": "LOT-2026-09",
+  "notes": "Keep material certificate with the batch",
+  "operations": [
     {
-      "external_id": "SAP-JOB-001",
-      "external_source": "sap",
-      "job_number": "JOB-2026-001",
-      "customer": "ACME"
-    },
-    {
-      "external_id": "SAP-JOB-002",
-      "external_source": "sap",
-      "job_number": "JOB-2026-002",
-      "customer": "Widgets Inc"
+      "operation_name": "Saw",
+      "cell_id": "44444444-4444-4444-4444-444444444444",
+      "sequence": 1,
+      "estimated_time": 15
     }
   ]
 }
 ```
 
----
+The supported part filters are `job_id`, `status` and `material`. Text search covers `part_number` and `material`. Use `sort=part_number|created_at|status` with `order=asc|desc`.
 
-## Parts API
+`file_paths` and `image_paths` contain tenant-prefixed private object paths, not public URLs. Request short-lived read URLs through `GET /api-parts/{part-id}/file-url` or the parts-images endpoints.
 
-**Endpoint:** `/functions/v1/api-parts`
+## Operations
 
-### POST - Create Part
+### Create operation metadata
 
-```json
-{
-  "job_id": "550e8400-e29b-41d4-a716-446655440000",
-  "part_number": "PART-003",
-  "material": "Aluminum 6061",
-  "quantity": 10,
-  "description": "Bracket assembly",
-  "drawing_no": "DWG-003",
-  "cnc_program_name": "BRACKET_V1",
-  "is_bullet_card": false,
-  "material_lot": "LOT-2026-A1",
-  "material_supplier": "MetalCo",
-  "material_cert_number": "CERT-12345",
-  "notes": "Heat treat required",
-  "metadata": {"revision": "B"},
-  "file_paths": ["drawings/bracket.pdf"]
-}
-```
-
-#### Field Reference
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `job_id` | UUID | **Yes** | must exist in jobs |
-| `part_number` | string | **Yes** | 1-255 chars, unique within job |
-| `quantity` | integer | **Yes** | >= 1 |
-| `material` | string | No | - |
-| `description` | string | No | - |
-| `drawing_no` | string | No | max 255 chars |
-| `cnc_program_name` | string | No | max 255 chars |
-| `is_bullet_card` | boolean | No | default `false` |
-| `material_lot` | string | No | - |
-| `material_supplier` | string | No | - |
-| `material_cert_number` | string | No | - |
-| `parent_part_id` | UUID | No | must exist, same job, not self |
-| `current_cell_id` | UUID | No | must exist in cells |
-| `material_id` | UUID | No | must exist in materials |
-| `notes` | string | No | - |
-| `metadata` | object | No | JSON object |
-| `file_paths` | array | No | array of strings |
-
-### GET - List Parts
-
-```
-GET /functions/v1/api-parts?job_id=<uuid>&status=in_progress&material=Aluminum&limit=50
-```
-
-| Param | Type | Notes |
-|-------|------|-------|
-| `id` | UUID | Get single part |
-| `job_id` | UUID | Filter by job |
-| `job_number` | string | Filter by job number (fuzzy, requires join) |
-| `part_number` | string | Fuzzy match |
-| `material` | string | Exact match |
-| `material_lot` | string | Exact match |
-| `status` | string | `not_started`, `in_progress`, `completed` |
-| `search` | string | Full-text across part_number, notes |
-| `sort` | string | `part_number`, `material`, `status`, `created_at`, `quantity` |
-| `order` | string | `asc` or `desc` |
-| `limit` | integer | 1-1000 (default 100) |
-| `offset` | integer | Pagination offset |
-
-### PATCH - Update Part
-
-```
-PATCH /functions/v1/api-parts?id=<part-id>
-```
-
-Standard CRUD update. Any field except `tenant_id`, `id`, `created_at`.
-
-### DELETE - Delete Part (hard delete)
-
-```
-DELETE /functions/v1/api-parts?id=<part-id>
-```
-
-**Validation:** Cannot delete if part has child parts. Operations are cascade-deleted.
-
----
-
-## Operations API
-
-**Endpoint:** `/functions/v1/api-operations`
-
-### POST - Create Operation
+`POST /functions/v1/api-operations`
 
 ```json
 {
-  "part_id": "550e8400-e29b-41d4-a716-446655440000",
-  "operation_name": "Welding",
+  "part_id": "55555555-5555-5555-5555-555555555555",
+  "operation_name": "Weld",
+  "cell_id": "66666666-6666-6666-6666-666666666666",
   "sequence": 3,
-  "cell_id": "550e8400-e29b-41d4-a716-446655440001",
-  "assigned_operator_id": "550e8400-e29b-41d4-a716-446655440002",
-  "estimated_time_minutes": 60,
-  "setup_time_minutes": 10,
-  "instructions": "TIG weld only, inspect after"
+  "estimated_time": 60,
+  "setup_time": 10,
+  "notes": "TIG process"
 }
 ```
 
-#### Field Reference
+Writable operation fields are routing and planning metadata: `part_id`, `cell_id`, `operation_name`, `sequence`, `assigned_operator_id`, `estimated_time`, `setup_time`, `changeover_time`, `run_time_per_unit`, `wait_time`, planned dates, notes, metadata and external IDs.
 
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `part_id` | UUID | **Yes** | must exist in parts |
-| `operation_name` | string | **Yes** | 1-255 chars |
-| `sequence` | integer | No | >= 1, auto-assigned if omitted |
-| `cell_id` | UUID | No | must exist in cells |
-| `assigned_operator_id` | UUID | No | must exist in profiles |
-| `estimated_time_minutes` | number | No | >= 0 |
-| `setup_time_minutes` | number | No | >= 0 |
-| `instructions` | string | No | mapped to `notes` field |
-| `status` | string | No | `not_started` (default), `in_progress`, `paused`, `completed` |
+Do not write lifecycle fields such as `status`, `started_at`, `completed_at` or `actual_time` through this endpoint. Use the lifecycle calls so timers, sequential release and derived job state stay consistent.
 
-**Note:** If `sequence` is omitted, it is auto-calculated as max(existing) + 1.
+### Transition an operation
 
-### GET - List Operations
-
-```
-GET /functions/v1/api-operations?part_id=<uuid>&status=in_progress&sort=sequence&order=asc
+```http
+POST /functions/v1/api-operation-lifecycle/start?id=<operation-id>&user_id=<operator-profile-id>
+POST /functions/v1/api-operation-lifecycle/pause?id=<operation-id>
+POST /functions/v1/api-operation-lifecycle/resume?id=<operation-id>&user_id=<operator-profile-id>
+POST /functions/v1/api-operation-lifecycle/complete?id=<operation-id>
 ```
 
-| Param | Type | Notes |
-|-------|------|-------|
-| `id` | UUID | Get single operation |
-| `part_id` | UUID | Filter by part |
-| `job_id` | UUID | Filter by job (finds parts first) |
-| `cell_id` | UUID | Exact match |
-| `cell_name` | string | Fuzzy match (requires join) |
-| `status` | string | `not_started`, `in_progress`, `paused`, `completed` |
-| `assigned_operator_id` | UUID | Filter by operator |
-| `operation_name` | string | Fuzzy match |
-| `search` | string | Full-text across operation_name, notes |
-| `sort` | string | `sequence`, `created_at`, `estimated_time`, `actual_time`, `status`, `completion_percentage` |
-| `order` | string | `asc` or `desc` |
-| `limit` | integer | 1-1000 (default 100) |
-| `offset` | integer | Pagination offset |
+`user_id` is optional. Supply it when starting or resuming tracked operator time. A refused production rule returns `409 CONFLICT` with the rule in `error.message`.
 
-### PATCH - Update Operation
+Supported list filters are `part_id`, `cell_id` and `status`. Text search covers `operation_name`; sorting supports `sequence`, `operation_name`, `created_at` and `status`.
 
+## Issues and NCRs
+
+`POST /functions/v1/api-issues`
+
+```json
+{
+  "operation_id": "77777777-7777-7777-7777-777777777777",
+  "title": "Dimension outside tolerance",
+  "description": "Measured value exceeds the drawing tolerance",
+  "severity": "high",
+  "issue_type": "ncr",
+  "ncr_category": "process_error",
+  "affected_quantity": 5,
+  "disposition": "rework",
+  "root_cause": "Tool wear",
+  "corrective_action": "Replace tool and rework affected parts",
+  "verification_required": true,
+  "reported_by_id": "88888888-8888-8888-8888-888888888888"
+}
 ```
-PATCH /functions/v1/api-operations?id=<operation-id>
+
+Issue status values are `pending`, `approved`, `rejected` and `closed`. NCR categories are `material_defect`, `dimensional`, `surface_finish`, `process_error` and `other`; dispositions are `scrap`, `rework`, `use_as_is` and `return_to_supplier`. Supported list filters are `severity`, `status`, `issue_type`, `ncr_category`, `reported_by_id` and `operation_id`.
+
+## Substeps
+
+`POST /functions/v1/api-substeps`
+
+```json
+{
+  "operation_id": "77777777-7777-7777-7777-777777777777",
+  "name": "Measure hole diameter",
+  "sequence": 1,
+  "status": "not_started",
+  "notes": "Record the value on the inspection sheet"
+}
 ```
+
+Update completion through `PATCH /functions/v1/api-substeps?id=<substep-id>`:
 
 ```json
 {
   "status": "completed",
-  "completion_percentage": 100,
-  "notes": "Done, QA passed",
-  "actual_time": 45,
-  "cell_id": "...",
-  "assigned_operator_id": "..."
+  "completed_at": "2026-09-19T10:30:00Z",
+  "completed_by": "88888888-8888-8888-8888-888888888888"
 }
 ```
 
-**Allowed update fields:** `status`, `completion_percentage`, `notes`, `assigned_operator_id`, `actual_time`, `cell_id`
+Status values are `not_started`, `in_progress`, `completed` and `blocked`.
 
-**Auto-behavior:** Setting `status` to `completed` auto-sets `completed_at` timestamp.
+## Batches
 
-### DELETE - Delete Operation
+### Create a batch
 
-```
-DELETE /functions/v1/api-operations?id=<operation-id>
-```
-
-**Validation:** Cannot delete if operation has time entries.
-
----
-
-## Issues / NCR API
-
-**Endpoint:** `/functions/v1/api-issues`
-
-### POST - Create Issue
-
-```json
-{
-  "operation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "title": "Surface finish out of spec",
-  "description": "Ra measured 3.2, spec requires 1.6",
-  "severity": "high",
-  "status": "open"
-}
-```
-
-### POST - Create NCR (Non-Conformance Report)
-
-```json
-{
-  "operation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "title": "Dimensional Out of Tolerance",
-  "description": "Part hole diameter measured 0.505 inch, spec is 0.500 +/- 0.002",
-  "severity": "high",
-  "issue_type": "ncr",
-  "ncr_category": "process",
-  "affected_quantity": 5,
-  "ncr_disposition": "rework",
-  "root_cause": "Tool wear - end mill exceeded replacement interval",
-  "corrective_action": "Replaced tool, re-machined 5 parts",
-  "preventive_action": "Implemented tool life tracking in system",
-  "verification_required": true,
-  "reported_by_id": "550e8400-e29b-41d4-a716-446655440002"
-}
-```
-
-#### Field Reference
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `operation_id` | UUID | **Yes** | must exist in operations |
-| `title` | string | **Yes** | 1-255 chars |
-| `description` | string | **Yes** | min 1 char |
-| `severity` | string | No | `low`, `medium`, `high`, `critical` |
-| `status` | string | No | `open` (default), `in_progress`, `resolved`, `closed` |
-| `issue_type` | string | No | `general` (default), `ncr` |
-| `reported_by_id` | UUID | No | must exist in profiles |
-| `resolved_by_id` | UUID | No | must exist in profiles |
-| `verified_by_id` | UUID | No | must exist in profiles |
-
-**NCR-specific fields** (when `issue_type` = `"ncr"`):
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `ncr_number` | string | No | max 50 chars, auto-generated if omitted |
-| `ncr_category` | string | No | `material`, `process`, `equipment`, `design`, `supplier`, `documentation`, `other` |
-| `ncr_disposition` | string | No | `use_as_is`, `rework`, `repair`, `scrap`, `return_to_supplier` |
-| `root_cause` | string | No | - |
-| `corrective_action` | string | No | - |
-| `preventive_action` | string | No | - |
-| `affected_quantity` | integer | No | - |
-| `verification_required` | boolean | No | - |
-
-### GET - List Issues
-
-```
-GET /functions/v1/api-issues?severity=high&status=open&issue_type=ncr
-```
-
-| Param | Type | Notes |
-|-------|------|-------|
-| `id` | UUID | Get single issue |
-| `severity` | string | `low`, `medium`, `high`, `critical` |
-| `status` | string | `open`, `in_progress`, `resolved`, `closed` |
-| `reported_by` | UUID | Filter by reporter |
-| `assigned_to` | UUID | Filter by assignee |
-| `job_id` | UUID | Filter by job |
-| `part_id` | UUID | Filter by part |
-| `operation_id` | UUID | Filter by operation |
-| `search` | string | Full-text across title, description |
-| `sort` | string | `created_at`, `severity`, `status`, `resolved_at` |
-
-### PATCH - Update Issue
-
-```
-PATCH /functions/v1/api-issues?id=<issue-id>
-```
-
-```json
-{
-  "status": "resolved",
-  "resolution_notes": "Parts re-machined and verified"
-}
-```
-
----
-
-## Substeps API
-
-**Endpoint:** `/functions/v1/api-substeps`
-
-### POST - Create Substep
-
-```json
-{
-  "operation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "description": "Measure hole diameter with caliper",
-  "sequence": 1
-}
-```
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `operation_id` | UUID | **Yes** | must exist |
-| `description` | string | **Yes** | - |
-| `sequence` | integer | **Yes** | >= 1 |
-| `completed` | boolean | No | default `false` |
-
-### PATCH - Complete Substep
-
-```
-PATCH /functions/v1/api-substeps?id=<substep-id>
-```
-
-```json
-{
-  "completed": true
-}
-```
-
-### GET - List Substeps
-
-```
-GET /functions/v1/api-substeps?operation_id=<uuid>&completed=false
-```
-
-| Param | Type | Notes |
-|-------|------|-------|
-| `operation_id` | UUID | Filter by operation |
-| `completed` | boolean | `true` or `false` |
-| `sort` | string | `sequence`, `created_at`, `completed` |
-
----
-
-## Webhooks API
-
-**Endpoint:** `/functions/v1/api-webhooks`
-
-### POST - Create Webhook
-
-```json
-{
-  "url": "https://your-erp.com/webhooks/eryxon",
-  "events": ["operation.started", "operation.completed"],
-  "active": true
-}
-```
-
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `name` | string | **Yes** | Display name |
-| `url` | string | **Yes** | HTTPS URL |
-| `events` | string[] | **Yes** | Event names from the catalogue on [Webhooks](/architecture/connectivity-webhooks/) (`<entity>.<action>`, e.g. `operation.completed`) |
-| `secret_key` | string | **Yes** | Signs every delivery (`X-Eryxon-Signature: t=<unix>,v1=<hmac>`) |
-| `active` | boolean | No | default `true` |
-
-### GET - List Webhooks
-
-```
-GET /functions/v1/api-webhooks?active=true
-```
-
-### PATCH - Update Webhook
-
-```
-PATCH /functions/v1/api-webhooks?id=<webhook-id>
-```
-
-```json
-{
-  "active": false
-}
-```
-
----
-
-## Job status
-
-Job and part status follow their operations (`refresh_production_job`); there is no job lifecycle endpoint. Use the operation lifecycle below.
-
----
-
-## Operation Lifecycle API
-
-**Endpoint:** `/functions/v1/api-operation-lifecycle`
-
-### Start Operation
-
-```
-POST /functions/v1/api-operation-lifecycle/start?id=<operation-id>&user_id=<user-id>
-```
-
-**Precondition:** Status must be `not_started` or `on_hold`
-**Result:** Status becomes `in_progress`, creates time entry if `user_id` provided
-**Webhook:** `operation.started`
-
-### Pause Operation
-
-```
-POST /functions/v1/api-operation-lifecycle/pause?id=<operation-id>
-```
-
-**Precondition:** Status must be `in_progress`
-**Result:** Status becomes `on_hold`, ends active time entries, updates `actual_time`
-**Webhook:** `operation.paused`
-
-### Resume Operation
-
-```
-POST /functions/v1/api-operation-lifecycle/resume?id=<operation-id>&user_id=<user-id>
-```
-
-**Precondition:** Status must be `on_hold`
-**Result:** Status becomes `in_progress`, creates new time entry
-**Webhook:** `operation.resumed`
-
-### Complete Operation
-
-```
-POST /functions/v1/api-operation-lifecycle/complete?id=<operation-id>
-```
-
-**Precondition:** Status must be `in_progress`
-**Result:** Status becomes `completed`, `completion_percentage` set to 100, ends all time entries
-**Webhook:** `operation.completed`
-
-### State Transition Diagram
-
-```
-not_started ──start──> in_progress ──pause──> on_hold
-                          │                      │
-                          │                      │
-                       complete               resume
-                          │                      │
-                          v                      v
-                      completed             in_progress
-```
-
----
-
-## Batches API
-
-**Endpoint:** `/functions/v1/api-batches`
-
-Use batches to group operations that run together, such as laser nests, tube cutting runs, saw batches, finishing batches, or general grouped work.
-
-### POST - Create Batch
+`POST /functions/v1/api-batches`
 
 ```json
 {
   "batch_number": "NEST-2026-001",
   "batch_type": "laser_nesting",
-  "cell_id": "550e8400-e29b-41d4-a716-446655440000",
+  "production_mode": "automated",
+  "cell_id": "99999999-9999-9999-9999-999999999999",
   "material": "SS304",
   "thickness_mm": 2,
-  "notes": "Sheet 1 of urgent nesting run",
+  "notes": "Nesting run for sheet 1",
   "nesting_metadata": {
-    "program": "NEST-2026-001.nc",
-    "sheet_size": "1500x3000",
-    "utilization": 0.87
+    "program": "NEST-2026-001.nc"
   },
   "operation_ids": [
-    "660e8400-e29b-41d4-a716-446655440000",
-    "770e8400-e29b-41d4-a716-446655440000"
+    "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"
   ]
 }
 ```
 
-| Field | Type | Required | Constraints |
-|-------|------|----------|-------------|
-| `batch_number` | string | **Yes** | Unique per tenant |
-| `batch_type` | string | No | `laser_nesting`, `tube_batch`, `saw_batch`, `finishing_batch`, `general` |
-| `cell_id` | UUID | **Yes** | Must exist in the authenticated tenant |
-| `material` | string | No | Free text material label |
-| `thickness_mm` | number | No | Sheet or stock thickness |
-| `parent_batch_id` | UUID | No | Must reference a batch in the same tenant |
-| `nesting_metadata` | object | No | JSON metadata from nesting/CAM software |
-| `nesting_image_url` | string | No | URL to nesting layout image |
-| `layout_image_url` | string | No | URL to secondary layout image |
-| `operation_ids` | UUID[] | No | Operations must belong to the authenticated tenant and be unassigned |
+`production_mode=automated` is only valid for `laser_nesting`. Referenced cells, parent batches and operations must belong to the workshop; an operation cannot already belong to another batch.
 
-### GET - List Batches
+Calculated and lifecycle fields such as `status`, `actual_time` and `operations_count` are not writable through create or update payloads.
 
-```
-GET /functions/v1/api-batches?status=ready&batch_type=laser_nesting&limit=50
-```
+### Batch lifecycle
 
-Supported filters: `status`, `batch_type`, `cell_id`, `material`. Text search covers `batch_number` and `material`.
-
-### PATCH - Update Batch
-
-```
-PATCH /functions/v1/api-batches?id=<batch-id>
-```
-
-```json
-{
-  "status": "ready",
-  "notes": "Released to laser cell"
-}
-```
-
-Use the batch lifecycle endpoint to add operations; `operation_ids` is not accepted in `PATCH`.
-
-## Batch Lifecycle API
-
-**Endpoint:** `/functions/v1/api-batch-lifecycle`
-
-All lifecycle operations use POST with the action as the URL path segment.
-
-### Start Batch
-
-```
+```http
 POST /functions/v1/api-batch-lifecycle/start?id=<batch-id>
-```
-
-```json
-{
-  "operator_id": "880e8400-e29b-41d4-a716-446655440000"
-}
-```
-
-**Precondition:** Status must be `draft` or `ready`
-**Result:** Batch and operations move to `in_progress`; time entries are created when `operator_id` is supplied
-**Webhook:** `batch.started`
-
-### Stop Batch
-
-```
 POST /functions/v1/api-batch-lifecycle/stop?id=<batch-id>
 ```
 
-```json
-{
-  "operator_id": "880e8400-e29b-41d4-a716-446655440000"
-}
-```
+An optional JSON body may contain `operator_id`. Add unassigned operations while a batch is `draft` or `ready`:
 
-**Precondition:** Status must be `in_progress`
-**Result:** Batch and operations move to `completed`; active time is distributed across operations when time entries exist
-**Webhook:** `batch.completed`
-
-### Add Operations
-
-```
-POST /functions/v1/api-batch-lifecycle/add-operations?id=<batch-id>
-```
+`POST /functions/v1/api-batch-lifecycle/add-operations?id=<batch-id>`
 
 ```json
 {
-  "operation_ids": [
-    "660e8400-e29b-41d4-a716-446655440000",
-    "770e8400-e29b-41d4-a716-446655440000"
-  ]
+  "operation_ids": ["cccccccc-cccc-cccc-cccc-cccccccccccc"]
 }
 ```
 
-**Precondition:** Batch status must be `draft` or `ready`
-**Result:** Operations are appended to the batch sequence
+## Webhooks
 
----
+`POST /functions/v1/api-webhooks`
 
-## Other APIs
-
-### Cells API
-
-**Endpoint:** `/functions/v1/api-cells` - Standard CRUD for work cells.
-
-### Materials API
-
-**Endpoint:** `GET /functions/v1/api-materials` - Read-only list of unique material names aggregated from `parts.material`.
-
-### Resources API
-
-**Endpoint:** `/functions/v1/api-resources` - Standard CRUD for resources.
-
-### Assignments API
-
-**Endpoint:** `/functions/v1/api-assignments` - Standard CRUD for operator assignments.
-
-### Time Entries API
-
-**Endpoint:** `/functions/v1/api-time-entries` - Standard CRUD for time entries.
-
-### Scrap Reasons API
-
-**Endpoint:** `/functions/v1/api-scrap-reasons` - Standard CRUD for scrap reasons.
-
-### Templates API
-
-**Endpoint:** `/functions/v1/api-templates` - CRUD for operation substep templates and template items.
-
-### Webhook Logs API
-
-**Endpoint:** `/functions/v1/api-webhook-deliveries` - Read-only delivery records (status, attempts, latency, error).
-
-### Operation Quantities API
-
-**Endpoint:** `/functions/v1/api-operation-quantities` - Track good/scrap quantities per operation.
-
-### Parts Images API
-
-**Endpoint:** `/functions/v1/api-parts-images` - Manage part image attachments.
-
-### Upload URL API
-
-**Endpoint:** `/functions/v1/api-upload-url` - Generate pre-signed upload URLs for file storage.
-
-### Export API
-
-**Endpoint:** `GET /functions/v1/api-export` - Admin-only tenant export. The edge function returns JSON; the web app can convert that JSON into CSV ZIP files client-side.
-
-### ERP Sync API
-
-**Endpoint:** `/functions/v1/api-erp-sync` - Bidirectional ERP synchronization.
-
-### API Key Generate
-
-**Endpoint:** `/functions/v1/api-key-generate` - Generate new API keys.
-
----
-
-## Common Patterns
-
-### Authentication
-
-Most integration requests must include an API key:
-
-```bash
-curl -H "Authorization: Bearer ery_live_xxxxxxxxxx" ...
+```json
+{
+  "name": "ERP production events",
+  "url": "https://integration.example/webhooks/eryxon",
+  "events": ["operation.started", "operation.completed"],
+  "secret_key": "replace-with-a-random-signing-secret",
+  "active": true
+}
 ```
 
-Admin-only browser endpoints such as `api-export` use the signed-in Supabase user session token instead.
+Webhook targets must use HTTPS. Local, link-local and private targets are rejected unless a self-hosted operator explicitly enables private targets. Redirects are not followed. Delivery records are read-only through `GET /functions/v1/api-webhook-deliveries`.
 
-### Pagination
+See [Webhooks](/architecture/connectivity-webhooks/) for the event catalogue, signature verification and retry behaviour.
 
-All list endpoints support pagination:
+## Files
 
+### Create a signed upload URL
+
+`POST /functions/v1/api-upload-url`
+
+```json
+{
+  "filename": "PART-002-R2.step",
+  "content_type": "application/step",
+  "job_number": "JOB-2026-001"
+}
 ```
-?limit=50&offset=100
-```
 
-Response includes:
+The response contains `upload_url`, the private `file_path` to store on the record and `expires_at`. File names cannot contain path separators.
+
+### Upload a part image
+
+`POST /functions/v1/api-parts-images/<part-id>/upload` expects multipart form data with one `file`. JPEG, PNG, WebP and GIF are accepted up to 10 MB.
+
+## Common query parameters
+
+CRUD list endpoints accept `limit` (1-1000), `offset`, `search`, `sort` and `order=asc|desc`. Each endpoint only accepts the filters and sort fields listed in the [REST API reference](/api/rest-api-reference/); unknown filters are ignored.
+
+## Response envelope
+
+Successful responses use:
+
 ```json
 {
   "success": true,
-  "data": {
-    "jobs": [...],
-    "pagination": {
-      "total": 250,
-      "offset": 100,
-      "limit": 50
-    }
-  }
+  "data": {}
 }
 ```
 
-### Sorting
-
-```
-?sort=created_at&order=desc
-```
-
-### Filtering
-
-Exact match:
-```
-?status=in_progress
-```
-
-Fuzzy match (for text fields like customer, job_number, part_number):
-```
-?customer=ACME
-```
-Internally uses `ILIKE %value%`.
-
-### Full-text Search
-
-```
-?search=milling
-```
-
-Searches across configured search fields for the endpoint.
-
-### Error Response Format
-
-All errors follow this structure:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "ERROR_CODE",
-    "message": "Human-readable message",
-    "statusCode": 422,
-    "details": [...]
-  }
-}
-```
-
-### Validation Error Details
+List pagination is returned inside `data.pagination`. Errors use:
 
 ```json
 {
   "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
-    "message": "3 validation error(s) in job",
-    "details": [
-      {
-        "field": "job_number",
-        "message": "Missing required field: job_number",
-        "value": null,
-        "constraint": "NOT_NULL",
-        "entityType": "job",
-        "entityIndex": 0
-      }
-    ],
-    "statusCode": 422
+    "message": "Validation failed",
+    "details": []
   }
 }
 ```
 
-### Constraint Types
-
-| Constraint | Meaning |
-|------------|---------|
-| `NOT_NULL` | Required field is missing |
-| `FK_CONSTRAINT` | Foreign key references non-existent record |
-| `FK_REQUIRED` | Required foreign key is missing |
-| `UUID_FORMAT` | Invalid UUID format |
-| `TYPE_MISMATCH` | Wrong data type |
-| `MIN_VALUE` | Number below minimum |
-| `MAX_VALUE` | Number above maximum |
-| `MIN_LENGTH` | String too short / Array too few items |
-| `MAX_LENGTH` | String too long / Array too many items |
-| `ENUM_CONSTRAINT` | Value not in allowed set |
-| `DATE_FORMAT` | Invalid date format |
-| `UNIQUE_CONSTRAINT` | Duplicate value |
-| `CIRCULAR_REFERENCE` | Self-referential foreign key |
-
-### Rate Limiting
-
-Rate limit errors include retry information:
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "RATE_LIMIT_EXCEEDED",
-    "message": "Rate limit exceeded",
-    "statusCode": 429,
-    "rateLimitInfo": {
-      "remaining": 0,
-      "resetAt": "2026-01-15T10:05:00Z",
-      "retryAfter": 60
-    }
-  }
-}
-```
-
-Headers: `X-RateLimit-Remaining`, `X-RateLimit-Reset`, `Retry-After`
+Common status codes are `400` for malformed input, `401` for authentication, `403` for a tenant boundary, `404` for a missing record, `409` for a conflict or refused production transition, `422` for field validation and `429` for a hosted API quota.

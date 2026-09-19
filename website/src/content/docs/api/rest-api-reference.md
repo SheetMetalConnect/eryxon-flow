@@ -1,11 +1,11 @@
 ---
 title: "REST API Reference"
-description: "Complete API and integration reference for Eryxon Flow."
+description: "Supported ERP and production integration reference for Eryxon Flow."
 ---
 
 ## Overview
 
-The Eryxon Flow REST API lets an ERP or integration create and update jobs, parts and operations. Eryxon emits committed production changes through signed webhooks. The optional MCP server exposes the supported production and configuration actions to approved automation.
+The Eryxon Flow REST API lets an ERP or integration create and update jobs, parts and operations. Eryxon emits committed production changes through signed webhooks. The optional MCP server exposes supported production and configuration actions to approved automation.
 
 Most integration endpoints use Eryxon API keys (`ery_live_...` or `ery_test_...`). Admin browser endpoints such as `api-export` use the signed-in Supabase user session token.
 
@@ -53,8 +53,8 @@ All successful API responses follow this structure:
 ```json
 {
   "success": true,
-  "data": { ... },
-  "meta": {
+  "data": {
+    "records": [ ... ],
     "pagination": {
       "limit": 100,
       "offset": 0,
@@ -66,8 +66,7 @@ All successful API responses follow this structure:
 
 **Fields:**
 - `success` - Always `true` for successful responses
-- `data` - The response payload (object or array)
-- `meta` - Optional metadata (pagination, filters, etc.)
+- `data` - The response payload. List endpoints put pagination next to the returned records inside this object.
 
 ### Error Response
 
@@ -155,7 +154,7 @@ When validation fails (422), you'll receive detailed field-level errors:
 | `UUID_FORMAT` | Invalid UUID format | `id` must be a valid UUID |
 | `TYPE_MISMATCH` | Wrong data type | Expected number, got string |
 | `MIN_VALUE` | Value too small | `quantity` must be >= 1 |
-| `MAX_VALUE` | Value too large | `priority` must be <= 100 |
+| `MAX_VALUE` | Value too large | A numeric field exceeds its maximum |
 | `MIN_LENGTH` | String too short | `job_number` must be at least 1 character |
 | `MAX_LENGTH` | String too long | `job_number` must be at most 255 characters |
 | `PATTERN_MISMATCH` | Doesn't match pattern | Invalid format |
@@ -180,96 +179,9 @@ When validation fails (422), you'll receive detailed field-level errors:
 
 ---
 
-## Validation Rules
+## Writable fields and validation
 
-### Jobs
-
-**Required Fields:**
-- `job_number` (string, 1-255 chars, unique per tenant)
-- `parts` (array, min 1 part)
-
-**Optional Fields:**
-- `customer_name` (string, max 255 chars)
-- `due_date` (ISO 8601 date string)
-- `priority` (integer, >= 0)
-- `current_cell_id` (UUID, must exist in cells)
-- `status` (enum: `not_started`, `in_progress`, `on_hold`, `completed`)
-- `description` (string)
-- `metadata` (JSON object)
-
-**Business Rules:**
-- Job number must be unique within tenant
-- At least one part required
-- Status transitions must be valid (not_started → in_progress → completed)
-- All foreign keys must reference existing records in same tenant
-
-### Parts
-
-**Required Fields:**
-- `job_id` (UUID, must exist)
-- `part_number` (string, unique within job)
-- `quantity` (integer, >= 1)
-- `operations` (array, min 1 operation)
-
-**Optional Fields:**
-- `material` (string)
-- `parent_part_id` (UUID, must exist in same job, cannot be self)
-- `current_cell_id` (UUID, must exist)
-- `material_id` (UUID, must exist)
-- `description` (string)
-- `drawing_url` (string)
-- `step_file_url` (string)
-
-**Business Rules:**
-- Part number unique within job
-- Parent part must belong to same job
-- Cannot be own parent (circular reference check)
-- Operations must have sequential sequence numbers (1, 2, 3...)
-
-### Operations
-
-**Required Fields:**
-- `part_id` (UUID, must exist)
-- `operation_name` (string, 1-255 chars)
-- `sequence` (integer, >= 1, unique within part)
-
-**Optional Fields:**
-- `cell_id` (UUID, must exist)
-- `assigned_operator_id` (UUID, must exist in profiles)
-- `estimated_time_minutes` (number, >= 0)
-- `setup_time_minutes` (number, >= 0)
-- `instructions` (string)
-- `status` (enum: `not_started`, `in_progress`, `paused`, `completed`)
-
-**Business Rules:**
-- Sequence must be positive integer
-- Sequence unique within part
-- All FKs must belong to same tenant
-
-### Issues/NCRs
-
-**Required Fields:**
-- `operation_id` (UUID, must exist)
-- `title` (string, 1-255 chars)
-- `description` (string, min 1 char)
-
-**Optional Fields:**
-- `severity` (enum: `low`, `medium`, `high`, `critical`)
-- `status` (enum: `open`, `in_progress`, `resolved`, `closed`)
-- `issue_type` (enum: `general`, `ncr`)
-- `reported_by_id` (UUID, must exist)
-- `resolved_by_id` (UUID, must exist)
-- `verified_by_id` (UUID, must exist)
-
-**NCR-Specific Fields** (when `issue_type` = `"ncr"`):
-- `ncr_number` (auto-generated if not provided)
-- `ncr_category` (enum: `material`, `process`, `equipment`, `design`, `supplier`, `documentation`, `other`)
-- `ncr_disposition` (enum: `use_as_is`, `rework`, `repair`, `scrap`, `return_to_supplier`)
-- `root_cause` (string)
-- `corrective_action` (string)
-- `preventive_action` (string)
-- `affected_quantity` (integer)
-- `verification_required` (boolean)
+The [payload reference](/api/payload-reference/) lists the current writable fields and copy-paste request bodies. Unknown write fields are rejected. UUID references are checked against the authenticated workshop before a service-role write reaches the database.
 
 ---
 
@@ -299,7 +211,7 @@ Admin-only endpoints used from the web app, such as `api-export`, use the signed
 
 #### GET - List Jobs
 ```bash
-GET /api-jobs?status=in_progress&customer=ACME&limit=100&offset=0
+GET /api-jobs?status=in_progress&customer=Example&limit=100&offset=0
 ```
 
 **Query Parameters:**
@@ -318,7 +230,7 @@ GET /api-jobs?status=in_progress&customer=ACME&limit=100&offset=0
       {
         "id": "uuid",
         "job_number": "JOB-2026-001",
-        "customer": "ACME Corp",
+        "customer": "Example Fabrication",
         "status": "in_progress",
         "due_date": "2026-12-31",
         "started_at": "2026-01-15T10:00:00Z",
@@ -342,7 +254,7 @@ Content-Type: application/json
 
 {
   "job_number": "JOB-2026-001",
-  "customer": "ACME Corp",
+  "customer": "Example Fabrication",
   "due_date": "2026-12-31",
   "notes": "Rush order",
   "metadata": {"po_number": "PO-12345"},
@@ -351,11 +263,11 @@ Content-Type: application/json
       "part_number": "PART-001",
       "material": "Aluminum 6061",
       "quantity": 10,
-      "file_paths": ["s3://drawings/part-001.pdf"],
+      "file_paths": ["tenant-id/jobs/JOB-2026-001/part-001.pdf"],
       "operations": [
         {
           "operation_name": "CNC Milling",
-          "cell_name": "Mill-01",
+          "cell_id": "uuid",
           "estimated_time": 120,
           "sequence": 1,
           "notes": "Use 0.5\" end mill"
@@ -371,20 +283,22 @@ Content-Type: application/json
 {
   "success": true,
   "data": {
-    "job_id": "uuid",
-    "job_number": "JOB-2026-001",
-    "parts": [
-      {
-        "part_id": "uuid",
-        "part_number": "PART-001",
-        "operations": [
-          {
-            "operation_id": "uuid",
-            "operation_name": "CNC Milling"
-          }
-        ]
-      }
-    ]
+    "job": {
+      "id": "uuid",
+      "job_number": "JOB-2026-001",
+      "parts": [
+        {
+          "id": "uuid",
+          "part_number": "PART-001",
+          "operations": [
+            {
+              "id": "uuid",
+              "operation_name": "CNC Milling"
+            }
+          ]
+        }
+      ]
+    }
   }
 }
 ```
@@ -446,20 +360,17 @@ POST /api-parts
 
 #### GET - List Operations
 ```bash
-GET /api-operations?part_id=<uuid>&status=in_progress&cell_name=Mill
+GET /api-operations?part_id=<uuid>&status=in_progress&cell_id=<uuid>&search=Mill
 ```
 
 **Query Parameters:**
 - `part_id` - Filter by part
-- `job_id` - Filter by job (finds parts first, then operations)
 - `cell_id` - Filter by cell
-- `cell_name` - Filter by cell name (partial match)
 - `status` - Filter by status
-- `assigned_operator_id` - Filter by assigned operator
 - `search` - Search operation names
-- `sort_by` - Sort field: `sequence`, `created_at`, `estimated_time`, `actual_time`, `status`
-- `sort_order` - `asc` or `desc`
-- `include_count` - Include total count (true/false)
+- `sort` - Sort field: `sequence`, `operation_name`, `created_at`, or `status`
+- `order` - `asc` or `desc`
+- `limit`, `offset` - Pagination
 
 #### POST - Create Operation
 ```bash
@@ -607,8 +518,8 @@ POST /api-batches
 ```bash
 PATCH /api-batches?id=<batch-id>
 {
-  "status": "ready",
-  "notes": "Released to production"
+  "notes": "Updated nesting notes",
+  "material": "SS304"
 }
 ```
 
@@ -642,7 +553,7 @@ Content-Type: application/json
   "description": "Part hole diameter measured 0.505\", spec is 0.500\" ±0.002\"",
   "severity": "high",
   "issue_type": "ncr",
-  "ncr_category": "process",
+  "ncr_category": "process_error",
   "affected_quantity": 5,
   "disposition": "rework",
   "root_cause": "Tool wear - end mill exceeded replacement interval",
@@ -660,12 +571,11 @@ Content-Type: application/json
   "data": {
     "issue": {
       "id": "uuid",
-      "ncr_number": "NCR-2026-0001",
       "title": "Dimensional Out of Tolerance",
       "severity": "high",
-      "status": "open",
+      "status": "pending",
       "issue_type": "ncr",
-      "ncr_category": "process",
+      "ncr_category": "process_error",
       "disposition": "rework",
       "created_at": "2026-01-15T14:30:00Z"
     }
@@ -680,32 +590,31 @@ Content-Type: application/json
 **Required:**
 - `operation_id` - Where the non-conformance occurred
 - `title` - Short summary
+- `description` - What was observed
 - `severity` - `low`, `medium`, `high`, `critical`
 
 **NCR-Specific:**
-- `issue_type` - Set to `"ncr"` (auto-generates NCR number)
-- `ncr_category` - `material`, `process`, `equipment`, `design`, `supplier`, `documentation`, `other`
+- `issue_type` - Set to `"ncr"`
+- `ncr_category` - `material_defect`, `dimensional`, `surface_finish`, `process_error`, `other`
 - `affected_quantity` - Number of parts affected
-- `disposition` - `use_as_is`, `rework`, `repair`, `scrap`, `return_to_supplier`
+- `disposition` - `scrap`, `rework`, `use_as_is`, `return_to_supplier`
 - `root_cause` - Root cause analysis
 - `corrective_action` - Immediate action taken
 - `preventive_action` - Long-term prevention
-- `verification_required` - Requires verification after corrective action
-- `verified_by_id` - User who verified (auto-sets `verified_at`)
+- `verification_required` - Whether a follow-up verification is required
 
 ### Update NCR
 ```bash
 PATCH /api-issues?id=<ncr-id>
 {
-  "status": "resolved",
-  "resolution_notes": "All parts re-machined and inspected. Tool tracking implemented.",
-  "verified_by_id": "uuid"
+  "status": "closed",
+  "resolution_notes": "All parts re-machined and inspected. Tool tracking implemented."
 }
 ```
 
 ### List NCRs
 ```bash
-GET /api-issues?issue_type=ncr&severity=high&status=open
+GET /api-issues?issue_type=ncr&severity=high&status=pending
 ```
 
 ---
@@ -719,7 +628,7 @@ GET /api-issues?issue_type=ncr&severity=high&status=open
 POST /api-substeps
 {
   "operation_id": "uuid",
-  "description": "Measure hole diameter with caliper",
+  "name": "Measure hole diameter with caliper",
   "sequence": 1
 }
 ```
@@ -732,9 +641,9 @@ POST /api-substeps
     "substep": {
       "id": "uuid",
       "operation_id": "uuid",
-      "description": "Measure hole diameter with caliper",
+      "name": "Measure hole diameter with caliper",
       "sequence": 1,
-      "completed": false
+      "status": "not_started"
     }
   }
 }
@@ -746,7 +655,9 @@ POST /api-substeps
 ```bash
 PATCH /api-substeps?id=<substep-id>
 {
-  "completed": true
+  "status": "completed",
+  "completed_at": "2026-09-19T10:30:00Z",
+  "completed_by": "uuid"
 }
 ```
 
@@ -770,7 +681,7 @@ The MCP server covers the REST resources and production actions for approved aut
 
 ## Rate Limits
 
-**Self-hosted:** No usage limits. You control the infrastructure.
+**Self-hosted:** The application does not impose hosted API quotas. You control the infrastructure.
 
 **Hosted trial (eryxon.eu):** API requests have a daily limit. The current
 allowance and usage are shown in the app; commercial hosting terms are agreed

@@ -16,8 +16,8 @@ import { logger } from "@/lib/logger";
 const EXPORTABLE_ENTITIES = [
   { id: 'jobs', label: 'Jobs', description: 'All manufacturing jobs' },
   { id: 'parts', label: 'Parts', description: 'All parts across jobs' },
-  { id: 'operations', label: 'Operations', description: 'All operations/tasks' },
-  { id: 'cells', label: 'Cells', description: 'Production workflow stages' },
+  { id: 'operations', label: 'Operations', description: 'All routed production operations' },
+  { id: 'cells', label: 'Cells', description: 'Production work centers' },
   { id: 'time_entries', label: 'Time Entries', description: 'Time tracking records' },
   { id: 'time_entry_pauses', label: 'Time Entry Pauses', description: 'Pause records' },
   { id: 'assignments', label: 'Assignments', description: 'Work assignments' },

@@ -28,20 +28,20 @@ Wählen Sie den Einstieg, der zu Ihrer Evaluierung passt.
 
 ## Passt es zu Ihrer Werkstatt?
 
-- **Werker** erhalten eine touchfreundliche Arbeitswarteschlange: Arbeit nach Stufe ziehen, Zeit erfassen, STEP/PDF ansehen und Probleme direkt auf dem Shopfloor melden.
-- **Admins** erhalten Echtzeit-Transparenz: wer woran arbeitet, Issue-Freigaben, Termin-Overrides sowie Stufen- und Materialkonfiguration.
+- **Werker** erhalten eine touchfreundliche Arbeitswarteschlange: Arbeit nach Zelle ziehen, Zeit erfassen, STEP/PDF ansehen und Probleme direkt auf dem Shopfloor melden.
+- **Admins** erhalten Echtzeit-Transparenz: wer woran arbeitet, Issue-Freigaben, Termin-Overrides sowie Zellen- und Ressourcenkonfiguration.
 - **Technische Evaluatoren** erhalten ein API- und MCP-natives System. UI, REST-API und MCP-Server rufen dieselben Postgres-Funktionen und Zeilenschutzregeln auf, und jede Änderung löst dieselben signierten Webhooks aus. Ein MCP-Client wie Claude kann Produktion planen, freigeben, starten, melden und abfragen, mit denselben Schranken wie ein Werker.
 
 ## Was Es Macht
 
-Eryxon verfolgt Aufträge, Teile und Aufgaben durch die Produktion mit einer mobil- und tabletfreundlichen Oberfläche. Daten kommen über eine API aus Ihrem ERP.
+Eryxon verfolgt Aufträge, Teile und Arbeitsgänge durch die Produktion mit einer mobil- und tabletfreundlichen Oberfläche. Daten können über die API aus Ihrem ERP kommen.
 
 ### Für Werker
-Die Oberfläche zeigt, woran gearbeitet werden muss, gruppiert nach Materialien und Fertigungsstufen — organisiert so, wie Ihre Werkstatt läuft, nicht wie Buchhalter denken.
-- **Visuelle Indikatoren** (Farben, Bilder) machen Aufgaben sofort erkennbar.
+Die Oberfläche zeigt, woran gearbeitet werden muss, gruppiert nach Materialien und Fertigungszellen — organisiert so, wie Ihre Werkstatt läuft, nicht wie Buchhalter denken.
+- **Visuelle Indikatoren** (Farben, Bilder) machen Arbeitsgänge sofort erkennbar.
 - **STEP-Datei-Viewer** zeigt die Geometrie.
 - **PDF-Viewer** zeigt die Zeichnungen.
-- Start- und Stoppzeit bei Aufgaben erfassen.
+- Start- und Stoppzeit bei Arbeitsgängen erfassen.
 - Probleme melden, wenn etwas nicht stimmt.
 
 Alles was nötig ist, nichts Überflüssiges.
@@ -51,32 +51,32 @@ Sehen Sie in Echtzeit, wer woran arbeitet.
 - Bestimmte Arbeit bestimmten Personen zuweisen.
 - Problemmeldungen prüfen und genehmigen.
 - Termine bei Bedarf überschreiben.
-- Stufen, Materialien und Vorlagen konfigurieren.
+- Zellen, Ressourcen und Vorlagen konfigurieren.
 
 Echte Einblicke in die Werkstattaktivitäten, ohne die Halle betreten zu müssen.
 
 ### Arbeitsorganisation
-Arbeit wird **Kanban-artig** mit visuellen Spalten pro Stufe dargestellt. Werker sehen, was verfügbar ist, und ziehen Arbeit, wenn sie bereit sind — nicht durch einen Zeitplan geschoben. Stufen repräsentieren Fertigungszonen (Schneiden, Biegen, Schweißen, Montage).
+Arbeit wird **Kanban-artig** mit visuellen Spalten pro Zelle dargestellt. Werker sehen, was verfügbar ist, und ziehen Arbeit, wenn sie bereit sind. Zellen repräsentieren Fertigungszonen wie Schneiden, Biegen, Schweißen und Montage.
 
 **Quick Response Manufacturing (QRM)** Prinzipien sind eingebaut:
-- Visuelle Indikatoren zeigen, wenn zu viele Aufträge oder Teile in derselben Stufe sind.
-- Umlaufbestand (WIP) pro Stufe begrenzen, um den Durchfluss aufrechtzuerhalten.
-- Fortschritt nach Stufenabschluss verfolgen, nicht nur einzelne Bearbeitungszeiten.
+- Visuelle Indikatoren zeigen, wenn zu viele Aufträge oder Teile in derselben Zelle sind.
+- Umlaufbestand (WIP) pro Zelle begrenzen, um den Durchfluss aufrechtzuerhalten.
+- Fortschritt entlang des Routings verfolgen, nicht nur einzelne Bearbeitungszeiten.
 - Zeiterfassung zeigt, was noch übrig ist, nicht nur was erledigt wurde.
 - **Echtzeit-Updates** — Änderungen erscheinen sofort auf allen Bildschirmen.
 
 ### Flexible Daten
-Aufträge, Teile und Aufgaben unterstützen **benutzerdefinierte JSON-Metadaten** — Maschineneinstellungen, Biegefolgen, Schweißparameter. Definieren Sie wiederverwendbare Ressourcen wie Formen, Werkzeuge, Vorrichtungen oder Materialien und verknüpfen Sie diese mit der Arbeit. Werker sehen, was benötigt wird, und etwaige benutzerdefinierte Anweisungen in der Aufgabenansicht.
+Aufträge, Teile und Arbeitsgänge unterstützen **benutzerdefinierte JSON-Metadaten** — Maschineneinstellungen, Biegefolgen und Schweißparameter. Definieren Sie wiederverwendbare Ressourcen wie Formen, Werkzeuge oder Vorrichtungen und verknüpfen Sie diese mit der Arbeit. Werker sehen, was benötigt wird, und etwaige Anweisungen in der Arbeitsgangsansicht.
 
 ---
 
 ## Benutzer & Rollen
 
 ### Werker
-Sehen ihre Arbeitswarteschlange, erfassen Start-/Stoppzeiten, markieren Aufgaben als erledigt, betrachten Dateien und melden Qualitätsprobleme.
+Sehen ihre Arbeitswarteschlange, erfassen Start-/Stoppzeiten, schließen Arbeitsgänge ab, betrachten Dateien und melden Qualitätsprobleme.
 
 ### Administratoren
-Können alles, was Werker können, plus: bestimmte Arbeit bestimmten Personen zuweisen, Probleme verwalten, Termine überschreiben und Stufen/Materialien/Vorlagen konfigurieren.
+Können alles, was Werker können, plus: Arbeit zuweisen, Probleme verwalten, Termine überschreiben und Zellen, Ressourcen und Vorlagen konfigurieren.
 
 > **Hinweis:** Werker-Konten können als Maschinen markiert werden für autonome Prozesse.
 
@@ -90,31 +90,31 @@ Verfolgen Sie in Echtzeit, wer anwesend ist und woran gearbeitet wird. Kein Rate
 
 ## Integration-First-Architektur
 
-**100% API-gesteuert.** Ihr ERP sendet Aufträge, Teile und Aufgaben über die [REST-API](/api/rest-api-reference/). Eryxon sendet Abschlussereignisse über signierte Webhooks zurück. Der MCP-Server (Live) ermöglicht KI/Automatisierungs-Integration mit stdio für lokale Clients und Streamable HTTP für vertrauenswürdige selbstgehostete Deployments.
+Ihr ERP kann Aufträge, Teile und Arbeitsgänge über die [REST-API](/api/rest-api-reference/) anlegen. Eryxon sendet festgeschriebene Produktionsänderungen über [signierte Webhooks](/architecture/connectivity-webhooks) zurück. Der optionale [MCP-Server](/guides/mcp-setup/) stellt dieselben Produktionsregeln für freigegebene Automatisierung über stdio oder authentifiziertes Streamable HTTP bereit.
 
 ### Dateihandhabung
 Fordern Sie eine signierte Upload-URL über die API an, laden Sie STEP- und PDF-Dateien direkt in den Supabase Storage hoch und referenzieren Sie dann den Dateipfad beim Erstellen von Aufträgen oder Teilen. Große Dateien (typisch 5-50 MB) werden direkt in den Speicher hochgeladen — keine Timeouts, keine API-Engpässe.
 
 ### Benutzerdefinierte Metadaten
-Fügen Sie JSON-Payloads zu Aufträgen, Teilen und Aufgaben hinzu für Ihre spezifischen Anforderungen — Werkzeuganforderungen, Formnummern, Maschineneinstellungen, Materialspezifikationen, alles was Ihre Werkstatt nachverfolgen muss.
+Fügen Sie Aufträgen, Teilen und Arbeitsgängen JSON-Metadaten für Werkzeuganforderungen, Formnummern, Maschineneinstellungen und Materialspezifikationen hinzu.
 
 ### ERP- & Planungs-Integrationen
-Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Oder bauen Sie Ihre eigene mit unseren GitHub-Starter-Kits mit Beispielcode und Dokumentation.
+Partner wie **Sheet Metal Connect e.U.** bauen Integrationen für gängige ERP-Systeme. Sie können auch selbst über die [REST-API](/api/rest-api-reference/) und die [Payload-Referenz](/api/payload-reference/) integrieren.
 
 ### Montage-Verfolgung
-Teile können Eltern-Kind-Beziehungen haben. Visuelle Gruppierung zeigt Baugruppen mit verschachtelten Komponenten. Nicht-blockierende Abhängigkeitswarnungen erinnern Werker daran, wann Unterteile fertig sein sollten, bevor Montageaufgaben beginnen — sie können dies aber bei Bedarf überschreiben.
+Teile können Eltern-Kind-Beziehungen haben. Visuelle Gruppierung zeigt Baugruppen mit verschachtelten Komponenten. Nicht-blockierende Abhängigkeitswarnungen erinnern Werker daran, wann Unterteile fertig sein sollten, bevor Montagearbeitsgänge beginnen.
 
 ### Problemmeldung
-Werker erstellen Problemmeldungen (NCRs) aus aktiven Aufgaben mit Beschreibung, Schweregrad und optionalen Fotos. Einfacher Genehmigungsworkflow: ausstehend → genehmigt/abgelehnt → geschlossen. Problemmeldungen sind informativ — sie blockieren nicht den Arbeitsfortschritt.
+Werker erstellen Problemmeldungen (NCRs) aus aktiven Arbeitsgängen mit Beschreibung, Schweregrad und optionalen Fotos. Der Ablauf ist ausstehend → genehmigt/abgelehnt → geschlossen. Eine Meldung blockiert Arbeit nur, wenn sie als Stillstand markiert ist.
 
 ---
 
 ## Was Wir Nicht Tun (Bewusst)
 
 *   **Keine Finanzverfolgung.** Wir erfassen die Arbeitszeit, nicht Kosten, Preise oder Margen.
-*   **Kein Einkauf.** Aufgaben können als extern markiert werden (Fremdvergabe) und der Status kann über die API verfolgt werden, aber es gibt keine Bestellverwaltung oder Lieferantentransaktionen.
+*   **Kein Einkauf.** Arbeitsgänge können Fremdvergabe darstellen und über die API verfolgt werden, aber es gibt keine Bestellverwaltung oder Lieferantenabwicklung.
 *   **Keine Stücklistenverwaltung.** Wir verfolgen, was produziert werden muss, nicht Artikeldetails oder Bestände. Teile können Eltern-Kind-Verknüpfungen für Montagevisualisierung haben, aber keine mehrstufigen Stücklisten, die nicht in der Produktion leben.
-*   **Keine Planung.** Termine kommen meist aus Ihrem ERP, aber Administratoren können diese jederzeit manuell überschreiben. Wir berechnen oder optimieren keine Zeitpläne — Sie behalten die Kontrolle.
+*   **Einfache Planung.** Der kapazitätsbasierte Planer kann Arbeitsgänge unter Berücksichtigung des Werkskalenders auf Zellen verteilen. Er ist kein APS-Optimierer; Termine können auch aus dem ERP kommen und Administratoren können Fälligkeiten überschreiben.
 *   **Keine Berichte.** Nur Echtzeit-Statistikpanels. Keine eingebauten historischen Analysen — aber alle Daten sind über API/MCP für Ihre eigenen Berichte zugänglich.
 
 ---

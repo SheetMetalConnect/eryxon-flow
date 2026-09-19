@@ -2,6 +2,32 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.11.2] — 2026-09-19
+
+This patch removes obsolete production endpoints and makes the public API
+contract match the Edge Functions that are shipped from the repository.
+
+### Changed
+
+- Replaced the legacy task-and-stage OpenAPI document with a deployment-neutral
+  contract for the current jobs, parts, operations, batches, webhooks and file
+  endpoints.
+- Reworked the payload guide around current writable fields, filters and
+  examples. Public examples now use neutral placeholder data.
+- Repository agent configuration no longer points clones at the hosted
+  Supabase project. Scheduled pilot evaluation reads its deployment URL from
+  the same Vault configuration as webhook delivery.
+
+### Fixed
+
+- Batch create and update requests now use the shared write-field allowlist;
+  lifecycle, calculated and ownership fields cannot be supplied through the
+  generic batch payload.
+- NCR category and disposition validation now matches the database enums, so
+  retired values fail as validation errors instead of database errors.
+- Removed 17 remote-only Supabase functions left behind by older deployments,
+  including test, retired task/stage, MQTT, billing and webhook-log endpoints.
+
 ## [0.11.1] — 2026-09-19
 
 This patch hardens the MCP and webhook boundaries introduced in 0.11.0 and

@@ -124,7 +124,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
           <h3 className="text-lg font-bold">Welcome to Eryxon Flow! 👋</h3>
           <p>
             This is your <strong>Work Queue</strong> - your mobile-first interface for tracking
-            manufacturing tasks. Let's show you around!
+            manufacturing operations. Let's show you around!
           </p>
         </div>
       ),
@@ -137,7 +137,7 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
         <div className="space-y-2">
           <h3 className="text-lg font-bold">Your Work Queue</h3>
           <p>
-            All operations assigned to you appear here, organized by manufacturing stage (cutting,
+            All operations assigned to you appear here, organized by production cell (cutting,
             bending, welding, etc.).
           </p>
         </div>
@@ -189,11 +189,11 @@ export function AppTour({ userRole, onComplete }: AppTourProps) {
         <div className="space-y-2">
           <h3 className="text-lg font-bold">Ready to Work! 🔧</h3>
           <p>
-            Eryxon shows you what to work on, grouped by materials and stages - organized the way
+            Eryxon shows you what to work on, grouped by materials and cells - organized the way
             your shop runs.
           </p>
           <p className="mt-2">
-            Visual indicators (colors, images) make tasks instantly recognizable. Everything you
+            Visual indicators (colors, images) make operations instantly recognizable. Everything you
             need, nothing extra.
           </p>
           <p className="mt-2 text-sm text-muted-foreground">

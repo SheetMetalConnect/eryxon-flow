@@ -17,6 +17,12 @@ DO $$ BEGIN
        WHERE n.nspname='public' AND p.prosecdef AND p.proconfig IS NULL);
   END IF;
 END $$;
+DO $$ BEGIN
+  IF pg_get_functiondef('public.invoke_pilot_alert_evaluator()'::regprocedure)
+       ~ 'https://[a-z0-9]+[.]supabase[.]co' THEN
+    RAISE EXCEPTION 'pilot evaluator contains a deployment-specific Supabase URL';
+  END IF;
+END $$;
 SET LOCAL ROLE anon;
 SELECT public.instance_accepts_signups();
 SELECT public.get_invitation_by_token('nope');

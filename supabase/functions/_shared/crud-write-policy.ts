@@ -17,7 +17,7 @@ const writableFields: Record<string, string> = {
   substep_templates: 'created_by description name operation_type',
   webhooks: 'active events name secret_key url',
   issues: 'affected_quantity corrective_action created_by current_cell_id description disposition image_paths intended_next_cell_id issue_type ncr_category operation_id preventive_action reported_by_id resolution_notes reviewed_at reviewed_by root_cause severity status title verification_required',
-  operation_batches: 'batch_number batch_type cell_id created_by estimated_time external_id external_source layout_image_url material material_requirement_metadata material_requirement_raised nesting_image_url nesting_metadata notes parent_batch_id thickness_mm',
+  operation_batches: 'batch_number batch_type cell_id estimated_time external_id external_source layout_image_url material material_requirement_metadata material_requirement_raised nesting_image_url nesting_metadata notes parent_batch_id production_mode thickness_mm',
 };
 
 const tenantReferences: Record<string, Record<string, string>> = {
