@@ -37,5 +37,7 @@ SELECT pg_temp.expect_error('SELECT public.handle_new_user()','42501');
 SELECT pg_temp.expect_error('SELECT public.report_hosted_trial_summary(1,1)','42501');
 SELECT has_function_privilege('authenticated','public.transition_operation(uuid,uuid,text,uuid,text)','EXECUTE') AS ok \gset
 SELECT CASE WHEN :'ok'='t' THEN 1 ELSE 1/0 END;
+SELECT has_function_privilege('authenticated','public.switch_operation(uuid,uuid,uuid,uuid,text)','EXECUTE') AS ok \gset
+SELECT CASE WHEN :'ok'='t' THEN 1 ELSE 1/0 END;
 RESET ROLE;
 ROLLBACK;

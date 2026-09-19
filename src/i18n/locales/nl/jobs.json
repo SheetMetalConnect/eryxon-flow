@@ -398,6 +398,7 @@
     "failedToComplete": "Operatie voltooien mislukt",
     "unsupportedFileType": "Niet-ondersteund bestandstype",
     "failedToOpenFile": "Bestand openen mislukt",
+    "fileViewerDescription": "Bekijk de tekening of het 3D-model van deze bewerking.",
     "operationAdded": "Operatie toegevoegd",
     "operationAddedDesc": "De operatie is succesvol toegevoegd",
     "nameAndCellRequired": "Operatienaam en cel zijn vereist",

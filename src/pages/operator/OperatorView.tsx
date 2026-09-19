@@ -14,6 +14,7 @@ import { PlacementPickerModal } from "@/components/locations/PlacementPickerModa
 import { OperatorWorkQueue } from "@/components/operator/OperatorWorkQueue";
 import { OperatorDetailSidebar } from "@/components/operator/OperatorDetailSidebar";
 import { OperatorModeBanner } from "@/components/operator/OperatorModeBanner";
+import { OperationSwitchDialog } from "@/components/operator/OperationSwitchDialog";
 import {
   Select,
   SelectContent,
@@ -75,6 +76,10 @@ export default function OperatorView() {
     handleStart,
     handlePause,
     handleComplete,
+    isActionPending,
+    pendingSwitch,
+    cancelSwitch,
+    confirmSwitch,
     loadData,
   } = useOperatorTerminal();
 
@@ -94,7 +99,8 @@ export default function OperatorView() {
 
   const handleCompleteWithPlacement = useCallback(async () => {
     const job = selectedJob;
-    await handleComplete();
+    const completed = await handleComplete();
+    if (!completed) return;
     if (locationTrackingEnabled && job) {
       // The drop-off slot belongs to the cell the part heads to next, so the
       // next operator finds it — scope the picker to that cell, not this one.
@@ -297,6 +303,7 @@ export default function OperatorView() {
           startActionLabel={startActionLabel}
           pauseActionLabel={pauseActionLabel}
           showCompleteAction={showCompleteAction}
+          isActionPending={isActionPending}
           batchPrompt={selectedBatchPrompt}
           onSelectBatchMode={selectBatchMode}
           stepUrl={stepUrl}
@@ -326,6 +333,13 @@ export default function OperatorView() {
           onConfirm={handleConfirmPlacement}
         />
       ) : null}
+
+      <OperationSwitchDialog
+        pendingSwitch={pendingSwitch}
+        isPending={isActionPending}
+        onCancel={cancelSwitch}
+        onConfirm={confirmSwitch}
+      />
     </div>
   );
 }

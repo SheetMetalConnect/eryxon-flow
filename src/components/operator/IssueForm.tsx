@@ -257,11 +257,11 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
       <DialogContent className="max-w-md overflow-hidden flex flex-col">
         <DialogHeader className="shrink-0">
           <DialogTitle>{t("issues.reportIssue")}</DialogTitle>
-          {isShortfall && (
-            <DialogDescription className="sr-only">
-              {t("issues.shortfallContext")}
-            </DialogDescription>
-          )}
+          <DialogDescription className="sr-only">
+            {isShortfall
+              ? t("issues.shortfallContext")
+              : t("issues.descriptionPlaceholder")}
+          </DialogDescription>
         </DialogHeader>
 
         {isShortfall && (

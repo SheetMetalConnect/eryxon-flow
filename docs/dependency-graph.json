@@ -544,6 +544,10 @@
     "lib/logger.ts",
     "lib/utils.ts"
   ],
+  "components/operator/OperationSwitchDialog.tsx": [
+    "components/ui/alert-dialog.tsx",
+    "hooks/operator-terminal/useTerminalActions.ts"
+  ],
   "components/operator/OperatorDetailSidebar.tsx": [
     "components/operator/BatchFlowPrompt.tsx",
     "components/terminal/DetailPanel.tsx",
@@ -695,25 +699,20 @@
   "components/terminal/DetailPanel.tsx": [
     "components/PDFViewerLazy.tsx",
     "components/STEPViewerLazy.tsx",
-    "components/operator/IssueForm.tsx",
-    "components/operator/ProductionQuantityModal.tsx",
     "components/terminal/AssemblyDependencies.tsx",
     "components/terminal/CncProgramQrCode.tsx",
     "components/terminal/OperationBatchTab.tsx",
     "components/terminal/OperationLocationTab.tsx",
     "components/terminal/OperationResources.tsx",
-    "components/terminal/OperationTimeSummary.tsx",
+    "components/terminal/OperationRoutePanel.tsx",
+    "components/terminal/TerminalActionBar.tsx",
+    "components/terminal/TerminalFullscreenViewer.tsx",
     "components/ui/button.tsx",
-    "components/ui/icon-picker.tsx",
     "components/ui/tabs.tsx",
     "hooks/useCADProcessing.ts",
-    "hooks/useOperationBookedHours.ts",
     "hooks/useProfile.ts",
     "hooks/useQRMMetrics.ts",
-    "integrations/supabase/client.ts",
     "lib/db/index.ts",
-    "lib/logger.ts",
-    "lib/time-utils.ts",
     "lib/utils.ts",
     "types/terminal.ts"
   ],
@@ -744,6 +743,18 @@
     "lib/resource-status.ts",
     "lib/utils.ts"
   ],
+  "components/terminal/OperationRoutePanel.tsx": [
+    "components/terminal/OperationTimeSummary.tsx",
+    "components/ui/icon-picker.tsx",
+    "hooks/useOperationBookedHours.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/logger.ts",
+    "lib/time-utils.ts",
+    "lib/utils.ts",
+    "types/terminal.ts"
+  ],
   "components/terminal/OperationTimeSummary.tsx": [
     "hooks/useOperationBookedHours.ts",
     "lib/time-utils.ts",
@@ -752,10 +763,22 @@
   "components/terminal/PinKeypad.tsx": [
     "components/ui/button.tsx"
   ],
+  "components/terminal/TerminalActionBar.tsx": [
+    "components/operator/IssueForm.tsx",
+    "components/operator/ProductionQuantityModal.tsx",
+    "components/ui/button.tsx",
+    "types/terminal.ts"
+  ],
   "components/terminal/TerminalCellInfo.tsx": [
     "components/ui/tooltip.tsx",
     "hooks/useProfile.ts",
     "integrations/supabase/client.ts"
+  ],
+  "components/terminal/TerminalFullscreenViewer.tsx": [
+    "components/PDFViewerLazy.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/ui/button.tsx",
+    "hooks/useCADProcessing.ts"
   ],
   "components/terminal/terminalEncoding.tsx": [
     "lib/utils.ts",
@@ -988,6 +1011,12 @@
     "lib/logger.ts"
   ],
   "contexts/operatorSession.ts": [],
+  "features/operator-terminal/model.ts": [
+    "features/operator-terminal/release.ts",
+    "features/operator-terminal/workModes.ts",
+    "lib/db/index.ts",
+    "types/terminal.ts"
+  ],
   "features/operator-terminal/release.ts": [],
   "features/operator-terminal/workModes.ts": [],
   "hooks/batches/batchContentMutations.ts": [
@@ -1031,6 +1060,40 @@
     "lib/locations/placement.ts",
     "lib/logger.ts",
     "lib/queryClient.ts"
+  ],
+  "hooks/operator-terminal/useTerminalActions.ts": [
+    "features/operator-terminal/model.ts",
+    "features/operator-terminal/workModes.ts",
+    "lib/db/index.ts",
+    "lib/errors.ts",
+    "types/terminal.ts"
+  ],
+  "hooks/operator-terminal/useTerminalData.ts": [
+    "features/operator-terminal/model.ts",
+    "features/operator-terminal/release.ts",
+    "features/operator-terminal/workModes.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/operator-terminal/useTerminalFiles.ts": [
+    "hooks/useCADProcessing.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "types/terminal.ts"
+  ],
+  "hooks/operator-terminal/useTerminalJobs.ts": [
+    "features/operator-terminal/model.ts",
+    "features/operator-terminal/workModes.ts",
+    "lib/db/index.ts"
+  ],
+  "hooks/operator-terminal/useTerminalMode.ts": [
+    "features/operator-terminal/workModes.ts"
+  ],
+  "hooks/operator-terminal/useTerminalScanner.ts": [
+    "features/operator-terminal/model.ts",
+    "lib/db/index.ts",
+    "lib/operatorScanner.ts"
   ],
   "hooks/qrm/index.ts": [
     "hooks/qrm/useCapacity.ts",
@@ -1134,16 +1197,15 @@
   ],
   "hooks/useOperatorTerminal.ts": [
     "contexts/OperatorContext.tsx",
-    "features/operator-terminal/release.ts",
-    "features/operator-terminal/workModes.ts",
+    "features/operator-terminal/model.ts",
+    "hooks/operator-terminal/useTerminalActions.ts",
+    "hooks/operator-terminal/useTerminalData.ts",
+    "hooks/operator-terminal/useTerminalFiles.ts",
+    "hooks/operator-terminal/useTerminalJobs.ts",
+    "hooks/operator-terminal/useTerminalMode.ts",
+    "hooks/operator-terminal/useTerminalScanner.ts",
     "hooks/useCADProcessing.ts",
-    "hooks/useProfile.ts",
-    "integrations/supabase/client.ts",
-    "lib/db/index.ts",
-    "lib/errors.ts",
-    "lib/logger.ts",
-    "lib/operatorScanner.ts",
-    "types/terminal.ts"
+    "hooks/useProfile.ts"
   ],
   "hooks/usePMI.ts": [
     "config/cadBackend.ts",
@@ -1881,6 +1943,7 @@
   ],
   "pages/operator/OperatorView.tsx": [
     "components/locations/PlacementPickerModal.tsx",
+    "components/operator/OperationSwitchDialog.tsx",
     "components/operator/OperatorDetailSidebar.tsx",
     "components/operator/OperatorModeBanner.tsx",
     "components/operator/OperatorWorkQueue.tsx",

@@ -398,6 +398,7 @@
     "failedToComplete": "Failed to complete operation",
     "unsupportedFileType": "Unsupported file type",
     "failedToOpenFile": "Failed to open file",
+    "fileViewerDescription": "View the drawing or 3D model attached to this operation.",
     "operationAdded": "Operation Added",
     "operationAddedDesc": "The operation has been added successfully",
     "nameAndCellRequired": "Operation name and cell are required",

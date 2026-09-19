@@ -5,6 +5,8 @@ export {
   fetchOperationDetails,
   startTimeTracking,
   completeOperation,
+  finishOperation,
+  switchOperation,
   holdOperation,
 } from './operations';
 export type { OperationWithDetails, OperationBatchContext } from './operations';

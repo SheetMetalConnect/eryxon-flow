@@ -34,7 +34,8 @@ const mockStartTimeTracking = vi.fn().mockResolvedValue(undefined);
 const mockStartBatchTimeTracking = vi.fn().mockResolvedValue(undefined);
 const mockStopTimeTracking = vi.fn().mockResolvedValue(undefined);
 const mockStopBatchTimeTracking = vi.fn().mockResolvedValue(undefined);
-const mockCompleteOperation = vi.fn().mockResolvedValue(undefined);
+const mockFinishOperation = vi.fn().mockResolvedValue(undefined);
+const mockSwitchOperation = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('@/lib/db', () => ({
   fetchOperationLookupDetails: (...args: any[]) => mockFetchOperationLookupDetails(...args),
@@ -42,7 +43,8 @@ vi.mock('@/lib/db', () => ({
   startBatchTimeTracking: (...args: any[]) => mockStartBatchTimeTracking(...args),
   stopTimeTracking: (...args: any[]) => mockStopTimeTracking(...args),
   stopBatchTimeTracking: (...args: any[]) => mockStopBatchTimeTracking(...args),
-  completeOperation: (...args: any[]) => mockCompleteOperation(...args),
+  finishOperation: (...args: any[]) => mockFinishOperation(...args),
+  switchOperation: (...args: any[]) => mockSwitchOperation(...args),
 }));
 
 let cellsResponse: { data: any; error: any } = { data: [], error: null };
@@ -153,7 +155,8 @@ describe('useOperatorTerminal', () => {
     mockStartBatchTimeTracking.mockReset().mockResolvedValue(undefined);
     mockStopTimeTracking.mockReset().mockResolvedValue(undefined);
     mockStopBatchTimeTracking.mockReset().mockResolvedValue(undefined);
-    mockCompleteOperation.mockReset().mockResolvedValue(undefined);
+    mockFinishOperation.mockReset().mockResolvedValue(undefined);
+    mockSwitchOperation.mockReset().mockResolvedValue(undefined);
     mockUseProfile.mockReturnValue(mockProfile as any);
     mockUseOperator.mockReturnValue({ activeOperator: null });
     vi.mocked(toast.success).mockReset();
@@ -561,7 +564,7 @@ describe('useOperatorTerminal', () => {
     expect(mockStopTimeTracking).toHaveBeenCalledWith('op-1', 'user-1');
   });
 
-  it('handleComplete calls completeOperation and clears selection', async () => {
+  it('handleComplete calls finishOperation and clears selection', async () => {
     mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp()]);
     const { result } = renderHook(() => useOperatorTerminal());
 
@@ -579,8 +582,177 @@ describe('useOperatorTerminal', () => {
       await result.current.handleComplete();
     });
 
-    expect(mockCompleteOperation).toHaveBeenCalledWith('op-1', 'tenant-1', 'user-1');
+    expect(mockFinishOperation).toHaveBeenCalledWith('op-1', 'tenant-1', 'user-1');
     expect(result.current.selectedJobId).toBeNull();
+  });
+
+  it('shows completion for a released operation that has not started', async () => {
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp()]);
+    const { result } = renderHook(() => useOperatorTerminal());
+    await act(async () => { await result.current.loadData(); });
+    act(() => { result.current.setSelectedJobId('op-1'); });
+    expect(result.current.showCompleteAction).toBe(true);
+  });
+
+  it('confirms an atomic switch instead of stopping and starting separately', async () => {
+    const current = makeBaseOp({
+      id: 'op-current',
+      status: 'in_progress',
+      active_time_entry: {
+        id: 'te-1', operator_id: 'user-1', start_time: '2026-09-19T08:00:00Z',
+        operator: { full_name: 'Test User' },
+      },
+      part: {
+        ...makeBaseOp().part,
+        id: 'part-current',
+        job: { ...makeBaseOp().part.job, id: 'job-current', job_number: 'CURRENT' },
+      },
+    });
+    const target = makeBaseOp({
+      id: 'op-target',
+      part: {
+        ...makeBaseOp().part,
+        id: 'part-target',
+        job: { ...makeBaseOp().part.job, id: 'job-target', job_number: 'TARGET' },
+      },
+    });
+    mockFetchOperationLookupDetails.mockResolvedValue([current, target]);
+    const { result } = renderHook(() => useOperatorTerminal());
+    await act(async () => { await result.current.loadData(); });
+    act(() => { result.current.setSelectedJobId('op-target'); });
+
+    await act(async () => { await result.current.handleStart(); });
+    expect(result.current.pendingSwitch).toMatchObject({
+      from: { operationId: 'op-current' },
+      to: { operationId: 'op-target' },
+    });
+    expect(mockStopTimeTracking).not.toHaveBeenCalled();
+    expect(mockStartTimeTracking).not.toHaveBeenCalled();
+
+    await act(async () => { await result.current.confirmSwitch(); });
+    expect(mockSwitchOperation).toHaveBeenCalledWith(
+      'op-current', 'op-target', 'user-1', 'tenant-1', undefined,
+    );
+  });
+
+  it('offers the same atomic switch when a batch member is started individually', async () => {
+    const current = makeBaseOp({
+      id: 'op-current',
+      status: 'in_progress',
+      active_time_entry: {
+        id: 'te-1', operator_id: 'user-1', start_time: '2026-09-19T08:00:00Z',
+        operator: { full_name: 'Test User' },
+      },
+      part: { ...makeBaseOp().part, id: 'part-current' },
+    });
+    const batchContext: OperationBatchContext = {
+      batch_id: 'batch-1',
+      batch_number: 'NEST-001',
+      batch_type: 'laser_nesting',
+      status: 'ready',
+      operations_count: 2,
+      material: 'Steel',
+      nesting_metadata: null,
+      sequence_in_batch: 1,
+      parent_batch: null,
+      members: [
+        { operation_id: 'op-target', operation_name: 'Laser Cut', part_id: 'part-target', status: 'not_started', sequence_in_batch: 1 },
+        { operation_id: 'op-peer', operation_name: 'Laser Cut', part_id: 'part-peer', status: 'not_started', sequence_in_batch: 2 },
+      ],
+    };
+    const target = makeBaseOp({
+      id: 'op-target',
+      part: { ...makeBaseOp().part, id: 'part-target' },
+      batch_context: batchContext,
+    });
+    mockFetchOperationLookupDetails.mockResolvedValue([current, target]);
+    const { result } = renderHook(() => useOperatorTerminal());
+    await act(async () => { await result.current.loadData(); });
+    act(() => { result.current.setSelectedJobId('op-target'); });
+    act(() => { result.current.selectBatchMode('single'); });
+
+    await act(async () => { await result.current.handleStart(); });
+
+    expect(result.current.pendingSwitch).toMatchObject({
+      from: { operationId: 'op-current' },
+      to: { operationId: 'op-target' },
+    });
+    expect(mockStartTimeTracking).not.toHaveBeenCalled();
+  });
+
+  it('finishes an active operation in one RPC', async () => {
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp({
+      status: 'in_progress',
+      active_time_entry: {
+        id: 'te-1', operator_id: 'user-1', start_time: '2026-09-19T08:00:00Z',
+        operator: { full_name: 'Test User' },
+      },
+    })]);
+    const { result } = renderHook(() => useOperatorTerminal());
+    await act(async () => { await result.current.loadData(); });
+    act(() => { result.current.setSelectedJobId('op-1'); });
+    await act(async () => { await result.current.handleComplete(); });
+    expect(mockFinishOperation).toHaveBeenCalledTimes(1);
+    expect(mockStopTimeTracking).not.toHaveBeenCalled();
+  });
+
+  it('asks to switch as soon as another operation is scanned', async () => {
+    const current = makeBaseOp({
+      id: 'op-current',
+      status: 'in_progress',
+      active_time_entry: {
+        id: 'te-1', operator_id: 'user-1', start_time: '2026-09-19T08:00:00Z',
+        operator: { full_name: 'Test User' },
+      },
+      part: {
+        ...makeBaseOp().part,
+        id: 'part-current',
+        job: { ...makeBaseOp().part.job, id: 'job-current', job_number: 'CURRENT' },
+      },
+    });
+    const target = makeBaseOp({
+      id: 'op-target',
+      part: {
+        ...makeBaseOp().part,
+        id: 'part-target',
+        job: { ...makeBaseOp().part.job, id: 'job-target', job_number: 'TARGET' },
+      },
+    });
+    mockFetchOperationLookupDetails.mockResolvedValue([current, target]);
+    const { result } = renderHook(() => useOperatorTerminal());
+    await act(async () => { await result.current.loadData(); });
+    await act(async () => { await result.current.handleScannerToken('TARGET'); });
+    expect(result.current.pendingSwitch).toMatchObject({
+      from: { operationId: 'op-current' },
+      to: { operationId: 'op-target' },
+    });
+  });
+
+  it('ignores repeated pause taps while the first transition is pending', async () => {
+    let finishStop: (() => void) | undefined;
+    mockStopTimeTracking.mockImplementationOnce(() => new Promise<void>((resolve) => {
+      finishStop = resolve;
+    }));
+    mockFetchOperationLookupDetails.mockResolvedValue([makeBaseOp({
+      status: 'in_progress',
+      active_time_entry: {
+        id: 'te-1', operator_id: 'user-1', start_time: '2026-09-19T08:00:00Z',
+        operator: { full_name: 'Test User' },
+      },
+    })]);
+    const { result } = renderHook(() => useOperatorTerminal());
+    await act(async () => { await result.current.loadData(); });
+    act(() => { result.current.setSelectedJobId('op-1'); });
+
+    let first: Promise<void>;
+    let second: Promise<void>;
+    act(() => {
+      first = result.current.handlePause();
+      second = result.current.handlePause();
+    });
+    expect(mockStopTimeTracking).toHaveBeenCalledTimes(1);
+    finishStop?.();
+    await act(async () => { await Promise.all([first!, second!]); });
   });
 
   it('does not load data when no tenant_id', async () => {

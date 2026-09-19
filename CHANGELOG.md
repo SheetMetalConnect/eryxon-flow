@@ -2,6 +2,35 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## [0.11.3] — 2026-09-19
+
+This patch makes the operator terminal's production actions explicit and
+transactional.
+
+### Changed
+
+- The terminal always shows **Mark complete** for released work. Operators can
+  report output and then complete the operation without first opening a timer.
+- Scanning or starting another operation while work is running now shows both
+  operations and asks for confirmation before switching.
+- The landing page and operator guides use the same start, report and complete
+  flow as the application.
+
+### Fixed
+
+- Switching operations is one database transaction. A rejected target no
+  longer leaves the previous timer stopped.
+- **Stop & complete** now closes the timer and operation through one lifecycle
+  call instead of two requests that could partially succeed.
+- Start, pause and complete ignore repeated taps while a transition is pending.
+- Sequential release also blocks direct completion of unreleased work.
+- Production, issue and file dialogs provide accessible descriptions.
+
+### Upgrade notes
+
+- Apply `20260919140000_atomic_operation_switch.sql` and
+  `20260919141000_sequential_finish.sql` before deploying the frontend.
+
 ## [0.11.2] — 2026-09-19
 
 This patch removes obsolete production endpoints and makes the public API

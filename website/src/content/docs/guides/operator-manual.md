@@ -129,11 +129,11 @@ Time tracking ties your work to each operation.
 
 ### How it works
 
-1. **Start** — tap "Start" on the operation you are about to work on. The timer begins and the operation moves to "In Process."
-2. **Stop** — tap "Stop" when the physical work is done.
-3. **Complete** — mark the operation as complete to move it to the next cell.
+1. **Start** — tap **Start production**. The timer begins and the operation moves to **In Process**.
+2. **Report production** — record the completed quantity.
+3. **Mark complete** — close the operation and move the part to the next routing step. If your timer is still running, **Stop & complete** closes both in one tap. For short work that does not need a timer, you can mark the operation complete directly.
 
-Only **one operation** can be timed at a time. Starting a new operation stops the previous one.
+Only **one individual operation** can be timed at a time. If you scan or start another operation, the terminal shows what is still running and asks whether to switch. The old timer stops only when you confirm and the new operation can start.
 
 The running timer is always visible in the status bar so you never forget to stop it.
 

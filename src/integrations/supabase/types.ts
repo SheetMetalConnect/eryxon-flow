@@ -4074,6 +4074,16 @@ export type Database = {
         }
         Returns: Json
       }
+      switch_operation: {
+        Args: {
+          p_from_operation_id: string
+          p_notes?: string
+          p_operator_id: string
+          p_tenant_id: string
+          p_to_operation_id: string
+        }
+        Returns: Json
+      }
       unlock_operator:
         | { Args: { p_operator_id: string }; Returns: boolean }
         | {
@@ -4371,4 +4381,3 @@ export const Constants = {
     },
   },
 } as const
-

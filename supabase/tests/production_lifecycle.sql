@@ -37,6 +37,13 @@ SELECT pg_temp.assert_true((add_batch_operations(current_setting('test.tenant'):
 SELECT pg_temp.assert_true((transition_operation(current_setting('test.tenant')::uuid,'d5000000-0000-0000-0000-000000000001','start',auth.uid())->>'changed')::boolean,'first start changes state');
 SELECT pg_temp.assert_true(NOT (transition_operation(current_setting('test.tenant')::uuid,'d5000000-0000-0000-0000-000000000001','start',auth.uid())->>'changed')::boolean,'repeated start is idempotent');
 SELECT pg_temp.assert_true((SELECT count(*)=1 FROM time_entries WHERE operator_id=auth.uid() AND end_time IS NULL),'one active timer after repeated start');
+SELECT switch_operation(current_setting('test.tenant')::uuid,'d5000000-0000-0000-0000-000000000001','d5000000-0000-0000-0000-000000000002',auth.uid());
+SELECT pg_temp.assert_true((SELECT count(*)=1 FROM time_entries WHERE operator_id=auth.uid() AND end_time IS NULL AND operation_id='d5000000-0000-0000-0000-000000000002'),'switch closes the source timer and starts the target timer atomically');
+SELECT switch_operation(current_setting('test.tenant')::uuid,'d5000000-0000-0000-0000-000000000002','d5000000-0000-0000-0000-000000000001',auth.uid());
+RESET ROLE;
+UPDATE operations SET status='not_started',started_at=NULL WHERE id='d5000000-0000-0000-0000-000000000002';
+SET LOCAL ROLE authenticated;
+SELECT set_config('request.jwt.claims','{"role":"authenticated","sub":"d1000000-0000-0000-0000-000000000001"}',true);
 SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000002'',''start'',auth.uid())',current_setting('test.tenant')),'22023');
 SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000001'',''complete'',auth.uid())',current_setting('test.tenant')),'22023');
 SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000001'',''resume'',auth.uid())',current_setting('test.tenant')),'22023');
@@ -57,6 +64,7 @@ UPDATE tenants SET feature_flags=COALESCE(feature_flags,'{}'::jsonb)||'{"sequent
 SET LOCAL ROLE authenticated;
 SELECT set_config('request.jwt.claims','{"role":"authenticated","sub":"d1000000-0000-0000-0000-000000000001"}',true);
 SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000002'',''start'',auth.uid())',current_setting('test.tenant')),'22023');
+SELECT pg_temp.expect_error(format('SELECT transition_operation(%L::uuid,''d5000000-0000-0000-0000-000000000002'',''finish'',auth.uid())',current_setting('test.tenant')),'22023');
 SELECT pg_temp.assert_true((SELECT status='not_started' FROM operations WHERE id='d5000000-0000-0000-0000-000000000002'),'sequential release blocks the next operation while the previous one is open');
 SELECT transition_operation(current_setting('test.tenant')::uuid,'d5000000-0000-0000-0000-000000000001','complete',auth.uid());
 SELECT transition_operation(current_setting('test.tenant')::uuid,'d5000000-0000-0000-0000-000000000002','start',auth.uid());

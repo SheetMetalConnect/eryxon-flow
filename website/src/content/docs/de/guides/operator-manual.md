@@ -113,11 +113,11 @@ Die Zeiterfassung verknüpft Ihre Arbeit mit jedem Arbeitsgang.
 
 ### So funktioniert es
 
-1. **Start** — tippen Sie auf "Start" beim Arbeitsgang, an dem Sie arbeiten werden. Der Timer beginnt und der Arbeitsgang wechselt zu "In Bearbeitung."
-2. **Stopp** — tippen Sie auf "Stopp", wenn die physische Arbeit erledigt ist.
-3. **Fertig** — markieren Sie den Arbeitsgang als fertig, um ihn zur nächsten Zelle zu verschieben.
+1. **Produktion starten** — der Timer beginnt und der Arbeitsgang wechselt zu **In Bearbeitung**.
+2. **Produktion melden** — erfassen Sie die gefertigte Menge.
+3. **Fertigmelden** — schließen Sie den Arbeitsgang und geben Sie das Teil für den nächsten Arbeitsschritt frei. Läuft der Timer noch, schließt **Stoppen & fertigmelden** beides mit einer Aktion. Kurze Arbeiten ohne Zeiterfassung können Sie direkt fertigmelden.
 
-Es kann nur **ein Arbeitsgang** gleichzeitig gemessen werden. Das Starten eines neuen Arbeitsgangs stoppt den vorherigen.
+Es kann nur **ein einzelner Arbeitsgang** gleichzeitig gemessen werden. Wenn Sie einen anderen Arbeitsgang scannen oder starten, zeigt das Terminal den noch laufenden Arbeitsgang und fragt nach einer Bestätigung. Erst danach wird der alte Timer gestoppt und der neue Arbeitsgang gestartet.
 
 Der laufende Timer ist immer in der Statusleiste sichtbar, damit Sie nie vergessen zu stoppen.
 

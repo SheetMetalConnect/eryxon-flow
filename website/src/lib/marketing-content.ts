@@ -109,7 +109,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "From ERP order to reported production.",
       steps: [
         { n: "01", h: "Bring in the order and routing", b: "Create jobs, parts and operations through the REST API, CSV import or the admin interface." },
-        { n: "02", h: "Execute at the cell", b: "Operators start and stop work, report quantities, locate parts and flag problems from the terminal." },
+        { n: "02", h: "Execute at the cell", b: "Operators start work, report output, mark operations complete, locate parts and flag problems from the terminal." },
         { n: "03", h: "Use the result everywhere", b: "Planners see the updated load and signed webhooks notify the ERP, data platform or other subscribed systems." },
       ],
     },
@@ -175,7 +175,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "Van ERP-order naar gemelde productie.",
       steps: [
         { n: "01", h: "Haal order en routing binnen", b: "Maak orders, onderdelen en bewerkingen aan via de REST-API, CSV-import of het beheerscherm." },
-        { n: "02", h: "Voer het werk uit bij de cel", b: "Operators starten en stoppen werk, melden aantallen, leggen locaties vast en markeren problemen op de terminal." },
+        { n: "02", h: "Voer het werk uit bij de cel", b: "Operators starten werk, melden productie, melden bewerkingen gereed, leggen locaties vast en markeren problemen op de terminal." },
         { n: "03", h: "Gebruik het resultaat in elk systeem", b: "Planners zien de bijgewerkte belasting en ondertekende webhooks informeren ERP, dataplatform of andere abonnees." },
       ],
     },
@@ -241,7 +241,7 @@ const LANDING: Record<Locale, LandingCopy> = {
       h2: "Vom ERP-Auftrag zur gemeldeten Produktion.",
       steps: [
         { n: "01", h: "Auftrag und Routing übernehmen", b: "Aufträge, Teile und Arbeitsgänge werden über REST-API, CSV-Import oder die Verwaltung angelegt." },
-        { n: "02", h: "In der Zelle ausführen", b: "Bediener starten und stoppen Arbeit, melden Mengen, erfassen Standorte und markieren Probleme am Terminal." },
+        { n: "02", h: "In der Zelle ausführen", b: "Bediener starten Arbeit, melden Mengen und Arbeitsgänge fertig, erfassen Standorte und markieren Probleme am Terminal." },
         { n: "03", h: "Das Ergebnis weiterverwenden", b: "Die Planung sieht die aktualisierte Last, und signierte Webhooks informieren ERP, Datenplattform oder andere Abonnenten." },
       ],
     },

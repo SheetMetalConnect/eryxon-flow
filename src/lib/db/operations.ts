@@ -467,6 +467,33 @@ export async function completeOperation(operationId: string, tenantId: string, o
   if (error) throw error;
 }
 
+export async function finishOperation(operationId: string, tenantId: string, operatorId: string) {
+  const { error } = await supabase.rpc("transition_operation", {
+    p_tenant_id: tenantId,
+    p_operation_id: operationId,
+    p_action: "finish",
+    p_operator_id: operatorId,
+  });
+  if (error) throw error;
+}
+
+export async function switchOperation(
+  fromOperationId: string,
+  toOperationId: string,
+  operatorId: string,
+  tenantId: string,
+  notes?: string,
+) {
+  const { error } = await supabase.rpc("switch_operation", {
+    p_tenant_id: tenantId,
+    p_from_operation_id: fromOperationId,
+    p_to_operation_id: toOperationId,
+    p_operator_id: operatorId,
+    p_notes: notes ?? null,
+  });
+  if (error) throw error;
+}
+
 // Supervisor action: parks an in-progress operation (Yellow Card). Timers close via the RPC.
 export async function holdOperation(operationId: string, tenantId: string) {
   const { error } = await supabase.rpc("transition_operation", {
@@ -476,4 +503,3 @@ export async function holdOperation(operationId: string, tenantId: string) {
   });
   if (error) throw error;
 }
-

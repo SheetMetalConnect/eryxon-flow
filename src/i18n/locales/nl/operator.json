@@ -209,7 +209,14 @@
     },
     "capacityBlocked": "Voltooien niet mogelijk: de volgende cel zit vol.",
     "completeOperation": "Bewerking voltooien",
-    "stopAndComplete": "Stoppen & voltooien",
+    "markComplete": "Gereedmelden",
+    "stopAndComplete": "Stoppen & gereedmelden",
+    "productionFlow": "Meld eerst de productie en meld daarna de bewerking gereed.",
+    "switch": {
+      "title": "Wisselen van bewerking?",
+      "description": "Je werkt nog aan {{current}}. Stoppen en {{next}} starten?",
+      "confirm": "Wisselen"
+    },
     "otherOperatorClocked": "Een andere operator is nog ingeklokt op deze bewerking.",
     "detailsPanel": "Detailpaneel",
     "empty": "Nog geen cellen ingesteld",
@@ -273,6 +280,7 @@
   },
   "production": {
     "reportTitle": "Productie Melden",
+    "reportDescription": "Leg hier de gemaakte onderdelen vast. Meld de bewerking daarna apart gereed.",
     "target": "Doel",
     "remaining": "resterend",
     "done": "klaar",

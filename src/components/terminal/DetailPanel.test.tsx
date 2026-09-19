@@ -177,4 +177,18 @@ describe("DetailPanel", () => {
       expect(screen.getByText("Clamp fixture")).toBeInTheDocument();
     });
   });
+
+  it("shows a quick complete action before work has started", async () => {
+    const onComplete = vi.fn();
+    render(<DetailPanel job={baseJob} operations={operations} onComplete={onComplete} />);
+    const complete = await screen.findByRole("button", { name: /terminal\.markComplete/ });
+    expect(complete).toBeEnabled();
+    fireEvent.click(complete);
+    expect(onComplete).toHaveBeenCalledOnce();
+  });
+
+  it("blocks quick completion when sequential release blocks the operation", async () => {
+    render(<DetailPanel job={{ ...baseJob, startBlocked: true }} operations={operations} />);
+    expect(await screen.findByRole("button", { name: /terminal\.markComplete/ })).toBeDisabled();
+  });
 });

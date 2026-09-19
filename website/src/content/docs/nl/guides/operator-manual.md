@@ -113,11 +113,11 @@ Tijdregistratie koppelt je werk aan elke bewerking.
 
 ### Hoe het werkt
 
-1. **Start** — tik op "Start" bij de bewerking waaraan je gaat werken. De timer begint en de bewerking gaat naar "In Bewerking."
-2. **Stop** — tik op "Stop" wanneer het fysieke werk is gedaan.
-3. **Voltooid** — markeer de bewerking als voltooid om deze naar de volgende cel te verplaatsen.
+1. **Productie starten** — de timer begint en de bewerking gaat naar **In Bewerking**.
+2. **Productie melden** — leg het gemaakte aantal vast.
+3. **Gereedmelden** — sluit de bewerking en stuur het onderdeel naar de volgende routingstap. Loopt je timer nog, dan sluit **Stoppen & gereedmelden** beide in één tik. Kort werk zonder tijdregistratie kun je direct gereedmelden.
 
-Er kan slechts **een bewerking** tegelijk getimed worden. Het starten van een nieuwe bewerking stopt de vorige.
+Je kunt maar **één losse bewerking** tegelijk timen. Scan of start je ander werk, dan toont de terminal welke bewerking nog loopt en vraagt hij of je wilt wisselen. Pas na je bevestiging stopt de oude timer en start de nieuwe bewerking.
 
 De lopende timer is altijd zichtbaar in de statusbalk zodat je nooit vergeet te stoppen.
 

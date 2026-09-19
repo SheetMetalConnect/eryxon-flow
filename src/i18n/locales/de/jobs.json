@@ -396,6 +396,7 @@
     "failedToComplete": "Arbeitsgang konnte nicht abgeschlossen werden",
     "unsupportedFileType": "Nicht unterstützter Dateityp",
     "failedToOpenFile": "Datei konnte nicht geöffnet werden",
+    "fileViewerDescription": "Zeigt die Zeichnung oder das 3D-Modell dieses Arbeitsgangs.",
     "operationAdded": "Arbeitsgang hinzugefügt",
     "operationAddedDesc": "Der Arbeitsgang wurde erfolgreich hinzugefügt",
     "nameAndCellRequired": "Arbeitsgang-Bezeichnung und Fertigungszelle sind erforderlich",

@@ -209,7 +209,14 @@
     },
     "capacityBlocked": "Abschluss nicht möglich: Die nächste Zelle ist ausgelastet.",
     "completeOperation": "Arbeitsgang abschließen",
-    "stopAndComplete": "Stoppen & abschließen",
+    "markComplete": "Fertigmelden",
+    "stopAndComplete": "Stoppen & fertigmelden",
+    "productionFlow": "Erst die Menge melden, dann den Arbeitsgang fertigmelden.",
+    "switch": {
+      "title": "Arbeitsgang wechseln?",
+      "description": "Sie arbeiten noch an {{current}}. Stoppen und {{next}} starten?",
+      "confirm": "Wechseln"
+    },
     "otherOperatorClocked": "Ein anderer Bediener ist noch auf diesen Arbeitsgang eingestempelt.",
     "detailsPanel": "Detailbereich",
     "empty": "Noch keine Zellen konfiguriert",
@@ -273,6 +280,7 @@
   },
   "production": {
     "reportTitle": "Produktion melden",
+    "reportDescription": "Erfassen Sie hier die gefertigten Teile. Melden Sie den Arbeitsgang danach separat fertig.",
     "target": "Ziel",
     "remaining": "verbleibend",
     "done": "fertig",

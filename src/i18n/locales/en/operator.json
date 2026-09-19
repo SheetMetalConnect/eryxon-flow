@@ -209,7 +209,14 @@
     },
     "capacityBlocked": "Cannot complete because the next cell is at capacity.",
     "completeOperation": "Complete operation",
+    "markComplete": "Mark complete",
     "stopAndComplete": "Stop & complete",
+    "productionFlow": "Report output, then mark the operation complete.",
+    "switch": {
+      "title": "Switch operation?",
+      "description": "You are still working on {{current}}. Stop it and start {{next}}?",
+      "confirm": "Switch"
+    },
     "otherOperatorClocked": "Another operator is still clocked on this operation.",
     "detailsPanel": "Details Panel",
     "empty": "No cells configured yet",
@@ -273,6 +280,7 @@
   },
   "production": {
     "reportTitle": "Report Production",
+    "reportDescription": "Record completed parts here. Mark the operation complete separately when the work is finished.",
     "target": "Target",
     "remaining": "remaining",
     "done": "done",

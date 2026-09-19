@@ -18,6 +18,7 @@ interface OperatorDetailSidebarProps {
   startActionLabel?: string;
   pauseActionLabel?: string;
   showCompleteAction?: boolean;
+  isActionPending?: boolean;
   batchPrompt: BatchPromptState | null;
   onSelectBatchMode: (mode: "single" | "batch") => void;
   stepUrl: string | null;
@@ -39,6 +40,7 @@ export function OperatorDetailSidebar({
   startActionLabel,
   pauseActionLabel,
   showCompleteAction,
+  isActionPending = false,
   batchPrompt,
   onSelectBatchMode,
   stepUrl,
@@ -91,6 +93,7 @@ export function OperatorDetailSidebar({
             startActionLabel={startActionLabel}
             pauseActionLabel={pauseActionLabel}
             showCompleteActionOverride={showCompleteAction}
+            isActionPending={isActionPending}
             stepUrl={stepUrl}
             pdfUrl={pdfUrl}
             pmiData={pmiData}

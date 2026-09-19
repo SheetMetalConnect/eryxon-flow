@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { startTimeTracking, completeOperation } from './operations';
+import { startTimeTracking, completeOperation, finishOperation, switchOperation } from './operations';
 import { startBatchTimeTracking, stopBatchTimeTracking } from './batches';
 import { stopTimeTracking, pauseTimeTracking, resumeTimeTracking, adminStopTimeTracking } from './time-tracking';
 
@@ -28,11 +28,25 @@ describe('production lifecycle RPC adapters', () => {
   it.each([
     ['start', () => startTimeTracking('operation', 'operator', 'tenant')],
     ['complete', () => completeOperation('operation', 'tenant', 'operator')],
+    ['finish', () => finishOperation('operation', 'tenant', 'operator')],
   ] as const)('operation %s has one transactional write', async (action, perform) => {
     await perform();
     expect(writes()).toHaveLength(1);
     expect(String(writes()[0][0])).toContain('/rpc/transition_operation');
     expect(JSON.parse(String(writes()[0][1]?.body))).toMatchObject({ p_action: action, p_tenant_id: 'tenant', p_operation_id: 'operation', p_operator_id: 'operator' });
+  });
+
+  it('switches operations in one transactional write', async () => {
+    await switchOperation('operation-a', 'operation-b', 'operator', 'tenant', 'operator-mode:production');
+    expect(writes()).toHaveLength(1);
+    expect(String(writes()[0][0])).toContain('/rpc/switch_operation');
+    expect(JSON.parse(String(writes()[0][1]?.body))).toEqual({
+      p_from_operation_id: 'operation-a',
+      p_notes: 'operator-mode:production',
+      p_operator_id: 'operator',
+      p_tenant_id: 'tenant',
+      p_to_operation_id: 'operation-b',
+    });
   });
 
   it.each([

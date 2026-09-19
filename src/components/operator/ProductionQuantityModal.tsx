@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
@@ -123,6 +123,7 @@ export default function ProductionQuantityModal({
       <DialogContent className="max-w-xs">
         <DialogHeader>
           <DialogTitle>{t("production.reportTitle")}</DialogTitle>
+          <DialogDescription>{t("production.reportDescription")}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">

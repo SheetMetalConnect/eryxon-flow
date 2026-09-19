@@ -17,6 +17,7 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -670,6 +671,9 @@ export default function OperationDetailModal({
               <span className="text-[11px] text-muted-foreground/70 font-medium truncate block">{currentFileTitle}</span>
             </div>
             <DialogTitle className="sr-only">{currentFileTitle}</DialogTitle>
+            <DialogDescription className="sr-only">
+              {t("operations.fileViewerDescription")}
+            </DialogDescription>
             {currentFileUrl && currentFileType === "step" && (
               <STEPViewer url={currentFileUrl} title={currentFileTitle} />
             )}
