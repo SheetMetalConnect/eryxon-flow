@@ -1,5 +1,5 @@
-const AppTour = lazy(() => import("@/components/onboarding/AppTour").then((m) => ({ default: m.AppTour })));
 import { lazy, Suspense, useState } from "react";
+const AppTour = lazy(() => import("@/components/onboarding/AppTour").then((m) => ({ default: m.AppTour })));
 import { useProfile } from "@/hooks/useProfile";
 import { useTranslation } from "react-i18next";
 import { DOCS_GUIDES_URL } from "@/lib/config";
