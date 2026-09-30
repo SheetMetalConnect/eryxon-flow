@@ -211,6 +211,12 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       exact: true,
     },
     {
+      path: "/admin/config/scrap-reasons",
+      label: t("navigation.scrapReasons"),
+      icon: AlertCircle,
+      exact: true,
+    },
+    {
       path: "/admin/config/users",
       label: t("navigation.users"),
       icon: Users,

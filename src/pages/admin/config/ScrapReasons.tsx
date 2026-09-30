@@ -84,7 +84,8 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: () => {
       toast.success(t("scrapReasons.defaultCreated"));
-      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.config.scrapReasons(profile?.tenant_id ?? '') });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.quality.scrapUsage(profile?.tenant_id ?? '') });
     },
     onError: (error: Error) => toast.error(error.message || t("notifications.failed")),
   });
@@ -107,7 +108,8 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: (_, variables) => {
       toast.success(variables.id ? t("notifications.updated") : t("notifications.created"));
-      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.config.scrapReasons(profile?.tenant_id ?? '') });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.quality.scrapUsage(profile?.tenant_id ?? '') });
       setDialogOpen(false);
       setEditingReason(null);
     },
@@ -121,7 +123,8 @@ export default function ConfigScrapReasons() {
     },
     onSuccess: () => {
       toast.success(t("scrapReasons.deleted"));
-      queryClient.invalidateQueries({ queryKey: ["config", "scrapReasons"] });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.config.scrapReasons(profile?.tenant_id ?? '') });
+      queryClient.invalidateQueries({ queryKey: QueryKeys.quality.scrapUsage(profile?.tenant_id ?? '') });
     },
     onError: (error: Error) => toast.error(error.message || t("notifications.failed")),
   });

@@ -51,7 +51,7 @@ export default function MyIssues() {
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
-  const operatorId = activeOperator?.id || profile?.id;
+  const operatorId = profile?.id;
   const [issues, setIssues] = useState<Issue[]>([]);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);

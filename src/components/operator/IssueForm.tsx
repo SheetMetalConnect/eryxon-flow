@@ -61,7 +61,6 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
   const { t } = useTranslation();
   const profile = useProfile();
   const { activeOperator } = useOperator();
-  const operatorId = activeOperator?.id || profile?.id;
   const operatorName = activeOperator?.full_name || profile?.full_name || 'Unknown';
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<IssueCategory[]>([]);
@@ -118,7 +117,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!operatorId || !profile?.tenant_id || !description.trim()) return;
+    if (!profile?.id || !profile.tenant_id || !description.trim()) return;
     if (loading) return;
 
     setLoading(true);
@@ -174,7 +173,7 @@ export default function IssueForm({ operationId, open, onOpenChange, onSuccess, 
         id: issueId,
         tenant_id: profile.tenant_id,
         operation_id: operationId,
-        created_by: operatorId,
+        created_by: profile.id,
         description: fullDescription,
         severity,
         issue_type: issueType,
