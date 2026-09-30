@@ -206,20 +206,51 @@ export function useScrapReasonUsage() {
 
       const { data: quantities, error: quantitiesError } = await supabase
         .from("operation_quantities")
-        .select("scrap_reason_id, quantity_scrap, recorded_at")
-        .eq("tenant_id", profile.tenant_id)
-        .not("scrap_reason_id", "is", null);
+        .select("id, scrap_reason_id, quantity_scrap, recorded_at")
+        .eq("tenant_id", profile.tenant_id);
 
       if (quantitiesError) throw quantitiesError;
 
+      const quantityIds = quantities?.map((quantity) => quantity.id) ?? [];
+      let junctionReasons: Array<{
+        operation_quantity_id: string;
+        scrap_reason_id: string;
+        quantity: number;
+      }> = [];
+      if (quantityIds.length > 0) {
+        const { data, error } = await supabase
+          .from("operation_quantity_scrap_reasons")
+          .select("operation_quantity_id, scrap_reason_id, quantity")
+          .in("operation_quantity_id", quantityIds);
+
+        if (error) throw error;
+        junctionReasons = data ?? [];
+      }
+
       const usageMap = new Map<string, { count: number; totalQuantity: number; lastUsed: string | null }>();
-      quantities?.forEach((q) => {
-        if (q.scrap_reason_id) {
-          const existing = usageMap.get(q.scrap_reason_id) || { count: 0, totalQuantity: 0, lastUsed: null };
-          usageMap.set(q.scrap_reason_id, {
+      const junctionByQuantity = new Map<string, typeof junctionReasons>();
+      junctionReasons.forEach((junctionReason) => {
+        const entries = junctionByQuantity.get(junctionReason.operation_quantity_id) ?? [];
+        entries.push(junctionReason);
+        junctionByQuantity.set(junctionReason.operation_quantity_id, entries);
+      });
+      quantities?.forEach((quantity) => {
+        const entries = junctionByQuantity.get(quantity.id);
+        if (entries?.length) {
+          entries.forEach((entry) => {
+            const existing = usageMap.get(entry.scrap_reason_id) || { count: 0, totalQuantity: 0, lastUsed: null };
+            usageMap.set(entry.scrap_reason_id, {
+              count: existing.count + 1,
+              totalQuantity: existing.totalQuantity + entry.quantity,
+              lastUsed: !existing.lastUsed || quantity.recorded_at > existing.lastUsed ? quantity.recorded_at : existing.lastUsed,
+            });
+          });
+        } else if (quantity.scrap_reason_id) {
+          const existing = usageMap.get(quantity.scrap_reason_id) || { count: 0, totalQuantity: 0, lastUsed: null };
+          usageMap.set(quantity.scrap_reason_id, {
             count: existing.count + 1,
-            totalQuantity: existing.totalQuantity + (q.quantity_scrap || 0),
-            lastUsed: !existing.lastUsed || q.recorded_at > existing.lastUsed ? q.recorded_at : existing.lastUsed,
+            totalQuantity: existing.totalQuantity + (quantity.quantity_scrap || 0),
+            lastUsed: !existing.lastUsed || quantity.recorded_at > existing.lastUsed ? quantity.recorded_at : existing.lastUsed,
           });
         }
       });

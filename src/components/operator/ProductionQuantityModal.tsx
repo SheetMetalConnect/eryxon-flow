@@ -110,7 +110,7 @@ export default function ProductionQuantityModal({
         scrapReasons: scrapEntries.filter(entry => entry.quantity > 0 && entry.reasonId),
       });
 
-      toast.success(t("production.recorded", { count: quantityGood }));
+      toast.success(t("production.reported", { count: quantityProduced }));
 
       if (fileIssue && onFileIssue) {
         onFileIssue(remaining);

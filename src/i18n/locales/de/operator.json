@@ -294,6 +294,7 @@
     "decreaseQuantity": "Gutmenge verringern",
     "enterGoodParts": "Gutteile eingeben",
     "recorded": "{{count}} Gutteile erfasst",
+    "reported": "{{count}} Teile erfasst",
     "shortfallPrompt": "{{count}} unter Ziel. Problem melden?",
     "operationPaused": "Arbeitsgang pausiert",
     "operationCompleted": "Arbeitsgang abgeschlossen",

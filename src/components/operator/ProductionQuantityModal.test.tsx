@@ -1,8 +1,13 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { toast } from 'sonner';
 import ProductionQuantityModal from './ProductionQuantityModal';
 
 const state = vi.hoisted(() => ({ transport: vi.fn<typeof fetch>(), writes: [] as Array<{ table: string; body: unknown }> }));
+const translation = vi.hoisted(() => ({
+  t: (key: string, options?: { count?: number }) =>
+    key === 'production.reported' ? `${options?.count} parts reported` : key,
+}));
 vi.mock('@/hooks/useProfile', () => ({ useProfile: () => ({ id: 'profile-1', tenant_id: 'tenant-1' }) }));
 vi.mock('@/integrations/supabase/client', async () => {
   const { createClient } = await import('@supabase/supabase-js');
@@ -11,6 +16,9 @@ vi.mock('@/integrations/supabase/client', async () => {
   }) };
 });
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
+vi.mock('react-i18next', () => ({
+  useTranslation: () => translation,
+}));
 
 function show(plannedQuantity?: number) {
   const onSuccess = vi.fn();
@@ -21,6 +29,7 @@ function show(plannedQuantity?: number) {
 
 describe('ProductionQuantityModal', () => {
   beforeEach(() => {
+    vi.mocked(toast.success).mockClear();
     state.writes = [];
     state.transport.mockImplementation(async (input, init) => {
       const url = new URL(String(input));
@@ -66,6 +75,7 @@ describe('ProductionQuantityModal', () => {
       { operation_quantity_id: 'quantity-1', scrap_reason_id: 'reason-1', quantity: 3 },
       { operation_quantity_id: 'quantity-1', scrap_reason_id: 'reason-2', quantity: 4 },
     ] });
+    expect(toast.success).toHaveBeenCalledWith('10 parts reported');
   });
 
   it('allows rework-only output and rejects fractional or negative quantities', async () => {
@@ -79,5 +89,6 @@ describe('ProductionQuantityModal', () => {
     fireEvent.click(screen.getByRole('button', { name: 'production.report' }));
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(0, false));
     expect(state.writes[0].body).toMatchObject({ quantity_produced: 2, quantity_good: 0, quantity_rework: 2 });
+    expect(toast.success).toHaveBeenCalledWith('2 parts reported');
   });
 });

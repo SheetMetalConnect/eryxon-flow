@@ -294,6 +294,7 @@
     "decreaseQuantity": "Decrease good quantity",
     "enterGoodParts": "Enter good parts made",
     "recorded": "{{count}} good parts recorded",
+    "reported": "{{count}} parts reported",
     "shortfallPrompt": "{{count}} short of target. File an issue?",
     "operationPaused": "Operation paused",
     "operationCompleted": "Operation completed",

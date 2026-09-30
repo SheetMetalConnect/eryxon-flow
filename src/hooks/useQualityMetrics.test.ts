@@ -174,8 +174,17 @@ describe('useScrapReasonUsage', () => {
     };
     tableResponses['operation_quantities'] = {
       data: [
-        { scrap_reason_id: 'sr-1', quantity_scrap: 5, recorded_at: '2026-01-15T00:00:00Z' },
-        { scrap_reason_id: 'sr-1', quantity_scrap: 3, recorded_at: '2026-02-01T00:00:00Z' },
+        { id: 'quantity-junction', scrap_reason_id: 'sr-1', quantity_scrap: 7, recorded_at: '2026-01-15T00:00:00Z' },
+        { id: 'quantity-legacy', scrap_reason_id: 'sr-1', quantity_scrap: 5, recorded_at: '2026-02-01T00:00:00Z' },
+        { id: 'quantity-both', scrap_reason_id: 'sr-1', quantity_scrap: 9, recorded_at: '2026-02-15T00:00:00Z' },
+      ],
+      error: null,
+    };
+    tableResponses['operation_quantity_scrap_reasons'] = {
+      data: [
+        { operation_quantity_id: 'quantity-junction', scrap_reason_id: 'sr-1', quantity: 3 },
+        { operation_quantity_id: 'quantity-junction', scrap_reason_id: 'sr-2', quantity: 4 },
+        { operation_quantity_id: 'quantity-both', scrap_reason_id: 'sr-2', quantity: 2 },
       ],
       error: null,
     };
@@ -198,9 +207,9 @@ describe('useScrapReasonUsage', () => {
       expect(dimReason?.lastUsed).toBe('2026-02-01T00:00:00Z');
 
       const surReason = data.find((r) => r.code === 'SUR');
-      expect(surReason?.usageCount).toBe(0);
-      expect(surReason?.totalScrapQuantity).toBe(0);
-      expect(surReason?.lastUsed).toBeNull();
+      expect(surReason?.usageCount).toBe(2);
+      expect(surReason?.totalScrapQuantity).toBe(6);
+      expect(surReason?.lastUsed).toBe('2026-02-15T00:00:00Z');
     }
   });
 });

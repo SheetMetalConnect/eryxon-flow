@@ -294,6 +294,7 @@
     "decreaseQuantity": "Goed aantal verlagen",
     "enterGoodParts": "Voer goede onderdelen in",
     "recorded": "{{count}} goede onderdelen geregistreerd",
+    "reported": "{{count}} onderdelen geregistreerd",
     "shortfallPrompt": "{{count}} onder doel. Probleem melden?",
     "operationPaused": "Bewerking gepauzeerd",
     "operationCompleted": "Bewerking voltooid",
