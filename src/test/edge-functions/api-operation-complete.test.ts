@@ -26,6 +26,8 @@ describe('REST complete forwards the strict database action', () => {
     const url = new URL('http://localhost/functions/v1/api-operation-lifecycle/complete?id=operation');
     const response = handler(new Request(url, { method: 'POST' }), { supabase, url, tenantId: 'tenant', recordPilotEvent: async () => {} });
     if (message) await expect(response).rejects.toThrow(message);
-    else expect(await (await response).json()).toMatchObject({ data: { operation: { status: 'completed' }, operation_type: 'complete' } });
+    else expect(await (await response).json()).toMatchObject({ data: {
+      operation: { status: 'completed' }, operation_type: 'complete', time_entry_ended: false,
+    } });
   });
 });

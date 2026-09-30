@@ -36,6 +36,6 @@ serveApi(async (req, ctx) => {
     operation, operation_type: action, previous_status: result.previous_status,
     new_status: operation.status,
     time_entry_created: result.changed !== false && (action === "start" || action === "resume") && Boolean(url.searchParams.get("user_id")),
-    time_entry_ended: result.changed !== false && (action === "pause" || action === "complete"),
+    time_entry_ended: result.changed !== false && action === "pause",
   });
 }, { methods: ["POST", "OPTIONS"] });

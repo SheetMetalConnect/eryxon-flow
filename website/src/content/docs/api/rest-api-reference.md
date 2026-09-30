@@ -475,7 +475,7 @@ Every response carries `previous_status` and `new_status`; the operation object 
     "operation_type": "complete",
     "previous_status": "in_progress",
     "new_status": "completed",
-    "time_entry_ended": true
+    "time_entry_ended": false
   }
 }
 ```

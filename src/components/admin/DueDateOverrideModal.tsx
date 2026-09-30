@@ -1,4 +1,4 @@
-import { parseDateOnly } from '@/lib/date-only';
+import { parseDateOnly, serializeDateOnly } from '@/lib/date-only';
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
@@ -59,7 +59,7 @@ export default function DueDateOverrideModal({
     mutationFn: async (newDate: Date | null) => {
       const { error } = await supabase
         .from("jobs")
-        .update({ due_date_override: newDate?.toISOString() || null })
+        .update({ due_date_override: newDate ? serializeDateOnly(newDate) : null })
         .eq("id", jobId);
 
       if (error) throw error;
