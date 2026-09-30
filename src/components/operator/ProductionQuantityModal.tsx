@@ -9,6 +9,8 @@ import { useProfile } from "@/hooks/useProfile";
 import { AlertTriangle, Check, Loader2, Minus, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { logger } from "@/lib/logger";
+import { useRecordProduction } from "@/hooks/useProductionMetrics";
+import { ProductionQualityFields, type ScrapEntry } from "./ProductionQualityFields";
 
 interface ProductionQuantityModalProps {
   isOpen: boolean;
@@ -35,8 +37,15 @@ export default function ProductionQuantityModal({
 }: ProductionQuantityModalProps) {
   const { t } = useTranslation();
   const profile = useProfile();
+  const { recordQuantity } = useRecordProduction();
 
   const [quantityGood, setQuantityGood] = useState<number>(0);
+  const [quantityRework, setQuantityRework] = useState(0);
+  const [scrapEntries, setScrapEntries] = useState<ScrapEntry[]>([]);
+  const quantityScrap = scrapEntries.reduce((sum, entry) => sum + entry.quantity, 0);
+  const quantityProduced = quantityGood + quantityScrap + quantityRework;
+  const validQuantities = [quantityGood, quantityRework, ...scrapEntries.map(entry => entry.quantity)]
+    .every(quantity => Number.isSafeInteger(quantity) && quantity >= 0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previouslyRecordedGood, setPreviouslyRecordedGood] = useState<number>(0);
   const [showShortfallPrompt, setShowShortfallPrompt] = useState(false);
@@ -67,6 +76,8 @@ export default function ProductionQuantityModal({
     if (isOpen) {
       void fetchPreviousQuantities();
       setQuantityGood(0);
+      setQuantityRework(0);
+      setScrapEntries([]);
       setShowShortfallPrompt(false);
     }
   }, [fetchPreviousQuantities, isOpen]);
@@ -75,8 +86,8 @@ export default function ProductionQuantityModal({
   const decrement = () => setQuantityGood(q => Math.max(0, q - 1));
 
   const handleSubmit = async (fileIssue = false, completeAfterReport = false) => {
-    if (quantityGood <= 0) {
-      toast.error(t("production.enterGoodParts"));
+    if (!validQuantities || quantityProduced <= 0) {
+      toast.error(t("production.enterQuantity"));
       return;
     }
     if (!profile?.tenant_id) {
@@ -91,16 +102,13 @@ export default function ProductionQuantityModal({
 
     setIsSubmitting(true);
     try {
-      const { error } = await supabase.from("operation_quantities").insert([{
-        tenant_id: profile.tenant_id,
-        operation_id: operationId,
-        quantity_produced: quantityGood,
-        quantity_good: quantityGood,
-        quantity_scrap: 0,
-        quantity_rework: 0,
-        recorded_at: new Date().toISOString(),
-      }]);
-      if (error) throw error;
+      await recordQuantity({
+        operationId,
+        quantityGood,
+        quantityScrap,
+        quantityRework,
+        scrapReasons: scrapEntries.filter(entry => entry.quantity > 0 && entry.reasonId),
+      });
 
       toast.success(t("production.recorded", { count: quantityGood }));
 
@@ -126,7 +134,7 @@ export default function ProductionQuantityModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-xs">
+      <DialogContent className="max-w-xs max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t("production.reportTitle")}</DialogTitle>
           <DialogDescription>{t("production.reportDescription")}</DialogDescription>
@@ -224,6 +232,8 @@ export default function ProductionQuantityModal({
               </div>
             </Alert>
           )}
+          <ProductionQualityFields scrap={scrapEntries} onScrapChange={setScrapEntries}
+            rework={quantityRework} onReworkChange={setQuantityRework} disabled={isSubmitting} />
         </div>
 
         {!showShortfallPrompt ? (
@@ -236,13 +246,13 @@ export default function ProductionQuantityModal({
                 <Button
                   variant="outline"
                   onClick={() => handleSubmit(false, false)}
-                  disabled={isSubmitting || quantityGood <= 0}
+                  disabled={isSubmitting || !validQuantities || quantityProduced <= 0}
                 >
                   {t("production.reportOnly")}
                 </Button>
                 <Button
                   onClick={() => handleSubmit(false, true)}
-                  disabled={isSubmitting || quantityGood <= 0}
+                  disabled={isSubmitting || !validQuantities || quantityProduced <= 0}
                   className="bg-emerald-600 text-white transition-colors hover:bg-emerald-700 motion-reduce:transition-none sm:col-span-2"
                 >
                   {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
@@ -252,7 +262,7 @@ export default function ProductionQuantityModal({
             ) : (
               <Button
                 onClick={() => handleSubmit(false, false)}
-                disabled={isSubmitting || quantityGood <= 0}
+                disabled={isSubmitting || !validQuantities || quantityProduced <= 0}
                 size="lg"
               >
                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
