@@ -1,3 +1,4 @@
+import { parseDateOnly } from '@/lib/date-only';
 import { useState } from "react";
 import { format } from "date-fns";
 import {
@@ -62,7 +63,7 @@ export default function OperationCard({
   const rawDueDate =
     operation.part.job.due_date_override || operation.part.job.due_date;
   const dueDate = typeof rawDueDate === "string" ? rawDueDate : null;
-  const dueDateObj = dueDate ? new Date(dueDate) : null;
+  const dueDateObj = dueDate ? parseDateOnly(dueDate) : null;
   const dueUrgency = getDueUrgency(dueDate);
   const rawPlannedStart = operation.planned_start;
   const plannedStartObj =

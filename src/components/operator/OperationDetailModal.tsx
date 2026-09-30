@@ -1,3 +1,4 @@
+import { parseDateOnly } from '@/lib/date-only';
 import { useState, useEffect } from "react";
 import {
   OperationWithDetails,
@@ -325,7 +326,7 @@ export default function OperationDetailModal({
                 </Badge>
                 {dueDate && (
                   <div className="text-xs text-muted-foreground mt-1">
-                    {t("operations.dueDate")}: {format(new Date(dueDate), "MMM d, yyyy")}
+                    {t("operations.dueDate")}: {format(parseDateOnly(dueDate), "MMM d, yyyy")}
                   </div>
                 )}
               </div>

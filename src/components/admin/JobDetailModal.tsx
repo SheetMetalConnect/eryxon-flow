@@ -1,3 +1,4 @@
+import { parseDateOnly } from '@/lib/date-only';
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
@@ -232,7 +233,7 @@ export default function JobDetailModal({ jobId, onClose, onUpdate }: JobDetailMo
                 <div className="p-3 rounded-lg bg-muted/50 border">
                   <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.dueDate")}</p>
                   <p className="mt-1 font-semibold text-sm">
-                    {format(new Date(job?.due_date_override || job?.due_date), "MMM dd, yyyy")}
+                    {format(parseDateOnly(job?.due_date_override || job?.due_date), "MMM dd, yyyy")}
                   </p>
                   {job?.due_date_override && (
                     <Badge variant="outline" className="mt-1 text-[10px] py-0 h-4">{t("jobs.overridden")}</Badge>

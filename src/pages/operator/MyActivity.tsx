@@ -1,3 +1,4 @@
+import { parseDateOnly } from '@/lib/date-only';
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, subDays } from "date-fns";
@@ -242,7 +243,7 @@ export default function MyActivity() {
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <h2 className="text-lg font-semibold text-foreground">
-                    {format(new Date(group.date), "EEEE, MMMM d, yyyy")}
+                    {format(parseDateOnly(group.date), "EEEE, MMMM d, yyyy")}
                   </h2>
                   <p className="text-sm text-muted-foreground">
                     {group.tasksCount} {t("myActivity.operations")} •{" "}

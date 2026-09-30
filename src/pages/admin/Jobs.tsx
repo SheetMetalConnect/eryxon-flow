@@ -1,3 +1,4 @@
+import { parseDateOnly } from '@/lib/date-only';
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useCallback, useMemo, useState } from "react";
 import { ROUTES } from "@/routes/constants";
@@ -233,7 +234,7 @@ export default function Jobs() {
   }, [t]);
 
   const getDueDateDisplay = (job: JobData) => {
-    const dueDate = new Date(job.due_date_override || job.due_date);
+    const dueDate = parseDateOnly(job.due_date_override || job.due_date);
     const today = new Date();
     const weekFromNow = addDays(today, 7);
 

@@ -1,3 +1,4 @@
+import { parseDateOnly } from '@/lib/date-only';
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
@@ -450,7 +451,7 @@ export default function OperationDetailModal({
                     <p className="text-xs text-muted-foreground uppercase tracking-wide">{t("jobs.dueDate")}</p>
                     <p className="mt-1 font-semibold text-sm">
                       {operation?.parts?.jobs?.due_date
-                        ? format(new Date(operation.parts.jobs.due_date), "MMM dd, yyyy")
+                        ? format(parseDateOnly(operation.parts.jobs.due_date), "MMM dd, yyyy")
                         : "-"
                       }
                     </p>

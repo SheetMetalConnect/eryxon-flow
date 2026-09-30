@@ -66,6 +66,14 @@ const baseOperation: OperationWithDetails = {
 };
 
 describe("OperationCard", () => {
+  it("preserves the calendar day of UTC-midnight due dates", () => {
+    render(React.createElement(OperationCard, {
+      operation: { ...baseOperation, part: { ...baseOperation.part, job: {
+        ...baseOperation.part.job, due_date: '2026-10-01T00:00:00+00:00',
+      } } }, onUpdate: vi.fn(),
+    }));
+    expect(screen.getByText('01 Oct')).toBeInTheDocument();
+  });
   it("shows the handoff note indicator when notes exist", () => {
     render(
       React.createElement(OperationCard, {

@@ -1,3 +1,4 @@
+import { parseDateOnly } from '@/lib/date-only';
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { QueryKeys } from "@/lib/queryClient";
@@ -47,7 +48,7 @@ export default function DueDateOverrideModal({
 
       // Set initial override date if exists
       if (data.due_date_override) {
-        setOverrideDate(new Date(data.due_date_override));
+        setOverrideDate(parseDateOnly(data.due_date_override));
       }
 
       return data;
@@ -111,7 +112,7 @@ export default function DueDateOverrideModal({
             <div className="flex items-center gap-2 mt-1">
               <CalendarIcon className="h-4 w-4 text-muted-foreground" />
               <span className="font-medium">
-                {format(new Date(job?.due_date), "MMM dd, yyyy")}
+                {format(parseDateOnly(job?.due_date), "MMM dd, yyyy")}
               </span>
             </div>
           </div>
@@ -123,7 +124,7 @@ export default function DueDateOverrideModal({
               <div className="flex items-center gap-2 mt-1">
                 <CalendarIcon className="h-4 w-4 text-brand-primary" />
                 <span className="font-medium text-brand-primary">
-                  {format(new Date(job.due_date_override), "MMM dd, yyyy")}
+                  {format(parseDateOnly(job.due_date_override), "MMM dd, yyyy")}
                 </span>
               </div>
             </div>

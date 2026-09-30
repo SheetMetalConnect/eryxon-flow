@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({
@@ -25,6 +25,15 @@ describe('activity effective actor filtering', () => {
     state.transport.mockReset().mockImplementation(async () => new Response('[]', {
       headers: { 'Content-Type': 'application/json' },
     }));
+  });
+
+  it('renders the local grouped day without shifting it to the previous date', async () => {
+    state.transport.mockResolvedValue(new Response(JSON.stringify([{
+      id: 'entry-1', start_time: '2026-09-25T15:00:00Z', end_time: '2026-09-25T16:00:00Z', duration: 60,
+      operation: { operation_name: 'Cut', status: 'completed', cell: { name: 'Cutting', color: '#000000' }, part: { part_number: 'PART', job: { job_number: 'JOB' } } },
+    }]), { headers: { 'Content-Type': 'application/json' } }));
+    render(<MyActivity />);
+    expect(await screen.findByText('Friday, September 25, 2026')).toBeInTheDocument();
   });
 
   it('excludes PIN-worker rows from the terminal profile activity', async () => {
