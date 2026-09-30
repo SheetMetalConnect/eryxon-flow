@@ -1,7 +1,7 @@
 import { throwDatabaseError } from "@shared/validation/errorHandler.ts";
 import { serveApi, errorResponse, successResponse } from "@shared/handler.ts";
 
-const actions = { start: "start", pause: "pause", resume: "resume", complete: "finish" } as const;
+const actions = { start: "start", pause: "pause", resume: "resume", complete: "complete" } as const;
 
 serveApi(async (req, ctx) => {
   const { supabase, tenantId, url } = ctx;

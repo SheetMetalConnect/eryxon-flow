@@ -440,7 +440,7 @@ POST /api-operation-lifecycle/complete?id=<operation-id>
 - Changes status to `completed`
 - Sets `completed_at` timestamp
 - Sets `completion_percentage` to 100
-- **Ends all active time entries**
+- Rejects completion while any time entry is still active; stop timers first
 - Calculates final `actual_time`
 - Triggers `operation.completed` webhook
 

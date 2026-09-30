@@ -14,7 +14,7 @@ serveApi(async (req, { supabase, url }) => {
 
   if (req.method === "GET") {
     const { data, error } = await supabase.from("api_keys")
-      .select("id, name, key_prefix, active, last_used_at, created_at, created_by:profiles(id, username, full_name)")
+      .select("id, name, key_prefix, active, last_used_at, created_at")
       .eq("tenant_id", profile.tenant_id).order("created_at", { ascending: false });
     if (error) throw error;
     return successResponse({ api_keys: data });
