@@ -85,7 +85,7 @@ export default function ConfigWebhooks() {
     onSuccess: () => { toast.success(t("webhooks.deleted")); refresh(); }, onError: fail,
   });
   const sendTest = useMutation({
-    mutationFn: async (id: string) => { const { error } = await supabase.rpc("webhook_send_test", { p_webhook_id: id }); if (error) throw error; },
+    mutationFn: async (id: string) => { const { error } = await supabase.rpc("webhook_send_test", { p_webhook_id: id }); if (error) throw new Error(error.message); },
     onSuccess: () => { toast.success(t("webhooks.testSent")); setTimeout(() => void deliveries.refetch(), 3000); }, onError: fail,
   });
   const redeliver = useMutation({

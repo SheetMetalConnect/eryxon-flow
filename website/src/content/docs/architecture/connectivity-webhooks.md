@@ -31,6 +31,40 @@ The same fields are available through `POST /api-webhooks` and the MCP tool
 An endpoint is disabled automatically after 25 consecutive failed deliveries.
 Switching it back on resets the counter.
 
+### Local and self-hosted dispatch setup
+
+The database needs two Vault entries before it can invoke `webhook-dispatch`:
+`project_url` and `internal_service_secret`. From the repository root, provide
+`DATABASE_URL` (a privileged database connection), `WEBHOOK_PROJECT_URL` (the base
+URL reachable **from the database container**, before `/functions/v1`) and
+`INTERNAL_SERVICE_SECRET` through your runtime environment or a private, ignored
+environment file. Then run:
+
+```sh
+node --env-file=/path/to/private/runtime.env scripts/configure-webhook-vault.mjs
+```
+
+Omit `--env-file` when the environment is already populated. The script creates
+or updates only these two entries, in a transaction, without printing values.
+Use the same `INTERNAL_SERVICE_SECRET` in the Edge Functions runtime; restart or
+reload that runtime after changing its environment. This is internal dispatch
+authentication, separate from each webhook endpoint's HMAC signing secret.
+Never put these values in migrations, source control or `VITE_*` variables.
+
+```mermaid
+flowchart LR
+  ENV[Private runtime environment] --> BOOT[configure-webhook-vault.mjs]
+  BOOT --> V[Vault: project_url and internal_service_secret]
+  ENV --> EDGE[Edge runtime: INTERNAL_SERVICE_SECRET]
+  V --> DB[Database dispatch]
+  DB --> EDGE
+```
+
+Use **Send test webhook** after setup and inspect its delivery result. Missing
+Vault configuration returns an actionable error. A successful enqueue is not a
+delivery confirmation: the database must reach the Edge runtime and the runtime
+must reach the configured public HTTPS endpoint.
+
 ## Event catalogue
 
 | Entity | Events |
@@ -123,6 +157,11 @@ Respond `2xx` quickly and do the work afterwards. Every delivery is recorded wit
 status, HTTP code, attempts, latency and an excerpt of the response; the admin page
 lists the last 200 and can send any of them again. The REST API exposes the same
 records at `GET /api-webhook-deliveries`.
+
+Manual redelivery preserves the original event id, data and `occurred_at`. It
+creates a new delivery id and delivery timestamp; its signature timestamp can
+change. Legacy deliveries with missing or invalid `occurred_at` cannot be
+redelivered because their original occurrence time cannot be recovered safely.
 
 ## Security
 

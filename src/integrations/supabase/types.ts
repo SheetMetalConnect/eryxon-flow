@@ -3629,16 +3629,28 @@ export type Database = {
         Args: { p_notification_id: string }
         Returns: undefined
       }
-      dispatch_webhook: {
-        Args: {
-          p_data: Json
-          p_event_id?: string
-          p_event_type: string
-          p_tenant_id: string
-          p_webhook_id?: string
-        }
-        Returns: undefined
-      }
+      dispatch_webhook:
+        | {
+            Args: {
+              p_data: Json
+              p_event_id?: string
+              p_event_type: string
+              p_tenant_id: string
+              p_webhook_id?: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_data: Json
+              p_event_id: string
+              p_event_type: string
+              p_occurred_at: string
+              p_tenant_id: string
+              p_webhook_id: string
+            }
+            Returns: undefined
+          }
       enable_demo_mode: {
         Args: { p_tenant_id: string; p_user_id?: string }
         Returns: undefined
