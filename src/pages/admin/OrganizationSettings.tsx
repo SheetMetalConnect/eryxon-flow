@@ -235,7 +235,7 @@ export default function OrganizationSettings() {
                   id="abbreviation"
                   value={formData.abbreviation}
                   onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value.toUpperCase().slice(0, 5) })}
-                  placeholder="VMC"
+                  placeholder="ACME"
                   maxLength={5}
                   className="uppercase"
                 />
