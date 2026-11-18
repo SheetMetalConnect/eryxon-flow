@@ -1,0 +1,141 @@
+# Agent Instructions — Eryxon Flow
+
+> Universal context for all AI coding agents (Claude, Codex, Gemini, Cursor, Copilot, Windsurf, Cline, Aider).
+
+## Project
+
+Manufacturing Execution System (MES) for job shops. Tracks jobs, parts, operations through production. React + TypeScript frontend, Supabase backend.
+
+## Commands
+
+```bash
+npm install && npm run dev   # Dev server at localhost:8080
+npm run build                # MUST pass before any commit
+npm run test:run             # Vitest test suite
+```
+
+## Architecture
+
+```
+React 18 + Vite + Tailwind + shadcn/ui
+    → Supabase Client
+    → PostgreSQL + Auth + RLS + Realtime + Storage
+    → Edge Functions (Deno) — 30+ REST API endpoints (incl. api-batches, api-batch-lifecycle)
+    → Webhooks + MCP Server
+```
+
+## Edge Functions — Critical Rules
+
+All API endpoints live in `supabase/functions/api-*/`. Shared code in `_shared/`.
+
+1. **`Deno.serve()` only** — never `import { serve } from "https://deno.land/std/..."` (broken on current runtime)
+2. **No `export default`** on `serveApi()` — it returns void, conflicts with Deno.serve
+3. **Each function needs `deno.json`** with `@shared/` import map
+4. **Verify column names** against actual DB before writing queries — hallucinated columns cause 502s
+5. **FK hints required** (`!column_name`) for tables with multiple FKs to same target
+6. **No heavy validator imports** in function index files — `fkValidator.ts` and `PartValidator.ts` crash the Deno runtime silently (use inline validation instead)
+7. **PostgREST `.in()` on joined tables silently fails** — always query the join table first, then filter by IDs
+8. **Deploy**: `supabase functions deploy <name> --project-ref <ref> --no-verify-jwt`
+9. **Test**: `npm run test:api:e2e` against a running stack (needs `SUPABASE_URL` and `API_KEY`)
+
+## Shared Modules (`supabase/functions/_shared/`)
+
+| Module | Purpose |
+|--------|---------|
+| `handler.ts` | API handler factory (Deno.serve, CORS, auth) |
+| `crud-builder.ts` | Generic CRUD with pagination, filters, search, sync |
+| `auth.ts` | API key auth (SHA-256, prefix lookup, rate limiting) |
+| `plan-limits.ts` | Subscription quota enforcement |
+| `security.ts` | Upload validation, content types |
+
+## Code Conventions
+
+- TypeScript project references, `@/` path aliases; run `npm run typecheck` (strict mode is not yet enabled)
+- shadcn/ui components, Tailwind CSS only
+- i18n keys for all UI text (EN, NL, DE) — never hardcode
+- Sonner for toasts, Supabase client for API calls
+- RLS on every table — multi-tenant via `tenant_id`
+- Conventional commits: `feat:`, `fix:`, `deps:`, `docs:`
+
+## Code Quality Bar (required)
+
+High code quality is non-negotiable on this repo. Apply these on every change:
+
+- **Minimal, lazy-correct solutions.** Stdlib/native before dependencies, one line before fifty, delete before add. No speculative abstractions, no boilerplate "for later". Shortest correct diff wins. (Claude Code: `/ponytail:ponytail`.)
+- **De-slop before committing.** Strip AI slop from the diff: needless comments, defensive try/catch on trusted paths, `any` casts that hide type problems, deep nesting that should be early returns, anything inconsistent with the surrounding file. (Claude Code: `/deslop`.)
+- **Review before merging.** Read the diff for correctness bugs and simplification/reuse wins; fix findings. (Claude Code: `/code-review`, `/simplify`.)
+- **Root cause before fixes.** Don't patch symptoms; find why it breaks first. Test-first for features and bugfixes. Verify with real command output before claiming done.
+- **No hardcoded config in source** — no vendor domains, URLs, secrets, or env-specific values in this source-available code. Use env vars (e.g. `ALLOWED_ORIGIN`) and keep hosted vs self-hosted modes cleanly separated.
+
+## Safety
+
+- Never commit `.env` or secrets
+- `npm run build` must pass before committing
+- Always verify DB column names before writing edge function queries
+- Test edge function deploys with curl
+- Multi-tenant — always consider tenant isolation
+
+## Refactoring Rules
+
+- **Before adding to a large file:** Check line count. If over the limit (see `docs/CONVENTIONS.md` Module Boundaries), extract first.
+- **Before changing a shared hook:** Check import count with grep. If >30 importers, add a focused selector hook instead of modifying the original.
+- **Prefer composition over modification:** Extract new sub-components rather than adding more logic to existing ones.
+- **Test before and after:** Run `npm run test:run` before starting and after every commit.
+- **Use focused hooks:** Import `useProfile`, `useTenant`, `useSession` instead of `useAuth` for new code. Only use `useAuth` when you need multiple concerns (e.g., both profile and tenant).
+
+## Documentation policy — product docs live on the website
+
+There is **no product documentation in the repo `docs/` folder.** Anything explaining how
+the app *works or operates* (operator/admin/self-hoster/evaluator facing — feature
+behaviour, flows, setup, operations, troubleshooting, glossary) belongs in `website/`
+(Astro/Starlight guides + features, blog, release-notes). Website docs must be **proven
+against the code** (accurate to what actually ships) and **carry a diagram** where a flow
+or structure is involved (Mermaid). **No duplicate pages** — one canonical home per topic.
+
+The repo `docs/` folder is **only** for contributor/coding internals that would be out of
+place on a public site: ADRs, code conventions, DB schema diagram, the design-system
+tooling. If you find a "how the app works" page in `docs/`, move and rewrite
+it onto the website, fix links, and delete the source.
+
+## Documentation Index (contributor/coding internals only)
+
+| Document | Purpose |
+|----------|---------|
+| [`docs/ARCHITECTURE.md`](../docs/ARCHITECTURE.md) | System architecture with Mermaid dependency graphs |
+| [`docs/CONVENTIONS.md`](../docs/CONVENTIONS.md) | Code patterns, naming, templates for new files |
+| [`docs/TROUBLESHOOTING.md`](../docs/TROUBLESHOOTING.md) | Common AI-agent coding pitfalls and fixes |
+| [`docs/decisions/`](../docs/decisions/) | Architecture Decision Records (ADRs) — why things are the way they are |
+| [`docs/DATABASE_MIGRATIONS.md`](../docs/DATABASE_MIGRATIONS.md) | How to add and replay a migration |
+| [`docs/BACKUP_RESTORE_DRILL.md`](../docs/BACKUP_RESTORE_DRILL.md) | Local backup/restore drill (`npm run drill:restore`) |
+| [`docs/DATABASE_DIAGRAM.dbml`](../docs/DATABASE_DIAGRAM.dbml) | Full database schema (dbdiagram.io compatible) |
+| [`docs/dependency-graph.json`](../docs/dependency-graph.json) | Frontend import map (regenerate: `npm run deps:graph`) |
+
+Product behaviour (operator/admin flows, features, location, batch, self-hosting,
+troubleshooting, glossary) → **the website**, not this table.
+
+## Sub-Agents
+
+- [supabase-db.md](supabase-db.md) — Migrations, RLS, Edge Functions, schema
+- [tech-stack.md](tech-stack.md) — Dependencies, build config, architecture
+- [repo-ops.md](repo-ops.md) — Issues, PRs, branches, releases
+
+## PR feedback loop
+
+Every PR interaction must include a fresh check of its current head, CI checks,
+requested reviewers, submitted review commits, all inline review threads (including
+resolved and outdated threads), and edited PR discussion comments. Use
+`npm run pr:review -- <PR> --repo SheetMetalConnect/eryxon-flow`; paginate all responses.
+Never infer completion from a prior green run or an earlier review snapshot.
+
+After pushing a fix, wait for the new checks and reviewer/bot feedback, fetch again,
+and address each actionable point. Resolve a thread only after verifying the fix;
+explain a declined suggestion with technical evidence. Do not silently dismiss
+reviews or mark every thread resolved. Require reviewer completion evidence tied to the current head. A CodeRabbit summary
+or skipped review is not evidence that the current head was reviewed. Report missing
+coverage explicitly; successful CI or elapsed time does not establish completion.
+
+Immediately before merging, rerun the feedback check against the reviewed head and
+fingerprint. If either changes, repeat the loop. Merge with `gh pr merge --match-head-commit`
+and recheck the PR after merge for late feedback; any late actionable finding gets
+a follow-up fix and PR. Report the commit, check results, open items, and actual
+review coverage honestly. Never say “review complete” while feedback is unprocessed.

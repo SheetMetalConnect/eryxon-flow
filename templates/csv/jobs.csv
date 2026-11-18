@@ -1,0 +1,6 @@
+external_id,external_source,job_number,customer,due_date,status,notes
+JOB-2026-001,ERP,WO-2026-0501,Hygienisch Staal BV,2026-05-15,not_started,Foodgrade RVS constructie
+JOB-2026-002,ERP,WO-2026-0502,Metaalbewerking NL,2026-04-30,not_started,Chassis onderdelen
+JOB-2026-003,ERP,WO-2026-0503,Constructiewerk Van Dam,2026-06-01,not_started,Staalconstructie hal 3
+JOB-2026-004,ERP,WO-2026-0504,Precisie Techniek BV,2026-05-20,not_started,Aluminium behuizingen
+JOB-2026-005,ERP,WO-2026-0505,Scheepsbouw Maritiem,2026-07-01,not_started,Dekplaten en spanten

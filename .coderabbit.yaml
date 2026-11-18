@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-US
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 0
+    drafts: false
+  path_filters:
+    - '!**/package-lock.json'
+    - '!src/integrations/supabase/types.ts'
+    - '!website/src/assets/**'
+  path_instructions:
+    - path: 'supabase/**'
+      instructions: >-
+        Check tenant isolation, caller authorization, service-role bypasses,
+        transactional behavior, concurrent requests, and migration replay.
+        Treat authenticated terminal profiles and PIN-verified employees as
+        distinct identities. Flag contract regressions and missing negative tests.
+    - path: 'src/**'
+      instructions: >-
+        Prefer one responsive web implementation. Check stale async results,
+        query cache isolation, effect dependencies, complete data reads, and
+        user-visible error handling. Prefer deletion of unused code over new
+        abstractions. Request tests for behavior, not copies of implementation.
+    - path: '.github/workflows/**'
+      instructions: >-
+        Check token scope, target verification, cancellation, immutable artifacts,
+        migration ordering, health checks, rollback, and fail-closed conditions.
+chat:
+  auto_reply: true

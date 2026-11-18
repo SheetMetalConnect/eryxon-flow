@@ -1,0 +1,344 @@
+
+import { useEffect, useState, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
+import { useDebouncedCallback } from "@/hooks/useDebounce";
+import type { PartRouting, JobRouting } from "@/types/qrm";
+import type { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
+
+/** Safely unwrap a PostgREST embedded resource (may be array or object) */
+function unwrap<T>(value: T | T[] | null | undefined): T | null {
+  if (value == null) return null;
+  if (Array.isArray(value)) return value[0] ?? null;
+  return value;
+}
+
+interface CellRoutingData {
+  cell_id: string;
+  cell_name: string | null;
+  cell_color: string | null;
+  sequence: number;
+  operation_count: number;
+  completed_operations: number;
+}
+
+function groupOperationsByCell(
+  operations: Array<{
+    cell_id: string;
+    cell_name?: string | null;
+    cell_color?: string | null;
+    sequence: number;
+    status: string;
+  }>
+): CellRoutingData[] {
+  const cellMap = new Map<string, CellRoutingData>();
+
+  operations.forEach((op) => {
+    if (!op.cell_id) return;
+
+    const existing = cellMap.get(op.cell_id);
+
+    if (existing) {
+      existing.operation_count++;
+      if (op.status === "completed") {
+        existing.completed_operations++;
+      }
+    } else {
+      cellMap.set(op.cell_id, {
+        cell_id: op.cell_id,
+        cell_name: op.cell_name ?? null,
+        cell_color: op.cell_color ?? null,
+        sequence: op.sequence,
+        operation_count: 1,
+        completed_operations: op.status === "completed" ? 1 : 0,
+      });
+    }
+  });
+
+  return Array.from(cellMap.values()).sort((a, b) => a.sequence - b.sequence);
+}
+
+export function usePartRouting(
+  partId: string | null,
+  tenantId: string | null
+) {
+  const [routing, setRouting] = useState<PartRouting>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchRouting = useCallback(async () => {
+    if (!partId) {
+      setRouting(prev => prev.length === 0 ? prev : []);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc("get_part_routing", {
+        p_part_id: partId,
+      });
+
+      if (rpcError) throw rpcError;
+
+      const routingData = groupOperationsByCell(
+        (data || []).map(
+          (op: {
+            cell_id: string;
+            cell_name: string;
+            sequence: number;
+            status: string;
+          }) => ({
+            cell_id: op.cell_id,
+            cell_name: op.cell_name,
+            sequence: op.sequence,
+            status: op.status,
+          })
+        )
+      );
+
+      setRouting(routingData);
+    } catch (err) {
+      setError(err as Error);
+      logger.error("usePartRouting", "Failed to fetch part routing", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [partId]);
+
+  const debouncedFetch = useDebouncedCallback(fetchRouting, 150);
+
+  useEffect(() => {
+    if (!partId) {
+      setRouting(prev => prev.length === 0 ? prev : []);
+      return;
+    }
+
+    fetchRouting();
+
+    if (tenantId) {
+      const channel = supabase
+        .channel(`part-routing-${partId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "operations",
+            filter: `tenant_id=eq.${tenantId}`,
+          },
+          (payload: RealtimePostgresChangesPayload<{ part_id?: string }>) => {
+            const record = payload.new as { part_id?: string } | undefined;
+            const oldRecord = payload.old as { part_id?: string } | undefined;
+            if (record?.part_id === partId || oldRecord?.part_id === partId) {
+              debouncedFetch();
+            }
+          }
+        )
+        .subscribe((status) => {
+          if (status === "CHANNEL_ERROR") {
+            logger.error("usePartRouting", `Realtime subscription error on part-routing-${partId}`);
+          }
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
+  }, [partId, tenantId, fetchRouting, debouncedFetch]);
+
+  return { routing, loading, error, refetch: fetchRouting };
+}
+
+export function useJobRouting(jobId: string | null, tenantId: string | null) {
+  const [routing, setRouting] = useState<JobRouting>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchRouting = useCallback(async () => {
+    if (!jobId || !tenantId) {
+      setRouting(prev => prev.length === 0 ? prev : []);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { data, error: queryError } = await supabase
+        .from("operations")
+        .select(
+          `
+          id,
+          status,
+          sequence,
+          cell_id,
+          cell:cells!tasks_stage_id_fkey(id, name, color, sequence),
+          parts!inner(id, job_id)
+        `
+        )
+        .eq("tenant_id", tenantId)
+        .eq("parts.job_id", jobId);
+
+      if (queryError) throw queryError;
+
+      const routingData = groupOperationsByCell(
+        (data || [])
+          .map((op: any) => ({ ...op, cell: unwrap(op.cell) }))
+          .filter((op: any) => op.cell)
+          .map((op: any) => ({
+            cell_id: op.cell_id,
+            cell_name: op.cell.name,
+            cell_color: op.cell.color,
+            sequence: op.cell.sequence,
+            status: op.status,
+          }))
+      );
+
+      setRouting(routingData);
+    } catch (err) {
+      setError(err as Error);
+      logger.error("useJobRouting", "Failed to fetch job routing", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [jobId, tenantId]);
+
+  const debouncedFetch = useDebouncedCallback(fetchRouting, 200);
+
+  useEffect(() => {
+    if (!jobId || !tenantId) {
+      setRouting(prev => prev.length === 0 ? prev : []);
+      return;
+    }
+
+    fetchRouting();
+
+    const channel = supabase
+      .channel(`job-routing-${jobId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "operations",
+          filter: `tenant_id=eq.${tenantId}`,
+        },
+        () => {
+          debouncedFetch();
+        }
+      )
+      .subscribe((status) => {
+        if (status === "CHANNEL_ERROR") {
+          logger.error("useJobRouting", `Realtime subscription error on job-routing-${jobId}`);
+        }
+      });
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [jobId, tenantId, fetchRouting, debouncedFetch]);
+
+  return { routing, loading, error, refetch: fetchRouting };
+}
+
+export function useMultipleJobsRouting(jobIds: string[], tenantId: string | null) {
+  const [routings, setRoutings] = useState<Record<string, JobRouting>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  // Stable reference for jobIds to prevent infinite re-renders
+  const jobIdsKey = jobIds.join(",");
+
+  const fetchRoutings = useCallback(async () => {
+    if (jobIds.length === 0 || !tenantId) {
+      setRoutings(prev => Object.keys(prev).length === 0 ? prev : {});
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Step 1: Get parts for these jobs
+      // NOTE: PostgREST .in() on joined tables silently returns empty arrays.
+      // Always use two separate queries.
+      const { data: parts, error: partsError } = await supabase
+        .from("parts")
+        .select("id, job_id")
+        .eq("tenant_id", tenantId)
+        .in("job_id", jobIds);
+
+      if (partsError) throw partsError;
+
+      if (!parts || parts.length === 0) {
+        setRoutings({});
+        return;
+      }
+
+      const partIds = parts.map((p: any) => p.id);
+      const partJobMap = Object.fromEntries(parts.map((p: any) => [p.id, p.job_id]));
+
+      // Step 2: Get operations with cells for those parts
+      // FK hint: operations.cell_id → cells uses legacy constraint name "tasks_stage_id_fkey"
+      const { data: ops, error: opsError } = await supabase
+        .from("operations")
+        .select(`
+          id, status, sequence, cell_id, part_id,
+          cell:cells!tasks_stage_id_fkey(id, name, color, sequence)
+        `)
+        .eq("tenant_id", tenantId)
+        .in("part_id", partIds);
+
+      if (opsError) throw opsError;
+
+      // Step 3: Group by job → cell
+      const jobRoutingsMap: Record<string, Map<string, CellRoutingData>> = {};
+      jobIds.forEach((jid) => { jobRoutingsMap[jid] = new Map(); });
+
+      (ops || []).forEach((rawOp: any) => {
+        const cell = unwrap(rawOp.cell);
+        if (!cell || !rawOp.part_id) return;
+
+        const jobId = partJobMap[rawOp.part_id];
+        const cellMap = jobRoutingsMap[jobId];
+        if (!cellMap) return;
+
+        const existing = cellMap.get(rawOp.cell_id);
+        if (existing) {
+          existing.operation_count++;
+          if (rawOp.status === "completed") existing.completed_operations++;
+        } else {
+          cellMap.set(rawOp.cell_id, {
+            cell_id: rawOp.cell_id,
+            cell_name: cell.name,
+            cell_color: cell.color,
+            sequence: cell.sequence,
+            operation_count: 1,
+            completed_operations: rawOp.status === "completed" ? 1 : 0,
+          });
+        }
+      });
+
+      const result: Record<string, JobRouting> = {};
+      Object.entries(jobRoutingsMap).forEach(([jobId, cellMap]) => {
+        result[jobId] = Array.from(cellMap.values()).sort((a, b) => a.sequence - b.sequence);
+      });
+
+      setRoutings(result);
+    } catch (err) {
+      setError(err as Error);
+      logger.error("useMultipleJobsRouting", "Failed to fetch multiple jobs routing", err);
+    } finally {
+      setLoading(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobIdsKey, tenantId]);
+
+  useEffect(() => {
+    fetchRoutings();
+  }, [fetchRoutings]);
+
+  return { routings, loading, error, refetch: fetchRoutings };
+}

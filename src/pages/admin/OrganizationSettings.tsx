@@ -1,0 +1,700 @@
+import { useState, useEffect } from 'react';
+import { useProfile } from '@/hooks/useProfile';
+import { useTenant } from '@/hooks/useTenant';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json, TablesUpdate } from '@/integrations/supabase/types';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Loader2, Building2, Save, Clock, Paintbrush, Crown, X, MapPin, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { FeatureFlagsSettings } from '@/components/admin/FeatureFlagsSettings';
+import { useLocationTracking } from '@/hooks/locations/useLocationTracking';
+import { useStorageLocations } from '@/hooks/locations/useStorageLocations';
+import { logger } from '@/lib/logger';
+import {
+  DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
+  getOperatorTerminalWorkModeSettings,
+  mergeOperatorTerminalWorkModeSettings,
+} from '@/features/operator-terminal/workModes';
+import { getSequentialReleaseSetting, mergeSequentialReleaseSetting } from '@/features/operator-terminal/release';
+
+const TIMEZONES = [
+  'UTC',
+  'America/New_York',
+  'America/Chicago',
+  'America/Denver',
+  'America/Los_Angeles',
+  'Europe/London',
+  'Europe/Paris',
+  'Europe/Berlin',
+  'Asia/Tokyo',
+  'Asia/Shanghai',
+  'Australia/Sydney',
+];
+
+export default function OrganizationSettings() {
+  const { t } = useTranslation();
+  const profile = useProfile();
+  const { tenant, refreshTenant } = useTenant();
+  const {
+    enabled: locationTrackingEnabled,
+    setEnabled: setLocationTrackingEnabled,
+    isUpdating: locationTrackingUpdating,
+  } = useLocationTracking();
+  const { locations: storageSlots, isLoading: storageSlotsLoading } = useStorageLocations();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [tenantFeatureFlags, setTenantFeatureFlags] = useState<Json>(null);
+  const [formData, setFormData] = useState({
+    name: '',
+    company_name: '',
+    abbreviation: '',
+    timezone: 'UTC',
+    billing_email: '',
+    factory_opening_time: '07:00',
+    factory_closing_time: '17:00',
+    auto_stop_tracking: false,
+    // Whitelabeling fields for managed hosting
+    whitelabel_enabled: false,
+    whitelabel_logo_url: '',
+    whitelabel_app_name: '',
+    whitelabel_primary_color: '',
+    whitelabel_favicon_url: '',
+  });
+
+  const [operatorTerminalModes, setOperatorTerminalModes] = useState(
+    DEFAULT_OPERATOR_TERMINAL_WORK_MODE_SETTINGS,
+  );
+  const [sequentialRelease, setSequentialRelease] = useState(false);
+
+  const canUseWhitelabeling = tenant && (tenant.plan === 'premium' || tenant.plan === 'enterprise');
+
+  useEffect(() => {
+    loadTenantDetails();
+  }, [tenant]);
+
+  const loadTenantDetails = async () => {
+    if (!tenant) return;
+
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('tenants')
+        .select('*')
+        .eq('id', tenant.id)
+        .single();
+
+      if (error) throw error;
+
+      // Format time from database format (HH:MM:SS) to input format (HH:MM)
+      const formatTime = (time: string | null) => {
+        if (!time) return '';
+        return time.substring(0, 5);
+      };
+
+      setFormData({
+        name: data.name || '',
+        company_name: data.company_name || '',
+        abbreviation: data.abbreviation || '',
+        timezone: data.timezone || 'UTC',
+        billing_email: data.billing_email || '',
+        factory_opening_time: formatTime(data.factory_opening_time) || '07:00',
+        factory_closing_time: formatTime(data.factory_closing_time) || '17:00',
+        auto_stop_tracking: data.auto_stop_tracking || false,
+        whitelabel_enabled: data.whitelabel_enabled || false,
+        whitelabel_logo_url: data.whitelabel_logo_url || '',
+        whitelabel_app_name: data.whitelabel_app_name || '',
+        whitelabel_primary_color: data.whitelabel_primary_color || '',
+        whitelabel_favicon_url: data.whitelabel_favicon_url || '',
+      });
+      setTenantFeatureFlags(data.feature_flags);
+      setOperatorTerminalModes(getOperatorTerminalWorkModeSettings(data.feature_flags));
+      setSequentialRelease(getSequentialReleaseSetting(data.feature_flags));
+    } catch (error: unknown) {
+      logger.error('OrganizationSettings', 'Error loading tenant details', error);
+      toast.error(t("organizationSettings.failedToLoad"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+
+    if (!tenant) return;
+
+    setSaving(true);
+
+    try {
+      const updateData: TablesUpdate<'tenants'> = {
+        name: formData.name,
+        company_name: formData.company_name,
+        abbreviation: formData.abbreviation.toUpperCase() || null,
+        timezone: formData.timezone,
+        billing_email: formData.billing_email,
+        factory_opening_time: formData.factory_opening_time + ':00',
+        factory_closing_time: formData.factory_closing_time + ':00',
+        auto_stop_tracking: formData.auto_stop_tracking,
+        feature_flags: mergeSequentialReleaseSetting(
+          mergeOperatorTerminalWorkModeSettings(tenantFeatureFlags, operatorTerminalModes),
+          sequentialRelease,
+        ),
+      };
+
+      // Only include whitelabeling fields for managed plans
+      if (canUseWhitelabeling) {
+        updateData.whitelabel_enabled = formData.whitelabel_enabled;
+        updateData.whitelabel_logo_url = formData.whitelabel_logo_url || null;
+        updateData.whitelabel_app_name = formData.whitelabel_app_name || null;
+        updateData.whitelabel_primary_color = formData.whitelabel_primary_color || null;
+        updateData.whitelabel_favicon_url = formData.whitelabel_favicon_url || null;
+      }
+
+      const { error } = await supabase
+        .from('tenants')
+        .update(updateData)
+        .eq('id', tenant.id);
+
+      if (error) throw error;
+
+      toast.success(t('organizationSettings.settingsUpdated'));
+      await refreshTenant();
+    } catch (error: unknown) {
+      logger.error('OrganizationSettings', 'Error updating tenant', error);
+      toast.error(error instanceof Error ? error.message : t('notifications.failed'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          Organization Settings
+        </h1>
+        <p className="text-muted-foreground text-lg">
+          Manage your organization profile and preferences
+        </p>
+      </div>
+
+      <hr className="title-divider" />
+
+      <form onSubmit={handleSave}>
+        <Card className="glass-card">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              <CardTitle>Company Information</CardTitle>
+            </div>
+            <CardDescription>
+              Update your organization details
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Organization Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                  placeholder="My Organization"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="company_name">Company Name</Label>
+                <Input
+                  id="company_name"
+                  value={formData.company_name}
+                  onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
+                  placeholder="Acme Manufacturing"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="abbreviation">Abbreviation (Employee ID Prefix)</Label>
+                <Input
+                  id="abbreviation"
+                  value={formData.abbreviation}
+                  onChange={(e) => setFormData({ ...formData, abbreviation: e.target.value.toUpperCase().slice(0, 5) })}
+                  placeholder="ACME"
+                  maxLength={5}
+                  className="uppercase"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used for auto-generated employee IDs (e.g., VMC0001, VMC0002)
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="timezone">Timezone</Label>
+              <Select
+                value={formData.timezone}
+                onValueChange={(value) => setFormData({ ...formData, timezone: value })}
+              >
+                <SelectTrigger id="timezone">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {TIMEZONES.map((tz) => (
+                    <SelectItem key={tz} value={tz}>
+                      {tz}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                Used for scheduling and due dates
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="billing_email">{t('organizationSettings.billingEmail')}</Label>
+              <Input
+                id="billing_email"
+                type="email"
+                value={formData.billing_email}
+                onChange={(e) => setFormData({ ...formData, billing_email: e.target.value })}
+                placeholder="billing@example.com"
+              />
+            </div>
+
+            <div className="pt-4">
+              <Button type="submit" disabled={saving} className="cta-button gap-2">
+                {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                <Save className="h-4 w-4" />
+                {t('organizationSettings.saveChanges')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5" />
+              <CardTitle>{t('organizationSettings.factoryHours.title')}</CardTitle>
+            </div>
+            <CardDescription>
+              {t('organizationSettings.factoryHours.description')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="factory_opening_time">{t('organizationSettings.factoryHours.openingTime')}</Label>
+                <Input
+                  id="factory_opening_time"
+                  type="time"
+                  value={formData.factory_opening_time}
+                  onChange={(e) => setFormData({ ...formData, factory_opening_time: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="factory_closing_time">{t('organizationSettings.factoryHours.closingTime')}</Label>
+                <Input
+                  id="factory_closing_time"
+                  type="time"
+                  value={formData.factory_closing_time}
+                  onChange={(e) => setFormData({ ...formData, factory_closing_time: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="auto_stop_tracking" className="text-base">
+                  {t('organizationSettings.factoryHours.autoStopTracking')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('organizationSettings.factoryHours.autoStopDescription')}
+                </p>
+              </div>
+              <Switch
+                id="auto_stop_tracking"
+                checked={formData.auto_stop_tracking}
+                onCheckedChange={(checked) => setFormData({ ...formData, auto_stop_tracking: checked })}
+              />
+            </div>
+
+            {formData.auto_stop_tracking && (
+              <div className="rounded-lg bg-warning/10 border border-warning/20 p-3">
+                <p className="text-sm text-warning">
+                  {t('organizationSettings.factoryHours.autoStopWarning', {
+                    time: formData.factory_closing_time,
+                  })}
+                </p>
+              </div>
+            )}
+
+            <div className="flex items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="sequential_release" className="text-base">
+                  {t('organizationSettings.sequentialRelease.title')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('organizationSettings.sequentialRelease.description')}
+                </p>
+              </div>
+              <Switch
+                id="sequential_release"
+                checked={sequentialRelease}
+                onCheckedChange={setSequentialRelease}
+              />
+            </div>
+
+            <div className="rounded-lg border p-4 space-y-4">
+              <div className="space-y-1">
+                <Label className="text-base">
+                  {t('organizationSettings.operatorTerminalModes.title')}
+                </Label>
+                <p className="text-sm text-muted-foreground">
+                  {t('organizationSettings.operatorTerminalModes.description')}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="operator_terminal_modes_enabled" className="text-base">
+                    {t('organizationSettings.operatorTerminalModes.enabled')}
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {t('organizationSettings.operatorTerminalModes.enabledDescription')}
+                  </p>
+                </div>
+                <Switch
+                  id="operator_terminal_modes_enabled"
+                  checked={operatorTerminalModes.enabled}
+                  onCheckedChange={(checked) => setOperatorTerminalModes({
+                    ...operatorTerminalModes,
+                    enabled: checked,
+                  })}
+                />
+              </div>
+
+              {operatorTerminalModes.enabled ? (
+                <>
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="operator_terminal_modes_working_hours" className="text-base">
+                        {t('organizationSettings.operatorTerminalModes.enforceWorkingHours')}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {t('organizationSettings.operatorTerminalModes.enforceWorkingHoursDescription')}
+                      </p>
+                    </div>
+                    <Switch
+                      id="operator_terminal_modes_working_hours"
+                      checked={operatorTerminalModes.enforceWorkingHours}
+                      onCheckedChange={(checked) => setOperatorTerminalModes({
+                        ...operatorTerminalModes,
+                        enforceWorkingHours: checked,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="operator_terminal_modes_setup" className="text-base">
+                        {t('organizationSettings.operatorTerminalModes.setupPrepEnabled')}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {t('organizationSettings.operatorTerminalModes.setupPrepEnabledDescription')}
+                      </p>
+                    </div>
+                    <Switch
+                      id="operator_terminal_modes_setup"
+                      checked={operatorTerminalModes.setupPrepEnabled}
+                      onCheckedChange={(checked) => setOperatorTerminalModes({
+                        ...operatorTerminalModes,
+                        setupPrepEnabled: checked,
+                        setupRequired: checked ? operatorTerminalModes.setupRequired : false,
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between rounded-lg border p-4">
+                    <div className="space-y-0.5">
+                      <Label htmlFor="operator_terminal_modes_required" className="text-base">
+                        {t('organizationSettings.operatorTerminalModes.setupRequired')}
+                      </Label>
+                      <p className="text-sm text-muted-foreground">
+                        {t('organizationSettings.operatorTerminalModes.setupRequiredDescription')}
+                      </p>
+                    </div>
+                    <Switch
+                      id="operator_terminal_modes_required"
+                      checked={operatorTerminalModes.setupPrepEnabled && operatorTerminalModes.setupRequired}
+                      disabled={!operatorTerminalModes.setupPrepEnabled}
+                      onCheckedChange={(checked) => setOperatorTerminalModes({
+                        ...operatorTerminalModes,
+                        setupRequired: checked,
+                      })}
+                    />
+                  </div>
+                </>
+              ) : null}
+
+              <div className="flex justify-end">
+                <Button type="submit" disabled={saving} className="gap-2">
+                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                  <Save className="h-4 w-4" />
+                  {t('organizationSettings.saveChanges')}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </form>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Paintbrush className="h-5 w-5" />
+              <CardTitle>Whitelabeling</CardTitle>
+            </div>
+            {!canUseWhitelabeling && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20">
+                <Crown className="h-3.5 w-3.5 text-amber-500" />
+                <span className="text-xs font-medium text-amber-500">Managed</span>
+              </div>
+            )}
+          </div>
+          <CardDescription>
+            Customize the application with your own branding
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {canUseWhitelabeling ? (
+            <>
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="whitelabel_enabled" className="text-base">
+                    Enable Whitelabeling
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Replace the default branding with your company's identity
+                  </p>
+                </div>
+                <Switch
+                  id="whitelabel_enabled"
+                  checked={formData.whitelabel_enabled}
+                  onCheckedChange={(checked) => setFormData({ ...formData, whitelabel_enabled: checked })}
+                />
+              </div>
+
+              {formData.whitelabel_enabled && (
+                <div className="space-y-4 pt-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="whitelabel_app_name">Custom Application Name</Label>
+                    <Input
+                      id="whitelabel_app_name"
+                      value={formData.whitelabel_app_name}
+                      onChange={(e) => setFormData({ ...formData, whitelabel_app_name: e.target.value })}
+                      placeholder="Your Company Name"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Replaces "Sheet Metal Connect" in the navigation
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="whitelabel_logo_url">Logo URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        id="whitelabel_logo_url"
+                        value={formData.whitelabel_logo_url}
+                        onChange={(e) => setFormData({ ...formData, whitelabel_logo_url: e.target.value })}
+                        placeholder="https://yourcompany.com/logo.png"
+                      />
+                      {formData.whitelabel_logo_url && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => setFormData({ ...formData, whitelabel_logo_url: '' })}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Recommended: 36x36px or larger, PNG or SVG format
+                    </p>
+                    {formData.whitelabel_logo_url && (
+                      <div className="flex items-center gap-3 p-3 rounded-lg border bg-muted/50">
+                        <span className="text-sm text-muted-foreground">Preview:</span>
+                        <img
+                          src={formData.whitelabel_logo_url}
+                          alt="Logo preview"
+                          className="h-9 w-9 rounded-lg object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="whitelabel_primary_color">Primary Brand Color</Label>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        id="whitelabel_primary_color"
+                        type="text"
+                        value={formData.whitelabel_primary_color}
+                        onChange={(e) => setFormData({ ...formData, whitelabel_primary_color: e.target.value })}
+                        placeholder="#1e90ff"
+                        className="flex-1"
+                      />
+                      <input
+                        type="color"
+                        value={formData.whitelabel_primary_color || '#1e90ff'}
+                        onChange={(e) => setFormData({ ...formData, whitelabel_primary_color: e.target.value })}
+                        className="h-10 w-14 rounded-md border cursor-pointer"
+                      />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Used for the logo badge if no custom logo is set
+                    </p>
+                  </div>
+
+                  <div className="pt-4">
+                    <Button
+                      type="button"
+                      onClick={() => handleSave()}
+                      disabled={saving}
+                      className="cta-button gap-2"
+                    >
+                      {saving && <Loader2 className="h-4 w-4 animate-spin" />}
+                      <Save className="h-4 w-4" />
+                      Save Branding
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-6 space-y-4">
+              <div className="mx-auto w-12 h-12 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <Crown className="h-6 w-6 text-amber-500" />
+              </div>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  Whitelabeling is available with managed hosting.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Customize the application with your company logo, name, and brand colors.
+                </p>
+              </div>
+              <Button variant="outline" className="gap-2" asChild>
+                <a href="/admin/my-plan">
+                  <Crown className="h-4 w-4" />
+                  View Plans
+                </a>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="glass-card">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            <CardTitle>{t('locations.tracking.title')}</CardTitle>
+          </div>
+          <CardDescription>
+            {t('locations.tracking.description')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between rounded-lg border p-4">
+            <div className="space-y-0.5">
+              <Label htmlFor="location_tracking_enabled" className="text-base">
+                {t('locations.tracking.enableLabel')}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t('locations.tracking.enableDescription')}
+              </p>
+            </div>
+            <Switch
+              id="location_tracking_enabled"
+              checked={locationTrackingEnabled}
+              disabled={locationTrackingUpdating}
+              onCheckedChange={(checked) => setLocationTrackingEnabled(checked)}
+            />
+          </div>
+
+          {/* Guide, don't gate: tracking is on but no slots exist yet, so the
+              operator placement picker is empty. Suggest setting slots up. */}
+          {locationTrackingEnabled && !storageSlotsLoading && storageSlots.length === 0 ? (
+            <div className="mt-4 flex flex-col gap-3 rounded-lg border border-dashed border-border bg-muted/20 p-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-muted-foreground">
+                {t('locations.tracking.noSlotsHint')}
+              </p>
+              <Button asChild variant="outline" size="sm" className="shrink-0">
+                <Link to="/admin/config/locations">
+                  {t('locations.tracking.setupSlots')}
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
+
+      <FeatureFlagsSettings />
+
+      {tenant && (
+        <Card className="glass-card">
+          <CardHeader>
+            <CardTitle>Subscription</CardTitle>
+            <CardDescription>Your current plan and usage</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Current Plan</span>
+              <span className="text-sm">
+                {tenant.plan === 'free'
+                  ? 'Hosted Trial'
+                  : tenant.plan === 'pro'
+                    ? 'Pro'
+                    : 'Managed Hosting'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm font-medium">Status</span>
+              <span className="text-sm capitalize">{tenant.status}</span>
+            </div>
+            {tenant.plan === 'free' && (
+              <p className="text-xs text-muted-foreground pt-2">
+                Contact us about managed hosting
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

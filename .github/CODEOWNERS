@@ -1,0 +1,26 @@
+# Code ownership — maps areas to responsible agents/humans
+# Used by GitHub for PR review assignment
+
+# Default owner
+* @vanenkhuizen
+
+# Frontend
+/src/components/  @vanenkhuizen
+/src/hooks/       @vanenkhuizen
+/src/pages/       @vanenkhuizen
+
+# Backend (Edge Functions)
+/supabase/functions/  @vanenkhuizen
+/supabase/migrations/ @vanenkhuizen
+
+# Agent instructions
+/.agents/         @vanenkhuizen
+
+# Documentation
+/docs/            @vanenkhuizen
+/website/         @vanenkhuizen
+
+# Infrastructure
+/Dockerfile       @vanenkhuizen
+/docker-compose*  @vanenkhuizen
+/.github/         @vanenkhuizen

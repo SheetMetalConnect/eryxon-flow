@@ -1,0 +1,455 @@
+import { fetchAllPages } from "@/lib/db/pagination";
+import { fetchInChunks } from "@/lib/db/chunked";
+import React, { useState, useMemo, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ColumnDef } from "@tanstack/react-table";
+import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
+import { useProfile } from "@/hooks/useProfile";
+import { useResponsiveColumns } from "@/hooks/useResponsiveColumns";
+import { useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Download, Wrench, PlayCircle, CheckCircle2, UserCheck, PlusCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { isReleased } from "@/features/operator-terminal/release";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import OperationDetailModal from "@/components/admin/OperationDetailModal";
+
+interface Operation {
+  id: string;
+  operation_name: string;
+  status: string;
+  part_id: string;
+  part_number: string;
+  job_id: string;
+  job_number: string;
+  cell: string;
+  cell_color: string | null;
+  assigned_operator_id: string | null;
+  released: boolean;
+  assigned_name: string | null;
+  due_date: string | null;
+  resources_count: number;
+  resource_names: string[];
+}
+
+export const Operations: React.FC = () => {
+  const { t } = useTranslation();
+  const [selectedOperationId, setSelectedOperationId] = useState<string | null>(null);
+  const [rowSelection, setRowSelection] = useState<Record<string, boolean>>({});
+  const profile = useProfile();
+  const navigate = useNavigate();
+
+  const { data: operations = [], isLoading, refetch } = useQuery({
+    queryKey: QueryKeys.operations.all(profile?.tenant_id ?? ''),
+    queryFn: async () => {
+      if (!profile?.tenant_id) return [];
+
+      const query = supabase
+        .from("operations")
+        .select(
+          `
+          id,
+          operation_name,
+          status,
+          sequence,
+          assigned_operator_id,
+          part_id,
+          parts (
+            part_number,
+            job_id,
+            current_cell_id,
+            jobs (
+              job_number
+            )
+          ),
+          cells (
+            name,
+            color
+          ),
+          profiles:profiles!assigned_operator_id (
+            full_name,
+            email
+          )
+        `,
+        )
+        .eq("tenant_id", profile.tenant_id)
+        .order("created_at", { ascending: false }).order("id");
+      const data = await fetchAllPages((from, to) => query.range(from, to));
+
+      const operationIds = data.map((op: { id: string }) => op.id);
+      const resourceData = await fetchInChunks<{ operation_id: string; resource: { name: string } | null }>(operationIds, (ids) => supabase
+        .from("operation_resources")
+        .select(`
+          operation_id,
+          resource:resources(name)
+        `)
+        .in("operation_id", ids));
+
+      const resourceMap = new Map<string, { count: number; names: string[] }>();
+      resourceData?.forEach((item: { operation_id: string; resource: { name: string } | null }) => {
+        const opId = item.operation_id;
+        const resourceName = item.resource?.name || "Unknown";
+
+        if (!resourceMap.has(opId)) {
+          resourceMap.set(opId, { count: 0, names: [] });
+        }
+
+        const info = resourceMap.get(opId)!;
+        info.count += 1;
+        info.names.push(resourceName);
+      });
+
+      const steps = data.map((op) => ({ part: { id: op.part_id }, sequence: op.sequence, status: op.status }));
+      return data.map((op, i) => {
+        const resourceInfo = resourceMap.get(op.id) || { count: 0, names: [] };
+
+        return {
+          id: op.id,
+          operation_name: op.operation_name || "Unknown",
+          status: op.status || "not_started",
+          released: isReleased(steps[i], steps),
+          part_id: op.part_id,
+          part_number: op.parts?.part_number || "Unknown",
+          job_id: op.parts?.job_id || "",
+          job_number: op.parts?.jobs?.job_number || "Unknown",
+          cell: op.cells?.name || "Unknown",
+          cell_color: op.cells?.color || null,
+          assigned_operator_id: op.assigned_operator_id,
+          assigned_name: op.profiles?.full_name || op.profiles?.email || null,
+          due_date: null as string | null,
+          resources_count: resourceInfo.count,
+          resource_names: resourceInfo.names,
+        };
+      });
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
+  const handleExport = () => {
+    const csv = [
+      [
+        t("common.operation"),
+        t("common.part"),
+        t("common.job"),
+        t("operations.cell"),
+        t("operations.assigned"),
+        t("common.status"),
+      ].join(","),
+      ...operations.map((op) =>
+        [
+          op.operation_name,
+          op.part_number,
+          op.job_number,
+          op.cell,
+          op.assigned_name || "-",
+          op.status,
+        ].join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `operations-${new Date().toISOString()}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const getStatusBadge = useCallback((status: string, released = true) => {
+    if (status === "not_started" && !released) {
+      return <StatusBadge status="pending" label={t("operations.status.waiting")} />;
+    }
+    const badgeStatus: Record<string, "pending" | "active" | "completed" | "on-hold"> = {
+      not_started: "pending",
+      in_progress: "active",
+      completed: "completed",
+      on_hold: "on-hold",
+    };
+    return (
+      <StatusBadge
+        status={badgeStatus[status] || "pending"}
+        label={status.replace(/_/g, " ")}
+      />
+    );
+  }, [t]);
+
+  const columns: ColumnDef<Operation>[] = useMemo(() => [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <Checkbox
+          checked={table.getIsAllPageRowsSelected()}
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label={t("common.table.selectAll")}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label={t("common.table.selectRow")}
+          onClick={(e) => e.stopPropagation()}
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+      size: 40,
+    },
+    {
+      accessorKey: "operation_name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.operation")} />
+      ),
+      cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <span className="font-medium">{row.getValue("operation_name")}</span>
+          {row.original.resources_count > 0 && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="outline" className="gap-1 text-xs px-1.5 py-0">
+                    <Wrench className="h-3 w-3 text-orange-600" />
+                    {row.original.resources_count}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <div className="text-xs">
+                    <p className="font-semibold mb-1">Required Resources:</p>
+                    <ul className="list-disc list-inside">
+                      {row.original.resource_names.map((name, idx) => (
+                        <li key={idx}>{name}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "part_number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.part")} />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="text-primary cursor-pointer hover:underline"
+          onClick={() => navigate("/admin/parts")}
+        >
+          #{row.getValue("part_number")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "job_number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.job")} />
+      ),
+      cell: ({ row }) => (
+        <span
+          className="text-primary cursor-pointer hover:underline"
+          onClick={() => navigate("/admin/jobs")}
+        >
+          JOB-{row.getValue("job_number")}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "cell",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("operations.cell")} />
+      ),
+      cell: ({ row }) => {
+        const op = row.original;
+        return (
+          <Badge
+            variant="outline"
+            style={{
+              backgroundColor: op.cell_color ? `${op.cell_color}20` : '#f3f4f6',
+              color: op.cell_color || '#374151',
+              borderLeft: op.cell_color ? `3px solid ${op.cell_color}` : 'none',
+            }}
+          >
+            {op.cell}
+          </Badge>
+        );
+      },
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
+    },
+    {
+      accessorKey: "assigned_name",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("operations.assigned")} />
+      ),
+      cell: ({ row }) => {
+        const name = row.getValue("assigned_name") as string | null;
+        return name ? (
+          <span>{name}</span>
+        ) : (
+          <span className="text-muted-foreground">{t("operations.unassigned")}</span>
+        );
+      },
+      filterFn: (row, id, value) => {
+        const assigned = row.getValue(id) as string | null;
+        if (value.includes("assigned") && assigned) return true;
+        if (value.includes("unassigned") && !assigned) return true;
+        return false;
+      },
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("common.status")} />
+      ),
+      cell: ({ row }) => getStatusBadge(row.getValue("status"), row.original.released),
+      filterFn: (row, id, value) => {
+        return value.includes(row.getValue(id));
+      },
+    },
+  ], [getStatusBadge, navigate, t]);
+
+  const uniqueCells = useMemo(() =>
+    [...new Set(operations.map((op) => op.cell))],
+    [operations]
+  );
+
+  const filterableColumns: DataTableFilterableColumn[] = useMemo(() => [
+    {
+      id: "cell",
+      title: "Cell",
+      options: uniqueCells.map((cell) => ({ label: cell, value: cell })),
+    },
+    {
+      id: "status",
+      title: "Status",
+      options: [
+        { label: t("operations.status.notStarted"), value: "not_started" },
+        { label: t("operations.status.inProgress"), value: "in_progress" },
+        { label: t("operations.status.completed"), value: "completed" },
+        { label: t("operations.status.onHold"), value: "on_hold" },
+      ],
+    },
+    {
+      id: "assigned_name",
+      title: "Assignment",
+      options: [
+        { label: "Assigned", value: "assigned" },
+        { label: "Unassigned", value: "unassigned" },
+      ],
+    },
+  ], [uniqueCells, t]);
+
+  const { columnVisibility, isMobile } = useResponsiveColumns([
+    { id: "operation_name", alwaysVisible: true },
+    { id: "part_number", alwaysVisible: true },
+    { id: "job_number", hideBelow: "md" },      // Hide on mobile
+    { id: "cell", hideBelow: "lg" },            // Hide on mobile/tablet
+    { id: "assigned_name", hideBelow: "md" },   // Hide on mobile
+    { id: "status", alwaysVisible: true },
+  ]);
+
+  const operationStats = useMemo(() => {
+    if (!operations) return { total: 0, inProgress: 0, completed: 0, assigned: 0 };
+    return {
+      total: operations.length,
+      inProgress: operations.filter((o: Operation) => o.status === "in_progress").length,
+      completed: operations.filter((o: Operation) => o.status === "completed").length,
+      assigned: operations.filter((o: Operation) => o.assigned_name !== null).length,
+    };
+  }, [operations]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 space-y-4">
+      <AdminPageHeader
+        title={t("operations.title")}
+        description={t("operations.subtitle")}
+      >
+        <div className="flex gap-2">
+          {Object.keys(rowSelection).length > 0 && (
+            <Button
+              variant="default"
+              onClick={() => {
+                // Map selected row indices to actual operation IDs
+                const selectedOperationIds = Object.keys(rowSelection)
+                  .map(index => operations[parseInt(index)]?.id)
+                  .filter(Boolean)
+                  .join(",");
+                navigate(`/admin/batches/new?operationIds=${selectedOperationIds}`);
+              }}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              {t("batches.createBatch")} ({Object.keys(rowSelection).length})
+            </Button>
+          )}
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="mr-2 h-4 w-4" />
+            {t("common.export")}
+          </Button>
+        </div>
+      </AdminPageHeader>
+
+      <PageStatsRow
+        stats={[
+          { label: t("operations.total"), value: operationStats.total, icon: Wrench, color: "primary" },
+          { label: t("operations.inProgress"), value: operationStats.inProgress, icon: PlayCircle, color: "warning" },
+          { label: t("operations.completed"), value: operationStats.completed, icon: CheckCircle2, color: "success" },
+          { label: t("operations.assigned"), value: operationStats.assigned, icon: UserCheck, color: "info" },
+        ]}
+      />
+
+      <div className="glass-card p-2 sm:p-4">
+        <DataTable
+          columns={columns}
+          data={operations}
+          filterableColumns={filterableColumns}
+          searchPlaceholder={t("operations.searchPlaceholder")}
+          emptyMessage={t("operations.noResults")}
+          loading={isLoading}
+          pageSize={isMobile ? 20 : 50}
+          pageSizeOptions={[20, 50, 100, 200]}
+          searchDebounce={250}
+          onRowClick={(operation) => setSelectedOperationId(operation.id)}
+          columnVisibility={columnVisibility}
+          rowSelection={rowSelection}
+          onRowSelectionChange={setRowSelection}
+          maxHeight={isMobile ? "calc(100vh - 320px)" : "calc(100vh - 280px)"}
+        />
+      </div>
+
+      {selectedOperationId && (
+        <OperationDetailModal
+          operationId={selectedOperationId}
+          onClose={() => setSelectedOperationId(null)}
+          onUpdate={() => refetch()}
+        />
+      )}
+    </div>
+  );
+};

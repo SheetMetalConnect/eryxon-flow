@@ -1,0 +1,7 @@
+personality = "friendly"
+
+[features]
+multi_agent = true
+
+[plugins."superpowers@claude-plugins-official"]
+enabled = true

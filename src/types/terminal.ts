@@ -1,0 +1,52 @@
+import type { OperatorTerminalMode, TerminalJobModeSummary } from "@/features/operator-terminal/workModes";
+
+export interface TerminalJob {
+    id: string;
+    jobCode: string;
+    description: string;
+    material: string;
+    quantity: number;
+    producedQuantity?: number; // Good parts reported so far (sum of operation_quantities.quantity_good)
+    currentOp: string;
+    totalOps: number; // We might not have this easily, default to 0 or sequence
+    hours: number;
+    dueDate: string;
+    status: "in_progress" | "in_buffer" | "expected" | "completed" | "on_hold";
+    released: boolean; // every earlier operation of the part is completed
+    startBlocked: boolean; // sequential release is on and this operation is not released
+    warnings?: string[];
+    nextStep?: string;
+    hasPdf: boolean;
+    hasModel: boolean;
+    // Extra fields for logic
+    operationId: string;
+    partId: string;
+    jobId: string; // Added for QRM routing
+    filePaths: string[];
+    activeTimeEntryId?: string;
+    activeOperatorId?: string; // ID of the operator currently clocked on
+    activeOperatorName?: string; // Name of the operator currently clocked on
+    isCurrentUserClocked?: boolean; // True if current user is clocked on this operation
+    notes?: string | null;
+    operationType?: string | null;
+    cellName?: string;
+    cellColor?: string;
+    cellId: string;
+    currentSequence?: number; // Added for next operation detection
+    // Part-specific fields
+    drawingNo?: string | null;
+    cncProgramName?: string | null;
+    isBulletCard?: boolean | null; // QRM: Bullet Card (always-on-top priority) flag
+    plannedStart?: string | null; // Scheduled start date of operation
+    locationCode?: string | null; // Drop-off slot the part sits in (location tracking on)
+    batchContext?: {
+        batchId: string;
+        batchNumber: string;
+        batchType: string;
+        status: string;
+        parentBatchNumber?: string | null;
+        operationsCount: number;
+    } | null;
+    operatorMode?: Exclude<OperatorTerminalMode, "not_working"> | null;
+    modeSummary?: TerminalJobModeSummary;
+}

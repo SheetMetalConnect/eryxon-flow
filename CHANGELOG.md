@@ -1,0 +1,1049 @@
+# Changelog
+
+All notable changes to Eryxon Flow are documented here.
+
+## Archived — 2026-11-18
+
+- Eryxon Flow is archived. The hosted version is shut down.
+- Relicensed from the Business Source License 1.1 to the Unlicense (public domain). The commercial licence and pricing pages are removed.
+- Automatic dependency updates (Dependabot) are switched off.
+
+## [0.11.5] — 2026-09-19
+
+This release shortens the operator completion flow and makes planning updates
+safer under concurrent shop-floor changes.
+
+### Changed
+
+- Operators can report the final quantity and complete the operation in one
+  action. The terminal now shows route, quantity and time progress more clearly.
+- The QRM overview uses the same Active, On hold, In Buffer and Expected rules
+  as the operator terminal and fetches all cell metrics in one request.
+- Demo dates use the tenant working week and seeded factory calendar. Active
+  work is never created with a future start time.
+- The public website now describes the hosted trial, Premium from €300 per site
+  per month, and the free single-site Community edition in concise product copy.
+- Compatible dependency updates were applied to the app, website and MCP server.
+
+### Fixed
+
+- Auto Schedule commits dates and allocations atomically, preserves existing
+  capacity when a row cannot be replanned, and blocks work behind an unfinished
+  predecessor with no known end.
+- The database rechecks cell capacity and operation versions before accepting a
+  plan, preventing stale browser state from overbooking a cell.
+- Planning expectations now follow date and operation-name changes, including a
+  repair for older active expectations.
+- Demo reset and tenant deletion follow a complete child-first cleanup path.
+- Realtime terminal updates are debounced, activity monitoring no longer polls
+  every ten seconds, and client failures record bounded diagnostic metadata.
+
+### Upgrade notes
+
+- Apply `20260919160000_atomic_scheduler_and_flow_metrics.sql` before deploying
+  the frontend.
+
+## [0.11.4] — 2026-09-19
+
+This patch keeps demo workshops current and makes automatic scheduling follow
+job routing and cell capacity.
+
+### Changed
+
+- Demo jobs, operations, production records and factory calendars now use one
+  rolling timeline relative to the seed date. Work-order and material-lot years
+  follow the current year.
+- Auto Schedule plans not-started work by job due date and routing. Active and
+  completed operations keep their existing plan.
+- Demo operations include planned dates and status timestamps, so a fresh
+  workshop is usable in the terminal, dashboard and capacity views immediately.
+
+### Fixed
+
+- Replanning an operation now versions and supersedes its completion expectation
+  instead of leaving the original expected date active.
+- Demo reset removes dependent planning, expectation, batch, location and
+  operator records in foreign-key-safe order while preserving the tenant,
+  administrator profiles and configuration.
+- Factory-wide scheduling no longer serializes every operation into one queue.
+- Part-routing RPC results now return task status through their documented text
+  contract, and tenant deletion uses the current webhook delivery table.
+
+### Upgrade notes
+
+- Apply `20260919150000_dynamic_demo_data_consistency.sql` and
+  `20260919151000_repair_schema_functions.sql` before deploying the frontend.
+
+## [0.11.3] — 2026-09-19
+
+This patch makes the operator terminal's production actions explicit and
+transactional.
+
+### Changed
+
+- The terminal always shows **Mark complete** for released work. Operators can
+  report output and then complete the operation without first opening a timer.
+- Scanning or starting another operation while work is running now shows both
+  operations and asks for confirmation before switching.
+- The landing page and operator guides use the same start, report and complete
+  flow as the application.
+
+### Fixed
+
+- Switching operations is one database transaction. A rejected target no
+  longer leaves the previous timer stopped.
+- **Stop & complete** now closes the timer and operation through one lifecycle
+  call instead of two requests that could partially succeed.
+- Start, pause and complete ignore repeated taps while a transition is pending.
+- Sequential release also blocks direct completion of unreleased work.
+- Production, issue and file dialogs provide accessible descriptions.
+
+### Upgrade notes
+
+- Apply `20260919140000_atomic_operation_switch.sql` and
+  `20260919141000_sequential_finish.sql` before deploying the frontend.
+
+## [0.11.2] — 2026-09-19
+
+This patch removes obsolete production endpoints and makes the public API
+contract match the Edge Functions that are shipped from the repository.
+
+### Changed
+
+- Replaced the legacy task-and-stage OpenAPI document with a deployment-neutral
+  contract for the current jobs, parts, operations, batches, webhooks and file
+  endpoints.
+- Reworked the payload guide around current writable fields, filters and
+  examples. Public examples now use neutral placeholder data.
+- Repository agent configuration no longer points clones at the hosted
+  Supabase project. Scheduled pilot evaluation reads its deployment URL from
+  the same Vault configuration as webhook delivery.
+
+### Fixed
+
+- Batch create and update requests now use the shared write-field allowlist;
+  lifecycle, calculated and ownership fields cannot be supplied through the
+  generic batch payload.
+- NCR category and disposition validation now matches the database enums, so
+  retired values fail as validation errors instead of database errors.
+- Removed 17 remote-only Supabase functions left behind by older deployments,
+  including test, retired task/stage, MQTT, billing and webhook-log endpoints.
+
+## [0.11.1] — 2026-09-19
+
+This patch hardens the MCP and webhook boundaries introduced in 0.11.0 and
+brings the public website and technical documentation back in line with the
+running product.
+
+### Changed
+
+- The landing page now leads with ERP-connected shop-floor execution for
+  high-mix metal fabricators. AI-agent access remains an optional integration,
+  not the product headline.
+- Public documentation, code comments and examples now use the current API
+  surface, licensing model, operating options and plan names.
+- MCP builds remove the previous `dist` tree before compilation.
+
+### Fixed
+
+- MCP server 3.0.1 requires `TENANT_ID`, scopes the workshop record correctly,
+  rejects cross-workshop RPC arguments and validates parent ownership before
+  accessing join tables. Operator creation, PIN reset, unlock, routing and
+  notifications now work with a service-role connection without relying on an
+  end-user session.
+- Webhook configuration accepts HTTPS endpoints only. Dispatch rejects localhost
+  subdomains and does not follow redirects, closing routes to private targets.
+- Legacy `premium` tenant values display as managed hosting instead of exposing
+  a retired public plan name.
+- Patched the Vitest and `js-yaml` development dependencies flagged by the
+  repository dependency audit.
+
+### Upgrade notes
+
+- Apply `20260919120000_mcp_operator_tenant_scope.sql` before running MCP server
+  3.0.1. Set `TENANT_ID`; the server now refuses to start without it.
+
+## [0.11.0] — 2026-09-18
+
+Eryxon Flow 0.11.0 is the agent-ready release. Everything an operator or planner
+can do in the app can be done through the REST API and the MCP server, on the
+same database rules, with the same events. Webhooks are the one outbound path
+and were rebuilt for production use. The MQTT publisher is gone.
+
+### Added
+
+- **MCP server 3.0** on the MCP specification of 2026-07-28 (stateless core,
+  Streamable HTTP or stdio, cache hints, standard `Mcp-*` headers, multi
+  round-trip requests). 113 tools with titles, annotations and output schemas
+  cover jobs, parts, routing and files, operations and their lifecycle, time
+  entries, output and scrap, issues and standstills, batches, substeps, cells,
+  resources, materials, operators and assignments, the factory calendar,
+  webhooks, workshop settings, locations, notifications, activity and QRM
+  metrics. A coverage test asserts every REST endpoint and RPC has a tool.
+  Lifecycle tools call `transition_operation`, so timers, job state and the
+  sequential-release rule apply to agents too. No support for earlier protocol
+  versions.
+- **Sequential release** (Organization settings). When enabled, an operation can
+  only start after every earlier operation on the same part is completed. The
+  rule lives in the database, so terminal, API and MCP behave the same. Off by
+  default.
+- **Webhooks, rebuilt.** One database trigger emits every event (36 names:
+  `job|part|operation.{created,updated,started,paused,resumed,completed,deleted}`,
+  batches, issues, production reports, ERP sync summaries). Payload
+  `{id, event, occurred_at, tenant_id, data}`; signature
+  `X-Eryxon-Signature: t=<unix>,v1=<hmac-sha256>`; five attempts with backoff;
+  a delivery log with status, latency and error; test send and redeliver from
+  the admin page; https only; private targets blocked unless
+  `WEBHOOK_ALLOW_PRIVATE_TARGETS=true`; endpoints auto-disable after 25
+  consecutive failures. Secrets are shown once.
+- **Drop-off locations in the demo wizard.** The onboarding asks whether the
+  workshop uses drop-off slots and seeds slots and placements per cell. The work
+  queue shows the slot a part is in, and the Location tab shows free slots at
+  the next cell.
+- Admin: move an operation to another cell and change its sequence; the
+  Operations list marks operations waiting on an earlier step.
+- One MCP page (`/admin/mcp`) generates the server `.env`, the `claude mcp add`
+  command and the `mcpServers` JSON from the chosen actor and transport. The API
+  keys page creates, lists and revokes keys through the Edge Function only.
+
+### Changed
+
+- The terminal's **In Buffer** and **Expected** sections follow the routing: In
+  Buffer lists operations whose predecessors are completed, Expected lists the
+  ones still waiting upstream. Before, the split was the first five not-started
+  rows versus the rest.
+- Starting an operation while clocked on another one stops the running timer
+  and starts the new one. The toast names the operation that was stopped.
+- Business-rule errors from the production lifecycle are shown as translated
+  messages. The REST API returns them as `409 CONFLICT` with the rule text, and
+  `404` for a missing record.
+- Admin hold and complete go through `transition_operation`; the admin "start"
+  button (which set a status without a timer) is gone.
+- Faster admin pages: the entry bundle went from 819 kB to 435 kB, NL/DE
+  catalogs load on demand, the icon picker no longer pulls in the whole icon
+  set, the dashboard loads its queries in one round and debounces realtime
+  refreshes, assignments load in three queries instead of one per part. Twenty
+  foreign-key indexes and rewritten RLS policies (`(select auth.uid())`) speed
+  up list queries.
+- Database privileges: `anon` can execute eight pre-login functions and nothing
+  else; trigger and maintenance functions are no longer callable by signed-in
+  users; the six functions without a fixed `search_path` have one; new
+  functions default to no `EXECUTE` for `PUBLIC`.
+- The website is the documentation. Repo `docs/` keeps only contributor
+  material; stale guides, hand-maintained route and hook maps, design-system
+  screenshots and finished plans were deleted. `.env.example` lists exactly the
+  variables the app reads. `npm ci && npx supabase start && npm run dev` is the
+  local setup.
+
+### Fixed
+
+- The English interface showed Dutch labels in the terminal's due-date column.
+- Hardcoded fallback strings were removed from the UI; every label resolves from
+  the EN/NL/DE catalogs, and tests keep the catalogs in sync and every key
+  resolvable.
+- Double-clicking Start no longer fires the request twice.
+- The in-app documentation links pointed at pages that did not exist.
+
+### Removed
+
+- The MQTT publisher (admin page, Edge Function, tables). It never opened an
+  MQTT connection and was never tested. Use webhooks and bridge to a broker
+  outside the app.
+- The in-app Swagger page and its 1.3 MB bundle; the REST reference lives on the
+  website and `/openapi.json` is still served.
+- The per-key MCP tables, endpoints and health rows the server never read, and
+  the sidebar status dot and toasts fed by them.
+- The browser-side event dispatcher and the API-side event emitters; the
+  database trigger is the single source of webhook events.
+- Unused error, barrel, logger and cache modules, dead components, hooks and
+  pages, duplicated Edge Function helpers, the Cloudflare app-deploy path and
+  the seed-provisioning drill workflow.
+
+### Upgrade notes
+
+- Apply the `20260918*` migrations in order before deploying this frontend and
+  the Edge Functions: sequential release, admin indexes, function privileges,
+  RLS initplan, drop MQTT, webhooks, drop MCP key tables. There is no
+  compatibility layer: webhook consumers must switch to the new payload and
+  signature, MCP clients must speak protocol 2026-07-28, and API clients must
+  handle `409` for rule violations.
+- The MCP server reads `MCP_BEARER`, `MCP_ACTOR_ID`, `TENANT_ID`,
+  `SUPABASE_URL` and `SUPABASE_SERVICE_KEY`; generate the `.env` from
+  `/admin/mcp`.
+- Hosted project: enable leaked-password protection in Authentication settings
+  (not a code change).
+
+## [0.10.1] — 2026-09-08
+
+### Changed
+
+- A self-hosted installation now serves one workshop, as the licence describes.
+  The first sign-up creates the workshop with no trial and no quotas (plan
+  `enterprise`); the database refuses a second workshop and the sign-in page hides
+  registration once one exists. The hosted service marks itself with the vault
+  secret `hosted_mode` and keeps plans, trials and quotas.
+- Removed every mention of a Premium edition from the app, README, licence notes
+  and website; the commercial licence applies to multi-site use and offering the
+  app as a service. Real customer names in design-kit demo data were replaced, and
+  the archived pre-consolidation migrations and QA screenshots left the tree.
+- Removed the OpenTrace tooling, the Makefile and one-off bootstrap scripts;
+  `npm run deploy:hosted` rolls out migrations, Edge Functions and the Vercel
+  frontend in order from the repository root.
+
+### Fixed
+
+- `dispatch_webhook` is no longer executable by anonymous or authenticated API
+  clients; only the database triggers and the service role can emit signed events.
+- MCP batch completion starts unstarted operations before finishing them, keeps
+  completion notes, and reports how far a batch got on failure.
+
+### Upgrade notes
+
+- Apply `20260908110000` before deploying this frontend. On the hosted project run
+  `SELECT vault.create_secret('true', 'hosted_mode');` first; self-hosted
+  installations need nothing and keep their existing workshop.
+
+## [0.10.0] — 2026-09-07
+
+Eryxon Flow 0.10.0 is a hardening release. Operators get one responsive interface
+on every device, production changes are transactional, tenant and PIN boundaries are
+enforced in the database, and self-hosters get a release workflow with versioned
+images and clear upgrade steps. No new licence terms and no Premium functionality
+moved into Community.
+
+### Changed
+
+- Community uses one responsive web interface for phones, tablets, and desktops.
+  Legacy `/m` links redirect to the shared operator routes, including operation
+  details and issue reporting. Removed duplicated mobile pages, shells, styling,
+  and unused native hooks. PWA installation and caching are now opt-in.
+- Production lifecycle actions now run in database transactions. Operation,
+  batch, membership, quantity, and timer changes use consistent row locking and
+  reject invalid transitions without leaving partial updates.
+- Releases use one manually dispatched workflow, stable SemVer, matching package
+  and lockfile versions, changelog notes, versioned images, and recorded digests.
+  Production deployment is optional, verifies its target, waits for health, and
+  restores the previous app image on failure. Removed the competing publisher
+  and disabled automatic Vercel production deployment from `main`; previews remain
+  available while migrations and frontend rollout are coordinated.
+- Updated deployment documentation for Node 22, explicit releases, immutable image
+  digests, and the default responsive web build. Custom Docker builds now accept
+  `VITE_ENABLE_PWA=true`; changing runtime configuration does not enable PWA support.
+  Removed the obsolete self-hosting script that rewrote configuration and repaired
+  migration history during setup. Operator routing and screen guidance now live in
+  the website manual; contributor documentation retains implementation patterns.
+- Simplified English, Dutch, and German quick starts and the deployment entry page
+  around one maintained self-hosting guide. Corrected Node requirements and removed
+  the obsolete interactive provisioner, its unused verification companion, and
+  unsupported CLI setup recipes.
+- CI checks the referenced TypeScript projects, application tests and build,
+  all Edge entrypoint type checks and tests, documentation, clean database
+  migrations, tenant isolation, and
+  concurrent production actions. The former root `tsc --noEmit` checked no files.
+- Database CI starts only PostgreSQL; clean migration replay, tenant isolation,
+  verified operator sessions, and concurrency checks retain the same coverage.
+- PR feedback snapshots now record requested reviewers and the commit covered by
+  each submitted review, and distinguish structural checks from completed feedback.
+- Added a persistent PR feedback loop covering late comments, unresolved threads,
+  current-head checks, and changes during review. CodeRabbit is configured for
+  assertive incremental reviews; bot availability is verified per PR.
+- At the time of this release, the GitHub repository was private. Dependency updates are enabled for the app,
+  documentation, MCP server, and Actions. Release and development instructions
+  describe the current GitHub plan's protection limits.
+- Upgraded the documentation toolchain to Astro 7 and compatible Starlight,
+  retaining Markdown diagrams and replacing imports of private package files.
+  Fixed MCP tenant updates and health checks, removed duplicate emitted tests,
+  and excluded development dependencies from its production image.
+- Removed route-barrel dependency cycles and moved shared CAD/table types out of
+  implementation modules. The application import graph now has no cycles.
+- Regenerated database types from the clean migration replay and removed the
+  divergent hand-maintained type tree and its implementation-mirroring tests.
+- Updated dependency resolutions, moved the Supabase CLI to development tooling,
+  and removed unused UI packages, wrappers, and the unused MQTT browser client.
+  Dependency audits are recorded with validation; they are not a security guarantee.
+
+### Fixed
+
+- Disabled PWA builds now serve a retiring worker at the existing URL so installed
+  clients can leave the old cached app. Retirement preserves open pages and caches;
+  the next navigation loads the regular web build.
+- Prevented browser writes from granting platform privileges, changing tenant
+  membership or subscription limits, and calling privileged maintenance RPCs.
+  Storage access and references between tenant-owned records now enforce tenant
+  ownership. Invitation signup validates the invitation instead of trusting
+  caller-supplied role and tenant metadata.
+- PIN verification now binds the employee to the authenticated terminal session.
+  Expired, cleared, forged, and other-session identities cannot drive production
+  actions. Time entries retain both the terminal account and the verified employee;
+  activity, operator indicators, and reports use the employee identity.
+- Authentication changes clear cached tenant data and ignore stale asynchronous
+  profile/session responses. Operator lock and sign-out revoke the PIN binding.
+- Terminal accounts with the operator role must verify an employee PIN before
+  production actions. The operator routes and legacy `/m` redirects no longer admit
+  an unverified operator profile, and the database rejects lifecycle writes without
+  a verified employee session unless the caller is an admin or the service API.
+- Self-hosted containers add the configured Supabase HTTP and WebSocket origins to
+  the Content Security Policy at start-up, so backends outside `*.supabase.co`
+  (a LAN address or custom domain) are reachable. Runtime configuration is written
+  as JSON, and an invalid backend URL stops the container instead of serving a
+  broken page.
+- Batch images selected before the batch exists upload to a tenant-scoped staging
+  path that the storage policies accept.
+- Restarting a timer on an operation already in progress no longer emits a second
+  `operation.started` event. Both the browser and the API emit it only on the
+  first transition out of `not_started`.
+- Part images keep uploading and displaying under the tenant-scoped storage
+  policies, and organisation settings that toggle whitelabeling save again.
+- Operations follow their state machine again: pause needs an operation in
+  progress, resume needs a paused one, and completion needs a started one. The
+  service API may close a PIN operator's timer, admins can close timers of
+  deactivated accounts, and the CRUD endpoints no longer accept lifecycle columns
+  (`status`, timestamps, `actual_time`); the MCP batch completion uses the
+  transactional RPC.
+- Opening the app in a second tab no longer revokes the PIN session of the first.
+  Operator actions return as soon as the database commits; webhook and MQTT
+  delivery no longer holds up the terminal or serialises batch events.
+- Job and part status refreshes only rewrite rows whose derived state changes,
+  so a timer action no longer fans out an activity row, webhook and realtime
+  update per part of the job.
+- Database-side webhook dispatch authenticates with the `internal_service_secret`
+  vault secret, and Edge Functions without `INTERNAL_SERVICE_SECRET` fall back to
+  the service-role key instead of silently dropping events. Dashboard and
+  booked-hours views name the verified employee instead of the terminal account.
+- API query modifiers no longer execute the Supabase query before applying filters.
+  Bulk synchronization reports failed writes, CRUD endpoints restrict writable
+  fields and validate tenant references, and internal events require authentication.
+- Data tables refresh when rows or handlers change. Realtime subscriptions preserve
+  pending notifications across rerenders. List reads filter before pagination,
+  fetch complete ordered chunks, and use separate cache keys for distinct shapes.
+- Routing summaries batch related reads instead of issuing per-row requests.
+  Fixed CAD source/material contracts, preserved organization feature flags, and
+  corrected missing Edge storage exports and issue event callbacks.
+- Container health checks use the IPv4 listener explicitly, fixing false failures
+  when `localhost` resolves to IPv6.
+- Clean database setup tolerates the optional historical signup notification
+  trigger through a documented replay compatibility exception; existing applied
+  migrations and tenant trial dates are not rerun. Documentation type checking now passes after removing a dead script
+  and correcting component/DOM types.
+
+### Upgrade notes
+
+- Apply the three `20260907` migrations before deploying this frontend and its
+  Edge Functions. Back up the target first and run `scripts/audit-tenant-references.sql`
+  before rollout. Existing invalid cross-tenant references need explicit repair;
+  the migration does not silently delete or reassign records.
+- Set `INTERNAL_SERVICE_SECRET` consistently for internal event dispatchers and
+  store the same value plus the project URL as the vault secrets
+  `internal_service_secret` and `project_url` (see `20260908090000`). Never expose
+  either secret or a service-role key through a `VITE_` variable.
+- Existing terminal users must verify their PIN again. `/m` bookmarks remain valid.
+- Community retains its existing Business Source License 1.1. This release does
+  not change the license or move Premium functionality into Community.
+
+## [0.9.2] — 2026-08-24
+
+### Fixed
+
+- **Test suite runs green on Node 22+.** Node defines a `localStorage` accessor
+  on `globalThis` that stays unusable without `--localstorage-file`, and Vitest's
+  jsdom environment skips globals that already exist — so jsdom's own Storage
+  never landed and `window.localStorage` read back `undefined`. Two `OperatorView`
+  tests failed on it. `src/test/setup.ts` now installs an in-memory `Storage`
+  whenever the runtime's `localStorage` is unusable. 984 tests pass.
+
+### Changed
+
+- **`package.json` is the single version source and matches the changelog again.**
+  It had been left at `0.8.5` through the 0.9.0 and 0.9.1 releases. Releases are
+  tagged: `v0.9.1` on the Community/Premium split, `v0.9.2` here.
+- **`package-lock.json` regenerated.** It still carried the whole Capacitor /
+  Ionic native tree that 0.9.1 dropped from `package.json`, and its own
+  `version`/`license` fields still read `0.6.0` / `Apache-2.0`. Build and tests
+  verified after the prune.
+
+## [0.9.1] — 2026-07-05
+
+### Changed
+
+- **Community edition is now a web-only PWA.** Native device integration
+  (iOS/Android via Capacitor — barcode scanner, biometric unlock, push,
+  haptics, status bar) is removed from the Community repo and moved to Premium.
+  The app keeps basic web camera/photo upload and still installs as a PWA
+  ("Add to Home Screen" / "Install app"). All `@capacitor/*` dependencies and
+  the native build workflow were dropped; the native bridge is now a web-only
+  shim.
+- **FrePPLe and Odoo MRP planning connectors are Premium.** The adapter code
+  (`src/lib/planning/`) is removed from Community; Organization Settings now
+  shows the planning integration as a described Premium feature. Basic capacity
+  planning (QRM / WIP dashboards) stays in Community.
+- **LICENSE completed to the canonical BSL 1.1 template** (MariaDB text
+  attribution and the "not an Open Source license" notice).
+
+## [0.9.0] — 2026-07-05
+
+### Changed
+
+- **Relicensed from Apache 2.0 to the Business Source License 1.1** — Eryxon
+  Flow is now source-available rather than open source. Two editions replace the
+  single-licence model:
+  - **Community** — free to self-host for a single workshop, with full source to
+    read and modify. Each released version converts to GPL v2.0-or-later four
+    years after its release under the BSL change licence.
+  - **Premium** — commercial (contact sales, SLA-backed): multi-site, ERP
+    connectors, add-ons, monitoring, hub, advanced workflows, whitelabel, and
+    advanced 3D.
+- **License surfaces updated to match** — the README, website, docs, and the
+  in-app license panel now describe the source-available BSL model and the
+  Community / Premium split. `package.json` and `mcp-server/package.json` are set
+  to `BUSL-1.1`.
+
+## [0.8.5] — 2026-06-29
+
+### Added
+
+- **Demo workspaces seed example drop-off slots** — generating demo data now
+  creates a few drop-off slots per cell, so location tracking (on by default)
+  shows working data instead of an empty picker.
+- **Setup reminder for drop-off locations** — Organization Settings shows a
+  suggestion with a link to Configuration → Locations when location tracking is
+  on but no slots exist yet. A nudge, not a block.
+
+### Changed
+
+- **Drop-off slot picker is cell-aware** — the picker now shows the slots for
+  the cell the part heads to next (plus unassigned general slots) instead of
+  every cell's slots, falling back to all slots if that cell has none. The
+  suggestion prefers the cell's own slots, then a general slot.
+
+## [0.8.4] — 2026-06-29
+
+### Fixed
+
+- **Finishing a job no longer fails** — the part-completion notification
+  trigger referenced a `name` column that does not exist on `parts` (the field
+  is `part_number`), so marking an operation complete raised an error and the
+  request failed. The trigger now uses `part_number`.
+- **Priority Bullet Cards always sort to the top** of their section, with
+  clearer card styling, and the empty instruction box no longer renders when an
+  operation has no instruction.
+
+### Changed
+
+- **Database migrations apply automatically on deploy** — merged schema changes
+  now run against the database as part of the deploy rather than waiting on a
+  separate manual step, so the app and its schema stay in lockstep. Self-hosters
+  get pending migrations applied on each deploy.
+
+## [0.8.3] — 2026-06-28
+
+### Added
+
+- **Booked vs budget in the operator panel** — the detail panel shows time
+  booked so far against the operation's budget, with an over/under chip and a
+  progress bar, plus the operators who worked the job (live dot for anyone
+  running now). Display only — it guides, it does not gate.
+- **Step-by-step checklist** surfaced in the Steps tab while the operator is
+  clocked on.
+
+### Changed
+
+- **Time reads in real units** — operation time is stored in minutes but the
+  terminal labelled it with an `h` (a 90-minute job read "90h"). One shared
+  `formatDuration` helper now renders `45m` / `1h 20m` / `2h` across the
+  operator views; two duplicate inline formatters were folded into it.
+- **Complete while clocked on** — Complete no longer blocks on a running timer;
+  it stops the operator's own timer first ("Stop & complete"). Still blocked
+  only by another operator's timer or a full next cell.
+- **Calmer operator panel** — removed duplicate operation-type and
+  work-readiness pills; instruction note now sits under a clear label.
+- **Location tracking on by default** — the placement/drop-off prompt shipped
+  opt-in and was invisible to most shops; now opt-out, switchable per tenant.
+
+### Fixed
+
+- **Yellow Card standstill flow** — reporting an issue now offers a "standstill?"
+  toggle; turning it on parks the operation under a Yellow Card (`on_hold`) via an
+  `issues` trigger, and the card auto-clears when the issue leaves `pending`.
+  Parked operations stay visible in the queue instead of disappearing. Bullet and
+  Yellow cards are now row formatting + sorting, not pills; the redundant status
+  and operation-type pills are gone from the terminal.
+- **Time-tracking correctness** — duplicate clock-entries were stored in seconds
+  instead of minutes (60x inflation) and never added to `actual_time`; the live
+  booked figure ignored pauses and dropped on clock-off. All fixed.
+- **Selection checkboxes invisible on dark theme** in the Operations workspace.
+
+## [0.8.2] — 2026-06-27
+
+### Fixed
+
+- **Website: release notes were out of order** — same-day releases (v0.7.2,
+  v0.8.0, v0.8.1 all shipped 2026-06-27) sorted only by date, so they rendered
+  in the wrong order. The page now sorts newest-first by semantic version.
+- **Website: no navigation menu on mobile** — the shared marketing header hid
+  every nav link below 760px with no replacement, leaving phones with no way to
+  navigate the site. Added a proper hamburger dropdown (Documentation, Blog,
+  Release Notes, Roadmap, language switch, CTA).
+
+### Changed
+
+- **Website: homepage copy** — removed pixel/jargon wording ("56px touch
+  targets") from the landing page across EN/NL/DE, and renamed the nav item
+  "Changelog" to "Release Notes" to match the page. Deleted orphaned, shadowed
+  `docs/index.mdx` files that never rendered (the homepage is `pages/index.astro`).
+
+## [0.8.1] — 2026-06-27
+
+### Changed
+
+- **Bullet Card priority chip no longer says "Rush"** — the operator terminal
+  labelled the Bullet Card with a generic "Rush" badge, but the product has no
+  separate rush flag: the Bullet Card *is* the priority signal. The chip now
+  reads "Bullet" (EN/NL/DE), matching the card's name everywhere else.
+
+### Removed
+
+- **Stale duplicate "Articles" in the docs sidebar** — two articles ("the road
+  to v0.7", the Apache 2.0 move) lived in the docs sidebar as copies of blog
+  posts. Articles live on the blog; the docs copies are gone and their URLs
+  redirect to the blog.
+
+## [0.8.0] — 2026-06-27
+
+A focused redesign of the operator terminal's detail panel, plus a finished
+drop-off flow for location tracking.
+
+### Changed
+
+- **Operator detail panel rebuilt around tabs** — the panel used to stack many
+  bordered sections, which squeezed the drawing into a sliver and repeated the
+  same facts (status, operation type, the routing) more than once. It now leads
+  with one calm header and moves everything else behind tabs that fill the
+  screen: **Steps** (instructions + routing), **3D** / **PDF** (loaded only when
+  opened), **Batch**, **Location**, and **Info** (resources, dependencies, CNC).
+  Tabs appear only when they have something to show. The same panel reflows to a
+  single column on a phone.
+
+### Added
+
+- **Location tab with next-cell drop-off** — the terminal now has a Location tab
+  showing where a part currently is and letting an operator record or move it at
+  any time, not just at completion. Both the tab and the completion slot picker
+  name the **next cell** the part is heading to and suggest a slot near it.
+- **Batch tab** — parts that run as part of a nest or batch show a Batch tab with
+  the batch number, type, status, and operation count.
+
+## [0.7.2] — 2026-06-27
+
+Hotfixes for faults that only surfaced against real, high-volume floors after
+the v0.7.1 rollout.
+
+### Fixed
+
+- **Operator terminal went blank under data faults** — the terminal builds
+  batch context for every job in the queue. When one of those lookups failed
+  (an oversized batch query at scale, a half-migrated batch table), the whole
+  load was abandoned and the queue came up empty, so operators could not clock
+  on. Batch context loading is now non-fatal: a failed lookup leaves the job
+  list intact and only drops batch grouping. The last unchunked batch-members
+  query is chunked too.
+- **Admins forced through the operator login on mobile** — opening the app on a
+  phone redirected admins to the operator badge-and-PIN screen even when already
+  signed in. Admins now reach the mobile floor view for oversight without
+  badging in, and are never recorded as the operator doing the work.
+
+### Changed
+
+- **Location tracking stays inert when disabled** — the off-by-default location
+  module no longer queries drop-off slots on every terminal load when tracking
+  is turned off.
+
+## [0.7.1] — 2026-06-22
+
+Same-day hotfixes after the v0.7.0 rollout surfaced issues against real,
+high-volume tenant data, plus the first slice of the location module.
+
+### Added
+
+- **Location module (foundation)** — configurable drop-off slot grid
+  (`storage_locations`, per-cell, with capacity) and part placement tracking
+  (`part_placements`), behind a per-tenant toggle (`location_tracking_enabled`).
+  When enabled, operators record where they put a part on completion. Off by default.
+
+### Fixed
+
+- **Operator terminal 100% down (400)** — the terminal loaded every visible
+  operation's batch links in a single PostgREST `.in(operation_id, […])` call; with
+  hundreds of operations the URL exceeded the server limit and returned 400, so the
+  view failed to load and operators could not clock on. The id lookups are now chunked.
+- **Issue queue 400** — `/admin/issues` embeds cells via `issues_current_cell_id_fkey`,
+  but v0.7.0 only created composite tenant-scoped FKs, so PostgREST could not resolve
+  the relationship. Added the simple single-column FKs the query expects (the composite
+  tenant-safe FKs remain).
+- **Admin dashboard did not scale** — the active-order progress card loaded every active
+  job with nested parts/operations. It now loads the 150 most urgent and shows the true
+  active count via a head-count.
+- **storage-manager edge function** — a CORS refactor left helper functions referencing
+  an out-of-scope `corsHeaders`; threaded the per-request headers through.
+
+## [0.7.0] — 2026-06-22
+
+Four-core release: location-aware work, more reliable issue reporting, manufacturing-aware
+work queues, and operator terminal work modes (setup vs production).
+
+### Added
+
+- **Location-aware issue reporting** — issues carry `current_cell_id` / `intended_next_cell_id`
+  (tenant-scoped FKs), so a quality issue records where the part was and where it was headed.
+- **Batch production mode** — `operation_batches.production_mode` (`manual` / `automated`,
+  automated constrained to laser-nesting batches).
+- **Resource–cell memberships** — `resource_cell_memberships` table for assigning resources to cells.
+- **Operator terminal work modes** — setup/prep vs production, shared-terminal login + operator switching.
+- **CNC program QR codes** — operators can scan the program name from the terminal detail panel.
+
+### Fixed
+
+- **i18n: namespace collision dropped 68 `users.*` keys** — the shallow `Object.assign` namespace
+  merge let `config.json`'s partial `users` block clobber `admin.json`'s full block, rendering raw
+  keys on the admin Users page. Switched to a deep merge and filled **408 missing keys** across
+  EN / NL / DE; raw-key blockers went from 92 to 0.
+- **CORS: API-key generation failed on the hosted frontend** — `api-key-generate` / `storage-manager`
+  returned a static `Access-Control-Allow-Origin` that fell back to `http://localhost:5173`. CORS now
+  reflects the request origin against an allowlist; production origins come from `ALLOWED_ORIGIN`
+  (no vendor domain hardcoded in source — hosted and self-hosted modes stay separated).
+- **Prod schema drift** — applied the v0.7 migrations the frontend already expected
+  (`tenants.pilot_ready_at`, `operation_batches.production_mode`, issue cell context,
+  `resource_cell_memberships`, hosted-trial reporting + demo-seed RPCs).
+- **Admin UX/a11y/i18n** — i18n the remaining hardcoded English on Operations / Assignments / Parts,
+  aria-labels on icon-only buttons, consistent page spacing and loading heights.
+
+## [0.6.0] — 2026-06-14
+
+The v0.6 line: relicensed to Apache 2.0 (fully open source), FOSS-first marketing surfaces, the
+stable installable PWA, and performance/reliability work across the operator queues. The
+installable PWA and the touch-first operator preview ship here; the native iOS and Android apps
+are still in development and have not been released (see the Unreleased section below).
+
+### Changed
+
+- **Plan model presented as four tiers** across the app (plan / pricing / onboarding / trial banner) and the marketing site, in EN / NL / DE:
+  - **Hosted Trial** — free, hosted, 30-day, with usage limits (100 jobs, 500 parts/month, 2 GB storage, 100 API requests/day).
+  - **Managed Hosting** — by request: a dedicated, isolated instance we run for you (your own database, data isolation, backups, version management, whitelabeling). CTA: get in touch.
+  - **Self-Hosted** — open source (Apache 2.0), unlimited, on your own infrastructure. CTA: self-hosting guide + optional setup help (consulting).
+  - The legacy Premium tier is internal/select-clients only and is no longer surfaced as a public option.
+- **My Plan** no longer mislabels hosted trial tenants as "Self-Hosted / unlimited" — the self-hosted view is determined by the deployment, not by the absence of limits.
+
+### Fixed
+
+- Sign-in / sign-up reliability: removed the unreliable captcha widget from the auth forms, fixed a post-login loading hang for accounts whose active tenant was misconfigured, and made activity-log audit triggers non-fatal so they can never block login or user management. Fixed an unreadable (low-contrast) auth notification.
+- **API error statuses corrected**: invalid/missing API keys now return `401` instead of `500` (duplicate error classes meant the mapper didn't recognise auth errors); `POST /api-webhooks` with a missing required field now returns a `422` validation error instead of a `500` NOT NULL crash.
+- **`api-erp-sync` `/status` no longer 500s**: created the `sync_imports` table (defined in the baseline schema but missing on some projects) so sync history/status queries succeed.
+- **`api-cad-proxy` restored**: added the missing `_shared/private-storage.ts` signed-URL helper (and the matching `@/lib/privateObjectUrl` type) so the function deploys and runs. With no CAD backend configured it returns a clean "CAD proxy backend not configured" message instead of failing to load.
+- **`api-batches` / `api-batch-lifecycle` JWT gate**: pinned `verify_jwt = false` in `config.toml` so deploys keep API-key auth (a redeploy had defaulted them to gateway JWT, rejecting valid keys with `401`).
+- **`api-batch-lifecycle` boot failure (503)**: the function had a duplicate `const error` declaration in the `add-operations` block (a parse error) and used the old raw `Deno.serve` pattern, so it failed to start. Migrated it to the standard `serveApi` wrapper (auth/CORS/logging/error mapping handled centrally) like the other lifecycle endpoints; it now boots and responds normally.
+
+### Added
+
+- **Public roadmap page** (`/roadmap/`, linked in the primary nav, EN / NL / DE) — our own three-column status board (Shipped / In progress / Planned) built on the `--ery-*` token contract, with real items and status accents from the semantic state tokens. The public Canny board (`https://eryxon.canny.io/`) is paired in as a "vote on the public board" call-to-action rather than a bare iframe. Native iOS / Android apps are surfaced under "In progress" as in-development work.
+- **Imprint (`/imprint/`) and Privacy Policy (`/privacy/`)** pages (EN / NL / DE), design-system-styled via a shared `Legal.astro` component. Entity data (Sheet Metal Connect e.U., Vienna AT) is taken 1:1 from the live imprint on vanenkhuizen.com; nothing is fabricated. Both pages carry a prominent Apache 2.0 "AS IS" / use-at-your-own-risk software disclaimer. Linked locale-aware from the footer.
+- **Pilot activation card** on the onboarding dashboard — new evaluators land on a single activation card that walks through their first work order.
+- **Hosted trial reporting pack** — trial usage is summarised for evaluators so a pilot can be reviewed without exporting raw data.
+- Marketing website redesign surfaces: root landing page (`/`), blog (`/blog/`), and changelog / release-notes (`/release-notes/`), built on the canonical Eryxon design-token contract.
+- Marketing **pricing page** (`/pricing/`, linked in the primary nav): three tiers — Free / self-hosted (Apache 2.0, free trial), Hosted (flat rate, unlimited users), and Managed on-prem (get-in-touch). Ported from the design-system kit's `services.html` `.svc-plans` 3-tier grid onto the site's `--ery-*` token contract; CTAs route through the existing `CtaButton` (hosted app) and `RolloutInquiry` (contact mailto) primitives.
+- **Inline pricing on the landing page** — the three-tier pricing block now renders directly in `Landing.astro` (kit `.mk-pricing-grid` / `.mk-tier`, before the CTA banner), as the kit's `index.html` does with `<Pricing />`. Same three tiers from `pricingCopy`, a "See full pricing →" link to `/pricing/`, across EN / NL / DE.
+- **Inline hosted-and-managed section on the landing** (`#managed-rollout`) — a compact "rather not run it yourself?" block: short intro, three points (hosted / managed on-prem / ERP connected), and a `RolloutInquiry` get-in-touch button. Folded in from the standalone page, localized EN / NL / DE.
+- Marketing footer creator attribution: a "Created by" card crediting Luke van Enkhuizen — Sheet Metal Connect e.U., with a locally bundled, build-optimised avatar (`website/src/assets/luke-van-enkhuizen.jpg`).
+- **Offline banner on desktop terminals** — the desktop operator terminal and admin layouts now show the same amber "you're offline" banner the mobile shell already had, so a mid-shift WiFi drop is visible before an operator assumes a write saved.
+- **PWA regression tests** — the update-prompt flow (native-shell gating, persistent toast, Reload activates the waiting service worker, Later defers) and the install manifest (required fields, 192/512 any+maskable icons on disk, `/m/*` operator shortcuts, `index.html` wiring) are now locked in by the test suite instead of manual smoke checks only.
+
+### Changed
+
+- **Docs chrome refactored to a single navigation layer.** Removed the redundant horizontal secondary tab-bar (`SidebarNav`) that duplicated the left-sidebar group headings — the docs IA now runs through one source: a minimal top nav (Home / Documentation / Hosted Version) plus the left sidebar tree. The language switcher the tab-bar hosted moved into the header next to search + theme, so docs pages keep locale switching with no extra chrome row. Calm, light-first, `--ery-*` tokens throughout.
+- **Docs footer brought in line with the marketing footer.** The Starlight footer now renders on docs pages too (previously suppressed) with the marketing IA: a brand column (Eryxon Flow + Apache 2.0 note + GitHub/LinkedIn icons), Code & Community, Resources, and a Contact column. Footer "Contact" cleaned of the retired entries — no more `office@vanenkhuizen.com`, "Managed rollout" page link, or `vanenkhuizen.com` promo; contact is now Luke's LinkedIn + `luke@sheetmetalconnect.com`, with locale-aware Imprint / Privacy links in the bottom bar (`menu.{en,nl,de}.json`).
+- **Imprint / Privacy pages redesigned** (`Legal.astro`, EN / NL / DE). New two-column legal layout: a sticky publisher/controller identity card rail beside a readable legal column, hairline-separated rows, monospace VAT / Firmenbuch identifiers, and the Apache 2.0 "AS IS" disclaimer as a warning-accented callout. All statutory fields preserved verbatim; presentation only.
+- **Relicensed to Apache 2.0 — fully open source.** Replaced the BSL 1.1 `LICENSE` (root + `website/`) with the Apache License 2.0, copyright "Sheet Metal Connect e.U.". Updated `license` fields in `package.json` / `mcp-server/package.json` to `Apache-2.0`, the Dockerfile OCI label, and the in-app license panel (`src/pages/common/Pricing.tsx` + `en`/`nl`/`de` admin locales) to state Apache 2.0 freedoms. Removed every "source-available" / "BSL 1.1" mention across README, footers, docs, design-system copy rules, social, and solutions surfaces.
+- **FOSS-first positioning across the marketing surfaces (EN / NL / DE):** landing, pricing, and the inline landing pricing now lead with "free and open source", with a three-way model — Free / self-hosted (Apache 2.0, free trial), Hosted (flat rate, unlimited users), and Managed on-prem.
+- **Marketing copy rewritten as native human language (EN / NL / DE).** The previous NL was literal AI translation; it now reads like a Dutch metalworker/owner wrote it ("Grip op je orders, van de vloer tot de planning" instead of "Een rustige, open-source MES voor jobshops die leveren"). DE rewritten as natural Hochdeutsch; EN sharpened. Dropped the "calm MES" framing and AI vocabulary across landing, pricing, roadmap, and CTAs (humanizer pass). Trade terms (jobshop / MES / snijden-kanten-lassen) kept.
+- **v0.6 framed as the stable, installable PWA** across the website release note, docs homepages, introductions, and the docs changelog — install from Chrome / Edge on Windows and macOS. The v0.6 line builds on the last cut tag, v0.5.1.
+- **Native iOS / Android apps corrected to "in development" everywhere** — removed the unreleased-as-shipped and "coming soon" framing from the docs homepages and introductions (EN / NL / DE), pointing them at the roadmap instead. There is no v0.5.2 release; stray `v0.5.2` references in the deployment / self-hosting / release-proof guides were corrected to the v0.6 line.
+- **Release-note history backfilled** from the real git tags (v0.1.0, v0.3.3, v0.4.0, v0.4.1, v0.5.0, v0.5.1) with honest Added / Changed / Fixed entries; the phantom `v0-5-2` website release note was removed.
+- **Operator preview touch targets** — operator preview frames now use the 56px touch target across phone and tablet runtimes.
+- Website conformance pass against the Eryxon design system: code blocks, the docs search modal, the theme-demo toggle, and feature cards now use solid surfaces, hairline borders, and design tokens — no gradients, glass / backdrop-blur, transform-on-hover, or hardcoded dark hex. Marketing and editorial headings aligned to the canonical 600-weight, sentence-case scale.
+- Removed the standalone "Managed rollout" item from the primary nav — the rollout content now lives inline on the landing (`#managed-rollout`), reachable from the hero secondary CTA and the managed-services pricing tier.
+- Slimmed the standalone `/managed-rollout/` page to a thin pointer (short intro + get-in-touch button + link to the homepage `#managed-rollout` section), dropping the "conversation, not a signup" copy and the long path-chooser tree. Existing deep links (footer, docs intros) keep working.
+- **Entry bundle halved** (1.44 MB → 0.74 MB minified): `App.tsx` imported the auth and operator page barrels statically, which pulled every operator page into the entry chunk and defeated the route-level code splitting. Only the landing `Auth` page stays eager; terminal login, password flows, and invitation acceptance now load as route chunks.
+- **Operator work queues handle realtime bursts calmly** — desktop and mobile queues coalesce per-row realtime events into a single refetch (250 ms trailing window) instead of refetching the whole queue once per event, and unchanged operation cards skip re-rendering (memoized `OperationCard`, stable callbacks). Queue loading states render skeleton placeholders instead of a bare spinner.
+- **Notification timestamps are locale-aware** — relative times ("5 minutes ago") now follow the active UI language via `Intl.RelativeTimeFormat` instead of hardcoded English.
+- **Shared helpers replace per-component copies** — time formatting (`src/lib/time-utils.ts`: elapsed timers, 12/24h clock, relative time, DB time → input value) and resource-status presentation (`src/lib/resource-status.ts`) consolidate five duplicated implementations across operator, terminal, and admin surfaces.
+- **Native build smoke lane fixed and split** — independent iOS and Android CI jobs (an iOS failure no longer masks Android results), Android on JDK 21 as Capacitor 7 requires, the generated iOS project floored to 15.5 for the ML Kit barcode pod, and Apple Silicon Rollup/SWC bindings repaired via a shared script. The native apps remain unreleased; this keeps the PR gate truthful.
+
+### Removed
+
+- Dead `AccordionContainer.astro` website component (gradient-border + scale-animation legacy, unreferenced).
+- Marketing footer "Contact" column (managed-rollout, email, LinkedIn, and vanenkhuizen.com links) — replaced by the creator attribution card.
+- Dead `public/sw.js` — the Workbox `generateSW` output is, and always was, the only service worker that ships: the build overwrote the hand-written file in `dist/`, so it never ran in production. `vite.config.ts` now documents this so it can't be reintroduced.
+- Dead `TimeTypeSelector` operator component (exported, never imported).
+
+## [Unreleased] — native shells + PWA (in development)
+
+> **Status:** this work lives in the repository but has **not** been tagged or released. There is no
+> v0.5.2 release. The installable PWA is usable today; the native iOS and Android shells below are
+> **in development and not yet released** — do not treat them as shipped.
+
+### Added
+
+- **Native iOS / iPadOS shell** (Capacitor 7, in development) wrapping the existing React bundle. Bottom tab bar on iPhone, split-view master/detail on iPad, pull-to-refresh, swipe-to-act work-queue rows, ML Kit barcode/QR scanner, Face ID / Touch ID unlock, haptics, safe-area aware chrome, status-bar in lockstep with the React theme.
+- **Native Android shell** (Capacitor 7, in development) targeting phone + tablet (Pixel Tablet, Galaxy Tab, Lenovo Tab). Hardware-back wired into React Router, offline banner, scan FAB on operator routes, sw600dp / sw720dp tablet layouts, ProGuard rules for ML Kit + biometric, app-bundle splits, deep links (`eryxon://` + `https://app.eryxon.eu`), network-security config restricting cleartext to localhost / LAN.
+- **Installable PWA** (vite-plugin-pwa + workbox) for desktop macOS Launchpad / Windows Start menu / Android home-screen / iOS Add-to-Home-Screen. Web manifest with operator-friendly shortcuts (Queue / Scan / Issues), maskable icons generated from `public/pwa-icon.svg`, prompt-style service worker that surfaces updates without forcing a mid-shift reload.
+- **Touch-first `/m/*` route shell** shared by all three runtimes. New operator screens: work queue, op detail with bottom-anchored Start/Stop/Complete, QR/barcode scanner, activity timeline, issues feed, terminal overview, PIN + biometric login.
+- Native bridge module at `src/native/` (haptics, scanner, biometric, status bar, splash, keyboard, network, camera, app shell + hardware back) — components import from `@/native` only; nothing else touches `@capacitor/*` directly.
+- npm scripts: `ios:init/sync/open/run/build`, `android:sync/open/run/livereload/assemble:debug/assemble:release/bundle:release/clean`, `pwa:assets`.
+- Documentation: `docs/IOS.md`, `docs/ANDROID.md`, README PWA install guide.
+
+### Changed
+
+- Website / docs site refreshed for the v0.5 line: corrected Beta / Live / Coming-Soon status across the web app, REST API (24 endpoints), webhooks, MQTT (with retry / circuit-breaker / dead-letter section), MCP server, and FrePPLe / Odoo planning adapters; new "Native Mobile Apps" landing strip + roadmap entry; localization polish for DE / NL.
+- Capacitor pinned to 7.6 across all plugins for a single peer-dependency line.
+
+### Fixed
+
+- Mobile issue tabs now use the real `public.issue_status` enum (`pending` / `approved` / `rejected` / `closed`) so freshly reported issues appear in the Open tab.
+- Mobile login lands on `/m/queue` after PIN verification so the operator stays inside the touch shell.
+- `PullToRefresh` no longer reads a ref during render; switched to a `dragging` state.
+- `MobileScanner` hoists `launchScan` above its auto-launch effect.
+- Several mobile screens defer their first fetch via `queueMicrotask` so synchronous `setState` no longer fires inside a `useEffect`.
+- MQTT logs example in the docs references the correct `mqtt_publisher_id` / `success` columns.
+
+## [0.5.1] - 2026-05-06
+
+### Fixed
+
+- Refreshed stale OpenTrace knowledge graph counts in the README and agent docs after regenerating the local index
+- Aligned the README licensing summary with the repository `LICENSE`
+- Marked v0.5.1 as the current maintenance hotfix across README and website release docs
+
+## [0.5.0] - 2026-05-06
+
+### Added
+
+- Planning adapter interface (`src/lib/planning/`) with ISA-95 aligned vocabulary for integrating external planning/scheduling tools
+- FrePPLe adapter: pull work orders + resources, push order start/completion, Basic Auth, pagination handling
+- Odoo MRP adapter (scaffold): JSON-RPC authentication, pull work orders from `mrp.production`, push execution feedback
+- Factory function `createPlanningAdapter(config)` for runtime adapter selection
+- 20 tests covering FrePPLe adapter (connection, mapping, pagination, error handling, auth)
+- MCP Server HTTP/SSE transport (`MCP_TRANSPORT=http`): StreamableHTTP transport for Docker/cloud deployment alongside existing stdio mode
+- MCP Server Dockerfile + docker-compose.yml for self-hosted deployment with health checks
+- MCP Server `/health` endpoint returning server status, version, mode, and tool count
+- MQTT client wrapper (`src/lib/mqtt-client.ts`) with exponential backoff retry (3 attempts), circuit breaker (5 failures / 30s cooldown), dead letter logging to `mqtt_logs`, and injectable transport for testability. 18 tests.
+- Edge function test coverage: 113 tests for shared auth, security, and plan-limits modules
+- Runtime env.js injection via Docker entrypoint (no rebuild needed for config changes)
+- `.dockerignore` to reduce build context size
+- `/health` endpoint now returns JSON (`{"status":"ok","service":"eryxon-flow"}`)
+- OCI image labels for version tracking and metadata
+- `src/config/env.ts` helper for runtime environment variable resolution
+- Localized landing pages for DE, complete NL landing page parity
+- German localization: landing page, guides, glossary, and language switcher
+- Dutch localization: concepts, guides, glossary
+- Language switcher in footer, browser auto-detect banner, and SEO hreflang tags
+- Search and status sorting to tenant switcher
+- Docs: Core Concepts guide, API query examples, capability comparison table
+
+### Changed
+
+- ESLint `no-explicit-any` rule enabled as warning
+- Finalized release handoff messaging: the hosted version remains online, and users are free to use, fork, and adapt Eryxon Flow under the Apache 2.0 license
+- Added a website changelog page so the README, release notes, and docs site point to the same release history
+- `as any` casts reduced from 72 to 7 across codebase
+- Supabase types regenerated with latest schema
+- **Lazy-load mockDataGenerator** — 2,202-line mock data module now loads on demand via dynamic `import()`. Removes ~40KB from the production bundle for all non-demo users.
+- **Split database.ts into domain modules** — 1,085-line monolith decomposed into `src/lib/db/` with 4 focused modules: operations, time-tracking, batches, assemblies. Original file preserved as thin re-export.
+- **Decompose PartDetailModal** — 1,193-line component split into tab sub-components under `src/components/admin/part-detail/`: PartDetailsTab (140 lines), PartOperationsTab (459 lines), PartFilesTab (167 lines).
+- **CORS fails closed** — edge functions no longer default to `Access-Control-Allow-Origin: *` when `ALLOWED_ORIGIN` env var is not set. Now defaults to `localhost` only (safe for dev). Production deployments must explicitly set `ALLOWED_ORIGIN`.
+- Dockerfile bumped to `node:22-alpine` (builder stage)
+- Consolidated `docker-compose.yml` as single production-ready file with `env_file` support (removed `docker-compose.prod.yml`)
+- CI/CD hardening: lint + typecheck gates added to all workflows, fork PR deploy protection, Cloudflare action updated to v3
+- Database migration cleanup: replaced stale TODO with documentation, added migrations README and archive README
+
+### Fixed
+
+- **SSRF: block IPv6 loopback in webhook URL validation** — `validateWebhookUrl` now correctly blocks `[::1]`, expanded IPv6 loopback forms, IPv4-mapped IPv6 loopback (`[::ffff:127.x.x.x]`), and IPv4-mapped private ranges. URL parser normalizes these to hex notation which the previous check missed.
+- Vite security vulnerabilities patched (CVE path traversal, WebSocket read)
+- CORS wildcard default — now fails closed when `ALLOWED_ORIGIN` not set
+- Operator UI re-render bugs: 5 `setState`-in-`useEffect` violations fixed (`OperatorLayout.tsx`, `OperatorStatusBar.tsx`, `OperatorView.tsx`)
+- Root admin tenant switching no longer violates unique constraint
+- Removed unrecognized `browsing-topics` from Permissions-Policy header
+
+### Improved
+
+- Self-hosting: runtime env injection, .dockerignore, Node 22, health endpoint
+- Component refactors: PartDetailModal split, database.ts modularized, mockDataGenerator lazy-loaded
+- Database migration cleanup with READMEs
+- MCP server working (v2.4.0, builds clean)
+- Safe dependency updates (Supabase, TanStack Query, react-hook-form, MSW, Vitest)
+
+## [0.4.1] - 2026-03-29
+
+### Added
+
+- **Batch API** — `api-batches` (CRUD) and `api-batch-lifecycle` (start/stop/add-operations) edge functions
+- Weighted time distribution: batch stop divides time by estimated_time ratios when available
+- Webhook events: `batch.started`, `batch.completed`
+- Focused auth hooks: `useProfile`, `useTenant`, `useSession`, `useAuthActions` (split from god-hook `useAuth`)
+- 98 new unit tests (519 → 617 total), 12 new test files
+- Agent safety guardrails: module size limits and refactoring rules in docs
+- Automated API test suite (54 tests)
+- Architecture documentation with Mermaid graphs
+- API catalog, route map, hook map, conventions, glossary, troubleshooting docs
+- ADRs (5 Architecture Decision Records)
+- Dependency graph via madge
+- MCP server support (CodeGraphContext, RepoMapper, Repomix)
+- Agent discovery via `.agents/` directory convention
+
+### Changed
+
+- **Architecture refactoring** — decomposed 6 hotspots for agent-safe development:
+  - `AuthContext` (94 importers) → 4 focused selector hooks, 70 consumers migrated
+  - `SchedulerService` (425 lines) → calendar, capacity, allocator modules
+  - `STEPViewer` (1976 lines) → scene, controls, grid, pmi-overlay modules
+  - `BatchDetail` (684 lines) → 9 focused sub-components (~90 line shell)
+  - `OperatorView` (686 lines) → 5 focused sub-components (~120 line shell)
+- API endpoint count: 22 → 24
+
+### Fixed
+
+- **BatchCreate React #185 crash** — PostgREST returns arrays for ambiguous FK joins; added `unwrapRelation()` helper
+- **CapacityMatrix 400 error** — `customer_name` → `customer`, `parts(name)` → `parts(part_number)` (non-existent columns)
+- Operations now editable after batch creation (was disabled in edit mode)
+- OperatorView test updated to match refactored component structure
+- Runtime migration from legacy `serve()` to `Deno.serve()` across all edge functions
+- Auth module rewrite: fixed deprecated `hexEncode`, missing FK join for tenant plan lookup
+- Schema alignment: fixed 10+ edge functions referencing non-existent columns
+- CRUD builder: added `skipTenantFilter`, fixed Promise-wrapped `queryModifier`, added `.range()` fallback
+- Plan limits: fixed column name mismatch (`current_month_parts` vs `current_parts_this_month`)
+- Validators: fixed `IssueValidator` enum values to match database
+- Parts/Operations: rewrote with inline validation (heavy import chain crashed Deno runtime)
+- Upload whitelist: added STEP, DXF, Excel content types
+- Per-function `deno.json` for proper `@shared/` resolution
+- Database migrations: added lifecycle columns, missing FK constraints, `expired` enum value
+
+## [0.4.0] - 2026-03-28
+
+### Added
+
+- **Operator status bar** with industrial stripe patterns across the work states, and consistent row heights.
+- **POLCA cell signal in the terminal** — current→next cell with a GO/PAUSE capacity indicator.
+- **Work queue totals, rush/hold controls, and routing** surfaced in the operator detail panel.
+- **Rush jobs surfaced** — sorted first in the Jobs and Parts tables, with a rush filter and rush badges.
+- **Batch API (initial)** — `api-batches` (CRUD) and `api-batch-lifecycle` (start/stop/add-operations) edge functions.
+
+### Changed
+
+- **Unified branding to "Eryxon Flow"** — renamed every "Eryxon MES" reference and replaced the sidebar logo with the Eryxon Flow brand mark.
+- Removed the ALPHA banner and trimmed stray version references.
+
+### Fixed
+
+- **Flow column rebuilt** — routing hooks use FK hints and a single query and unwrap PostgREST array responses, so the Jobs Flow column renders reliably (closes the BatchCreate React #185 crash path).
+- **Batch API hardening** — disabled soft-delete and required `operator_id` on lifecycle actions.
+- Restored timing controls and the cell selector for admins, removed a duplicate timer, and corrected light-mode colors.
+
+## [0.3.3] - 2026-03-09
+
+### Changed
+
+- Updated app and docs dependencies
+- Aligned package metadata to release 0.3.3
+- Refreshed architecture and operations docs
+
+### Fixed
+
+- Cleared website dependency audit findings
+- Resolved docs-site release packaging mismatch
+- Removed contradictory API documentation
+
+## [0.3.2] - 2026-03-09
+
+### Added
+
+- API reference expansion and payload reference pages
+- E2E API validation tooling
+- 3D viewer measurement implementation plan
+
+### Changed
+
+- Refactored route definitions and component composition
+- Consolidated realtime hook patterns
+- Tightened tenant scoping across scheduler, CAD, issues, and auth
+
+### Fixed
+
+- Security audit findings (auth, CORS, validation, XSS, edge functions)
+- Signup notification trigger (duplicate emails)
+- Type safety issues and unsafe query patterns
+
+## [0.3.1] - 2026-01-28
+
+### Added
+
+- MCP server test suite (90 tests)
+- Zod runtime validation for all tool inputs
+- Tool factory pattern (createFetchTool, createUpdateTool, createStatusTransitionTool)
+- Structured error handling with ErrorCode enum
+- Pagination support with metadata
+
+### Changed
+
+- Migrated 9 tool modules to validation and factory patterns (544 lines removed)
+
+### Fixed
+
+- Enum inconsistencies between create/update schemas
+- Race condition (TOCTOU) in state transitions
+- Agent-batch validation (imported but never called)
+- Missing 'cancelled' status in job filters
+- Soft-delete awareness in fetch queries
+
+### Infrastructure
+
+- Added `import_map.json` for Edge Functions
+- Fixed 502 errors from circular dependencies
+- Automated self-hosting setup script
+- Idempotent storage bucket creation and RLS policies
+- Auth trigger for automatic profile/tenant creation on signup
+
+## [0.3.0] - 2026-01-28
+
+### Added
+
+- Batch nesting and grouping
+- Batch image support
+- Batch time tracking with stapelscannen time distribution
+
+## [0.2.0] - 2026-01-21
+
+### Added
+
+- Fuzzy search filtering across Jobs, Parts, Operations APIs
+- Shared CRUD builder pattern for edge functions
+
+### Changed
+
+- 87 database migrations
+- 15 edge functions refactored to shared CRUD builder
+
+### Removed
+
+- Advanced analytics dashboards (OEE, QRM, quality, reliability)
+- Shipping and logistics module
+- Integrations marketplace
+- Python 3D backend service (replaced by client-side viewer)
+
+### Fixed
+
+- Missing `await` in validation for api-parts and api-operations
+- Bulk-sync crash and partial success ghosting
+- CORS issues with STEP file viewing
+- Security vulnerabilities in react-router-dom
+
+## [0.1.x] - 2025-2026
+
+Initial development releases.

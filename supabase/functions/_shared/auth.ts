@@ -1,0 +1,209 @@
+/**
+ * Shared API Authentication Module
+ *
+ * Provides optimized API key authentication for all ERP integration endpoints.
+ * Uses key prefix lookup and SHA-256 hashing (compatible with Edge Functions).
+ * Includes plan-based rate limiting.
+ */
+
+// Use built-in hex encoding (no external dependency)
+import { cacheOrFetch, invalidateCache } from "./cache-utils.ts";
+import { CacheKeys, CacheTTL } from "./cache.ts";
+import { checkRateLimit, RateLimitResult } from "./rate-limiter.ts";
+import { getRateLimitConfig } from "./plan-limits.ts";
+import { constantTimeCompare } from "./security.ts";
+
+// Custom error classes. These are the canonical Unauthorized/Forbidden classes;
+// validation/errorHandler.ts imports them so mapError() recognizes them via
+// instanceof and maps them to 401/403 (issue #908). They must live here (not be
+// duplicated in errorHandler.ts) so the class thrown is the class checked.
+export class UnauthorizedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "UnauthorizedError";
+  }
+}
+
+export class ForbiddenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ForbiddenError";
+  }
+}
+
+export class RateLimitError extends Error {
+  public rateLimitResult: RateLimitResult;
+
+  constructor(message: string, result: RateLimitResult) {
+    super(message);
+    this.name = "RateLimitError";
+    this.rateLimitResult = result;
+  }
+}
+
+export interface AuthResult {
+  tenantId: string;
+  apiKeyId: string;
+  keyPrefix: string;
+  plan: 'free' | 'pro' | 'premium' | 'enterprise';
+}
+
+/**
+ * Hash API key using Web Crypto API (SHA-256)
+ * Compatible with Supabase Edge Functions
+ */
+async function hashApiKey(apiKey: string): Promise<string> {
+  const data = new TextEncoder().encode(apiKey);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+/**
+ * Optimized API key authentication
+ *
+ * Performance optimizations:
+ * 1. Extract key prefix to narrow down candidate keys (avoid comparing all keys)
+ * 2. Single query to fetch key by prefix instead of fetching all keys
+ * 3. Async last_used_at update (non-blocking)
+ */
+export async function authenticateApiKey(
+  authHeader: string | null,
+  supabase: any,
+): Promise<AuthResult> {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new UnauthorizedError("Missing or invalid authorization header");
+  }
+
+  const apiKey = authHeader.substring(7);
+
+  // Validate key format
+  if (!apiKey.startsWith("ery_live_") && !apiKey.startsWith("ery_test_")) {
+    throw new UnauthorizedError("Invalid API key format");
+  }
+
+  // Extract key prefix for efficient lookup (first 12 chars match generation)
+  const keyPrefix = extractKeyPrefix(apiKey);
+
+  // Step 1: Find candidate keys by prefix
+  const { data: candidateKeys, error: fetchError } = await supabase
+    .from("api_keys")
+    .select("id, key_hash, tenant_id, key_prefix")
+    .eq("active", true)
+    .eq("key_prefix", keyPrefix);
+
+  if (fetchError) {
+    console.error("[Auth] Error fetching API keys:", fetchError);
+    throw new UnauthorizedError("Authentication failed");
+  }
+
+  if (!candidateKeys || candidateKeys.length === 0) {
+    throw new UnauthorizedError("Invalid API key");
+  }
+
+  // Hash the provided API key for comparison
+  const providedKeyHash = await hashApiKey(apiKey);
+
+  // Compare against candidate keys (should typically be just 1)
+  for (const key of candidateKeys) {
+    if (constantTimeCompare(providedKeyHash, key.key_hash)) {
+      // Update last_used_at asynchronously (don't block the response)
+      updateLastUsed(supabase, key.id).catch((err) => {
+        console.error("[Auth] Failed to update last_used_at:", err);
+      });
+
+      // Step 2: Fetch tenant plan separately (no FK needed)
+      let plan: string = 'free';
+      const { data: tenant } = await supabase
+        .from("tenants")
+        .select("plan")
+        .eq("id", key.tenant_id)
+        .single();
+      if (tenant?.plan) plan = tenant.plan;
+
+      return {
+        tenantId: key.tenant_id,
+        apiKeyId: key.id,
+        keyPrefix: key.key_prefix,
+        plan: plan as 'free' | 'pro' | 'premium' | 'enterprise',
+      };
+    }
+  }
+
+  throw new UnauthorizedError("Invalid API key");
+}
+
+/**
+ * Extract the key prefix from a full API key
+ * The prefix is stored in the database for efficient lookup
+ * Format: ery_live_XXX (first 12 chars to match generation)
+ */
+function extractKeyPrefix(apiKey: string): string {
+  // Key format: ery_live_<random> or ery_test_<random>
+  // Prefix should match what's stored in key_prefix column (12 chars)
+  return apiKey.substring(0, 12);
+}
+
+/**
+ * Update last_used_at timestamp for API key
+ * Done asynchronously to not block the request
+ */
+async function updateLastUsed(supabase: any, keyId: string): Promise<void> {
+  await supabase
+    .from("api_keys")
+    .update({ last_used_at: new Date().toISOString() })
+    .eq("id", keyId);
+}
+
+/**
+ * Authenticate and set tenant context for RLS
+ * Convenience wrapper that combines auth, rate limiting, and context setting
+ */
+export async function authenticateAndSetContext(
+  req: Request,
+  supabase: any,
+): Promise<AuthResult> {
+  const authResult = await authenticateApiKey(
+    req.headers.get("authorization"),
+    supabase,
+  );
+
+  // Check rate limit based on plan
+  const rateLimitConfig = getRateLimitConfig(authResult.plan);
+
+  // Skip rate limiting for enterprise (unlimited)
+  if (rateLimitConfig.maxRequests !== null) {
+    const rateLimitResult = await checkRateLimit(
+      `tenant:${authResult.tenantId}`,
+      {
+        maxRequests: rateLimitConfig.maxRequests,
+        windowMs: rateLimitConfig.windowMs,
+        keyPrefix: 'api',
+      }
+    );
+
+    if (!rateLimitResult.allowed) {
+      throw new RateLimitError(
+        `Rate limit exceeded. Your ${authResult.plan} plan allows ${rateLimitConfig.maxRequests} requests per day. ` +
+        `Please upgrade your plan or wait until the limit resets.`,
+        rateLimitResult
+      );
+    }
+  }
+
+  // Set tenant context for RLS
+  await supabase.rpc("set_active_tenant", { p_tenant_id: authResult.tenantId });
+
+  // Log API usage asynchronously (don't block the response)
+  supabase
+    .rpc("increment_api_usage", {
+      p_tenant_id: authResult.tenantId,
+      p_api_key_id: authResult.apiKeyId,
+    })
+    .then(({ error }: { error: any }) => {
+      if (error) console.error("[Auth] Failed to log API usage:", error);
+    });
+
+  return authResult;
+}

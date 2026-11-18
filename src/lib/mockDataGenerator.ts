@@ -1,0 +1,2300 @@
+import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
+import {
+  createDutchFactoryCalendar,
+  createMockDataTimeline,
+  createPlannedWindow,
+} from "@/lib/mockDataTimeline";
+
+export interface MockDataProgressStep {
+  step: number;
+  totalSteps: number;
+  label: string;
+  percentage: number;
+}
+
+export type MockDataProgressCallback = (progress: MockDataProgressStep) => void;
+
+export interface MockDataOptions {
+  includeCells?: boolean;
+  includeLocations?: boolean;
+  includeJobs?: boolean;
+  includeParts?: boolean;
+  includeOperations?: boolean;
+  includeResources?: boolean;
+  includeOperators?: boolean;
+  includeTimeEntries?: boolean;
+  includeQuantityRecords?: boolean;
+  includeIssues?: boolean;
+  includeCalendar?: boolean;
+  onProgress?: MockDataProgressCallback;
+}
+
+/**
+ * Generates comprehensive mock MES data for European/Dutch manufacturing
+ * Creates realistic QRM-aligned workflows with complete data covering all app functions
+ */
+export async function generateMockData(
+  tenantId: string,
+  options: MockDataOptions = {
+    includeCells: true,
+    includeJobs: true,
+    includeParts: true,
+    includeOperations: true,
+    includeResources: true,
+    includeOperators: true,
+    includeTimeEntries: true,
+    includeQuantityRecords: true,
+    includeIssues: true,
+    includeCalendar: true,
+  },
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // CRITICAL: Validate tenant_id to prevent cross-tenant contamination
+    if (!tenantId || tenantId.trim() === "") {
+      throw new Error("tenant_id is required and cannot be empty");
+    }
+
+    const referenceDate = new Date();
+    const { data: tenantSchedule, error: tenantScheduleError } = await supabase
+      .from("tenants")
+      .select("working_days_mask, factory_opening_time, factory_closing_time")
+      .eq("id", tenantId)
+      .single();
+    if (tenantScheduleError) throw tenantScheduleError;
+    const factoryCalendar = createDutchFactoryCalendar(referenceDate);
+    const timelineContext = {
+      workingDaysMask: tenantSchedule.working_days_mask ?? 31,
+      openingTime: tenantSchedule.factory_opening_time?.slice(0, 5) ?? "07:00",
+      closingTime: tenantSchedule.factory_closing_time?.slice(0, 5) ?? "17:00",
+      calendar: factoryCalendar,
+    };
+    const timeline = createMockDataTimeline(referenceDate, timelineContext);
+
+    logger.debug(
+      'MockData',
+      `Starting comprehensive mock data generation for tenant: ${tenantId}...`,
+    );
+
+    const totalSteps = 12;
+    const reportProgress = (step: number, label: string) => {
+      const percentage = Math.round((step / totalSteps) * 100);
+      options.onProgress?.({ step, totalSteps, label, percentage });
+    };
+
+    // Check if tenant already has demo data to prevent duplicates
+    // Skip this check for testing/specific tenants (configured via env var)
+    const testTenantId = import.meta.env.VITE_TEST_TENANT_ID;
+    const skipDemoCheck = testTenantId ? tenantId === testTenantId : false;
+    
+    if (!skipDemoCheck) {
+      const { data: isDemoMode, error: demoCheckError } = await supabase.rpc(
+        "is_demo_mode",
+        { p_tenant_id: tenantId },
+      );
+
+      if (demoCheckError) {
+        logger.warn('MockData', 'Could not check demo mode status:', demoCheckError);
+      } else if (isDemoMode === true) {
+        logger.debug(
+          'MockData',
+          'Tenant already has demo data. Skipping to prevent duplicates.',
+        );
+        return {
+          success: false,
+          error:
+            "Demo data already exists for this tenant. Please clear existing demo data first.",
+        };
+      }
+    }
+
+    reportProgress(1, 'cells');
+    let cellIds: string[] = [];
+    let slotData: Array<{ id: string; cell_id: string | null; capacity: number; sort_order: number | null }> = [];
+    const cellIdMap: Record<string, string> = {};
+
+    if (options.includeCells) {
+      const cells = [
+        {
+          tenant_id: tenantId,
+          name: "Lasersnijden", // Laser Cutting
+          sequence: 0,
+          description: "High-precision fiber laser snijstation",
+          color: "#3b82f6", // blue
+          active: true,
+          wip_limit: 15,
+          enforce_wip_limit: false,
+          wip_warning_threshold: 12,
+          show_capacity_warning: true,
+        },
+        {
+          tenant_id: tenantId,
+          name: "CNC Kantbank", // CNC Bending
+          sequence: 1,
+          description: "Precisie kantbank en vouwbewerkingen",
+          color: "#f59e0b", // amber
+          active: true,
+          wip_limit: 10,
+          enforce_wip_limit: false,
+          wip_warning_threshold: 8,
+          show_capacity_warning: true,
+        },
+        {
+          tenant_id: tenantId,
+          name: "Lassen", // Welding
+          sequence: 2,
+          description: "MIG/TIG lassen en constructiewerk",
+          color: "#ef4444", // red
+          active: true,
+          wip_limit: 8,
+          enforce_wip_limit: true,
+          wip_warning_threshold: 6,
+          show_capacity_warning: true,
+        },
+        {
+          tenant_id: tenantId,
+          name: "Montage", // Assembly
+          sequence: 3,
+          description: "Eindmontage en hardware installatie",
+          color: "#8b5cf6", // violet
+          active: true,
+          wip_limit: 12,
+          enforce_wip_limit: false,
+          wip_warning_threshold: 10,
+          show_capacity_warning: true,
+        },
+        {
+          tenant_id: tenantId,
+          name: "Afwerking", // Finishing
+          sequence: 4,
+          description: "Poedercoaten en oppervlaktebehandeling",
+          color: "#10b981", // green
+          active: true,
+          wip_limit: 20,
+          enforce_wip_limit: false,
+          wip_warning_threshold: 16,
+          show_capacity_warning: true,
+        },
+        {
+          tenant_id: tenantId,
+          name: "Kwaliteitscontrole", // Quality Control
+          sequence: 5,
+          description: "Eindcontrole en kwaliteitsborging",
+          color: "#6366f1", // indigo
+          active: true,
+          wip_limit: 15,
+          enforce_wip_limit: false,
+          wip_warning_threshold: 12,
+          show_capacity_warning: true,
+        },
+      ];
+
+      const { data: cellData, error: cellError } = await supabase
+        .from("cells")
+        .insert(cells)
+        .select("id, name");
+
+      if (cellError) throw cellError;
+
+      cellIds = cellData?.map((c) => c.id) || [];
+      cellData?.forEach((c, idx) => {
+        cellIdMap[cells[idx].name] = c.id;
+      });
+
+      logger.debug('MockData', 'Created 6 QRM cells with WIP limits');
+
+      // Example drop-off slots per cell. Location tracking is on by default, so
+      // a fresh demo tenant otherwise opens an empty placement picker. Four
+      // slots per cell (A1–A4, B1–B4, …) give the module working data to show.
+      const slotLetters = ["A", "B", "C", "D", "E", "F"];
+      const storageLocations = options.includeLocations === false ? [] : (cellData ?? []).flatMap((c, idx) => {
+        const letter = slotLetters[idx] ?? `Z${idx}`;
+        return [1, 2, 3, 4].map((n) => ({
+          tenant_id: tenantId,
+          cell_id: c.id,
+          code: `${letter}${n}`,
+          label: `${c.name} ${n}`,
+          capacity: 2,
+          sort_order: n,
+          active: true,
+        }));
+      });
+      if (storageLocations.length > 0) {
+        const { data: slotRows, error: slotError } = await supabase
+          .from("storage_locations")
+          .insert(storageLocations)
+          .select("id, cell_id, capacity, sort_order");
+        if (slotError) logger.warn('MockData', 'Storage locations seed warning:', slotError);
+        slotData = slotRows ?? [];
+      }
+    }
+
+    reportProgress(2, 'calendar');
+    if (options.includeCalendar) {
+      const calendarEntries = factoryCalendar.map(holiday => ({
+        tenant_id: tenantId,
+        date: holiday.date,
+        day_type: holiday.day_type,
+        name: holiday.name,
+        opening_time: holiday.opening_time || null,
+        closing_time: holiday.closing_time || null,
+        capacity_multiplier: holiday.capacity_multiplier,
+        notes: holiday.notes || null,
+      }));
+
+      const { error: calendarError } = await supabase
+        .from("factory_calendar")
+        .upsert(calendarEntries, { onConflict: 'tenant_id,date' });
+
+      if (calendarError) {
+        logger.warn('MockData', 'Calendar seeding warning:', calendarError);
+      } else {
+        logger.debug('MockData', `Seeded ${calendarEntries.length} Dutch holidays and factory closures`);
+      }
+    }
+
+    reportProgress(3, 'operators');
+    // operatorIds holds PROFILE ids used to attribute historical mock records
+    // (time entries, quantity records, quality issues). Those columns FK to profiles,
+    // so they are attributed to existing tenant profiles. Shop-floor operators
+    // (PIN login) live in the separate `operators` table and are seeded below.
+    let operatorIds: string[] = [];
+    const operatorIdMap: Record<string, string> = {};
+
+    if (options.includeOperators) {
+      try {
+        // Seed shop-floor operators into the supported no-email PIN path (`operators`).
+        // Idempotent RPC: employee IDs DEMO1-DEMO4, PIN 1234. Used by terminal login,
+        // verify_operator_pin, and assignments.shop_floor_operator_id.
+        const { data: seedResult, error: rpcError } = await supabase.rpc(
+          "seed_demo_operators",
+          {
+            p_tenant_id: tenantId,
+          },
+        );
+
+        if (rpcError) {
+          logger.warn('MockData', 'Operator seeding failed:', rpcError.message);
+        } else {
+          logger.debug(
+            'MockData',
+            `Shop-floor operators: ${seedResult?.[0]?.message ?? "seeded"}`,
+          );
+        }
+
+        // Attribute historical records to existing tenant profiles (FK to profiles).
+        const { data: tenantProfiles } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .eq("tenant_id", tenantId);
+
+        if (tenantProfiles && tenantProfiles.length > 0) {
+          operatorIds = tenantProfiles.map((p) => p.id);
+          tenantProfiles.forEach((p) => {
+            operatorIdMap[p.full_name] = p.id;
+          });
+        }
+      } catch (err) {
+        logger.warn('MockData', 'Operator setup failed, continuing without:', err);
+      }
+    }
+
+    reportProgress(4, 'resources');
+    if (options.includeResources) {
+      const { error: resourceSeedError } = await supabase.rpc(
+        "seed_demo_resources",
+        {
+          p_tenant_id: tenantId,
+        },
+      );
+
+      if (
+        resourceSeedError &&
+        !resourceSeedError.message?.includes("already exist")
+      ) {
+        logger.warn('MockData', 'Resource seeding warning:', resourceSeedError);
+      } else {
+        logger.debug(
+          'MockData',
+          'Seeded demo resources (molds, tooling, fixtures, materials)',
+        );
+      }
+    }
+
+    const { error: scrapReasonsError } = await supabase.rpc(
+      "seed_default_scrap_reasons",
+      {
+        p_tenant_id: tenantId,
+      },
+    );
+
+    if (
+      scrapReasonsError &&
+      !scrapReasonsError.message?.includes("already exist")
+    ) {
+      logger.warn('MockData', 'Scrap reasons warning:', scrapReasonsError);
+    } else {
+      logger.debug('MockData', 'Seeded 31 default scrap reasons');
+    }
+
+    const { data: resourceData } = await supabase
+      .from("resources")
+      .select("id, name, type")
+      .eq("tenant_id", tenantId);
+
+    const { data: scrapReasonData } = await supabase
+      .from("scrap_reasons")
+      .select("id, code, category")
+      .eq("tenant_id", tenantId);
+
+    reportProgress(5, 'jobs');
+    let jobIds: string[] = [];
+    const jobIdMap: Record<string, string> = {};
+    const jobDueDateMap: Record<string, string> = {};
+    const jobNumbers = {
+      frame: `WO-${timeline.lotYear}-1047`,
+      cleanroom: `WO-${timeline.lotYear}-1089`,
+      energyStorage: `WO-${timeline.lotYear}-1124`,
+      precision: `WO-${timeline.lotYear}-1156`,
+      aerospace: `WO-${timeline.lotYear}-1178`,
+      medical: `WO-${timeline.lotYear}-1195`,
+    };
+
+    if (options.includeJobs) {
+      const jobs = [
+        {
+          tenant_id: tenantId,
+          job_number: jobNumbers.frame,
+          customer: "Van den Berg Machinebouw B.V.",
+          notes:
+            "Hydraulische hefframe - Urgente levering voor offshore project",
+          status: "completed" as const,
+          due_date: timeline.jobs.completed.dueAt,
+          created_at: timeline.jobs.completed.createdAt,
+          metadata: {
+            orderValue: "€24.500",
+            contactPerson: "Ing. P. van den Berg",
+            deliveryAddress: "Rotterdam Haven",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: jobNumbers.cleanroom,
+          customer: "TechnoStaal Engineering",
+          notes: "RVS bedieningspanelen voor cleanroom - ISO klasse 5 vereist",
+          status: "in_progress" as const,
+          due_date: timeline.jobs.inProgress[0].dueAt,
+          created_at: timeline.jobs.inProgress[0].createdAt,
+          metadata: {
+            orderValue: "€18.750",
+            contactPerson: "M. Schouten",
+            deliveryAddress: "Eindhoven TU/e Campus",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: jobNumbers.energyStorage,
+          customer: "De Jong Installatietechniek",
+          notes: "Aluminium behuizingen voor energieopslag - Herhaalorder Q4",
+          status: "in_progress" as const,
+          due_date: timeline.jobs.inProgress[1].dueAt,
+          created_at: timeline.jobs.inProgress[1].createdAt,
+          metadata: {
+            orderValue: "€31.200",
+            contactPerson: "R. de Jong",
+            deliveryAddress: "Utrecht Science Park",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: jobNumbers.precision,
+          customer: "HighTech Precision B.V.",
+          notes:
+            "Precisie framewerk voor semiconductor equipment - Tolerantie ±0.05mm",
+          status: "in_progress" as const,
+          due_date: timeline.jobs.inProgress[2].dueAt,
+          created_at: timeline.jobs.inProgress[2].createdAt,
+          metadata: {
+            orderValue: "€67.800",
+            contactPerson: "Dr. K. Vermeer",
+            deliveryAddress: "Veldhoven Tech Campus",
+            qualityLevel: "High-precision",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: jobNumbers.aerospace,
+          customer: "Luchtvaart Componenten Nederland",
+          notes: "Luchtvaart beugels - AS9100 certificering vereist",
+          status: "in_progress" as const,
+          due_date: timeline.jobs.inProgress[3].dueAt,
+          created_at: timeline.jobs.inProgress[3].createdAt,
+          metadata: {
+            orderValue: "€42.500",
+            contactPerson: "Ir. M. de Vries",
+            deliveryAddress: "Papendrecht Industrieterrein",
+            qualityLevel: "Aerospace",
+            certification: "AS9100D",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_number: jobNumbers.medical,
+          customer: "MedTech Solutions B.V.",
+          notes: "Medische apparatuur behuizing - EN ISO 13485",
+          status: "not_started" as const,
+          due_date: timeline.jobs.notStarted.dueAt,
+          created_at: timeline.jobs.notStarted.createdAt,
+          metadata: {
+            orderValue: "€28.900",
+            contactPerson: "Dr. L. Bakker",
+            deliveryAddress: "Best Medisch Park",
+            qualityLevel: "Medical",
+            certification: "EN ISO 13485",
+          },
+        },
+      ];
+
+      const { data: jobData, error: jobError } = await supabase
+        .from("jobs")
+        .insert(jobs)
+        .select("id, job_number");
+
+      if (jobError) throw jobError;
+
+      jobIds = jobData?.map((j) => j.id) || [];
+      jobData?.forEach((j, idx) => {
+        jobIdMap[jobs[idx].job_number] = j.id;
+        jobDueDateMap[jobs[idx].job_number] = jobs[idx].due_date;
+      });
+
+      logger.debug('MockData', 'Created 6 realistic Dutch customer jobs');
+    }
+
+    reportProgress(6, 'parts');
+    let partIds: string[] = [];
+    let partData: Array<{ id: string; part_number: string; job_id: string; parent_part_id?: string | null }> = [];
+
+    if (options.includeParts && jobIds.length > 0) {
+      const parentParts = [
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.frame],
+          part_number: "HF-FRAME-001",
+          material: "S355J2",
+          notes: "Hoofdframe hydraulische hef - Gelast constructiestaal",
+          quantity: 2,
+          status: "completed" as const,
+          parent_part_id: null as string | null,
+          metadata: {
+            dimensions: "1200x800x150mm",
+            weight: "45.5kg",
+            material_spec: "EN 10025-2",
+            surface_treatment: "Gritstralen + Primer",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.cleanroom],
+          part_number: "CR-PANEL-A1",
+          material: "RVS 316L",
+          notes: "Bedieningspaneel voorzijde - Cleanroom ISO 5",
+          quantity: 12,
+          status: "in_progress" as const,
+          parent_part_id: null as string | null,
+          metadata: {
+            dimensions: "400x300x2mm",
+            weight: "2.8kg",
+            material_spec: "EN 1.4404",
+            surface_finish: "Elektropolish Ra<0.4μm",
+            cleanroom_packaging: true,
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.energyStorage],
+          part_number: "ESS-BOX-TOP",
+          material: "AlMg3",
+          notes: "Deksel energieopslag behuizing - Parent assembly",
+          quantity: 25,
+          status: "in_progress" as const,
+          parent_part_id: null as string | null,
+          metadata: {
+            dimensions: "600x400x3mm",
+            weight: "1.9kg",
+            material_spec: "EN AW-5754",
+            anodize_color: "Natural clear",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.precision],
+          part_number: "HTP-FRAME-MAIN",
+          material: "RVS 304",
+          notes: "Precisie framewerk - CMM inspectie verplicht",
+          quantity: 4,
+          status: "not_started" as const,
+          parent_part_id: null as string | null,
+          metadata: {
+            dimensions: "800x600x100mm",
+            weight: "18.5kg",
+            tolerance: "±0.05mm",
+            material_spec: "EN 1.4301",
+            inspection: "CMM + Material cert required",
+            flatness: "< 0.02mm",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.aerospace],
+          part_number: "FK-BRACKET-A1",
+          material: "Aluminium 7075-T6",
+          notes: "Luchtvaart beugel - AS9100 traceability",
+          quantity: 16,
+          status: "in_progress" as const,
+          parent_part_id: null as string | null,
+          metadata: {
+            dimensions: "180x120x8mm",
+            weight: "0.45kg",
+            tolerance: "±0.1mm",
+            material_spec: "AMS-QQ-A-250/12",
+            certification: "AS9100D",
+            traceability: "Full lot traceability required",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.medical],
+          part_number: "PH-MED-HOUSING",
+          material: "RVS 316L",
+          notes: "Medische behuizing - biocompatibel",
+          quantity: 6,
+          status: "not_started" as const,
+          parent_part_id: null as string | null,
+          metadata: {
+            dimensions: "350x280x120mm",
+            weight: "4.2kg",
+            material_spec: "EN 1.4404",
+            certification: "EN ISO 13485",
+            surface_finish: "Ra < 0.8μm",
+            biocompatible: true,
+          },
+        },
+      ];
+
+      logger.debug('MockData', 'Inserting parent parts...');
+      const { data: parentPartsData, error: parentError } = await supabase
+        .from("parts")
+        .insert(parentParts)
+        .select("id, part_number, job_id, parent_part_id");
+
+      if (parentError) {
+        logger.error('MockData', 'Parent parts error:', parentError);
+        throw parentError;
+      }
+
+      logger.debug('MockData', `Created ${parentPartsData?.length || 0} parent parts`);
+
+      const partIdLookup: Record<string, string> = {};
+      parentPartsData?.forEach((p) => {
+        partIdLookup[p.part_number] = p.id;
+      });
+
+      const childParts = [
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.frame],
+          part_number: "HF-BRACKET-002",
+          material: "S355J2",
+          notes: "Montagebeugels zijkant - Child of HF-FRAME-001",
+          quantity: 8,
+          status: "completed" as const,
+          parent_part_id: partIdLookup["HF-FRAME-001"],
+          metadata: {
+            dimensions: "250x180x12mm",
+            weight: "3.2kg",
+            material_spec: "EN 10025-2",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.cleanroom],
+          part_number: "CR-PANEL-B1",
+          material: "RVS 316L",
+          notes: "Bedieningspaneel zijkant - Child of CR-PANEL-A1",
+          quantity: 12,
+          status: "in_progress" as const,
+          parent_part_id: partIdLookup["CR-PANEL-A1"],
+          metadata: {
+            dimensions: "300x250x2mm",
+            weight: "2.1kg",
+            material_spec: "EN 1.4404",
+            surface_finish: "Elektropolish Ra<0.4μm",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.energyStorage],
+          part_number: "ESS-BOX-SIDE",
+          material: "AlMg3",
+          notes: "Zijpaneel behuizing - Child of ESS-BOX-TOP",
+          quantity: 50,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["ESS-BOX-TOP"],
+          metadata: {
+            dimensions: "400x350x3mm",
+            weight: "1.4kg",
+            material_spec: "EN AW-5754",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.precision],
+          part_number: "HTP-MOUNT-PLT",
+          material: "RVS 304",
+          notes: "Montageplaat precisie - Child of HTP-FRAME-MAIN",
+          quantity: 8,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["HTP-FRAME-MAIN"],
+          metadata: {
+            dimensions: "300x200x15mm",
+            weight: "6.8kg",
+            tolerance: "±0.05mm",
+            material_spec: "EN 1.4301",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.aerospace],
+          part_number: "FK-BRACKET-B1",
+          material: "Aluminium 7075-T6",
+          notes: "Verstevigingsbeugel - Child of FK-BRACKET-A1",
+          quantity: 32,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["FK-BRACKET-A1"],
+          metadata: {
+            dimensions: "80x60x4mm",
+            weight: "0.12kg",
+            tolerance: "±0.1mm",
+            material_spec: "AMS-QQ-A-250/12",
+          },
+        },
+        {
+          tenant_id: tenantId,
+          job_id: jobIdMap[jobNumbers.medical],
+          part_number: "PH-MED-COVER",
+          material: "RVS 316L",
+          notes: "Deksel medische behuizing - Child of PH-MED-HOUSING",
+          quantity: 6,
+          status: "not_started" as const,
+          parent_part_id: partIdLookup["PH-MED-HOUSING"],
+          metadata: {
+            dimensions: "360x290x3mm",
+            weight: "2.1kg",
+            material_spec: "EN 1.4404",
+            surface_finish: "Ra < 0.8μm",
+          },
+        },
+      ];
+
+      logger.debug('MockData', 'Inserting child parts with parent links...');
+      const { data: childPartsData, error: childError } = await supabase
+        .from("parts")
+        .insert(childParts)
+        .select("id, part_number, job_id, parent_part_id");
+
+      if (childError) {
+        logger.error('MockData', 'Child parts error:', childError);
+        throw childError;
+      }
+
+      logger.debug('MockData', `Created ${childPartsData?.length || 0} child parts`);
+
+      partData =[...(parentPartsData || []), ...(childPartsData || [])];
+      partIds = partData.map((p) => p.id);
+
+      logger.debug('MockData', `Total parts created: ${partData.length} (${parentPartsData?.length} parents + ${childPartsData?.length} children)`);
+    }
+
+    reportProgress(7, 'operations');
+    let operationData: Array<{
+      id: string;
+      cell_id: string;
+      part_id: string;
+      status: string;
+    }> = [];
+
+    if (
+      options.includeOperations &&
+      partData.length > 0 &&
+      cellIds.length > 0
+    ) {
+      const operations: Record<string, unknown>[] = [];
+
+      const createOperationRouting = (
+        partId: string,
+        partNumber: string,
+        jobNumber: string,
+        material: string,
+        routing: Array<{
+          cell: string;
+          seq: number;
+          operation_name: string;
+          description: string;
+          estimated_hours: number;
+          status: "not_started" | "in_progress" | "completed" | "on_hold";
+          metadata?: Record<string, unknown>;
+        }>,
+      ) => {
+        routing.forEach((op) => {
+          const estimatedMinutes = Math.round(op.estimated_hours * 60);
+          const planned = createPlannedWindow({
+            reference: referenceDate,
+            dueAt: jobDueDateMap[jobNumber],
+            sequence: op.seq,
+            status: op.status,
+            estimatedMinutes,
+            context: timelineContext,
+          });
+
+          operations.push({
+            tenant_id: tenantId,
+            part_id: partId,
+            cell_id: cellIdMap[op.cell],
+            operation_name: op.operation_name,
+            notes: op.description, // Map description to notes field
+            sequence: op.seq,
+            status: op.status,
+            estimated_time: estimatedMinutes,
+            planned_start: planned.plannedStart,
+            planned_end: planned.plannedEnd,
+            started_at: op.status === "not_started" ? null : planned.plannedStart,
+            completed_at: op.status === "completed" ? planned.plannedEnd : null,
+            completion_percentage:
+              op.status === "completed" ? 100 : op.status === "in_progress" ? 40 : 0,
+            actual_time: op.status === "completed" ? Math.round(estimatedMinutes * 0.95) : 0,
+            metadata: op.metadata || {},
+          });
+        });
+      };
+
+      const frame001 = partData.find((p) => p.part_number === "HF-FRAME-001");
+      if (frame001) {
+        createOperationRouting(
+          frame001.id,
+          "HF-FRAME-001",
+          jobNumbers.frame,
+          "S355J2",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden platen",
+              description: "Fiber laser snijden hoofdplaten en verstevigingen",
+              estimated_hours: 1.5,
+              status: "completed",
+              metadata: {
+                program: "HF_FRAME_001_LASER.nc",
+                material_thickness: "12mm",
+                nest_efficiency: "87%",
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten versterkingsribben",
+              description: "Kanten L-profielen voor versterkingsribben",
+              estimated_hours: 0.8,
+              status: "completed",
+              metadata: {
+                tooling: "V40-88deg",
+                bend_count: 8,
+                material: "S355",
+              },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "Constructie lassen",
+              description:
+                "MIG lassen hoofdconstructie + verstevigingen - WPS-NL-2024-089",
+              estimated_hours: 4.5,
+              status: "completed",
+              metadata: {
+                weld_procedure: "WPS-NL-2024-089",
+                filler_material: "SG2 ø1.2mm",
+                inspection: "VT+MT",
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 40,
+              operation_name: "Gritstralen + Primer",
+              description: "Gritstralen SA 2.5 + 2K epoxy primer 80μm",
+              estimated_hours: 1.2,
+              status: "completed",
+              metadata: {
+                grit_grade: "G40",
+                primer: "Sigma SigmaGuard 720",
+                dry_film_thickness: "80μm",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "Eindcontrole EN1090",
+              description:
+                "Dimensiecontrole + lascontrole + coating DFT meting",
+              estimated_hours: 0.5,
+              status: "completed",
+              metadata: {
+                standard: "EN1090-2 EXC2",
+                weld_inspection: "VT+MT",
+                coating_check: "DFT measurement",
+              },
+            },
+          ],
+        );
+      }
+
+      const bracket002 = partData.find(
+        (p) => p.part_number === "HF-BRACKET-002",
+      );
+      if (bracket002) {
+        createOperationRouting(
+          bracket002.id,
+          "HF-BRACKET-002",
+          jobNumbers.frame,
+          "S355J2",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden beugels uit 12mm plaat",
+              estimated_hours: 0.6,
+              status: "completed",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten montagebeugels 90°",
+              estimated_hours: 0.4,
+              status: "completed",
+              metadata: { bend_angle: 90, tooling: "V25-88deg" },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "Tack lassen",
+              description: "Punten lassen verstevigingsplaatjes",
+              estimated_hours: 0.8,
+              status: "completed",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Visuele controle",
+              description: "Dimensie + lasnaad controle",
+              estimated_hours: 0.2,
+              status: "completed",
+            },
+          ],
+        );
+      }
+
+      const crPanelA1 = partData.find((p) => p.part_number === "CR-PANEL-A1");
+      if (crPanelA1) {
+        createOperationRouting(
+          crPanelA1.id,
+          "CR-PANEL-A1",
+          jobNumbers.cleanroom,
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden RVS",
+              description:
+                "Fiber laser snijden 316L - 2mm plaat + uitsparingen",
+              estimated_hours: 0.8,
+              status: "completed",
+              metadata: {
+                program: "CR_PANEL_A1.nc",
+                material: "EN1.4404",
+                nitrogen_cutting: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Precisie kanten",
+              description: "Kanten RVS 2x 90° - cleanroom tooling",
+              estimated_hours: 0.5,
+              status: "completed",
+              metadata: {
+                tooling: "V16-RVS-cleanroom",
+                bend_sequence: [1, 2],
+                radius: "3.2mm",
+              },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "TIG lassen",
+              description:
+                "TIG lassen montagepunten - Argon 99.999% - cleanroom weld",
+              estimated_hours: 1.2,
+              status: "in_progress",
+              metadata: {
+                weld_type: "TIG",
+                filler: "ER316L ø1.6mm",
+                shielding_gas: "Argon 5.0",
+                cleanroom_weld: true,
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 40,
+              operation_name: "Elektropolish",
+              description:
+                "Elektrochemisch polijsten Ra < 0.4μm voor cleanroom",
+              estimated_hours: 0.6,
+              status: "not_started",
+              metadata: {
+                process: "Electropolish",
+                target_roughness: "Ra < 0.4μm",
+                clean_packaging: "ISO5 bags",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "Cleanroom inspectie",
+              description: "Dimensie + Ra meting + particle test",
+              estimated_hours: 0.4,
+              status: "not_started",
+              metadata: {
+                roughness_test: "Ra measurement",
+                particle_test: "ISO 14644",
+                material_cert: "EN 10204 3.1",
+              },
+            },
+          ],
+        );
+      }
+
+      const crPanelB1 = partData.find((p) => p.part_number === "CR-PANEL-B1");
+      if (crPanelB1) {
+        createOperationRouting(
+          crPanelB1.id,
+          "CR-PANEL-B1",
+          jobNumbers.cleanroom,
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden RVS",
+              description: "Fiber laser snijden 316L zijpaneel",
+              estimated_hours: 0.6,
+              status: "completed",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten 3x 90°",
+              estimated_hours: 0.4,
+              status: "in_progress",
+              metadata: { bend_count: 3 },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "TIG lassen",
+              description: "TIG lassen hoekverbindingen",
+              estimated_hours: 0.8,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 40,
+              operation_name: "Elektropolish",
+              description: "Elektrochemisch polijsten",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "Cleanroom inspectie",
+              description: "Dimensie + oppervlakte controle",
+              estimated_hours: 0.3,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
+      const essTop = partData.find((p) => p.part_number === "ESS-BOX-TOP");
+      if (essTop) {
+        createOperationRouting(
+          essTop.id,
+          "ESS-BOX-TOP",
+          jobNumbers.energyStorage,
+          "AlMg3",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden aluminium",
+              description: "Fiber laser snijden AlMg3 3mm + gaten/sleuven",
+              estimated_hours: 0.7,
+              status: "in_progress",
+              metadata: {
+                material: "EN AW-5754",
+                thickness: "3mm",
+                nitrogen_assist: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten deksel",
+              description: "Kanten 4x 90° voor dekselrand",
+              estimated_hours: 0.5,
+              status: "not_started",
+              metadata: { bend_count: 4, tooling: "V20-Alu" },
+            },
+            {
+              cell: "Montage",
+              seq: 30,
+              operation_name: "Montage inserts",
+              description: "Monteren draadinserts M6 voor bevestiging",
+              estimated_hours: 0.3,
+              status: "not_started",
+              metadata: { insert_type: "Helicoil M6", quantity: 8 },
+            },
+            {
+              cell: "Afwerking",
+              seq: 40,
+              operation_name: "Anodiseren",
+              description: "Anodiseren naturel helder 15μm",
+              estimated_hours: 0.4,
+              status: "not_started",
+              metadata: {
+                anodize_type: "Clear natural",
+                thickness: "15μm",
+                standard: "EN 12373",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "Eindcontrole",
+              description: "Dimensie + anodiseren laagdikte",
+              estimated_hours: 0.2,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
+      const essSide = partData.find((p) => p.part_number === "ESS-BOX-SIDE");
+      if (essSide) {
+        createOperationRouting(
+          essSide.id,
+          "ESS-BOX-SIDE",
+          jobNumbers.energyStorage,
+          "AlMg3",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden zijpanelen aluminium",
+              estimated_hours: 0.9,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten montageranden",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Anodiseren",
+              description: "Anodiseren naturel",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Controle",
+              description: "Steekproef dimensies",
+              estimated_hours: 0.15,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
+      const asmlFrame = partData.find(
+        (p) => p.part_number === "HTP-FRAME-MAIN",
+      );
+      if (asmlFrame) {
+        createOperationRouting(
+          asmlFrame.id,
+          "HTP-FRAME-MAIN",
+          jobNumbers.precision,
+          "RVS 304",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Precisie lasersnijden",
+              description: "Fiber laser snijden RVS304 - high precision mode",
+              estimated_hours: 1.2,
+              status: "not_started",
+              metadata: {
+                precision_mode: true,
+                tolerance: "±0.05mm",
+                nitrogen_cutting: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Precisie kanten",
+              description: "CNC kanten met angle measurement ±0.1°",
+              estimated_hours: 1.5,
+              status: "not_started",
+              metadata: {
+                angle_tolerance: "±0.1°",
+                tooling: "Precision V-die",
+                back_gauge_accuracy: "±0.02mm",
+              },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "TIG precisie lassen",
+              description: "TIG lassen - low distortion welding procedure",
+              estimated_hours: 2.5,
+              status: "not_started",
+              metadata: {
+                weld_procedure: "Low-distortion TIG",
+                fixturing: "Precision jig required",
+                post_weld: "Stress relief",
+              },
+            },
+            {
+              cell: "Montage",
+              seq: 40,
+              operation_name: "Precisie montage",
+              description: "Montage subassemblies - clean room assembly",
+              estimated_hours: 1.0,
+              status: "not_started",
+              metadata: {
+                cleanroom_assembly: true,
+                torque_spec: "Per HTP drawing",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "CMM inspectie",
+              description:
+                "Volledige CMM meting + materiaalcertificaat + inspectie rapport",
+              estimated_hours: 1.5,
+              status: "not_started",
+              metadata: {
+                cmm_program: "HTP-FRAME-MAIN-CMM.prg",
+                material_cert: "EN 10204 3.1 required",
+                flatness_tolerance: "<0.02mm",
+                inspection_report: "Full dimensional report + weld inspection",
+              },
+            },
+          ],
+        );
+      }
+
+      const asmlMount = partData.find(
+        (p) => p.part_number === "HTP-MOUNT-PLT",
+      );
+      if (asmlMount) {
+        createOperationRouting(
+          asmlMount.id,
+          "HTP-MOUNT-PLT",
+          jobNumbers.precision,
+          "RVS 304",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden montageplaten 15mm RVS",
+              estimated_hours: 0.8,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten bevestigingsranden",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 30,
+              operation_name: "CMM controle",
+              description: "CMM meting kritische maten",
+              estimated_hours: 0.8,
+              status: "not_started",
+              metadata: { cmm_required: true, tolerance: "±0.05mm" },
+            },
+          ],
+        );
+      }
+
+      const fkBracketA1 = partData.find(
+        (p) => p.part_number === "FK-BRACKET-A1",
+      );
+      if (fkBracketA1) {
+        createOperationRouting(
+          fkBracketA1.id,
+          "FK-BRACKET-A1",
+          jobNumbers.aerospace,
+          "Aluminium 7075-T6",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "CNC frezen contouren",
+              description: "CNC frezen uit 7075-T6 plaat - AS9100 traceability",
+              estimated_hours: 1.5,
+              status: "completed",
+              metadata: {
+                material_cert: "AMS-QQ-A-250/12",
+                lot_traceability: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten aerospace",
+              description: "Precisie kanten met special tooling voor 7075",
+              estimated_hours: 1.0,
+              status: "in_progress",
+              metadata: {
+                tooling: "Aerospace-spec V-die",
+                spring_back_compensation: true,
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Anodiseren Type II",
+              description: "Chromaatzuur anodiseren per MIL-A-8625",
+              estimated_hours: 0.8,
+              status: "not_started",
+              metadata: {
+                spec: "MIL-A-8625 Type II",
+                color: "Clear",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "FAI inspectie",
+              description: "First Article Inspection + AS9102 documentatie",
+              estimated_hours: 1.2,
+              status: "not_started",
+              metadata: {
+                inspection_type: "FAI",
+                documentation: "AS9102 FAIR",
+                cert_required: true,
+              },
+            },
+          ],
+        );
+      }
+
+      const fkBracketB1 = partData.find(
+        (p) => p.part_number === "FK-BRACKET-B1",
+      );
+      if (fkBracketB1) {
+        createOperationRouting(
+          fkBracketB1.id,
+          "FK-BRACKET-B1",
+          jobNumbers.aerospace,
+          "Aluminium 7075-T6",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden verstevigingsbeugels",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten montageranden",
+              estimated_hours: 0.4,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Anodiseren",
+              description: "Anodiseren matching main bracket",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Inspectie",
+              description: "Dimensie controle + traceability",
+              estimated_hours: 0.3,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
+      const phMedHousing = partData.find(
+        (p) => p.part_number === "PH-MED-HOUSING",
+      );
+      if (phMedHousing) {
+        createOperationRouting(
+          phMedHousing.id,
+          "PH-MED-HOUSING",
+          jobNumbers.medical,
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden medisch",
+              description: "Fiber laser snijden 316L - cleanroom prep",
+              estimated_hours: 1.2,
+              status: "not_started",
+              metadata: {
+                cleanroom_prep: true,
+                nitrogen_cutting: true,
+              },
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Precisie kanten",
+              description: "Kanten met medische tooling",
+              estimated_hours: 1.0,
+              status: "not_started",
+              metadata: {
+                tooling: "Medical-grade",
+                contamination_control: true,
+              },
+            },
+            {
+              cell: "Lassen",
+              seq: 30,
+              operation_name: "TIG lassen medisch",
+              description: "TIG lassen - medical grade - purge welding",
+              estimated_hours: 2.0,
+              status: "not_started",
+              metadata: {
+                weld_type: "TIG orbital",
+                purge_welding: true,
+                argon_backing: true,
+              },
+            },
+            {
+              cell: "Afwerking",
+              seq: 40,
+              operation_name: "Elektropolish medisch",
+              description: "Elektrochemisch polijsten Ra < 0.8μm",
+              estimated_hours: 0.8,
+              status: "not_started",
+              metadata: {
+                target_roughness: "Ra < 0.8μm",
+                passivation: "Citric acid",
+              },
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 50,
+              operation_name: "Medische inspectie",
+              description: "Full inspection + EN ISO 13485 documentatie",
+              estimated_hours: 1.5,
+              status: "not_started",
+              metadata: {
+                standard: "EN ISO 13485",
+                biocompatibility_docs: true,
+                material_certs: "EN 10204 3.1",
+              },
+            },
+          ],
+        );
+      }
+
+      const phMedCover = partData.find(
+        (p) => p.part_number === "PH-MED-COVER",
+      );
+      if (phMedCover) {
+        createOperationRouting(
+          phMedCover.id,
+          "PH-MED-COVER",
+          jobNumbers.medical,
+          "RVS 316L",
+          [
+            {
+              cell: "Lasersnijden",
+              seq: 10,
+              operation_name: "Lasersnijden",
+              description: "Snijden deksel medische behuizing",
+              estimated_hours: 0.6,
+              status: "not_started",
+            },
+            {
+              cell: "CNC Kantbank",
+              seq: 20,
+              operation_name: "Kanten",
+              description: "Kanten randen voor sluiting",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Afwerking",
+              seq: 30,
+              operation_name: "Elektropolish",
+              description: "Elektrochemisch polijsten",
+              estimated_hours: 0.5,
+              status: "not_started",
+            },
+            {
+              cell: "Kwaliteitscontrole",
+              seq: 40,
+              operation_name: "Inspectie",
+              description: "Dimensie + oppervlakte controle",
+              estimated_hours: 0.4,
+              status: "not_started",
+            },
+          ],
+        );
+      }
+
+      logger.debug('MockData', `Prepared ${operations.length} operations to insert...`);
+      
+      if (operations.length === 0) {
+        logger.warn('MockData', 'No operations created - check if parts were found');
+        logger.debug('MockData', 'Available parts:', partData.map(p => p.part_number));
+        logger.debug('MockData', 'Available cells:', Object.keys(cellIdMap));
+      } else {
+        const { data: operationsInserted, error: operationsError } =
+          await supabase
+            .from("operations")
+            .insert(operations as never[])
+            .select("id, cell_id, part_id, status");
+
+        if (operationsError) {
+          logger.error('MockData', 'Operations insert error:', operationsError);
+          throw operationsError;
+        }
+
+        operationData = operationsInserted || [];
+        logger.debug(
+          'MockData',
+          `Created ${operationsInserted?.length || 0} QRM-aligned operations with detailed routing`,
+        );
+      }
+    }
+
+    // Keep substeps minimal - users can add more via templates or manually
+    if (operationData.length > 0) {
+      const inProgressOps = operationData.filter(op => op.status === "in_progress").slice(0, 2);
+
+      if (inProgressOps.length > 0) {
+        const substeps: Array<{
+          tenant_id: string;
+          operation_id: string;
+          name: string;
+          sequence: number;
+          status: string;
+          notes?: string;
+        }> = [];
+
+        for (const op of inProgressOps) {
+          const simpleSteps = [
+            { name: "Review drawing and specs", status: "completed" },
+            { name: "Prepare materials", status: "completed" },
+            { name: "Execute operation", status: "in_progress" },
+            { name: "Quality check", status: "not_started" },
+            { name: "Sign off", status: "not_started" },
+          ];
+
+          simpleSteps.forEach((step, idx) => {
+            substeps.push({
+              tenant_id: tenantId,
+              operation_id: op.id,
+              name: step.name,
+              sequence: (idx + 1) * 10,
+              status: step.status,
+            });
+          });
+        }
+
+        if (substeps.length > 0) {
+          const { error: substepsError } = await supabase
+            .from("substeps")
+            .insert(substeps);
+
+          if (substepsError) {
+            logger.warn('MockData', 'Substeps creation warning:', substepsError);
+          } else {
+            logger.debug('MockData', `Created ${substeps.length} example substeps for ${inProgressOps.length} operations`);
+          }
+        }
+      }
+    }
+
+    const templateDefinitions = [
+      {
+        name: "Cutting",
+        description: "Standard cutting operation checklist",
+        operation_type: "cutting",
+        items: [
+          { name: "Review cutting plan", notes: "Check dimensions" },
+          { name: "Prepare material", notes: "Verify quantity and grade" },
+          { name: "First article check", notes: "Measure first piece" },
+          { name: "Execute cutting", notes: null },
+          { name: "Deburr and inspect", notes: "Remove sharp edges" },
+        ],
+      },
+      {
+        name: "Bending",
+        description: "Press brake bending checklist",
+        operation_type: "bending",
+        items: [
+          { name: "Select tooling", notes: "Check dies and punches" },
+          { name: "Set parameters", notes: "Tonnage, back gauge, angle" },
+          { name: "Test bend", notes: "Verify on scrap material" },
+          { name: "Execute bending", notes: null },
+          { name: "Inspect angles", notes: "Use protractor" },
+        ],
+      },
+      {
+        name: "Welding",
+        description: "Welding operation checklist",
+        operation_type: "welding",
+        items: [
+          { name: "Check equipment", notes: "Gas, wire, settings" },
+          { name: "Prepare joint", notes: "Clean and fit-up" },
+          { name: "Tack weld", notes: "Verify alignment" },
+          { name: "Execute welding", notes: null },
+          { name: "Visual inspection", notes: "Check for defects" },
+        ],
+      },
+      {
+        name: "Assembly",
+        description: "Assembly operation checklist",
+        operation_type: "assembly",
+        items: [
+          { name: "Verify components", notes: "Check all parts present" },
+          { name: "Review BOM", notes: "Confirm hardware" },
+          { name: "Fit and align", notes: null },
+          { name: "Fasten per spec", notes: "Use torque wrench if required" },
+          { name: "Function test", notes: null },
+        ],
+      },
+      {
+        name: "Quality Check",
+        description: "Final inspection checklist",
+        operation_type: "inspection",
+        items: [
+          { name: "Gather documents", notes: "Drawings, specs" },
+          { name: "Visual inspection", notes: null },
+          { name: "Measure dimensions", notes: "Critical features" },
+          { name: "Document results", notes: null },
+          { name: "Sign off", notes: null },
+        ],
+      },
+    ];
+
+    for (const templateDef of templateDefinitions) {
+      try {
+        const { data: template, error: templateError } = await supabase
+          .from("substep_templates")
+          .insert({
+            tenant_id: tenantId,
+            name: templateDef.name,
+            description: templateDef.description,
+            operation_type: templateDef.operation_type,
+            is_global: false,
+          })
+          .select("id")
+          .single();
+
+        if (templateError) {
+          logger.warn('MockData', `Template "${templateDef.name}" warning:`, templateError);
+          continue;
+        }
+
+        const items = templateDef.items.map((item, idx) => ({
+          template_id: template.id,
+          name: item.name,
+          notes: item.notes,
+          sequence: (idx + 1) * 10,
+        }));
+
+        const { error: itemsError } = await supabase
+          .from("substep_template_items")
+          .insert(items);
+
+        if (itemsError) {
+          logger.warn('MockData', `Template items for "${templateDef.name}" warning:`, itemsError);
+        }
+      } catch (err) {
+        logger.warn('MockData', `Template "${templateDef.name}" error:`, err);
+      }
+    }
+    logger.debug('MockData', `Created ${templateDefinitions.length} substep templates`);
+
+    reportProgress(8, 'locations');
+    if (options.includeLocations !== false) {
+      await supabase.from("tenants").update({ location_tracking_enabled: true }).eq("id", tenantId);
+      // Put every part that already finished a step into a slot of the cell it
+      // heads to next, filling slots in order so the first one shows as full.
+      const opsByPart = new Map<string, typeof operationData>();
+      for (const op of operationData) opsByPart.set(op.part_id, [...(opsByPart.get(op.part_id) ?? []), op]);
+      const used = new Map<string, number>();
+      const placements: Array<{ tenant_id: string; part_id: string; location_id: string; operation_id: string | null }> = [];
+      for (const [partId, ops] of opsByPart) {
+        const doneIdx = ops.findIndex((op) => op.status !== "completed");
+        if (doneIdx <= 0) continue;
+        const slot = slotData
+          .filter((l) => l.cell_id === ops[doneIdx].cell_id)
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          .find((l) => (used.get(l.id) ?? 0) < l.capacity);
+        if (!slot) continue;
+        used.set(slot.id, (used.get(slot.id) ?? 0) + 1);
+        placements.push({ tenant_id: tenantId, part_id: partId, location_id: slot.id, operation_id: ops[doneIdx - 1].id });
+      }
+      if (placements.length > 0) {
+        const { error: placementError } = await supabase.from("part_placements").insert(placements);
+        if (placementError) logger.warn('MockData', 'Part placements seed warning:', placementError);
+      }
+    } else {
+      await supabase.from("tenants").update({ location_tracking_enabled: false }).eq("id", tenantId);
+    }
+
+    reportProgress(9, 'resourceLinks');
+    if (
+      options.includeResources &&
+      operationData.length > 0 &&
+      resourceData &&
+      resourceData.length > 0
+    ) {
+      const operationResources = [];
+
+      const resourceMappings: Record<string, string[]> = {
+        Lasersnijden: ["Laser Cutting Head"],
+        "CNC Kantbank": ["V-Die", "Enclosure Mold", "Bracket Forming Die"],
+        Lassen: ["Spot Welding Gun", "Welding Fixture"],
+        Montage: [],
+        Afwerking: [],
+        Kwaliteitscontrole: ["QC Inspection Gauge"],
+      };
+
+      for (const op of operationData) {
+        const cell = Object.entries(cellIdMap).find(
+          ([_, id]) => id === op.cell_id,
+        )?.[0];
+        if (!cell) continue;
+
+        const resourceNames = resourceMappings[cell] || [];
+
+        for (const resourceName of resourceNames) {
+          const resource = resourceData.find((r) =>
+            r.name.includes(resourceName),
+          );
+          if (resource) {
+            operationResources.push({
+              operation_id: op.id,
+              resource_id: resource.id,
+              quantity: 1,
+              notes: `Benodigd voor ${cell}`,
+            });
+          }
+        }
+      }
+
+      if (operationResources.length > 0) {
+        const { error: linkError } = await supabase
+          .from("operation_resources")
+          .insert(operationResources);
+
+        if (linkError) {
+          logger.warn('MockData', 'Resource linking warning:', linkError);
+        } else {
+          logger.debug(
+            'MockData',
+            `Linked ${operationResources.length} resources to operations`,
+          );
+        }
+      }
+    }
+
+    reportProgress(10, 'timeEntries');
+    if (
+      options.includeTimeEntries &&
+      operationData.length > 0 &&
+      operatorIds.length > 0
+    ) {
+      const timeEntries = [];
+
+      const workableOps = operationData.filter(
+        (op) => op.status === "completed" || op.status === "in_progress",
+      );
+
+      for (const op of workableOps) {
+        const numOperators = Math.random() > 0.7 ? 2 : 1;
+        const selectedOperators = operatorIds
+          .sort(() => Math.random() - 0.5)
+          .slice(0, numOperators);
+
+        for (const operatorId of selectedOperators) {
+          const baseDate = new Date(timeline.timeEntriesFrom);
+          const daysOffset = Math.floor(Math.random() * 45); // 45 days range
+          const startHour = 8 + Math.floor(Math.random() * 8); // Between 8:00 and 16:00
+
+          const startTime = new Date(baseDate);
+          startTime.setDate(startTime.getDate() + daysOffset);
+          startTime.setHours(startHour, Math.floor(Math.random() * 60), 0, 0);
+
+          const durationMinutes = 30 + Math.floor(Math.random() * 180); // 30 min to 3 hours
+          const endTime = new Date(startTime);
+          endTime.setMinutes(endTime.getMinutes() + durationMinutes);
+
+          if (op.status === "completed") {
+            timeEntries.push({
+              tenant_id: tenantId,
+              operation_id: op.id,
+              operator_id: operatorId,
+              start_time: startTime.toISOString(),
+              end_time: endTime.toISOString(),
+              duration: durationMinutes,
+              time_type: "productive",
+              notes: numOperators > 1 ? "Teamwork met collega" : null,
+            });
+          } else if (op.status === "in_progress") {
+            const hasEnded = Math.random() > 0.3;
+            const activeStart = new Date(referenceDate.getTime() - 60 * 60 * 1000);
+            timeEntries.push({
+              tenant_id: tenantId,
+              operation_id: op.id,
+              operator_id: operatorId,
+              start_time: hasEnded ? startTime.toISOString() : activeStart.toISOString(),
+              end_time: hasEnded ? endTime.toISOString() : null,
+              duration: hasEnded ? durationMinutes : null,
+              time_type: "productive",
+              is_paused: !hasEnded && Math.random() > 0.7,
+            });
+          }
+        }
+      }
+
+      if (timeEntries.length > 0) {
+        const { error: timeError } = await supabase
+          .from("time_entries")
+          .insert(timeEntries);
+
+        if (timeError) {
+          logger.warn('MockData', 'Time entries warning:', timeError);
+        } else {
+          logger.debug(
+            'MockData',
+            `Created ${timeEntries.length} time entries for operators`,
+          );
+        }
+      }
+    }
+
+    reportProgress(11, 'quantities');
+    if (
+      options.includeQuantityRecords &&
+      operationData.length > 0 &&
+      scrapReasonData &&
+      scrapReasonData.length > 0
+    ) {
+      const quantityRecords = [];
+
+      const completedOps = operationData.filter(
+        (op) => op.status === "completed",
+      );
+
+      for (const op of completedOps) {
+        const part = partData.find((p) => p.id === op.part_id);
+        if (!part) continue;
+
+        const totalQuantity = Math.min(10, Math.floor(Math.random() * 5) + 3); // 3-7 pieces or 10 max
+        const scrapQty =
+          Math.random() > 0.7 ? Math.floor(Math.random() * 2) : 0; // 0-1 scrap
+        const reworkQty = Math.random() > 0.85 ? 1 : 0;
+        const goodQty = totalQuantity - scrapQty - reworkQty;
+
+        const scrapReason =
+          scrapQty > 0
+            ? scrapReasonData[
+                Math.floor(Math.random() * scrapReasonData.length)
+              ]
+            : null;
+
+        const recordDate = new Date(timeline.quantityRecordsFrom);
+        recordDate.setDate(
+          recordDate.getDate() + Math.floor(Math.random() * 40),
+        );
+
+        quantityRecords.push({
+          tenant_id: tenantId,
+          operation_id: op.id,
+          quantity_produced: totalQuantity,
+          quantity_good: goodQty,
+          quantity_scrap: scrapQty,
+          quantity_rework: reworkQty,
+          scrap_reason_id: scrapReason?.id || null,
+          recorded_by:
+            operatorIds[Math.floor(Math.random() * operatorIds.length)],
+          recorded_at: recordDate.toISOString(),
+          notes:
+            scrapQty > 0
+              ? `${scrapQty} stuks afgekeurd: ${scrapReason?.code}`
+              : null,
+          material_lot: `LOT-${timeline.lotYear}-${Math.floor(Math.random() * 9000) + 1000}`,
+          material_supplier: [
+            "Thyssenkrupp",
+            "Tata Steel",
+            "Aalco Metals",
+            "Montanstahl",
+          ][Math.floor(Math.random() * 4)],
+        });
+      }
+
+      if (quantityRecords.length > 0) {
+        const { error: qtyError } = await supabase
+          .from("operation_quantities")
+          .insert(quantityRecords);
+
+        if (qtyError) {
+          logger.warn('MockData', 'Quantity records warning:', qtyError);
+        } else {
+          logger.debug(
+            'MockData',
+            `Created ${quantityRecords.length} quantity records with scrap tracking`,
+          );
+        }
+      }
+    }
+
+    reportProgress(12, 'issues');
+    if (
+      options.includeIssues &&
+      operationData.length > 0 &&
+      operatorIds.length > 0
+    ) {
+      const issues: Record<string, unknown>[] = [];
+
+      const numIssues = 2 + Math.floor(Math.random() * 3);
+      const selectedOps = operationData
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numIssues);
+
+      const issueTemplates = [
+        {
+          severity: "medium" as const,
+          description:
+            "Materiaal dikte afwijking geconstateerd - 2.8mm gemeten ipv 3.0mm specificatie. Materiaal certificaat controle nodig.",
+          resolution:
+            "Materiaal goedgekeurd na overleg kwaliteit - binnen toegestane tolerantie EN 10051",
+          status: "resolved" as const,
+        },
+        {
+          severity: "high" as const,
+          description:
+            "Lasnaad poreus - visuele controle toont meerdere poriën in lasnaad. Niet conform WPS procedure.",
+          resolution:
+            "Lasnaad uitgeslepen en opnieuw gelast met nieuwe WPS parameters. VT controle OK.",
+          status: "resolved" as const,
+        },
+        {
+          severity: "low" as const,
+          description:
+            "Kanthoek afwijking - gemeten 89.2° ipv 90° specificatie op 2 kanten.",
+          resolution: null as string | null,
+          status: "open" as const,
+        },
+        {
+          severity: "medium" as const,
+          description:
+            "Oppervlakte kwaliteit niet conform - krassen aanwezig na polijsten. Ra meting 0.52μm (spec: <0.4μm)",
+          resolution:
+            "Onderdeel opnieuw gepolijst - Ra meting 0.35μm - goedgekeurd",
+          status: "resolved" as const,
+        },
+        {
+          severity: "high" as const,
+          description:
+            "Dimensie out-of-tolerance - gat positie 0.15mm afwijking (spec: ±0.05mm). CMM meting bijgevoegd.",
+          resolution: null as string | null,
+          status: "in_review" as const,
+        },
+      ];
+
+      selectedOps.forEach((op, idx) => {
+        const template = issueTemplates[idx % issueTemplates.length];
+        const createdDate = new Date(timeline.issuesFrom);
+        createdDate.setDate(
+          createdDate.getDate() + Math.floor(Math.random() * 25),
+        );
+
+        const issue: {
+          tenant_id: string;
+          operation_id: string;
+          created_by: string;
+          severity: string;
+          description: string;
+          status: string;
+          created_at: string;
+          resolution_notes?: string;
+          reviewed_at?: string;
+          reviewed_by?: string;
+        } = {
+          tenant_id: tenantId,
+          operation_id: op.id,
+          created_by:
+            operatorIds[Math.floor(Math.random() * operatorIds.length)],
+          severity: template.severity,
+          description: template.description,
+          status: template.status,
+          created_at: createdDate.toISOString(),
+        };
+
+        if (template.resolution) {
+          issue.resolution_notes = template.resolution;
+          const resolvedDate = new Date(createdDate);
+          resolvedDate.setDate(
+            resolvedDate.getDate() + Math.floor(Math.random() * 3) + 1,
+          );
+          issue.reviewed_at = resolvedDate.toISOString();
+          issue.reviewed_by =
+            operatorIds[Math.floor(Math.random() * operatorIds.length)];
+        }
+
+        issues.push(issue);
+      });
+
+      if (issues.length > 0) {
+        const { error: issuesError } = await supabase
+          .from("issues")
+          .insert(issues as never[]);
+
+        if (issuesError) {
+          logger.warn('MockData', 'Issues creation warning:', issuesError);
+        } else {
+          logger.debug('MockData', `Created ${issues.length} quality issues (NCRs)`);
+        }
+      }
+    }
+
+    // Ensure the seeded tenant holds at least one assigned shop-floor operation so
+    // operator/terminal flows can be exercised. Idempotent; requires parts + a demo operator.
+    if (options.includeOperators) {
+      const { data: assignResult, error: assignSeedError } = await supabase.rpc(
+        "seed_demo_operator_assignment",
+        {
+          p_tenant_id: tenantId,
+        },
+      );
+
+      if (assignSeedError) {
+        logger.warn(
+          'MockData',
+          'Operator assignment seeding warning:',
+          assignSeedError.message,
+        );
+      } else {
+        logger.debug(
+          'MockData',
+          `Operator assignment: ${assignResult?.[0]?.message ?? "seeded"}`,
+        );
+      }
+    }
+
+    const { error: demoModeError } = await supabase.rpc("enable_demo_mode", {
+      p_tenant_id: tenantId,
+      p_user_id: null, // Could be passed from context if available
+    });
+
+    if (demoModeError) {
+      logger.warn('MockData', 'Could not set demo mode flag:', demoModeError);
+      // Continue anyway - data is created successfully
+    } else {
+      logger.debug('MockData', 'Demo mode flag enabled for tenant');
+    }
+
+    logger.debug('MockData', 'Mock data generation completed successfully!');
+    return { success: true };
+  } catch (error) {
+    logger.error('MockData', 'Error generating mock data:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Clears all mock data for a tenant
+ * CRITICAL: All deletions MUST be scoped to tenant_id to prevent cross-tenant contamination
+ * Useful for resetting during onboarding
+ *
+ * @param tenantId - The UUID of the tenant to clear data for
+ * @param useDatabaseFunction - If true, uses the database function clear_demo_data() (recommended)
+ */
+export async function clearMockData(
+  tenantId: string,
+  useDatabaseFunction: boolean = true,
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    if (!tenantId) {
+      throw new Error("tenant_id is required for clearMockData");
+    }
+
+    logger.debug('MockData', `Clearing all mock data for tenant: ${tenantId}...`);
+
+    if (useDatabaseFunction) {
+      const { error } = await supabase.rpc("clear_demo_data", {
+        p_tenant_id: tenantId,
+      });
+      if (error) throw error;
+      return { success: true };
+    }
+
+    // CRITICAL: Delete in reverse order of dependencies
+    // All deletions MUST include tenant_id filter to prevent cross-tenant contamination
+
+    const { error: notifErr } = await supabase
+      .from("notifications")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (notifErr) logger.warn('MockData', 'Notifications deletion warning:', notifErr);
+
+    const { error: issuesErr } = await supabase
+      .from("issues")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (issuesErr) logger.warn('MockData', 'Issues deletion warning:', issuesErr);
+
+    const { error: qtyErr } = await supabase
+      .from("operation_quantities")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (qtyErr) logger.warn('MockData', 'Quantity records deletion warning:', qtyErr);
+
+    // time_entry_pauses has no tenant_id - must filter through time_entries
+    const { data: tenantTimeEntries, error: teFetchErr } = await supabase
+      .from("time_entries")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (teFetchErr) {
+      logger.warn('MockData', 'Time entries fetch warning:', teFetchErr);
+    } else if (tenantTimeEntries && tenantTimeEntries.length > 0) {
+      const timeEntryIds = tenantTimeEntries.map((te) => te.id);
+      const { error: tepErr } = await supabase
+        .from("time_entry_pauses")
+        .delete()
+        .in("time_entry_id", timeEntryIds);
+      if (tepErr) logger.warn('MockData', 'Time entry pauses deletion warning:', tepErr);
+    }
+
+    const { error: timeErr } = await supabase
+      .from("time_entries")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (timeErr) logger.warn('MockData', 'Time entries deletion warning:', timeErr);
+
+    const { error: assignErr } = await supabase
+      .from("assignments")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (assignErr) logger.warn('MockData', 'Assignments deletion warning:', assignErr);
+
+    // Demo shop-floor operators (operators table, PIN login). Deleted after assignments
+    // because assignments.shop_floor_operator_id references operators(id).
+    const { error: demoOpsErr } = await supabase
+      .from("operators")
+      .delete()
+      .eq("tenant_id", tenantId)
+      .like("employee_id", "DEMO%");
+    if (demoOpsErr) logger.warn('MockData', 'Demo operators deletion warning:', demoOpsErr);
+
+    const { error: substepsErr } = await supabase
+      .from("substeps")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (substepsErr) logger.warn('MockData', 'Substeps deletion warning:', substepsErr);
+
+    // Must delete template items before templates due to FK constraint
+    const { data: tenantTemplates, error: templateFetchErr } = await supabase
+      .from("substep_templates")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (templateFetchErr) {
+      logger.warn('MockData', 'Template fetch warning:', templateFetchErr);
+    } else if (tenantTemplates && tenantTemplates.length > 0) {
+      const templateIds = tenantTemplates.map((t) => t.id);
+      const { error: templateItemsErr } = await supabase
+        .from("substep_template_items")
+        .delete()
+        .in("template_id", templateIds);
+      if (templateItemsErr)
+        logger.warn('MockData', 'Template items deletion warning:', templateItemsErr);
+    }
+
+    const { error: templatesErr } = await supabase
+      .from("substep_templates")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (templatesErr) logger.warn('MockData', 'Templates deletion warning:', templatesErr);
+
+    // CRITICAL: operation_resources has no tenant_id - must filter through operations for tenant isolation
+    const { data: tenantOperations, error: opFetchErr } = await supabase
+      .from("operations")
+      .select("id")
+      .eq("tenant_id", tenantId);
+
+    if (opFetchErr) {
+      logger.warn('MockData', 'Operation fetch warning:', opFetchErr);
+    } else if (tenantOperations && tenantOperations.length > 0) {
+      const operationIds = tenantOperations.map((op) => op.id);
+      const { error: opResErr } = await supabase
+        .from("operation_resources")
+        .delete()
+        .in("operation_id", operationIds);
+      if (opResErr)
+        logger.warn('MockData', 'Operation resources deletion warning:', opResErr);
+    }
+
+    const { error: opsErr } = await supabase
+      .from("operations")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (opsErr) logger.warn('MockData', 'Operations deletion warning:', opsErr);
+
+    // part_placements + storage_locations: storage_locations survives cell
+    // deletion (its cell FK is ON DELETE SET NULL), so clear it explicitly.
+    // part_placements cascades from parts, but delete it first to be explicit.
+    const { error: placementsErr } = await supabase
+      .from("part_placements")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (placementsErr) logger.warn('MockData', 'Part placements deletion warning:', placementsErr);
+
+    const { error: slotsErr } = await supabase
+      .from("storage_locations")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (slotsErr) logger.warn('MockData', 'Storage locations deletion warning:', slotsErr);
+
+    const { error: partsErr } = await supabase
+      .from("parts")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (partsErr) logger.warn('MockData', 'Parts deletion warning:', partsErr);
+
+    const { error: jobsErr } = await supabase
+      .from("jobs")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (jobsErr) logger.warn('MockData', 'Jobs deletion warning:', jobsErr);
+
+    const { error: cellsErr } = await supabase
+      .from("cells")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (cellsErr) logger.warn('MockData', 'Cells deletion warning:', cellsErr);
+
+    const { error: resourcesErr } = await supabase
+      .from("resources")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (resourcesErr) logger.warn('MockData', 'Resources deletion warning:', resourcesErr);
+
+    const { error: materialsErr } = await supabase
+      .from("materials")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (materialsErr) logger.warn('MockData', 'Materials deletion warning:', materialsErr);
+
+    const { error: scrapErr } = await supabase
+      .from("scrap_reasons")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (scrapErr) logger.warn('MockData', 'Scrap reasons deletion warning:', scrapErr);
+
+    // CRITICAL: Email filter must match seed_demo_operators function to avoid deleting real operators
+    const { error: profilesErr } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("tenant_id", tenantId)
+      .eq("role", "operator")
+      .in("email", [
+        "demo.operator1@example.com",
+        "demo.operator2@example.com",
+        "demo.operator3@example.com",
+        "demo.operator4@example.com",
+      ]);
+    if (profilesErr)
+      logger.warn('MockData', 'Demo operators deletion warning:', profilesErr);
+
+    const { error: calendarErr } = await supabase
+      .from("factory_calendar")
+      .delete()
+      .eq("tenant_id", tenantId);
+    if (calendarErr) logger.warn('MockData', 'Calendar deletion warning:', calendarErr);
+
+    const { error: demoModeError } = await supabase.rpc("disable_demo_mode", {
+      p_tenant_id: tenantId,
+    });
+
+    if (demoModeError) {
+      logger.warn('MockData', 'Could not clear demo mode flag:', demoModeError);
+      // Continue anyway - data is deleted successfully
+    } else {
+      logger.debug('MockData', 'Demo mode flag disabled for tenant');
+    }
+
+    logger.debug('MockData', `Mock data cleared successfully for tenant: ${tenantId}`);
+    return { success: true };
+  } catch (error) {
+    logger.error('MockData', 'Error clearing mock data:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}

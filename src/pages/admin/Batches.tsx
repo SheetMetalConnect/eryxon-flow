@@ -1,0 +1,312 @@
+import { usePageTitle } from "@/hooks/usePageTitle";
+import { useState } from "react";
+import { ROUTES } from "@/routes/constants";
+import { useTranslation } from "react-i18next";
+import { ColumnDef } from "@tanstack/react-table";
+import { useNavigate } from "react-router-dom";
+import {
+  Plus,
+  Eye,
+  MoreHorizontal,
+  Layers,
+  Play,
+  CheckCircle2,
+  Clock,
+  Trash2,
+  XCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { PageStatsRow } from "@/components/admin/PageStatsRow";
+import { DataTable } from "@/components/ui/data-table/DataTable";
+import { DataTableColumnHeader } from "@/components/ui/data-table/DataTableColumnHeader";
+import type { DataTableFilterableColumn } from "@/components/ui/data-table/DataTable";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { format } from "date-fns";
+import { useBatches, useUpdateBatchStatus, useDeleteBatch, type Batch, type BatchStatus, type BatchType } from "@/hooks/useBatches";
+import { cn } from "@/lib/utils";
+import { BATCH_STATUS_CONFIG, BATCH_TYPE_CONFIG } from "@/components/batch/batchConfig";
+
+export default function Batches() {
+  usePageTitle("navigation.batches");
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+
+  const { data: batches, isLoading, error, refetch } = useBatches();
+  const updateStatus = useUpdateBatchStatus();
+  const deleteBatch = useDeleteBatch();
+
+  const stats = {
+    total: batches?.length || 0,
+    draft: batches?.filter(b => b.status === "draft").length || 0,
+    inProgress: batches?.filter(b => b.status === "in_progress").length || 0,
+    completed: batches?.filter(b => b.status === "completed").length || 0,
+  };
+
+  const handleStatusChange = (batchId: string, newStatus: BatchStatus) => {
+    updateStatus.mutate({ batchId, status: newStatus });
+  };
+
+  const handleDelete = () => {
+    if (deleteId) {
+      deleteBatch.mutate(deleteId);
+      setDeleteId(null);
+    }
+  };
+
+  const columns: ColumnDef<Batch>[] = [
+    {
+      accessorKey: "batch_number",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("batches.batchNumber")} />
+      ),
+      cell: ({ row }) => (
+        <div className="font-mono font-medium">{row.getValue("batch_number")}</div>
+      ),
+    },
+    {
+      accessorKey: "batch_type",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("batches.type")} />
+      ),
+      cell: ({ row }) => {
+        const type = row.getValue("batch_type") as BatchType;
+        const config = BATCH_TYPE_CONFIG[type];
+        const Icon = config.icon;
+        return (
+          <div className="flex items-center gap-2">
+            <Icon className={cn("h-4 w-4", config.color)} />
+            <span>{t(config.label)}</span>
+          </div>
+        );
+      },
+      filterFn: (row, id, value) => value.includes(row.getValue(id)),
+    },
+    {
+      accessorKey: "cell",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("batches.cell")} />
+      ),
+      cell: ({ row }) => {
+        const cell = row.original.cell;
+        return cell?.name || "-";
+      },
+    },
+    {
+      accessorKey: "material",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("batches.material")} />
+      ),
+      cell: ({ row }) => {
+        const material = row.getValue("material") as string | null;
+        const thickness = row.original.thickness_mm;
+        if (!material) return "-";
+        return (
+          <div>
+            {material}
+            {thickness && <span className="text-muted-foreground ml-1">({thickness}mm)</span>}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "operations_count",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("batches.operationsCount")} />
+      ),
+      cell: ({ row }) => (
+        <Badge variant="outline">{row.getValue("operations_count")}</Badge>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("batches.status.label")} />
+      ),
+      cell: ({ row }) => {
+        const status = row.getValue("status") as BatchStatus;
+        const config = BATCH_STATUS_CONFIG[status];
+        return <Badge variant={config.variant}>{t(config.label)}</Badge>;
+      },
+      filterFn: (row, id, value) => value.includes(row.getValue(id)),
+    },
+    {
+      accessorKey: "created_at",
+      header: ({ column }) => (
+        <DataTableColumnHeader column={column} title={t("batches.createdAt")} />
+      ),
+      cell: ({ row }) => {
+        const date = row.getValue("created_at") as string;
+        return format(new Date(date), "dd/MM/yyyy HH:mm");
+      },
+    },
+    {
+      id: "actions",
+      cell: ({ row }) => {
+        const batch = row.original;
+        const canStart = batch.status === "draft" || batch.status === "ready";
+        const canComplete = batch.status === "in_progress";
+        const canCancel = batch.status !== "completed" && batch.status !== "cancelled";
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => navigate(`${ROUTES.ADMIN.BATCHES}/${batch.id}`)}>
+                <Eye className="mr-2 h-4 w-4" />
+                {t("common.view")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              {canStart && (
+                <DropdownMenuItem onClick={() => handleStatusChange(batch.id, "in_progress")}>
+                  <Play className="mr-2 h-4 w-4" />
+                  {t("batches.actions.start")}
+                </DropdownMenuItem>
+              )}
+              {canComplete && (
+                <DropdownMenuItem onClick={() => handleStatusChange(batch.id, "completed")}>
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  {t("batches.actions.complete")}
+                </DropdownMenuItem>
+              )}
+              {canCancel && (
+                <DropdownMenuItem onClick={() => handleStatusChange(batch.id, "cancelled")}>
+                  <XCircle className="mr-2 h-4 w-4" />
+                  {t("batches.actions.cancel")}
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                className="text-destructive"
+                onClick={() => setDeleteId(batch.id)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {t("common.delete")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
+
+  const filterableColumns: DataTableFilterableColumn[] = [
+    {
+      id: "batch_type",
+      title: t("batches.type"),
+      options: Object.entries(BATCH_TYPE_CONFIG).map(([value, config]) => ({
+        label: t(config.label),
+        value,
+      })),
+    },
+    {
+      id: "status",
+      title: t("batches.status.label"),
+      options: Object.entries(BATCH_STATUS_CONFIG).map(([value, config]) => ({
+        label: t(config.label),
+        value,
+      })),
+    },
+  ];
+
+  return (
+    <div className="p-4 space-y-4">
+      <AdminPageHeader
+        title={t("batches.title")}
+        description={t("batches.description")}
+        action={
+          <Button onClick={() => navigate(ROUTES.ADMIN.BATCHES_NEW)}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("batches.createBatch")}
+          </Button>
+        }
+      />
+
+      <PageStatsRow
+        stats={[
+          {
+            label: t("batches.stats.total"),
+            value: stats.total,
+            icon: Layers,
+          },
+          {
+            label: t("batches.stats.draft"),
+            value: stats.draft,
+            icon: Clock,
+          },
+          {
+            label: t("batches.stats.inProgress"),
+            value: stats.inProgress,
+            icon: Play,
+          },
+          {
+            label: t("batches.stats.completed"),
+            value: stats.completed,
+            icon: CheckCircle2,
+          },
+        ]}
+      />
+
+      {error ? (
+        <div className="flex flex-col items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            {t("common.failedToLoad")}
+          </p>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
+            {t("common.retry")}
+          </Button>
+        </div>
+      ) : (
+        <DataTable
+          columns={columns}
+          data={batches || []}
+          filterableColumns={filterableColumns}
+          searchableColumns={[
+            { id: "batch_number", title: t("batches.batchNumber") },
+            { id: "material", title: t("batches.material") },
+          ]}
+          loading={isLoading}
+        />
+      )}
+
+      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("batches.deleteConfirm.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("batches.deleteConfirm.description")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+              {t("common.delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}

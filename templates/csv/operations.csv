@@ -1,0 +1,17 @@
+external_id,external_source,operation_name,part_external_id,cell_name,sequence,estimated_time_minutes,notes
+OP-001,ERP,Lasersnijden,PART-001,Lasersnijden,1,120,6mm S235 N2
+OP-002,ERP,Kanten,PART-001,CNC Kantbank,2,90,4x 90deg
+OP-003,ERP,Lasersnijden,PART-002,Lasersnijden,1,60,3mm RVS 304 N2
+OP-004,ERP,Kanten,PART-002,CNC Kantbank,2,45,2x 90deg + 1x 135deg
+OP-005,ERP,Lassen,PART-002,Lassen,3,180,TIG RVS
+OP-006,ERP,Lasersnijden,PART-003,Lasersnijden,1,90,5mm RVS 316L N2
+OP-007,ERP,Kanten,PART-003,CNC Kantbank,2,120,Complex profiel
+OP-008,ERP,Lassen,PART-003,Lassen,3,240,TIG 316L gecertificeerd
+OP-009,ERP,Afwerking,PART-003,Afwerking,4,60,Beitsen en passiveren
+OP-010,ERP,Kwaliteitscontrole,PART-003,Kwaliteitscontrole,5,30,Foodgrade inspectie
+OP-011,ERP,Lasersnijden,PART-004,Lasersnijden,1,200,12mm S355
+OP-012,ERP,Kanten,PART-004,CNC Kantbank,2,150,Zware zetbank
+OP-013,ERP,Lassen,PART-004,Lassen,3,300,MAG S355
+OP-014,ERP,Lasersnijden,PART-006,Lasersnijden,1,45,4mm ALU 7075
+OP-015,ERP,Kanten,PART-006,CNC Kantbank,2,60,Precisie kanten
+OP-016,ERP,Montage,PART-006,Montage,3,90,Assemblage met inserts

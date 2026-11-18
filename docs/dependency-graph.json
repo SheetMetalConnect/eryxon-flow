@@ -1,0 +1,2083 @@
+{
+  "App.tsx": [
+    "components/ErrorBoundary.tsx",
+    "components/NotificationToastProvider.tsx",
+    "components/PwaUpdatePrompt.tsx",
+    "components/onboarding/index.ts",
+    "components/ui/sonner.tsx",
+    "components/ui/tooltip.tsx",
+    "contexts/AuthContext.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts",
+    "lib/queryClient.ts",
+    "pages/NotFound.tsx",
+    "pages/auth/AcceptInvitation.tsx",
+    "pages/auth/Auth.tsx",
+    "pages/auth/ForgotPassword.tsx",
+    "pages/auth/ResetPassword.tsx",
+    "pages/dev/TerminalScreenshot.tsx",
+    "pages/operator/TerminalLogin.tsx",
+    "routes/index.ts",
+    "theme/ThemeProvider.tsx"
+  ],
+  "components/AdminLayout.tsx": [
+    "components/AnimatedBackground.tsx",
+    "components/GlobalSearch.tsx",
+    "components/LanguageSwitcher.tsx",
+    "components/NavigationButtons.tsx",
+    "components/admin/TenantSwitcher.tsx",
+    "components/admin/TrialStatusBanner.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/collapsible.tsx",
+    "components/ui/scroll-area.tsx",
+    "components/ui/separator.tsx",
+    "components/ui/theme-toggle.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useFeatureFlags.ts",
+    "hooks/usePendingIssuesCount.ts",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "lib/config.ts",
+    "lib/utils.ts"
+  ],
+  "components/AnimatedBackground.tsx": [
+    "theme/ThemeProvider.tsx"
+  ],
+  "components/ErrorBoundary.tsx": [
+    "components/ui/button.tsx",
+    "lib/logger.ts"
+  ],
+  "components/FlowCell.tsx": [
+    "components/qrm/OperationsFlowVisualization.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/pagination.ts",
+    "lib/routingSummary.ts"
+  ],
+  "components/GlobalSearch.tsx": [
+    "components/ui/command.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/spinner.tsx",
+    "hooks/useGlobalSearch.ts",
+    "lib/utils.ts"
+  ],
+  "components/LanguageSwitcher.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/popover.tsx",
+    "lib/utils.ts"
+  ],
+  "components/Layout.tsx": [
+    "components/AdminLayout.tsx",
+    "components/OfflineBanner.tsx",
+    "components/operator/OperatorLayout.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts"
+  ],
+  "components/NavigationButtons.tsx": [
+    "components/ui/button.tsx"
+  ],
+  "components/NotificationToastProvider.tsx": [
+    "hooks/useNotifications.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts"
+  ],
+  "components/OfflineBanner.tsx": [
+    "lib/utils.ts",
+    "native/index.ts"
+  ],
+  "components/PDFViewer.tsx": [
+    "components/ui/button.tsx",
+    "lib/logger.ts",
+    "lib/utils.ts"
+  ],
+  "components/PDFViewerLazy.tsx": [
+    "components/PDFViewer.tsx"
+  ],
+  "components/PartFlowCell.tsx": [
+    "components/qrm/OperationsFlowVisualization.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "types/qrm.ts"
+  ],
+  "components/PwaUpdatePrompt.tsx": [
+    "native/index.ts"
+  ],
+  "components/STEPViewer.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/slider.tsx",
+    "components/viewer/controls.ts",
+    "components/viewer/grid.ts",
+    "components/viewer/measurements/MeasurementPanel.tsx",
+    "components/viewer/measurements/MeasurementToolbar.tsx",
+    "components/viewer/measurements/setupBVH.ts",
+    "components/viewer/measurements/types.ts",
+    "components/viewer/measurements/useMeasurements.ts",
+    "components/viewer/pmi-overlay.ts",
+    "components/viewer/scene.ts",
+    "components/viewer/types.ts",
+    "config/cadBackend.ts",
+    "hooks/useCADProcessing.ts",
+    "lib/logger.ts",
+    "lib/utils.ts",
+    "theme/ThemeProvider.tsx",
+    "theme/theme.ts"
+  ],
+  "components/STEPViewerLazy.tsx": [
+    "components/STEPViewer.tsx"
+  ],
+  "components/UploadProgress.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/progress.tsx",
+    "hooks/useFileUpload.ts",
+    "lib/upload-with-progress.ts"
+  ],
+  "components/admin/ActiveJobProgressCard.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/card.tsx",
+    "components/ui/progress.tsx",
+    "components/ui/table.tsx",
+    "lib/admin/activeJobProgress.ts"
+  ],
+  "components/admin/AdminPageHeader.tsx": [
+    "components/ui/button.tsx"
+  ],
+  "components/admin/AllSubstepsView.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/table.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/admin/DashboardAttentionCard.tsx": [
+    "components/ui/card.tsx",
+    "hooks/useDashboardAttention.ts",
+    "lib/admin/dashboardAttention.ts"
+  ],
+  "components/admin/DueDateOverrideModal.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/calendar.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/label.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "components/admin/FeatureFlagsSettings.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/separator.tsx",
+    "components/ui/switch.tsx",
+    "hooks/useFeatureFlags.ts",
+    "lib/utils.ts"
+  ],
+  "components/admin/JobDetailModal.tsx": [
+    "components/issues/IssuesSummarySection.tsx",
+    "components/issues/PartIssueBadge.tsx",
+    "components/qrm/OperationsFlowVisualization.tsx",
+    "components/ui/ResourceUsageDisplay.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/collapsible.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/tabs.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "hooks/useQRMMetrics.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "components/admin/OperationDetailModal.tsx": [
+    "components/PDFViewerLazy.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/status-badge.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/tabs.tsx",
+    "hooks/useOperationBookedHours.ts",
+    "hooks/useProfile.ts",
+    "hooks/useUpdateOperationPlan.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/errors.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts",
+    "lib/resource-status.ts"
+  ],
+  "components/admin/PageStatsRow.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/admin/PartDetailModal.tsx": [
+    "components/admin/part-detail/index.tsx"
+  ],
+  "components/admin/TemplatesManager.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/admin/TenantSwitcher.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/scroll-area.tsx",
+    "components/ui/spinner.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/logger.ts",
+    "lib/utils.ts"
+  ],
+  "components/admin/TrialStatusBanner.tsx": [
+    "hooks/useTenant.ts",
+    "lib/utils.ts"
+  ],
+  "components/admin/config/OperatorsManagement.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/admin/config/PendingInvitations.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "hooks/useInvitations.ts"
+  ],
+  "components/admin/part-detail/PartDetailsTab.tsx": [
+    "components/issues/IssuesSummarySection.tsx",
+    "components/qrm/RoutingVisualization.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/switch.tsx"
+  ],
+  "components/admin/part-detail/PartFilesTab.tsx": [
+    "components/UploadProgress.tsx",
+    "components/parts/ImageGallery.tsx",
+    "components/parts/ImageUpload.tsx",
+    "components/ui/button.tsx",
+    "components/ui/label.tsx",
+    "hooks/useFileUpload.ts"
+  ],
+  "components/admin/part-detail/PartOperationsTab.tsx": [
+    "components/issues/IssuesSummarySection.tsx",
+    "components/qrm/RoutingVisualization.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/textarea.tsx"
+  ],
+  "components/admin/part-detail/index.tsx": [
+    "components/PDFViewerLazy.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/admin/part-detail/PartDetailsTab.tsx",
+    "components/admin/part-detail/PartFilesTab.tsx",
+    "components/admin/part-detail/PartOperationsTab.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/tabs.tsx",
+    "hooks/useCADProcessing.ts",
+    "hooks/useFileUpload.ts",
+    "hooks/usePMI.ts",
+    "hooks/useProfile.ts",
+    "hooks/useQRMMetrics.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "components/auth/AuthShell.tsx": [
+    "components/AnimatedBackground.tsx",
+    "lib/utils.ts"
+  ],
+  "components/batch/BatchHeader.tsx": [
+    "components/batch/batchConfig.ts",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "hooks/useBatches.ts",
+    "routes/constants.ts"
+  ],
+  "components/batch/BatchInfoCards.tsx": [
+    "components/ui/card.tsx"
+  ],
+  "components/batch/BatchMetadata.tsx": [
+    "components/ui/card.tsx"
+  ],
+  "components/batch/BatchOperationsTable.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/tooltip.tsx"
+  ],
+  "components/batch/BatchRequirements.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "hooks/useBatches.ts"
+  ],
+  "components/batch/BatchStatusActions.tsx": [
+    "components/ui/button.tsx",
+    "hooks/useBatches.ts"
+  ],
+  "components/batch/BatchSubBatches.tsx": [
+    "components/batch/batchConfig.ts",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "hooks/useBatches.ts",
+    "routes/constants.ts"
+  ],
+  "components/batch/BatchTimeTracking.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "hooks/useBatchTimeTracking.ts"
+  ],
+  "components/batch/BatchVisuals.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "hooks/useBatches.ts",
+    "integrations/supabase/client.ts"
+  ],
+  "components/batch/batchConfig.ts": [
+    "hooks/useBatches.ts"
+  ],
+  "components/capacity/CapacityMatrixSkeleton.tsx": [
+    "components/ui/card.tsx",
+    "components/ui/skeleton.tsx"
+  ],
+  "components/capacity/CellScheduleDialog.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/scroll-area.tsx",
+    "components/ui/select.tsx",
+    "components/ui/skeleton.tsx",
+    "integrations/supabase/client.ts",
+    "lib/admin/capacityLoad.ts",
+    "lib/queryClient.ts"
+  ],
+  "components/issues/IssueBadge.tsx": [
+    "components/ui/badge.tsx"
+  ],
+  "components/issues/IssuesSummarySection.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/label.tsx",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "components/issues/JobIssueBadge.tsx": [
+    "components/issues/IssueBadge.tsx",
+    "components/ui/skeleton.tsx",
+    "hooks/useJobIssues.ts"
+  ],
+  "components/issues/PartIssueBadge.tsx": [
+    "components/issues/IssueBadge.tsx",
+    "components/ui/skeleton.tsx",
+    "hooks/usePartIssues.ts"
+  ],
+  "components/locations/PlacementPickerModal.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "hooks/locations/useStorageLocations.ts",
+    "lib/locations/placement.ts",
+    "lib/utils.ts"
+  ],
+  "components/onboarding/AppTour.tsx": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/onboarding/InvitationManager.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "hooks/useInvitations.ts",
+    "lib/logger.ts"
+  ],
+  "components/onboarding/MockDataImport.tsx": [
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/label.tsx",
+    "components/ui/switch.tsx",
+    "hooks/useProfile.ts",
+    "lib/logger.ts",
+    "lib/mockDataGenerator.ts"
+  ],
+  "components/onboarding/OnboardingWizard.tsx": [
+    "components/AnimatedBackground.tsx",
+    "components/onboarding/MockDataImport.tsx",
+    "components/onboarding/PlanSelection.tsx",
+    "components/onboarding/TeamSetup.tsx",
+    "components/ui/card.tsx",
+    "contexts/AuthContext.tsx",
+    "hooks/useProfile.ts",
+    "hooks/useSubscription.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/onboarding/OperatorCreationForm.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/onboarding/PlanSelection.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx"
+  ],
+  "components/onboarding/TeamSetup.tsx": [
+    "components/onboarding/InvitationManager.tsx",
+    "components/onboarding/OperatorCreationForm.tsx",
+    "components/ui/button.tsx",
+    "components/ui/tabs.tsx"
+  ],
+  "components/onboarding/index.ts": [
+    "components/onboarding/AppTour.tsx",
+    "components/onboarding/MockDataImport.tsx",
+    "components/onboarding/OnboardingWizard.tsx",
+    "components/onboarding/PlanSelection.tsx"
+  ],
+  "components/operator/BatchFlowPrompt.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "hooks/useOperatorTerminal.ts"
+  ],
+  "components/operator/HandoffRemarksSection.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/textarea.tsx",
+    "integrations/supabase/client.ts",
+    "lib/utils.ts"
+  ],
+  "components/operator/IssueForm.tsx": [
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/textarea.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/issues/reporting.ts",
+    "lib/logger.ts"
+  ],
+  "components/operator/OperationCard.tsx": [
+    "components/operator/OperationDetailModal.tsx",
+    "components/ui/chip.tsx",
+    "hooks/useOperationIssues.ts",
+    "hooks/useProfile.ts",
+    "lib/db/index.ts",
+    "lib/due-date.ts",
+    "lib/utils.ts"
+  ],
+  "components/operator/OperationDetailModal.tsx": [
+    "components/FlowCell.tsx",
+    "components/PDFViewerLazy.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/operator/HandoffRemarksSection.tsx",
+    "components/operator/IssueForm.tsx",
+    "components/operator/SubstepsManager.tsx",
+    "components/ui/EnhancedMetadataDisplay.tsx",
+    "components/ui/alert-dialog.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/sheet.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/db/index.ts",
+    "lib/errors.ts",
+    "lib/logger.ts",
+    "lib/utils.ts"
+  ],
+  "components/operator/OperationSwitchDialog.tsx": [
+    "components/ui/alert-dialog.tsx",
+    "hooks/operator-terminal/useTerminalActions.ts"
+  ],
+  "components/operator/OperatorDetailSidebar.tsx": [
+    "components/operator/BatchFlowPrompt.tsx",
+    "components/terminal/DetailPanel.tsx",
+    "components/ui/button.tsx",
+    "hooks/useCADProcessing.ts",
+    "hooks/useOperatorTerminal.ts",
+    "lib/db/index.ts",
+    "types/terminal.ts"
+  ],
+  "components/operator/OperatorLayout.tsx": [
+    "components/GlobalSearch.tsx",
+    "components/LanguageSwitcher.tsx",
+    "components/NavigationButtons.tsx",
+    "components/admin/TrialStatusBanner.tsx",
+    "components/onboarding/AppTour.tsx",
+    "components/operator/OperatorStatusBar.tsx",
+    "components/operator/OperatorSwitcher.tsx",
+    "components/ui/avatar.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/theme-toggle.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "lib/config.ts",
+    "lib/utils.ts",
+    "routes/constants.ts"
+  ],
+  "components/operator/OperatorModeBanner.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "features/operator-terminal/workModes.ts",
+    "lib/utils.ts"
+  ],
+  "components/operator/OperatorStation.tsx": [
+    "components/ui/card.tsx",
+    "lib/utils.ts"
+  ],
+  "components/operator/OperatorStatusBar.tsx": [
+    "components/ui/popover.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/utils.ts",
+    "routes/constants.ts"
+  ],
+  "components/operator/OperatorSwitcher.tsx": [
+    "components/ui/avatar.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "contexts/OperatorContext.tsx",
+    "lib/utils.ts",
+    "routes/constants.ts"
+  ],
+  "components/operator/OperatorWorkQueue.tsx": [
+    "components/terminal/JobRow.tsx",
+    "lib/time-utils.ts",
+    "types/terminal.ts"
+  ],
+  "components/operator/ProductionQuantityModal.tsx": [
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/operator/ScanDialog.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx"
+  ],
+  "components/operator/SubstepsManager.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/icon-picker.tsx",
+    "components/ui/input.tsx",
+    "components/ui/select.tsx",
+    "components/ui/separator.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "components/parts/ImageGallery.tsx": [
+    "components/ui/alert-dialog.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/utils.ts"
+  ],
+  "components/parts/ImageUpload.tsx": [
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/progress.tsx",
+    "hooks/useFileUpload.ts",
+    "lib/utils.ts"
+  ],
+  "components/qrm/OperationsFlowVisualization.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/tooltip.tsx",
+    "lib/utils.ts",
+    "types/qrm.ts"
+  ],
+  "components/qrm/QRMDashboard.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/card.tsx",
+    "hooks/useProfile.ts",
+    "hooks/useQRMMetrics.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "components/qrm/RoutingVisualization.tsx": [
+    "components/ui/tooltip.tsx",
+    "lib/utils.ts",
+    "types/qrm.ts"
+  ],
+  "components/qrm/WIPIndicator.tsx": [
+    "types/qrm.ts"
+  ],
+  "components/scheduler/AutoScheduleButton.tsx": [
+    "components/ui/alert-dialog.tsx",
+    "components/ui/button.tsx",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts",
+    "lib/scheduler/index.ts"
+  ],
+  "components/terminal/AssemblyDependencies.tsx": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/utils.ts"
+  ],
+  "components/terminal/CncProgramQrCode.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/terminal/DetailPanel.tsx": [
+    "components/PDFViewerLazy.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/terminal/AssemblyDependencies.tsx",
+    "components/terminal/CncProgramQrCode.tsx",
+    "components/terminal/OperationBatchTab.tsx",
+    "components/terminal/OperationLocationTab.tsx",
+    "components/terminal/OperationResources.tsx",
+    "components/terminal/OperationRoutePanel.tsx",
+    "components/terminal/TerminalActionBar.tsx",
+    "components/terminal/TerminalFullscreenViewer.tsx",
+    "components/ui/button.tsx",
+    "components/ui/tabs.tsx",
+    "hooks/useCADProcessing.ts",
+    "hooks/useProfile.ts",
+    "hooks/useQRMMetrics.ts",
+    "lib/db/index.ts",
+    "lib/utils.ts",
+    "types/terminal.ts"
+  ],
+  "components/terminal/JobRow.tsx": [
+    "components/terminal/TerminalCellInfo.tsx",
+    "components/terminal/terminalEncoding.tsx",
+    "components/ui/badge.tsx",
+    "lib/due-date.ts",
+    "lib/time-utils.ts",
+    "lib/utils.ts",
+    "types/terminal.ts"
+  ],
+  "components/terminal/OperationBatchTab.tsx": [
+    "types/terminal.ts"
+  ],
+  "components/terminal/OperationLocationTab.tsx": [
+    "components/locations/PlacementPickerModal.tsx",
+    "components/ui/button.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/locations/useRecordPlacement.ts",
+    "hooks/locations/useStorageLocations.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts"
+  ],
+  "components/terminal/OperationResources.tsx": [
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/resource-status.ts",
+    "lib/utils.ts"
+  ],
+  "components/terminal/OperationRoutePanel.tsx": [
+    "components/terminal/OperationTimeSummary.tsx",
+    "components/ui/icon-picker.tsx",
+    "hooks/useOperationBookedHours.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/logger.ts",
+    "lib/time-utils.ts",
+    "lib/utils.ts",
+    "types/terminal.ts"
+  ],
+  "components/terminal/OperationTimeSummary.tsx": [
+    "hooks/useOperationBookedHours.ts",
+    "lib/time-utils.ts",
+    "lib/utils.ts"
+  ],
+  "components/terminal/PinKeypad.tsx": [
+    "components/ui/button.tsx"
+  ],
+  "components/terminal/TerminalActionBar.tsx": [
+    "components/operator/IssueForm.tsx",
+    "components/operator/ProductionQuantityModal.tsx",
+    "components/ui/button.tsx",
+    "types/terminal.ts"
+  ],
+  "components/terminal/TerminalCellInfo.tsx": [
+    "components/ui/tooltip.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts"
+  ],
+  "components/terminal/TerminalFullscreenViewer.tsx": [
+    "components/PDFViewerLazy.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/ui/button.tsx",
+    "hooks/useCADProcessing.ts"
+  ],
+  "components/terminal/terminalEncoding.tsx": [
+    "lib/utils.ts",
+    "types/terminal.ts"
+  ],
+  "components/ui/EnhancedMetadataDisplay.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/card.tsx",
+    "types/metadata.ts"
+  ],
+  "components/ui/MetadataInput.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/tabs.tsx",
+    "components/ui/textarea.tsx",
+    "types/metadata.ts"
+  ],
+  "components/ui/ResourceUsageDisplay.tsx": [
+    "components/ui/EnhancedMetadataDisplay.tsx",
+    "components/ui/badge.tsx",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "types/metadata.ts"
+  ],
+  "components/ui/alert-dialog.tsx": [
+    "components/ui/button.tsx",
+    "lib/utils.ts"
+  ],
+  "components/ui/alert.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/avatar.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/badge.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/button.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/calendar.tsx": [
+    "components/ui/button.tsx",
+    "lib/utils.ts"
+  ],
+  "components/ui/card.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/checkbox.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/chip.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/collapsible.tsx": [],
+  "components/ui/command.tsx": [
+    "components/ui/dialog.tsx",
+    "lib/utils.ts"
+  ],
+  "components/ui/data-table/DataTable.tsx": [
+    "components/ui/data-table/DataTablePagination.tsx",
+    "components/ui/data-table/DataTableToolbar.tsx",
+    "components/ui/data-table/types.ts",
+    "components/ui/table.tsx",
+    "hooks/useDebounce.ts",
+    "lib/utils.ts"
+  ],
+  "components/ui/data-table/DataTableColumnHeader.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "lib/utils.ts"
+  ],
+  "components/ui/data-table/DataTableFacetedFilter.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/command.tsx",
+    "components/ui/popover.tsx",
+    "components/ui/separator.tsx",
+    "lib/utils.ts"
+  ],
+  "components/ui/data-table/DataTablePagination.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/select.tsx"
+  ],
+  "components/ui/data-table/DataTableToolbar.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/data-table/DataTableFacetedFilter.tsx",
+    "components/ui/data-table/DataTableViewOptions.tsx",
+    "components/ui/data-table/types.ts",
+    "components/ui/input.tsx"
+  ],
+  "components/ui/data-table/DataTableViewOptions.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/dropdown-menu.tsx"
+  ],
+  "components/ui/data-table/types.ts": [],
+  "components/ui/dialog.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/dropdown-menu.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/icon-picker.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/command.tsx",
+    "components/ui/popover.tsx",
+    "lib/utils.ts"
+  ],
+  "components/ui/input.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/label.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/popover.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/progress.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/scroll-area.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/select.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/separator.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/sheet.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/skeleton.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/slider.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/sonner.tsx": [
+    "theme/ThemeProvider.tsx"
+  ],
+  "components/ui/spinner.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/status-badge.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/switch.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/table.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/tabs.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/textarea.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/ui/theme-toggle.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/tooltip.tsx",
+    "lib/utils.ts",
+    "theme/ThemeProvider.tsx"
+  ],
+  "components/ui/tooltip.tsx": [
+    "lib/utils.ts"
+  ],
+  "components/viewer/controls.ts": [],
+  "components/viewer/grid.ts": [
+    "theme/theme.ts"
+  ],
+  "components/viewer/measurements/MeasurementPanel.tsx": [
+    "components/viewer/measurements/types.ts",
+    "lib/utils.ts"
+  ],
+  "components/viewer/measurements/MeasurementToolbar.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/tooltip.tsx",
+    "components/viewer/measurements/types.ts",
+    "lib/utils.ts"
+  ],
+  "components/viewer/measurements/annotations.ts": [
+    "components/viewer/measurements/types.ts",
+    "theme/theme.ts"
+  ],
+  "components/viewer/measurements/computations.ts": [],
+  "components/viewer/measurements/setupBVH.ts": [],
+  "components/viewer/measurements/types.ts": [],
+  "components/viewer/measurements/useMeasurements.ts": [
+    "components/viewer/measurements/annotations.ts",
+    "components/viewer/measurements/computations.ts",
+    "components/viewer/measurements/types.ts",
+    "components/viewer/measurements/useRaycastPicker.ts"
+  ],
+  "components/viewer/measurements/useRaycastPicker.ts": [
+    "components/viewer/measurements/types.ts",
+    "theme/theme.ts"
+  ],
+  "components/viewer/pmi-overlay.ts": [
+    "components/viewer/types.ts",
+    "hooks/useCADProcessing.ts",
+    "lib/logger.ts"
+  ],
+  "components/viewer/scene.ts": [
+    "theme/theme.ts"
+  ],
+  "components/viewer/types.ts": [
+    "hooks/useCADProcessing.ts"
+  ],
+  "config/cadBackend.ts": [
+    "lib/logger.ts"
+  ],
+  "config/env.ts": [],
+  "contexts/AuthContext.tsx": [
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts",
+    "native/index.ts"
+  ],
+  "contexts/OperatorContext.tsx": [
+    "contexts/operatorSession.ts",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "contexts/operatorSession.ts": [],
+  "features/operator-terminal/model.ts": [
+    "features/operator-terminal/release.ts",
+    "features/operator-terminal/workModes.ts",
+    "lib/db/index.ts",
+    "types/terminal.ts"
+  ],
+  "features/operator-terminal/release.ts": [],
+  "features/operator-terminal/workModes.ts": [],
+  "hooks/batches/batchContentMutations.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/batches/batchMutations.ts": [
+    "hooks/batches/types.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/batches/queries.ts": [
+    "hooks/batches/types.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/batches/types.ts": [],
+  "hooks/locations/useLocationTracking.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/locations/useRecordPlacement.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/locations/useStorageLocationMutations.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/locations/useStorageLocations.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/locations/placement.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/operator-terminal/useTerminalActions.ts": [
+    "features/operator-terminal/model.ts",
+    "features/operator-terminal/workModes.ts",
+    "lib/db/index.ts",
+    "lib/errors.ts",
+    "types/terminal.ts"
+  ],
+  "hooks/operator-terminal/useTerminalData.ts": [
+    "features/operator-terminal/model.ts",
+    "features/operator-terminal/release.ts",
+    "features/operator-terminal/workModes.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/operator-terminal/useTerminalFiles.ts": [
+    "hooks/useCADProcessing.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "types/terminal.ts"
+  ],
+  "hooks/operator-terminal/useTerminalJobs.ts": [
+    "features/operator-terminal/model.ts",
+    "features/operator-terminal/workModes.ts",
+    "lib/db/index.ts"
+  ],
+  "hooks/operator-terminal/useTerminalMode.ts": [
+    "features/operator-terminal/workModes.ts"
+  ],
+  "hooks/operator-terminal/useTerminalScanner.ts": [
+    "features/operator-terminal/model.ts",
+    "lib/db/index.ts",
+    "lib/operatorScanner.ts"
+  ],
+  "hooks/qrm/index.ts": [
+    "hooks/qrm/useCapacity.ts",
+    "hooks/qrm/useCellMetrics.ts",
+    "hooks/qrm/useRouting.ts"
+  ],
+  "hooks/qrm/useCapacity.ts": [
+    "hooks/useDebounce.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "types/qrm.ts"
+  ],
+  "hooks/qrm/useCellMetrics.ts": [
+    "hooks/useDebounce.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "types/qrm.ts"
+  ],
+  "hooks/qrm/useRouting.ts": [
+    "hooks/useDebounce.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "types/qrm.ts"
+  ],
+  "hooks/use-mobile.tsx": [],
+  "hooks/useAuthActions.ts": [
+    "contexts/AuthContext.tsx"
+  ],
+  "hooks/useBatchTimeTracking.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/useBatches.ts": [
+    "hooks/batches/batchContentMutations.ts",
+    "hooks/batches/batchMutations.ts",
+    "hooks/batches/queries.ts",
+    "hooks/batches/types.ts"
+  ],
+  "hooks/useCADProcessing.ts": [
+    "config/cadBackend.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/cadProcessingMetadata.ts",
+    "lib/cadProxy.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts",
+    "types/cad.ts"
+  ],
+  "hooks/useDashboardAttention.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/admin/dashboardAttention.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/useDebounce.ts": [],
+  "hooks/useFeatureFlags.ts": [
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/useFileUpload.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/upload-with-progress.ts"
+  ],
+  "hooks/useGlobalSearch.ts": [
+    "hooks/useProfile.ts",
+    "lib/logger.ts",
+    "lib/search/index.ts"
+  ],
+  "hooks/useInvitations.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/useJobIssues.ts": [
+    "hooks/useRealtimeSubscription.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/useKeyboardWedgeScanner.ts": [],
+  "hooks/useNotifications.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/useOperationBookedHours.ts": [
+    "integrations/supabase/client.ts",
+    "lib/admin/bookedHours.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/useOperationIssues.ts": [
+    "hooks/useRealtimeSubscription.ts",
+    "integrations/supabase/client.ts"
+  ],
+  "hooks/useOperatorTerminal.ts": [
+    "contexts/OperatorContext.tsx",
+    "features/operator-terminal/model.ts",
+    "hooks/operator-terminal/useTerminalActions.ts",
+    "hooks/operator-terminal/useTerminalData.ts",
+    "hooks/operator-terminal/useTerminalFiles.ts",
+    "hooks/operator-terminal/useTerminalJobs.ts",
+    "hooks/operator-terminal/useTerminalMode.ts",
+    "hooks/operator-terminal/useTerminalScanner.ts",
+    "hooks/useCADProcessing.ts",
+    "hooks/useProfile.ts"
+  ],
+  "hooks/usePMI.ts": [
+    "config/cadBackend.ts",
+    "integrations/supabase/client.ts",
+    "lib/cadProxy.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/usePageTitle.ts": [],
+  "hooks/usePartIssues.ts": [
+    "hooks/useRealtimeSubscription.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/usePendingIssuesCount.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/useProfile.ts": [
+    "contexts/AuthContext.tsx"
+  ],
+  "hooks/useQRMMetrics.ts": [
+    "hooks/qrm/index.ts"
+  ],
+  "hooks/useQualityMetrics.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "hooks/useRealtimeSubscription.ts": [
+    "integrations/supabase/client.ts"
+  ],
+  "hooks/useResizablePanel.ts": [],
+  "hooks/useResponsiveColumns.ts": [],
+  "hooks/useSession.ts": [
+    "contexts/AuthContext.tsx"
+  ],
+  "hooks/useSubscription.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/useTenant.ts": [
+    "contexts/AuthContext.tsx"
+  ],
+  "hooks/useTimeTracking.ts": [
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/admin/timeTracking.ts",
+    "lib/logger.ts"
+  ],
+  "hooks/useUpdateOperationPlan.ts": [
+    "lib/db/operations.ts",
+    "lib/queryClient.ts"
+  ],
+  "integrations/supabase/client.ts": [
+    "config/env.ts",
+    "integrations/supabase/types.ts"
+  ],
+  "integrations/supabase/types.ts": [],
+  "lib/admin/activeJobProgress.ts": [],
+  "lib/admin/bookedHours.ts": [],
+  "lib/admin/capacityLoad.ts": [],
+  "lib/admin/dashboardAttention.ts": [],
+  "lib/admin/timeTracking.ts": [
+    "lib/admin/bookedHours.ts"
+  ],
+  "lib/cadProcessingMetadata.ts": [
+    "config/cadBackend.ts",
+    "types/cad.ts"
+  ],
+  "lib/cadProxy.ts": [
+    "integrations/supabase/client.ts",
+    "lib/privateObjectUrl.ts"
+  ],
+  "lib/config.ts": [
+    "config/env.ts"
+  ],
+  "lib/db/assemblies.ts": [
+    "integrations/supabase/client.ts"
+  ],
+  "lib/db/batches.ts": [
+    "integrations/supabase/client.ts"
+  ],
+  "lib/db/chunked.ts": [],
+  "lib/db/index.ts": [
+    "lib/db/assemblies.ts",
+    "lib/db/batches.ts",
+    "lib/db/operations.ts",
+    "lib/db/time-tracking.ts"
+  ],
+  "lib/db/operations.ts": [
+    "features/operator-terminal/workModes.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/db/chunked.ts",
+    "lib/db/pagination.ts",
+    "lib/logger.ts"
+  ],
+  "lib/db/pagination.ts": [],
+  "lib/db/time-tracking.ts": [
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "lib/due-date.ts": [],
+  "lib/errors.ts": [],
+  "lib/issues/reporting.ts": [],
+  "lib/locations/placement.ts": [],
+  "lib/logger.ts": [],
+  "lib/mcpConfig.ts": [],
+  "lib/mockDataGenerator.ts": [
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "lib/operatorScanner.ts": [
+    "lib/db/index.ts"
+  ],
+  "lib/privateObjectUrl.ts": [],
+  "lib/queryClient.ts": [],
+  "lib/resource-status.ts": [],
+  "lib/routingSummary.ts": [
+    "types/qrm.ts"
+  ],
+  "lib/scheduler/allocator.ts": [
+    "lib/scheduler/calendar.ts",
+    "lib/scheduler/capacity.ts",
+    "lib/scheduler/types.ts"
+  ],
+  "lib/scheduler/calendar.ts": [
+    "lib/scheduler/types.ts"
+  ],
+  "lib/scheduler/capacity.ts": [
+    "lib/scheduler/calendar.ts",
+    "lib/scheduler/types.ts"
+  ],
+  "lib/scheduler/index.ts": [
+    "lib/scheduler/allocator.ts",
+    "lib/scheduler/calendar.ts",
+    "lib/scheduler/capacity.ts",
+    "lib/scheduler/scheduler.ts",
+    "lib/scheduler/types.ts"
+  ],
+  "lib/scheduler/scheduler.ts": [
+    "lib/scheduler/allocator.ts",
+    "lib/scheduler/calendar.ts",
+    "lib/scheduler/capacity.ts",
+    "lib/scheduler/types.ts"
+  ],
+  "lib/scheduler/types.ts": [
+    "integrations/supabase/types.ts"
+  ],
+  "lib/search/createEntitySearch.ts": [
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/search/types.ts"
+  ],
+  "lib/search/index.ts": [
+    "lib/search/createEntitySearch.ts",
+    "lib/search/searchConfigs.ts",
+    "lib/search/types.ts"
+  ],
+  "lib/search/searchConfigs.ts": [
+    "lib/search/types.ts"
+  ],
+  "lib/search/types.ts": [],
+  "lib/seed.ts": [
+    "lib/logger.ts",
+    "lib/mockDataGenerator.ts"
+  ],
+  "lib/time-utils.ts": [],
+  "lib/upload-with-progress.ts": [
+    "config/env.ts",
+    "integrations/supabase/client.ts"
+  ],
+  "lib/utils.ts": [],
+  "lib/webhookEvents.ts": [],
+  "native/index.ts": [],
+  "pages/NotFound.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "lib/logger.ts"
+  ],
+  "pages/admin/ActivityMonitor.tsx": [
+    "components/admin/AdminPageHeader.tsx",
+    "components/admin/PageStatsRow.tsx",
+    "components/ui/avatar.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/switch.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/utils.ts"
+  ],
+  "pages/admin/Assignments.tsx": [
+    "components/admin/AdminPageHeader.tsx",
+    "components/admin/PageStatsRow.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/data-table/DataTableColumnHeader.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/BatchCreate.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/scroll-area.tsx",
+    "components/ui/select.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useBatches.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts",
+    "routes/constants.ts"
+  ],
+  "pages/admin/BatchDetail.tsx": [
+    "components/batch/BatchHeader.tsx",
+    "components/batch/BatchInfoCards.tsx",
+    "components/batch/BatchMetadata.tsx",
+    "components/batch/BatchOperationsTable.tsx",
+    "components/batch/BatchRequirements.tsx",
+    "components/batch/BatchStatusActions.tsx",
+    "components/batch/BatchSubBatches.tsx",
+    "components/batch/BatchTimeTracking.tsx",
+    "components/batch/BatchVisuals.tsx",
+    "components/ui/button.tsx",
+    "hooks/useBatchTimeTracking.ts",
+    "hooks/useBatches.ts",
+    "routes/constants.ts"
+  ],
+  "pages/admin/Batches.tsx": [
+    "components/admin/AdminPageHeader.tsx",
+    "components/admin/PageStatsRow.tsx",
+    "components/batch/batchConfig.ts",
+    "components/ui/alert-dialog.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/data-table/DataTableColumnHeader.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "hooks/useBatches.ts",
+    "hooks/usePageTitle.ts",
+    "lib/utils.ts",
+    "routes/constants.ts"
+  ],
+  "pages/admin/CapacityMatrix.tsx": [
+    "components/admin/AdminPageHeader.tsx",
+    "components/capacity/CapacityMatrixSkeleton.tsx",
+    "components/capacity/CellScheduleDialog.tsx",
+    "components/scheduler/AutoScheduleButton.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/tooltip.tsx",
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/admin/capacityLoad.ts",
+    "lib/queryClient.ts"
+  ],
+  "pages/admin/Dashboard.tsx": [
+    "components/admin/ActiveJobProgressCard.tsx",
+    "components/admin/DashboardAttentionCard.tsx",
+    "components/qrm/QRMDashboard.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/table.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/admin/activeJobProgress.ts",
+    "lib/db/index.ts",
+    "lib/logger.ts",
+    "lib/mockDataGenerator.ts",
+    "lib/seed.ts"
+  ],
+  "pages/admin/DataExport.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/label.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/config.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/DataImport.tsx": [
+    "components/ui/alert.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/label.tsx",
+    "components/ui/progress.tsx",
+    "components/ui/scroll-area.tsx",
+    "components/ui/select.tsx",
+    "components/ui/table.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/config.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/FactoryCalendar.tsx": [
+    "components/ui/alert-dialog.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/slider.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/IssueQueue.tsx": [
+    "components/admin/AdminPageHeader.tsx",
+    "components/admin/PageStatsRow.tsx",
+    "components/ui/button.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/data-table/DataTableColumnHeader.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/label.tsx",
+    "components/ui/status-badge.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/JobCreate.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "pages/admin/Jobs.tsx": [
+    "components/PDFViewerLazy.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/admin/AdminPageHeader.tsx",
+    "components/admin/DueDateOverrideModal.tsx",
+    "components/admin/JobDetailModal.tsx",
+    "components/admin/PageStatsRow.tsx",
+    "components/issues/JobIssueBadge.tsx",
+    "components/qrm/OperationsFlowVisualization.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/data-table/DataTableColumnHeader.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/dropdown-menu.tsx",
+    "components/ui/status-badge.tsx",
+    "hooks/usePageTitle.ts",
+    "hooks/useProfile.ts",
+    "hooks/useResponsiveColumns.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/pagination.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts",
+    "lib/routingSummary.ts",
+    "lib/utils.ts",
+    "routes/constants.ts",
+    "types/qrm.ts"
+  ],
+  "pages/admin/McpServer.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/tabs.tsx",
+    "config/env.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/config.ts",
+    "lib/mcpConfig.ts"
+  ],
+  "pages/admin/Operations.tsx": [
+    "components/admin/AdminPageHeader.tsx",
+    "components/admin/OperationDetailModal.tsx",
+    "components/admin/PageStatsRow.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/data-table/DataTableColumnHeader.tsx",
+    "components/ui/status-badge.tsx",
+    "components/ui/tooltip.tsx",
+    "features/operator-terminal/release.ts",
+    "hooks/useProfile.ts",
+    "hooks/useResponsiveColumns.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/chunked.ts",
+    "lib/db/pagination.ts",
+    "lib/queryClient.ts"
+  ],
+  "pages/admin/OrganizationSettings.tsx": [
+    "components/admin/FeatureFlagsSettings.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/switch.tsx",
+    "features/operator-terminal/release.ts",
+    "features/operator-terminal/workModes.ts",
+    "hooks/locations/useLocationTracking.ts",
+    "hooks/locations/useStorageLocations.ts",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/PartCreate.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts"
+  ],
+  "pages/admin/Parts.tsx": [
+    "components/PDFViewerLazy.tsx",
+    "components/PartFlowCell.tsx",
+    "components/STEPViewerLazy.tsx",
+    "components/admin/AdminPageHeader.tsx",
+    "components/admin/PageStatsRow.tsx",
+    "components/admin/PartDetailModal.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/data-table/DataTableColumnHeader.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/status-badge.tsx",
+    "hooks/usePageTitle.ts",
+    "hooks/useProfile.ts",
+    "hooks/useResponsiveColumns.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/pagination.ts",
+    "lib/logger.ts",
+    "lib/queryClient.ts"
+  ],
+  "pages/admin/Settings.tsx": [
+    "components/LanguageSwitcher.tsx",
+    "components/ui/alert-dialog.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/label.tsx",
+    "components/ui/separator.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts",
+    "hooks/useTenant.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "lib/mockDataGenerator.ts"
+  ],
+  "pages/admin/StepsTemplatesView.tsx": [
+    "components/admin/AllSubstepsView.tsx",
+    "components/admin/TemplatesManager.tsx",
+    "components/ui/card.tsx",
+    "components/ui/tabs.tsx"
+  ],
+  "pages/admin/TimeTracking.tsx": [
+    "components/admin/AdminPageHeader.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/collapsible.tsx",
+    "components/ui/input.tsx",
+    "components/ui/table.tsx",
+    "components/ui/tabs.tsx",
+    "hooks/useTimeTracking.ts",
+    "lib/admin/timeTracking.ts",
+    "lib/time-utils.ts",
+    "lib/utils.ts"
+  ],
+  "pages/admin/config/ApiKeys.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "integrations/supabase/client.ts",
+    "lib/config.ts"
+  ],
+  "pages/admin/config/Locations.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/table.tsx",
+    "hooks/locations/useStorageLocationMutations.ts",
+    "hooks/locations/useStorageLocations.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/utils.ts"
+  ],
+  "pages/admin/config/Materials.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/config/Resources.tsx": [
+    "components/ui/MetadataInput.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "types/metadata.ts"
+  ],
+  "pages/admin/config/ScrapReasons.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/table.tsx",
+    "hooks/useProfile.ts",
+    "hooks/useQualityMetrics.ts",
+    "integrations/supabase/client.ts",
+    "lib/queryClient.ts",
+    "lib/utils.ts"
+  ],
+  "pages/admin/config/Stages.tsx": [
+    "components/qrm/WIPIndicator.tsx",
+    "components/ui/alert-dialog.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/icon-picker.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/textarea.tsx",
+    "hooks/useProfile.ts",
+    "hooks/useQRMMetrics.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/config/Users.tsx": [
+    "components/admin/config/OperatorsManagement.tsx",
+    "components/admin/config/PendingInvitations.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/data-table/DataTableColumnHeader.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/switch.tsx",
+    "hooks/useInvitations.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "pages/admin/config/Webhooks.tsx": [
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/data-table/DataTable.tsx",
+    "components/ui/dialog.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/switch.tsx",
+    "components/ui/tabs.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "integrations/supabase/types.ts",
+    "lib/config.ts",
+    "lib/errors.ts",
+    "lib/webhookEvents.ts"
+  ],
+  "pages/auth/AcceptInvitation.tsx": [
+    "components/LanguageSwitcher.tsx",
+    "components/auth/AuthShell.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useInvitations.ts",
+    "lib/logger.ts"
+  ],
+  "pages/auth/Auth.tsx": [
+    "components/LanguageSwitcher.tsx",
+    "components/auth/AuthShell.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/checkbox.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "routes/constants.ts",
+    "routes/launchTargets.ts"
+  ],
+  "pages/auth/ForgotPassword.tsx": [
+    "components/LanguageSwitcher.tsx",
+    "components/auth/AuthShell.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "routes/constants.ts"
+  ],
+  "pages/auth/ResetPassword.tsx": [
+    "components/LanguageSwitcher.tsx",
+    "components/auth/AuthShell.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts",
+    "routes/constants.ts"
+  ],
+  "pages/common/About.tsx": [
+    "components/ui/card.tsx",
+    "components/ui/separator.tsx",
+    "lib/config.ts"
+  ],
+  "pages/common/MyPlan.tsx": [
+    "components/ui/alert.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/progress.tsx",
+    "components/ui/spinner.tsx",
+    "hooks/useSubscription.ts",
+    "lib/config.ts",
+    "lib/utils.ts"
+  ],
+  "pages/common/Pricing.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "lib/config.ts"
+  ],
+  "pages/common/PrivacyPolicy.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/separator.tsx"
+  ],
+  "pages/common/TermsOfService.tsx": [
+    "components/ui/button.tsx",
+    "components/ui/card.tsx",
+    "components/ui/separator.tsx"
+  ],
+  "pages/dev/TerminalScreenshot.tsx": [
+    "components/terminal/DetailPanel.tsx",
+    "lib/db/index.ts",
+    "types/terminal.ts"
+  ],
+  "pages/operator/MyActivity.tsx": [
+    "components/operator/OperatorStation.tsx",
+    "components/ui/badge.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/usePageTitle.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "pages/operator/MyIssues.tsx": [
+    "components/operator/OperatorStation.tsx",
+    "components/ui/badge.tsx",
+    "components/ui/dialog.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/logger.ts"
+  ],
+  "pages/operator/OperatorView.tsx": [
+    "components/locations/PlacementPickerModal.tsx",
+    "components/operator/OperationSwitchDialog.tsx",
+    "components/operator/OperatorDetailSidebar.tsx",
+    "components/operator/OperatorModeBanner.tsx",
+    "components/operator/OperatorWorkQueue.tsx",
+    "components/ui/select.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/locations/useLocationTracking.ts",
+    "hooks/locations/useRecordPlacement.ts",
+    "hooks/use-mobile.tsx",
+    "hooks/useKeyboardWedgeScanner.ts",
+    "hooks/useOperatorTerminal.ts",
+    "hooks/useResizablePanel.ts",
+    "lib/utils.ts"
+  ],
+  "pages/operator/TerminalLogin.tsx": [
+    "components/AnimatedBackground.tsx",
+    "components/LanguageSwitcher.tsx",
+    "components/terminal/PinKeypad.tsx",
+    "components/ui/alert.tsx",
+    "components/ui/button.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts",
+    "hooks/useSession.ts",
+    "lib/logger.ts",
+    "routes/constants.ts",
+    "routes/launchTargets.ts"
+  ],
+  "pages/operator/WorkQueue.tsx": [
+    "components/operator/OperationCard.tsx",
+    "components/operator/OperationDetailModal.tsx",
+    "components/operator/ScanDialog.tsx",
+    "components/ui/button.tsx",
+    "components/ui/input.tsx",
+    "components/ui/label.tsx",
+    "components/ui/select.tsx",
+    "components/ui/skeleton.tsx",
+    "components/ui/switch.tsx",
+    "contexts/OperatorContext.tsx",
+    "hooks/useDebounce.ts",
+    "hooks/useKeyboardWedgeScanner.ts",
+    "hooks/usePageTitle.ts",
+    "hooks/useProfile.ts",
+    "integrations/supabase/client.ts",
+    "lib/db/index.ts",
+    "lib/logger.ts",
+    "lib/operatorScanner.ts",
+    "lib/time-utils.ts",
+    "lib/utils.ts",
+    "native/index.ts"
+  ],
+  "routes/LazyRoute.tsx": [
+    "components/ErrorBoundary.tsx"
+  ],
+  "routes/adminRoutes.tsx": [
+    "components/Layout.tsx",
+    "pages/admin/ActivityMonitor.tsx",
+    "pages/admin/Assignments.tsx",
+    "pages/admin/BatchCreate.tsx",
+    "pages/admin/BatchDetail.tsx",
+    "pages/admin/Batches.tsx",
+    "pages/admin/CapacityMatrix.tsx",
+    "pages/admin/Dashboard.tsx",
+    "pages/admin/DataExport.tsx",
+    "pages/admin/DataImport.tsx",
+    "pages/admin/FactoryCalendar.tsx",
+    "pages/admin/IssueQueue.tsx",
+    "pages/admin/JobCreate.tsx",
+    "pages/admin/Jobs.tsx",
+    "pages/admin/McpServer.tsx",
+    "pages/admin/Operations.tsx",
+    "pages/admin/OrganizationSettings.tsx",
+    "pages/admin/PartCreate.tsx",
+    "pages/admin/Parts.tsx",
+    "pages/admin/Settings.tsx",
+    "pages/admin/StepsTemplatesView.tsx",
+    "pages/admin/TimeTracking.tsx",
+    "pages/admin/config/ApiKeys.tsx",
+    "pages/admin/config/Locations.tsx",
+    "pages/admin/config/Materials.tsx",
+    "pages/admin/config/Resources.tsx",
+    "pages/admin/config/ScrapReasons.tsx",
+    "pages/admin/config/Stages.tsx",
+    "pages/admin/config/Users.tsx",
+    "pages/admin/config/Webhooks.tsx",
+    "pages/common/About.tsx",
+    "pages/common/MyPlan.tsx",
+    "pages/common/Pricing.tsx",
+    "pages/common/PrivacyPolicy.tsx",
+    "pages/common/TermsOfService.tsx",
+    "routes/LazyRoute.tsx",
+    "routes/guards.tsx"
+  ],
+  "routes/constants.ts": [],
+  "routes/guards.tsx": [
+    "contexts/OperatorContext.tsx",
+    "hooks/useAuthActions.ts",
+    "hooks/useProfile.ts",
+    "hooks/useSession.ts",
+    "routes/constants.ts",
+    "routes/launchTargets.ts"
+  ],
+  "routes/index.ts": [
+    "routes/LazyRoute.tsx",
+    "routes/adminRoutes.tsx",
+    "routes/constants.ts",
+    "routes/guards.tsx",
+    "routes/mobileRoutes.tsx",
+    "routes/operatorRoutes.tsx"
+  ],
+  "routes/launchTargets.ts": [
+    "routes/constants.ts"
+  ],
+  "routes/mobileRoutes.tsx": [
+    "routes/constants.ts"
+  ],
+  "routes/operatorRoutes.tsx": [
+    "components/Layout.tsx",
+    "pages/operator/MyActivity.tsx",
+    "pages/operator/MyIssues.tsx",
+    "pages/operator/OperatorView.tsx",
+    "pages/operator/WorkQueue.tsx",
+    "routes/LazyRoute.tsx",
+    "routes/guards.tsx"
+  ],
+  "theme/ThemeProvider.tsx": [],
+  "theme/theme.ts": [
+    "theme/ThemeProvider.tsx"
+  ],
+  "types/cad.ts": [],
+  "types/metadata.ts": [],
+  "types/qrm.ts": [],
+  "types/terminal.ts": [
+    "features/operator-terminal/workModes.ts"
+  ]
+}

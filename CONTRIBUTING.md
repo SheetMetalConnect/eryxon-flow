@@ -1,0 +1,72 @@
+# Contributing to Eryxon Flow
+
+Thanks for your interest! Eryxon Flow is an archived, public-domain MES for
+small and mid-size metalworking shops, released under the Unlicense. Contributions
+of every size are welcome — a typo fix, a Dutch or German translation, a bug
+report from your shop floor, or a new feature.
+
+## Quick start
+
+Follow the Quick Start in [README.md](./README.md), then before opening a PR:
+
+```bash
+npm run build                # Must pass
+npm run test:run             # Vitest suite — must stay green
+npm run lint                 # ESLint — zero errors
+npm run typecheck            # All referenced TypeScript projects
+```
+
+Setup guides live in `docs/guides/`.
+
+## Project layout
+
+| Path | What lives there |
+|------|-------------------|
+| `src/` | React 18 + TypeScript app (Vite, Tailwind, shadcn/ui) |
+| `src/pages/operator` | Shared responsive operator interface |
+| `src/pages/admin` | Admin surfaces |
+| `supabase/functions/` | Deno edge functions (REST API), shared code in `_shared/` |
+| `supabase/migrations/` | Database schema + RLS policies |
+| `mcp-server/` | Model Context Protocol server |
+| `docs/` | Engineering docs (architecture, conventions, runbooks) |
+
+## Ground rules
+
+- **`npm run build` and `npm run test:run` must pass** before you open a PR.
+- **Every user-facing string is an i18n key** (EN / NL / DE) — never hardcode
+  UI text. Locales live in `src/i18n/locales/`. If you only speak one of the
+  three languages, add your language and mark the others — we'll fill them in.
+- **Multi-tenant first**: every table has `tenant_id` and RLS. Always consider
+  tenant isolation when touching queries or edge functions.
+- **Conventional commits**: `feat:`, `fix:`, `refactor:`, `docs:`, `deps:`, `ci:`.
+- **Module limits**: components ≤ 400 lines, hooks ≤ 200, lib ≤ 300 (see
+  `docs/CONVENTIONS.md`). Extract before you exceed.
+- **Design system**: solid surfaces, hairline borders, design tokens — no
+  gradients, no glass effects. See `docs/design-system/README.md`.
+- This is a public repository: keep issues and PRs free of customer names,
+  credentials, and commercial details.
+
+## Translations
+
+Dutch and German translations are some of the most valuable contributions for
+our community of EU job shops. App strings live in
+`src/i18n/locales/{en,nl,de}/`.
+
+## Reporting bugs
+
+Use the issue templates. For anything security-related, see
+[SECURITY.md](./SECURITY.md) — please don't open public issues for
+vulnerabilities.
+
+## Releases
+
+See [Releasing](./RELEASING.md) for versioning, validation, and current deployment limits.
+
+Use focused feature branches and pull requests. Merge after reviewing the diff
+and relevant checks. Releases are explicit decisions, independent of feature
+merges; dispatch the Release workflow from `main` after updating the version and
+changelog. Do not create the tag first: the workflow creates it after validation.
+
+## License
+
+The project is released under the [Unlicense](./LICENSE) (public domain).

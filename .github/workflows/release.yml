@@ -1,0 +1,217 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      deploy_production:
+        description: Deploy the released image to the configured production server
+        type: boolean
+        default: false
+      run_migrations:
+        description: Apply production database migrations before deploying
+        type: boolean
+        default: false
+      deploy_functions:
+        description: Deploy production Edge Functions before deploying
+        type: boolean
+        default: false
+      project_ref:
+        description: Expected Supabase project reference for database or function changes
+        type: string
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image: ${{ steps.version.outputs.image }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - name: Verify release target and version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY: ${{ inputs.deploy_production }}
+          MIGRATE: ${{ inputs.run_migrations }}
+          FUNCTIONS: ${{ inputs.deploy_functions }}
+          EXPECTED_PROJECT: ${{ inputs.project_ref }}
+          CONFIGURED_PROJECT: ${{ secrets.SUPABASE_PROJECT_REF_PROD }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/main || { echo '::error::Release must use main'; exit 1; }
+          if [ "$MIGRATE" = true ] || [ "$FUNCTIONS" = true ]; then
+            test "$DEPLOY" = true || { echo '::error::Backend changes require deploy_production'; exit 1; }
+            test -n "$EXPECTED_PROJECT" && test "$EXPECTED_PROJECT" = "$CONFIGURED_PROJECT" || { echo '::error::Supabase target mismatch'; exit 1; }
+          fi
+          version=$(node scripts/check-release.mjs)
+          trap 'rm -f release-check.err' EXIT
+          for endpoint in "git/ref/tags/v$version" "releases/tags/v$version"; do
+            if gh api "repos/$GITHUB_REPOSITORY/$endpoint" --silent 2>release-check.err; then
+              echo "::error::Version v$version already exists"; exit 1
+            elif ! grep -q '(HTTP 404)' release-check.err; then
+              cat release-check.err >&2; exit 1
+            fi
+          done
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "image=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+  validate:
+    needs: prepare
+    uses: ./.github/workflows/ci.yml
+
+  build:
+    needs: [prepare, validate]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      digest: ${{ steps.image.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        id: image
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ needs.prepare.outputs.image }}:${{ needs.prepare.outputs.version }}
+            ${{ needs.prepare.outputs.image }}:sha-${{ github.sha }}
+          build-args: |
+            APP_VERSION=${{ needs.prepare.outputs.version }}
+            APP_REVISION=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  preflight:
+    needs: [prepare, build]
+    if: inputs.deploy_production
+    runs-on: ubuntu-latest
+    env:
+      ERYXON_IMAGE: ${{ needs.prepare.outputs.image }}@${{ needs.build.outputs.digest }}
+      DEPLOY_DIRECTORY: ${{ vars.DEPLOY_DIRECTORY }}
+    steps:
+      - name: Require deployment target before backend changes
+        env:
+          HOST: ${{ secrets.HETZNER_HOST }}
+          USER: ${{ secrets.HETZNER_USER }}
+          KEY: ${{ secrets.HETZNER_SSH_KEY }}
+          FINGERPRINT: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+        run: |
+          for key in HOST USER KEY FINGERPRINT DEPLOY_DIRECTORY; do
+            test -n "${!key}" || { echo "::error::Missing $key"; exit 1; }
+          done
+      - uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          fingerprint: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+          envs: ERYXON_IMAGE,DEPLOY_DIRECTORY
+          script: |
+            set -eu
+            cd "$DEPLOY_DIRECTORY"
+            test -f .env
+            test "$(docker compose --env-file .env config --images eryxon-flow)" = "$ERYXON_IMAGE"
+            docker pull "$ERYXON_IMAGE"
+
+  backend:
+    needs: [prepare, build, preflight]
+    if: inputs.deploy_production && (inputs.run_migrations || inputs.deploy_functions)
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD_PROD }}
+      PROJECT_REF: ${{ inputs.project_ref }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Apply database migrations
+        if: inputs.run_migrations
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN" && test -n "$SUPABASE_DB_PASSWORD"
+          echo "Migration target: $PROJECT_REF"
+          npx --no-install supabase link --project-ref "$PROJECT_REF"
+          npx --no-install supabase db push --linked
+      - name: Deploy Edge Functions
+        if: inputs.deploy_functions
+        run: |
+          test -n "$SUPABASE_ACCESS_TOKEN"
+          echo "Function target: $PROJECT_REF"
+          npx --no-install supabase functions deploy --project-ref "$PROJECT_REF"
+
+  deploy:
+    needs: [prepare, build, preflight, backend]
+    if: >-
+      !cancelled() && inputs.deploy_production && needs.build.result == 'success' &&
+      needs.preflight.result == 'success' &&
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped')
+    runs-on: ubuntu-latest
+    env:
+      ERYXON_IMAGE: ${{ needs.prepare.outputs.image }}@${{ needs.build.outputs.digest }}
+      DEPLOY_DIRECTORY: ${{ vars.DEPLOY_DIRECTORY }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require deployment target
+        env:
+          HOST: ${{ secrets.HETZNER_HOST }}
+          USER: ${{ secrets.HETZNER_USER }}
+          KEY: ${{ secrets.HETZNER_SSH_KEY }}
+          FINGERPRINT: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+        run: |
+          for key in HOST USER KEY FINGERPRINT DEPLOY_DIRECTORY; do
+            test -n "${!key}" || { echo "::error::Missing $key"; exit 1; }
+          done
+      - uses: appleboy/ssh-action@v1.2.5
+        with:
+          host: ${{ secrets.HETZNER_HOST }}
+          username: ${{ secrets.HETZNER_USER }}
+          key: ${{ secrets.HETZNER_SSH_KEY }}
+          fingerprint: ${{ secrets.HETZNER_HOST_FINGERPRINT }}
+          envs: ERYXON_IMAGE,DEPLOY_DIRECTORY
+          script_path: scripts/deploy-image.sh
+
+  publish:
+    needs: [prepare, build, deploy]
+    if: >-
+      !cancelled() && needs.build.result == 'success' &&
+      (needs.deploy.result == 'success' || (!inputs.deploy_production && needs.deploy.result == 'skipped'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Prepare release notes
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          IMAGE: ${{ needs.prepare.outputs.image }}@${{ needs.build.outputs.digest }}
+          DEPLOYED: ${{ inputs.deploy_production }}
+        run: |
+          node scripts/check-release.mjs --notes > release-notes.md
+          printf '\nCommit: `%s`\n\nImage: `%s`\n\nProduction deployment: `%s`\n' "$GITHUB_SHA" "$IMAGE" "$DEPLOYED" >> release-notes.md
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ needs.prepare.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          body_path: release-notes.md

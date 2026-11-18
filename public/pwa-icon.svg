@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="128" y1="128" x2="384" y2="384" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
+  <!-- Outer rounded-square gradient frame (matches favicon design) -->
+  <rect width="512" height="512" rx="112" fill="url(#g1)"/>
+  <rect x="40" y="40" width="432" height="432" rx="80" fill="#0f172a"/>
+  <!-- Stylized E: three bars representing flow/stages -->
+  <rect x="112" y="120" width="288" height="48" rx="24" fill="url(#g2)"/>
+  <rect x="112" y="232" width="208" height="48" rx="24" fill="url(#g2)" opacity="0.65"/>
+  <rect x="112" y="344" width="288" height="48" rx="24" fill="url(#g2)"/>
+</svg>
