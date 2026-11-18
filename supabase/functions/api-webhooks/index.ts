@@ -1,0 +1,19 @@
+import { serveApi } from "@shared/handler.ts";
+import { createCrudHandler } from "@shared/crud-builder.ts";
+import { WebhookValidator } from "@shared/validation/validators/WebhookValidator.ts";
+
+// Configure CRUD handler for webhooks
+serveApi(
+  createCrudHandler({
+    table: 'webhooks',
+    selectFields: 'id, name, url, events, active, consecutive_failures, disabled_reason, last_delivery_at, last_status_code, created_at, updated_at',
+    searchFields: ['name', 'url'],
+    allowedFilters: ['events', 'active'],
+    sortableFields: ['created_at', 'name', 'url'],
+    defaultSort: { field: 'created_at', direction: 'desc' },
+    softDelete: false,
+    // url, events and secret_key are NOT NULL. Validate up front so a missing
+    // field returns a 422 instead of a 500 NOT NULL violation.
+    validator: WebhookValidator,
+  })
+);

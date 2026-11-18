@@ -1,0 +1,87 @@
+import { supabase } from "@/integrations/supabase/client";
+import type { EntitySearchConfig, SearchResult } from "./types";
+import { logger } from '@/lib/logger';
+
+/**
+ * Escapes LIKE metacharacters to prevent wildcard injection
+ * Escapes: backslash, percent, underscore
+ *
+ * @param query - Raw search query
+ * @returns Escaped query safe for LIKE patterns
+ */
+function escapeLikePattern(query: string): string {
+  return query
+    .replace(/\\/g, "\\\\") // Escape backslashes first
+    .replace(/%/g, "\\%") // Escape percent
+    .replace(/_/g, "\\_"); // Escape underscore
+}
+
+/**
+ * Creates a search function for a given entity configuration
+ *
+ * @param config - The entity search configuration
+ * @returns A function that executes the search
+ */
+export function createEntitySearch<T>(
+  config: EntitySearchConfig<T>
+): (query: string, tenantId: string, limit?: number) => Promise<SearchResult[]> {
+  return async (
+    query: string,
+    tenantId: string,
+    limit = 10
+  ): Promise<SearchResult[]> => {
+    if (!tenantId || !query.trim()) {
+      return [];
+    }
+
+    try {
+      const escapedQuery = escapeLikePattern(query.trim());
+
+      const searchFilter = config.searchColumns
+        .map((col) => `${col}.ilike.%${escapedQuery}%`)
+        .join(",");
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- dynamic table name from config, not statically verifiable
+      const { data, error } = await (supabase
+        .from(config.tableName as never)
+        .select(config.selectFields) as any)
+        .eq("tenant_id", tenantId)
+        .or(searchFilter)
+        .order("created_at", { ascending: false })
+        .limit(limit);
+
+      if (error) {
+        logger.error('EntitySearch', `Error searching ${config.tableName}`, error);
+        return [];
+      }
+
+      return ((data || []) as unknown as T[]).map((item: T) => config.mapResult(item));
+    } catch (err) {
+      logger.error('EntitySearch', `Search error for ${config.tableName}`, err);
+      return [];
+    }
+  };
+}
+
+/**
+ * Creates all entity search functions from configs
+ *
+ * @param configs - Map of search configurations
+ * @returns Map of search functions by type
+ */
+export function createSearchFunctions<
+  T extends Record<string, EntitySearchConfig>,
+>(
+  configs: T
+): Record<keyof T, (query: string, tenantId: string, limit?: number) => Promise<SearchResult[]>> {
+  const searchFunctions = {} as Record<
+    keyof T,
+    (query: string, tenantId: string, limit?: number) => Promise<SearchResult[]>
+  >;
+
+  for (const [key, config] of Object.entries(configs)) {
+    searchFunctions[key as keyof T] = createEntitySearch(config);
+  }
+
+  return searchFunctions;
+}

@@ -1,0 +1,400 @@
+import { useProfile } from "@/hooks/useProfile";
+import { useAllCellsQRMMetrics } from "@/hooks/qrm";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, ChevronDown, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { QueryKeys } from "@/lib/queryClient";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
+import { logger } from '@/lib/logger';
+import { deriveOperationFlowState } from '@/features/operator-terminal/release';
+
+interface Operation {
+  id: string;
+  operation_name: string;
+  status: string;
+  estimated_time: number;
+  actual_time: number | null;
+  cell_id: string;
+  sequence: number;
+  part: {
+    id: string;
+    part_number: string;
+    material: string;
+    quantity: number;
+    job: {
+      job_number: string;
+      due_date: string | null;
+    };
+  };
+}
+
+function FlowOperationRow({
+  operation,
+  tone,
+  onOpen,
+}: {
+  operation: Operation;
+  tone: "active" | "hold" | "buffer" | "expected";
+  onOpen: () => void;
+}) {
+  const toneClass = {
+    active: "bg-emerald-950/5 hover:bg-emerald-950/10",
+    hold: "bg-amber-950/5 hover:bg-amber-950/10",
+    buffer: "bg-blue-950/5 hover:bg-blue-950/10",
+    expected: "bg-muted/20 hover:bg-muted/30",
+  }[tone];
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`flex w-full items-center justify-between rounded p-2 text-left text-xs transition-colors motion-reduce:transition-none ${toneClass}`}
+    >
+      <span className="font-medium">{operation.part.job.job_number}</span>
+      <span className="text-muted-foreground">{operation.part.part_number}</span>
+      <Badge variant={tone === "active" ? "secondary" : "outline"} className="text-xs">
+        {operation.operation_name}
+      </Badge>
+    </button>
+  );
+}
+
+/**
+ * QRM Dashboard - Shows WIP metrics and operations by cell
+ */
+export function QRMDashboard() {
+  const profile = useProfile();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { cellsMetrics, loading } = useAllCellsQRMMetrics(profile?.tenant_id || null);
+  const [expandedCells, setExpandedCells] = useState<Set<string>>(new Set());
+
+  // Fetch cell details and operations
+  const { data: cells } = useQuery({
+    queryKey: QueryKeys.cells.active(profile?.tenant_id || ""),
+    queryFn: async () => {
+      if (!profile?.tenant_id) return [];
+      const { data, error } = await supabase
+        .from("cells")
+        .select("id, name, color, sequence")
+        .eq("tenant_id", profile.tenant_id)
+        .eq("active", true)
+        .order("sequence");
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
+  const { data: operations = [] } = useQuery({
+    queryKey: [...QueryKeys.operations.all(profile?.tenant_id || ""), "qrm-active"],
+    queryFn: async () => {
+      if (!profile?.tenant_id) return [];
+      const { data, error } = await supabase
+        .from("operations")
+        .select(`
+          id,
+          operation_name,
+          status,
+          estimated_time,
+          actual_time,
+          cell_id,
+          sequence,
+          parts!inner(
+            id,
+            part_number,
+            material,
+            quantity,
+            jobs!inner(
+              job_number,
+              due_date
+            )
+          )
+        `)
+        .eq("tenant_id", profile.tenant_id)
+        .in("status", ["not_started", "in_progress", "on_hold"]);
+      
+      if (error) {
+        logger.error('QRMDashboard', 'Error fetching operations', error);
+        throw error;
+      }
+      
+      // Transform the data to match the Operation interface
+      interface RawOperation {
+        id: string;
+        operation_name: string;
+        status: string;
+        estimated_time: number;
+        actual_time: number | null;
+        cell_id: string;
+        sequence: number;
+        parts: {
+          id: string;
+          part_number: string;
+          material: string;
+          quantity: number;
+          jobs: {
+            job_number: string;
+            due_date: string | null;
+          };
+        };
+      }
+
+      const transformedData = ((data || []) as RawOperation[]).map((op) => ({
+        id: op.id,
+        operation_name: op.operation_name,
+        status: op.status,
+        estimated_time: op.estimated_time,
+        actual_time: op.actual_time,
+        cell_id: op.cell_id,
+        sequence: op.sequence,
+        part: {
+          id: op.parts.id,
+          part_number: op.parts.part_number,
+          material: op.parts.material,
+          quantity: op.parts.quantity,
+          job: {
+            job_number: op.parts.jobs.job_number,
+            due_date: op.parts.jobs.due_date,
+          },
+        },
+      }));
+      
+      return transformedData as Operation[];
+    },
+    enabled: !!profile?.tenant_id,
+  });
+
+  const toggleCell = (cellId: string) => {
+    setExpandedCells((prev) => {
+      const next = new Set(prev);
+      if (next.has(cellId)) {
+        next.delete(cellId);
+      } else {
+        next.add(cellId);
+      }
+      return next;
+    });
+  };
+
+  const getOperationsForCell = (cellId: string) => {
+    return operations.filter((op) => op.cell_id === cellId);
+  };
+
+  const groupOperations = (ops: Operation[]) => {
+    const grouped = { active: [] as Operation[], onHold: [] as Operation[], buffer: [] as Operation[], expected: [] as Operation[] };
+    for (const operation of ops) {
+      const state = deriveOperationFlowState(operation, operations);
+      if (state === "active") grouped.active.push(operation);
+      else if (state === "on_hold") grouped.onHold.push(operation);
+      else if (state === "in_buffer") grouped.buffer.push(operation);
+      else if (state === "expected") grouped.expected.push(operation);
+    }
+    return grouped;
+  };
+
+  if (loading) {
+    return (
+      <Card className="glass-card">
+        <CardContent className="flex items-center justify-center p-8">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!cells || cells.length === 0) {
+    return (
+      <Card className="glass-card">
+        <CardHeader>
+          <CardTitle>{t("qrm.dashboard")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="informational-text">
+            {t("qrm.noCells")}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const totalWIP = Object.values(cellsMetrics).reduce((sum, m) => sum + (m?.current_wip ?? 0), 0);
+  const atCapacity = Object.values(cellsMetrics).filter((m) => m?.status === "at_capacity").length;
+  const nearCapacity = Object.values(cellsMetrics).filter((m) => m?.status === "warning").length;
+
+  return (
+    <Card className="glass-card">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">{t("qrm.dashboard")}</CardTitle>
+          <div className="flex gap-4 text-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">{t("qrm.totalWIP")}:</span>
+              <span className="font-bold">{totalWIP}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">{t("qrm.atCapacity")}:</span>
+              <span className="font-bold text-destructive">{atCapacity}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">{t("qrm.nearCapacity")}:</span>
+              <span className="font-bold text-amber-600">{nearCapacity}</span>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        {cells.map((cell) => {
+          const metrics = cellsMetrics[cell.id];
+          const cellOps = getOperationsForCell(cell.id);
+          const grouped = groupOperations(cellOps);
+          const isExpanded = expandedCells.has(cell.id);
+          const wipPercent = metrics?.wip_limit ? (metrics.current_wip / metrics.wip_limit) * 100 : 0;
+
+          return (
+            <div key={cell.id} className="border border-border rounded-lg overflow-hidden">
+              {/* Cell Header */}
+              <button
+                type="button"
+                className="flex w-full items-center justify-between bg-muted/30 p-3 text-left transition-colors hover:bg-muted/50 motion-reduce:transition-none"
+                onClick={() => toggleCell(cell.id)}
+                aria-expanded={isExpanded}
+              >
+                <div className="flex items-center gap-3">
+                  {isExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <div
+                    className="h-4 w-4 rounded"
+                    style={{ backgroundColor: cell.color || "hsl(var(--muted))" }}
+                  />
+                  <span className="font-semibold">{cell.name}</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-muted-foreground">WIP:</span>
+                    <span className="font-bold">{metrics?.current_wip || 0}</span>
+                    {metrics?.wip_limit && (
+                      <>
+                        <span className="text-muted-foreground">/</span>
+                        <span>{metrics.wip_limit}</span>
+                        <span className="text-muted-foreground">({wipPercent.toFixed(0)}%)</span>
+                      </>
+                    )}
+                  </div>
+                  {metrics?.status === "at_capacity" && (
+                    <Badge variant="destructive" className="text-xs">{t("qrm.atCapacity")}</Badge>
+                  )}
+                  {metrics?.status === "warning" && (
+                    <Badge className="bg-amber-500 text-xs">{t("qrm.warning")}</Badge>
+                  )}
+                </div>
+              </button>
+
+              {/* Expanded Content */}
+              {isExpanded && (
+                <div className="p-3 space-y-3 bg-card">
+                  {/* Active */}
+                  {grouped.active.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-emerald-600 mb-1.5 flex items-center gap-2">
+                        <div className="h-0.5 w-2 bg-emerald-500 rounded" />
+                        {t("qrm.active")} ({grouped.active.length})
+                      </div>
+                      <div className="space-y-1">
+                        {grouped.active.map((op) => (
+                          <FlowOperationRow
+                            key={op.id}
+                            operation={op}
+                            tone="active"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {grouped.onHold.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-amber-600 mb-1.5 flex items-center gap-2">
+                        <div className="h-0.5 w-2 bg-amber-500 rounded" />
+                        {t("qrm.onHold")} ({grouped.onHold.length})
+                      </div>
+                      <div className="space-y-1">
+                        {grouped.onHold.map((op) => (
+                          <FlowOperationRow
+                            key={op.id}
+                            operation={op}
+                            tone="hold"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Buffer */}
+                  {grouped.buffer.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-blue-600 mb-1.5 flex items-center gap-2">
+                        <div className="h-0.5 w-2 bg-blue-500 rounded" />
+                        {t("qrm.buffer")} ({grouped.buffer.length})
+                      </div>
+                      <div className="space-y-1">
+                        {grouped.buffer.map((op) => (
+                          <FlowOperationRow
+                            key={op.id}
+                            operation={op}
+                            tone="buffer"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Expected */}
+                  {grouped.expected.length > 0 && (
+                    <div>
+                      <div className="text-xs font-semibold text-muted-foreground mb-1.5 flex items-center gap-2">
+                        <div className="h-0.5 w-2 bg-muted rounded" />
+                        {t("qrm.expected")} ({grouped.expected.length})
+                      </div>
+                      <div className="space-y-1">
+                        {grouped.expected.slice(0, 3).map((op) => (
+                          <FlowOperationRow
+                            key={op.id}
+                            operation={op}
+                            tone="expected"
+                            onOpen={() => navigate("/admin/operations")}
+                          />
+                        ))}
+                        {grouped.expected.length > 3 && (
+                          <div className="text-xs text-muted-foreground text-center p-1">
+                            +{grouped.expected.length - 3} {t("qrm.more")}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {cellOps.length === 0 && (
+                    <div className="text-xs text-muted-foreground text-center py-2">
+                      {t("qrm.noOperations")}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </CardContent>
+    </Card>
+  );
+}

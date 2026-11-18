@@ -1,0 +1,527 @@
+/**
+ * PMI (Product Manufacturing Information) Hook
+ *
+ * This hook provides:
+ * 1. Async PMI extraction with Supabase realtime updates
+ * 2. PMI data fetching from parts.metadata
+ * 3. Realtime subscription for processing status
+ * 4. Caching and loading states
+ */
+
+import { useState, useCallback, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { QueryKeys } from '@/lib/queryClient';
+import { logger } from '@/lib/logger';
+import { getCADConfig, isBackendAvailable } from '@/config/cadBackend';
+import { invokeCadProxy, type CADSourceRef } from '@/lib/cadProxy';
+
+/**
+ * PMI processing status for async extraction
+ */
+export type PMIStatus = 'pending' | 'processing' | 'complete' | 'error';
+
+export interface PMIMetadata {
+  pmi?: PMIData;
+  pmi_status?: PMIStatus;
+  pmi_error?: string;
+  pmi_extracted_at?: string;
+  pmi_processing_time_ms?: number;
+  pmi_progress?: number;  // 0-100
+  pmi_stage?: string;     // Current processing stage
+  pmi_summary?: {
+    dimensions: number;
+    geometric_tolerances: number;
+    datums: number;
+    surface_finishes: number;
+    notes: number;
+    graphical_pmi: number;
+    total: number;
+  };
+}
+
+// Structured logging via centralized logger
+const log = {
+  debug: (msg: string, data?: unknown) => logger.debug('usePMI', msg, data),
+  info: (msg: string, data?: unknown) => logger.info('usePMI', msg, data),
+  warn: (msg: string, data?: unknown) => logger.warn('usePMI', msg, data),
+  error: (msg: string, data?: unknown) => logger.error('usePMI', msg, data),
+};
+
+export interface Vector3 {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface Tolerance {
+  upper: number;
+  lower: number;
+  type: string;
+}
+
+export interface AssociatedGeometry {
+  face_ids: string[];
+  edge_ids: string[];
+}
+
+export interface PMIDimension {
+  id: string;
+  type: 'linear' | 'angular' | 'radius' | 'diameter' | 'ordinate';
+  value: number;
+  unit: string;
+  tolerance?: Tolerance;
+  text: string;
+  position: Vector3;
+  leader_points: Vector3[];
+  associated_geometry?: AssociatedGeometry;
+}
+
+export interface PMIGeometricTolerance {
+  id: string;
+  type: string;
+  value: number;
+  unit: string;
+  symbol: string;
+  modifier: string;  // Material modifier: Ⓜ (MMC), Ⓛ (LMC), etc.
+  zone_modifier: string;  // Zone shape: ⌀ for cylindrical
+  datum_refs: string[];
+  text: string;
+  position: Vector3;
+  leader_points?: Vector3[];
+  associated_geometry?: AssociatedGeometry;
+}
+
+export interface PMIDatum {
+  id: string;
+  label: string;
+  position: Vector3;
+  associated_geometry?: AssociatedGeometry;
+}
+
+export interface PMISurfaceFinish {
+  id: string;
+  type: string;
+  roughness_type?: string;  // Ra, Rz, Rmax, etc.
+  roughness_value?: number;
+  roughness_unit: string;
+  machining_allowance?: number;
+  lay_symbol?: string;  // =, ⊥, X, M, C, R, P
+  text: string;
+  position: Vector3;
+}
+
+export interface PMINote {
+  id: string;
+  type: string;  // note, callout, flag
+  text: string;
+  position: Vector3;
+}
+
+export interface PMIGraphical {
+  id: string;
+  type: string;  // line, arc, spline
+  points: Vector3[];
+}
+
+export interface PMIData {
+  version: string;
+  dimensions: PMIDimension[];
+  geometric_tolerances: PMIGeometricTolerance[];
+  datums: PMIDatum[];
+  surface_finishes: PMISurfaceFinish[];
+  notes: PMINote[];
+  graphical_pmi: PMIGraphical[];
+}
+
+export interface PMIExtractionResult {
+  success: boolean;
+  pmi: PMIData | null;
+  error?: string;
+  processing_time_ms: number;
+  file_hash?: string;
+}
+
+const STEP_EXTENSIONS = ['step', 'stp'];
+
+function isStepFile(fileName: string): boolean {
+  const ext = fileName.toLowerCase().split('.').pop();
+  return STEP_EXTENSIONS.includes(ext || '');
+}
+
+/**
+ * Check if PMI service is configured
+ */
+export function isPMIServiceEnabled(): boolean {
+  const config = getCADConfig();
+  return config.mode !== 'frontend' && (
+    isBackendAvailable('custom') || isBackendAvailable('byob')
+  );
+}
+
+export function usePMI(partId: string | undefined) {
+  const queryClient = useQueryClient();
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractionError, setExtractionError] = useState<string | null>(null);
+  const [pmiStatus, setPmiStatus] = useState<PMIStatus | null>(null);
+
+  const {
+    data: pmiMetadata,
+    isLoading: isLoadingPMI,
+    error: fetchError,
+    refetch: refetchPMI,
+  } = useQuery({
+    queryKey: QueryKeys.pmi.byPart(partId ?? ''),
+    queryFn: async (): Promise<PMIMetadata | null> => {
+      if (!partId) return null;
+
+      const { data: part, error } = await supabase
+        .from('parts')
+        .select('metadata')
+        .eq('id', partId)
+        .single();
+
+      if (error) throw error;
+
+      const metadata = part?.metadata as PMIMetadata | null;
+      return metadata || null;
+    },
+    enabled: !!partId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const pmiData = pmiMetadata?.pmi || null;
+
+  useEffect(() => {
+    if (!partId) return;
+
+    if (pmiMetadata?.pmi_status) {
+      setPmiStatus(pmiMetadata.pmi_status);
+    }
+
+    log.debug(`Subscribing to realtime updates for part ${partId}`);
+
+    const channel = supabase
+      .channel(`pmi-status-${partId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'parts',
+          filter: `id=eq.${partId}`,
+        },
+        (payload) => {
+          const newMetadata = payload.new?.metadata as PMIMetadata | undefined;
+          if (newMetadata) {
+            if (newMetadata.pmi_progress !== undefined || newMetadata.pmi_stage) {
+              log.info(`Progress: ${newMetadata.pmi_progress ?? 0}% - ${newMetadata.pmi_stage ?? ''}`);
+            }
+
+            if (newMetadata.pmi_status) {
+              log.debug(`Status changed: ${newMetadata.pmi_status}`);
+              setPmiStatus(newMetadata.pmi_status);
+
+              if (newMetadata.pmi_status === 'complete') {
+                log.info('Processing complete', {
+                  time: newMetadata.pmi_processing_time_ms,
+                  summary: newMetadata.pmi_summary,
+                });
+                queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
+                setIsExtracting(false);
+              } else if (newMetadata.pmi_status === 'error') {
+                log.error('Processing failed', newMetadata.pmi_error);
+                queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
+                setIsExtracting(false);
+              }
+            }
+
+            if (newMetadata.pmi_error) {
+              setExtractionError(newMetadata.pmi_error);
+            }
+          }
+        }
+      )
+      .subscribe((status) => {
+        log.debug(`Subscription status: ${status}`);
+      });
+
+    return () => {
+      log.debug(`Unsubscribing from part ${partId}`);
+      supabase.removeChannel(channel);
+    };
+  }, [partId, pmiMetadata?.pmi_status, queryClient]);
+
+  /**
+   * Extract PMI asynchronously via the PMI service
+   * Uses Supabase realtime for status updates - no need to poll
+   */
+  const extractPMIAsync = useCallback(async (
+    source: CADSourceRef,
+    fileName: string
+  ): Promise<{ accepted: boolean; error?: string }> => {
+    if (!isPMIServiceEnabled()) {
+      log.warn('PMI service not configured');
+      return { accepted: false, error: 'PMI service not configured' };
+    }
+
+    if (!partId) {
+      log.warn('No part ID provided');
+      return { accepted: false, error: 'No part ID provided' };
+    }
+
+    if (!isStepFile(fileName)) {
+      log.debug(`Skipping non-STEP file: ${fileName}`);
+      return { accepted: false, error: 'Not a STEP file' };
+    }
+
+    log.info(`Starting async extraction for ${fileName}`);
+
+    setIsExtracting(true);
+    setExtractionError(null);
+    setPmiStatus('processing');
+
+    try {
+      log.debug('Calling CAD proxy for async PMI extraction');
+
+      const result = await invokeCadProxy<{ accepted?: boolean; message?: string }>({
+        action: 'process-async',
+        source,
+        file_name: fileName,
+        include_geometry: true,
+        include_pmi: true,
+      });
+
+      if (!result.accepted) {
+        throw new Error(result.message || 'Extraction not accepted');
+      }
+
+      return { accepted: true };
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'PMI extraction failed';
+      setExtractionError(errorMessage);
+      setIsExtracting(false);
+      setPmiStatus('error');
+      return { accepted: false, error: errorMessage };
+    }
+  }, [partId]);
+
+  const extractPMI = useCallback(async (
+    source: CADSourceRef,
+    fileName: string
+  ): Promise<PMIExtractionResult> => {
+    if (!isPMIServiceEnabled()) {
+      return {
+        success: false,
+        pmi: null,
+        error: 'PMI service not configured',
+        processing_time_ms: 0,
+      };
+    }
+
+    if (!isStepFile(fileName)) {
+      return {
+        success: false,
+        pmi: null,
+        error: 'Not a STEP file',
+        processing_time_ms: 0,
+      };
+    }
+
+    setIsExtracting(true);
+    setExtractionError(null);
+
+    try {
+      const result = await invokeCadProxy<PMIExtractionResult>({
+        action: 'extract',
+        source,
+        file_name: fileName,
+      });
+
+      if (result.success && result.pmi) {
+        if (partId) {
+          await storePMI(partId, result.pmi);
+          queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
+        }
+      }
+
+      return result;
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'PMI extraction failed';
+      setExtractionError(errorMessage);
+      return {
+        success: false,
+        pmi: null,
+        error: errorMessage,
+        processing_time_ms: 0,
+      };
+    } finally {
+      setIsExtracting(false);
+    }
+  }, [partId, queryClient]);
+
+  const storePMI = useCallback(async (partId: string, pmi: PMIData): Promise<void> => {
+    const { data: part, error: fetchError } = await supabase
+      .from('parts')
+      .select('metadata')
+      .eq('id', partId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const currentMetadata = (part?.metadata as Record<string, unknown>) || {};
+    const updatedMetadata = {
+      ...currentMetadata,
+      pmi,
+      pmi_extracted_at: new Date().toISOString(),
+    };
+
+    const { error: updateError } = await supabase
+      .from('parts')
+      .update({ metadata: JSON.parse(JSON.stringify(updatedMetadata)) })
+      .eq('id', partId);
+
+    if (updateError) throw updateError;
+  }, []);
+
+  /**
+   * Clear PMI data from a part
+   */
+  const clearPMI = useCallback(async (): Promise<void> => {
+    if (!partId) return;
+
+    const { data: part, error: fetchError } = await supabase
+      .from('parts')
+      .select('metadata')
+      .eq('id', partId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const currentMetadata = (part?.metadata as Record<string, unknown>) || {};
+    const { pmi, pmi_extracted_at, ...restMetadata } = currentMetadata;
+
+    await supabase
+      .from('parts')
+      .update({ metadata: JSON.parse(JSON.stringify(restMetadata)) })
+      .eq('id', partId);
+
+    queryClient.invalidateQueries({ queryKey: QueryKeys.pmi.byPart(partId ?? '') });
+  }, [partId, queryClient]);
+
+  /**
+   * Check if PMI data exists for this part
+   */
+  const hasPMI = Boolean(pmiData && (
+    pmiData.dimensions?.length > 0 ||
+    pmiData.geometric_tolerances?.length > 0 ||
+    pmiData.datums?.length > 0 ||
+    pmiData.surface_finishes?.length > 0 ||
+    pmiData.notes?.length > 0 ||
+    pmiData.graphical_pmi?.length > 0
+  ));
+
+  /**
+   * Get PMI summary counts
+   */
+  const pmiSummary = pmiData ? {
+    dimensionCount: pmiData.dimensions?.length || 0,
+    toleranceCount: pmiData.geometric_tolerances?.length || 0,
+    datumCount: pmiData.datums?.length || 0,
+    surfaceFinishCount: pmiData.surface_finishes?.length || 0,
+    noteCount: pmiData.notes?.length || 0,
+    graphicalCount: pmiData.graphical_pmi?.length || 0,
+    total: (pmiData.dimensions?.length || 0) +
+           (pmiData.geometric_tolerances?.length || 0) +
+           (pmiData.datums?.length || 0) +
+           (pmiData.surface_finishes?.length || 0) +
+           (pmiData.notes?.length || 0) +
+           (pmiData.graphical_pmi?.length || 0),
+  } : null;
+
+  return {
+    pmiData,
+    hasPMI,
+    pmiSummary,
+    pmiMetadata,
+    pmiStatus,
+    pmiProgress: pmiMetadata?.pmi_progress ?? 0,
+    pmiStage: pmiMetadata?.pmi_stage ?? '',
+    pmiError: pmiMetadata?.pmi_error,
+    pmiExtractedAt: pmiMetadata?.pmi_extracted_at,
+    pmiProcessingTime: pmiMetadata?.pmi_processing_time_ms,
+    isLoadingPMI,
+    isExtracting,
+    isProcessing: pmiStatus === 'processing' || isExtracting,
+    fetchError,
+    extractionError,
+    extractPMI,
+    extractPMIAsync,
+    clearPMI,
+    refetchPMI,
+    isPMIServiceEnabled: isPMIServiceEnabled(),
+  };
+}
+
+/**
+ * Hook to extract PMI during file upload flow
+ * Use this in upload components to trigger extraction after successful upload
+ */
+export function usePMIExtraction() {
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractionError, setExtractionError] = useState<string | null>(null);
+
+  const extract = useCallback(async (
+    source: CADSourceRef,
+    fileName: string
+  ): Promise<PMIExtractionResult> => {
+    if (!isPMIServiceEnabled()) {
+      return {
+        success: false,
+        pmi: null,
+        error: 'PMI service not configured',
+        processing_time_ms: 0,
+      };
+    }
+
+    if (!isStepFile(fileName)) {
+      return {
+        success: false,
+        pmi: null,
+        processing_time_ms: 0,
+      };
+    }
+
+    setIsExtracting(true);
+    setExtractionError(null);
+
+    try {
+      return await invokeCadProxy<PMIExtractionResult>({
+        action: 'extract',
+        source,
+        file_name: fileName,
+      });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Extraction failed';
+      setExtractionError(errorMessage);
+      return {
+        success: false,
+        pmi: null,
+        error: errorMessage,
+        processing_time_ms: 0,
+      };
+    } finally {
+      setIsExtracting(false);
+    }
+  }, []);
+
+  return {
+    extract,
+    isExtracting,
+    extractionError,
+    isEnabled: isPMIServiceEnabled(),
+  };
+}

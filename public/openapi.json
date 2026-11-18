@@ -1,0 +1,343 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Eryxon Flow REST API",
+    "version": "0.11.5",
+    "description": "Tenant-scoped production execution API for high-mix metal fabrication. Exchange jobs, parts, operations, cells and resources with an ERP, drive production transitions and configure signed outbound webhooks. Every request requires an Eryxon API key.",
+    "contact": {
+      "name": "Eryxon Flow",
+      "url": "https://github.com/SheetMetalConnect/eryxon-flow"
+    },
+    "license": {
+      "name": "Business Source License 1.1",
+      "url": "https://github.com/SheetMetalConnect/eryxon-flow/blob/main/LICENSE"
+    }
+  },
+  "servers": [
+    {
+      "url": "{functionsUrl}",
+      "description": "Supabase Edge Functions base URL",
+      "variables": {
+        "functionsUrl": {
+          "default": "https://your-project.supabase.co/functions/v1",
+          "description": "Replace your-project with the Supabase project reference for the deployment."
+        }
+      }
+    }
+  ],
+  "security": [{ "eryxonApiKey": [] }],
+  "tags": [
+    { "name": "Jobs" },
+    { "name": "Parts" },
+    { "name": "Operations" },
+    { "name": "Batches" },
+    { "name": "Configuration" },
+    { "name": "Reporting" },
+    { "name": "ERP sync" },
+    { "name": "Webhooks" },
+    { "name": "Files" }
+  ],
+  "paths": {
+    "/api-jobs": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-jobs/sync": { "$ref": "#/components/x-pathItems/sync" },
+    "/api-jobs/bulk-sync": { "$ref": "#/components/x-pathItems/bulkSync" },
+    "/api-parts": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-parts/sync": { "$ref": "#/components/x-pathItems/sync" },
+    "/api-parts/bulk-sync": { "$ref": "#/components/x-pathItems/bulkSync" },
+    "/api-parts/{partId}/file-url": {
+      "get": {
+        "tags": ["Files"],
+        "summary": "Create a signed URL for an authorized part file",
+        "parameters": [
+          { "$ref": "#/components/parameters/PartId" },
+          { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/Success" },
+          "404": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api-operations": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-operations/sync": { "$ref": "#/components/x-pathItems/sync" },
+    "/api-operations/bulk-sync": { "$ref": "#/components/x-pathItems/bulkSync" },
+    "/api-operation-lifecycle/{action}": {
+      "post": {
+        "tags": ["Operations"],
+        "summary": "Start, pause, resume or complete an operation",
+        "description": "Uses the same transition rules as the shop-floor terminal.",
+        "parameters": [
+          { "name": "action", "in": "path", "required": true, "schema": { "type": "string", "enum": ["start", "pause", "resume", "complete"] } },
+          { "$ref": "#/components/parameters/Id" },
+          { "name": "user_id", "in": "query", "required": false, "description": "Operator profile ID used when starting or resuming tracked work.", "schema": { "type": "string", "format": "uuid" } }
+        ],
+        "responses": {
+          "200": { "$ref": "#/components/responses/Success" },
+          "409": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api-cells": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-cells/sync": { "$ref": "#/components/x-pathItems/sync" },
+    "/api-cells/bulk-sync": { "$ref": "#/components/x-pathItems/bulkSync" },
+    "/api-materials": { "$ref": "#/components/x-pathItems/readOnly" },
+    "/api-resources": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-resources/sync": { "$ref": "#/components/x-pathItems/sync" },
+    "/api-resources/bulk-sync": { "$ref": "#/components/x-pathItems/bulkSync" },
+    "/api-erp-sync/diff": {
+      "post": {
+        "tags": ["ERP sync"],
+        "summary": "Preview an ERP import without writing",
+        "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api-erp-sync/sync": {
+      "post": {
+        "tags": ["ERP sync"],
+        "summary": "Synchronize jobs, parts and resources",
+        "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Success" },
+          "422": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api-erp-sync/status": { "$ref": "#/components/x-pathItems/readOnly" },
+    "/api-batches": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-batch-lifecycle/{action}": {
+      "post": {
+        "tags": ["Batches"],
+        "summary": "Start or stop a batch, or add operations",
+        "parameters": [
+          { "name": "action", "in": "path", "required": true, "schema": { "type": "string", "enum": ["start", "stop", "add-operations"] } },
+          { "$ref": "#/components/parameters/Id" }
+        ],
+        "requestBody": { "$ref": "#/components/requestBodies/OptionalJsonBody" },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Success" },
+          "409": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api-issues": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-substeps": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-assignments": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-templates": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-time-entries": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-operation-quantities": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-scrap-reasons": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-webhooks": { "$ref": "#/components/x-pathItems/crud" },
+    "/api-webhook-deliveries": { "$ref": "#/components/x-pathItems/readOnly" },
+    "/api-upload-url": {
+      "post": {
+        "tags": ["Files"],
+        "summary": "Create a tenant-scoped signed upload URL",
+        "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Success" },
+          "400": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/api-parts-images/{partId}": {
+      "get": {
+        "tags": ["Files"],
+        "summary": "List images attached to a part",
+        "parameters": [{ "$ref": "#/components/parameters/PartId" }],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      },
+      "delete": {
+        "tags": ["Files"],
+        "summary": "Delete an image attached to a part",
+        "parameters": [
+          { "$ref": "#/components/parameters/PartId" },
+          { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api-parts-images/{partId}/upload": {
+      "post": {
+        "tags": ["Files"],
+        "summary": "Upload an image for a part",
+        "parameters": [{ "$ref": "#/components/parameters/PartId" }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": ["file"],
+                "properties": { "file": { "type": "string", "format": "binary" } }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api-parts-images/{partId}/url": {
+      "get": {
+        "tags": ["Files"],
+        "summary": "Create a signed URL for a part image",
+        "parameters": [
+          { "$ref": "#/components/parameters/PartId" },
+          { "name": "path", "in": "query", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "$ref": "#/components/responses/Success" } }
+      }
+    },
+    "/api-cad-proxy": {
+      "post": {
+        "tags": ["Files"],
+        "summary": "Process an authorized private CAD file through the configured backend",
+        "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+        "responses": {
+          "200": { "$ref": "#/components/responses/Success" },
+          "400": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "eryxonApiKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "ery_live_… or ery_test_…",
+        "description": "Create and revoke API keys in Admin > API keys. Never expose a key in client-side code or a public repository."
+      }
+    },
+    "parameters": {
+      "Id": { "name": "id", "in": "query", "required": true, "schema": { "type": "string", "format": "uuid" } },
+      "PartId": { "name": "partId", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+      "Limit": { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 1, "maximum": 1000, "default": 100 } },
+      "Offset": { "name": "offset", "in": "query", "required": false, "schema": { "type": "integer", "minimum": 0, "default": 0 } },
+      "Search": { "name": "search", "in": "query", "required": false, "schema": { "type": "string" } },
+      "Sort": { "name": "sort", "in": "query", "required": false, "schema": { "type": "string" } },
+      "Order": { "name": "order", "in": "query", "required": false, "schema": { "type": "string", "enum": ["asc", "desc"] } }
+    },
+    "requestBodies": {
+      "JsonBody": {
+        "required": true,
+        "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+      },
+      "OptionalJsonBody": {
+        "required": false,
+        "content": { "application/json": { "schema": { "type": "object", "additionalProperties": true } } }
+      }
+    },
+    "responses": {
+      "Success": {
+        "description": "Successful tenant-scoped response",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Success" } } }
+      },
+      "Created": {
+        "description": "Resource created",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Success" } } }
+      },
+      "Error": {
+        "description": "Request rejected",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } }
+      }
+    },
+    "schemas": {
+      "Success": {
+        "type": "object",
+        "required": ["success", "data"],
+        "properties": {
+          "success": { "type": "boolean", "enum": [true] },
+          "data": { "type": "object", "additionalProperties": true }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["success", "error"],
+        "properties": {
+          "success": { "type": "boolean", "enum": [false] },
+          "error": {
+            "type": "object",
+            "required": ["code", "message"],
+            "properties": {
+              "code": { "type": "string" },
+              "message": { "type": "string" },
+              "details": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+            }
+          }
+        }
+      }
+    },
+    "x-pathItems": {
+      "crud": {
+        "get": {
+          "summary": "List records or fetch one by id",
+          "parameters": [
+            { "name": "id", "in": "query", "required": false, "schema": { "type": "string", "format": "uuid" } },
+            { "$ref": "#/components/parameters/Search" },
+            { "$ref": "#/components/parameters/Limit" },
+            { "$ref": "#/components/parameters/Offset" },
+            { "$ref": "#/components/parameters/Sort" },
+            { "$ref": "#/components/parameters/Order" }
+          ],
+          "responses": { "200": { "$ref": "#/components/responses/Success" } }
+        },
+        "post": {
+          "summary": "Create a record",
+          "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+          "responses": {
+            "201": { "$ref": "#/components/responses/Created" },
+            "422": { "$ref": "#/components/responses/Error" }
+          }
+        },
+        "patch": {
+          "summary": "Update a record",
+          "parameters": [{ "$ref": "#/components/parameters/Id" }],
+          "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+          "responses": { "200": { "$ref": "#/components/responses/Success" } }
+        },
+        "delete": {
+          "summary": "Delete a record",
+          "parameters": [{ "$ref": "#/components/parameters/Id" }],
+          "responses": {
+            "200": { "$ref": "#/components/responses/Success" },
+            "409": { "$ref": "#/components/responses/Error" }
+          }
+        }
+      },
+      "readOnly": {
+        "get": {
+          "summary": "List records",
+          "parameters": [
+            { "name": "id", "in": "query", "required": false, "schema": { "type": "string", "format": "uuid" } },
+            { "$ref": "#/components/parameters/Limit" },
+            { "$ref": "#/components/parameters/Offset" }
+          ],
+          "responses": { "200": { "$ref": "#/components/responses/Success" } }
+        }
+      },
+      "sync": {
+        "put": {
+          "tags": ["ERP sync"],
+          "summary": "Upsert one record by external ID",
+          "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+          "responses": {
+            "200": { "$ref": "#/components/responses/Success" },
+            "422": { "$ref": "#/components/responses/Error" }
+          }
+        }
+      },
+      "bulkSync": {
+        "post": {
+          "tags": ["ERP sync"],
+          "summary": "Upsert records by external ID",
+          "requestBody": { "$ref": "#/components/requestBodies/JsonBody" },
+          "responses": {
+            "200": { "$ref": "#/components/responses/Success" },
+            "422": { "$ref": "#/components/responses/Error" }
+          }
+        }
+      }
+    }
+  }
+}

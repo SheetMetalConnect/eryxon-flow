@@ -1,0 +1,121 @@
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { DetailPanel } from "@/components/terminal/DetailPanel";
+import { BatchFlowPrompt } from "@/components/operator/BatchFlowPrompt";
+import { TerminalJob } from "@/types/terminal";
+import type { PMIData, GeometryData } from "@/hooks/useCADProcessing";
+import type { OperationWithDetails } from "@/lib/db";
+import type { BatchPromptState } from "@/hooks/useOperatorTerminal";
+
+interface OperatorDetailSidebarProps {
+  collapsed: boolean;
+  onToggleCollapse: () => void;
+  selectedJob: TerminalJob | null;
+  onStart: () => Promise<void>;
+  onPause: () => Promise<void>;
+  onComplete: () => Promise<void>;
+  startActionLabel?: string;
+  pauseActionLabel?: string;
+  showCompleteAction?: boolean;
+  isActionPending?: boolean;
+  batchPrompt: BatchPromptState | null;
+  onSelectBatchMode: (mode: "single" | "batch") => void;
+  stepUrl: string | null;
+  pdfUrl: string | null;
+  pmiData: PMIData | null;
+  serverGeometry: GeometryData | null;
+  operations: OperationWithDetails[];
+  onDataRefresh: () => void;
+  locationTrackingEnabled?: boolean;
+}
+
+export function OperatorDetailSidebar({
+  collapsed,
+  onToggleCollapse,
+  selectedJob,
+  onStart,
+  onPause,
+  onComplete,
+  startActionLabel,
+  pauseActionLabel,
+  showCompleteAction,
+  isActionPending = false,
+  batchPrompt,
+  onSelectBatchMode,
+  stepUrl,
+  pdfUrl,
+  pmiData,
+  serverGeometry,
+  operations,
+  onDataRefresh,
+  locationTrackingEnabled = false,
+}: OperatorDetailSidebarProps) {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      {/* Collapse toggle */}
+      <div className="hidden shrink-0 items-center justify-center border-b border-border py-1 md:flex">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleCollapse}
+          className="h-6 w-6 rounded-full border border-border bg-card p-0 shadow-sm hover:bg-accent"
+        >
+          {collapsed ? (
+            <ChevronLeft className="h-3 w-3" />
+          ) : (
+            <ChevronRight className="h-3 w-3" />
+          )}
+        </Button>
+      </div>
+
+      {collapsed ? (
+        <div className="flex flex-1 flex-col items-center justify-center py-4">
+          <span className="rotate-180 text-[10px] text-muted-foreground [writing-mode:vertical-lr]">
+            {t("terminal.detailsPanel")}
+          </span>
+        </div>
+      ) : selectedJob ? (
+        <div className="flex min-h-0 flex-1 flex-col">
+          {batchPrompt ? (
+            <BatchFlowPrompt
+              prompt={batchPrompt}
+              onSelectMode={onSelectBatchMode}
+            />
+          ) : null}
+          <DetailPanel
+            job={selectedJob}
+            onStart={onStart}
+            onPause={onPause}
+            onComplete={onComplete}
+            startActionLabel={startActionLabel}
+            pauseActionLabel={pauseActionLabel}
+            showCompleteActionOverride={showCompleteAction}
+            isActionPending={isActionPending}
+            stepUrl={stepUrl}
+            pdfUrl={pdfUrl}
+            pmiData={pmiData}
+            serverGeometry={serverGeometry}
+            operations={operations}
+            onDataRefresh={onDataRefresh}
+            locationTrackingEnabled={locationTrackingEnabled}
+          />
+        </div>
+      ) : (
+        <div className="flex flex-1 flex-col items-center justify-center p-8 text-center text-muted-foreground">
+          <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-accent/10">
+            <ChevronLeft className="h-8 w-8 text-muted-foreground/50" />
+          </div>
+          <h3 className="mb-2 text-xl font-medium text-foreground">
+            {t("terminal.noJobSelected")}
+          </h3>
+          <p className="text-sm">
+            {t("terminal.noJobSelectedDescription")}
+          </p>
+        </div>
+      )}
+    </>
+  );
+}

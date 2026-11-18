@@ -1,0 +1,128 @@
+# [project]
+# id = ""  # Set via `supabase link --project-ref <ref>`
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:8080"
+additional_redirect_urls = ["http://localhost:8080"]
+jwt_expiry = 3600
+enable_signup = true
+enable_anonymous_sign_ins = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false  # Set to true in production
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[functions]
+# Edge functions use API-key auth (not JWT), so gateway JWT check is disabled.
+
+[functions.api-assignments]
+verify_jwt = false
+
+[functions.api-batches]
+verify_jwt = false
+
+[functions.api-batch-lifecycle]
+verify_jwt = false
+
+[functions.api-cad-proxy]
+verify_jwt = false
+
+[functions.api-cells]
+verify_jwt = false
+
+[functions.api-erp-sync]
+verify_jwt = false
+
+[functions.api-export]
+verify_jwt = false
+
+[functions.api-issues]
+verify_jwt = false
+
+[functions.api-jobs]
+verify_jwt = false
+
+[functions.api-key-generate]
+verify_jwt = false
+
+[functions.api-materials]
+verify_jwt = false
+
+[functions.api-operation-lifecycle]
+verify_jwt = false
+
+[functions.api-operation-quantities]
+verify_jwt = false
+
+[functions.api-operations]
+verify_jwt = false
+
+[functions.api-parts]
+verify_jwt = false
+
+[functions.api-parts-images]
+verify_jwt = false
+
+[functions.api-resources]
+verify_jwt = false
+
+[functions.api-scrap-reasons]
+verify_jwt = false
+
+[functions.api-substeps]
+verify_jwt = false
+
+[functions.api-templates]
+verify_jwt = false
+
+[functions.api-time-entries]
+verify_jwt = false
+
+[functions.api-upload-url]
+verify_jwt = false
+
+[functions.api-webhook-deliveries]
+verify_jwt = false
+
+[functions.api-webhooks]
+verify_jwt = false
+
+[functions.monthly-reset-cron]
+verify_jwt = false
+
+[functions.pilot-alert-evaluator]
+verify_jwt = false
+
+[functions.plan-mode]
+verify_jwt = false
+
+[functions.send-invitation]
+verify_jwt = false
+
+[functions.storage-manager]
+verify_jwt = false
+
+[functions.webhook-dispatch]
+verify_jwt = false
