@@ -2,7 +2,7 @@
   "name": "eryxon-flow",
   "private": true,
   "version": "0.11.5",
-  "license": "BUSL-1.1",
+  "license": "Unlicense",
   "type": "module",
   "scripts": {
     "dev": "vite",

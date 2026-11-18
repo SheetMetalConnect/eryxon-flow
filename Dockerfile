@@ -50,7 +50,7 @@ LABEL org.opencontainers.image.version="${APP_VERSION}"
 LABEL org.opencontainers.image.revision="${APP_REVISION}"
 LABEL org.opencontainers.image.source="https://github.com/SheetMetalConnect/eryxon-flow"
 LABEL org.opencontainers.image.vendor="Eryxon"
-LABEL org.opencontainers.image.licenses="BUSL-1.1"
+LABEL org.opencontainers.image.licenses="Unlicense"
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf

@@ -2,6 +2,12 @@
 
 All notable changes to Eryxon Flow are documented here.
 
+## Archived — 2026-11-18
+
+- Eryxon Flow is archived. The hosted version is shut down.
+- Relicensed from the Business Source License 1.1 to the Unlicense (public domain). The commercial licence and pricing pages are removed.
+- Automatic dependency updates (Dependabot) are switched off.
+
 ## [0.11.5] — 2026-09-19
 
 This release shortens the operator completion flow and makes planning updates

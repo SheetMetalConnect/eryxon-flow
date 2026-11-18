@@ -1,3 +1,6 @@
+> **Eryxon Flow is archived.**
+> After a year-long test run, the market is clear: you want something custom. We built 5+ client setups and have moved fully to custom projects. Eryxon Flow is now archived as true free and open-source software (Unlicense). Anyone may use the code. For enquiries, contact Sheet Metal Connect at [sheetmetalconnect.com](https://sheetmetalconnect.com).
+
 <p align="center">
   <img src="public/logo-banner-dark.svg" alt="Eryxon Flow" width="400" />
 </p>
@@ -7,13 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="https://app.eryxon.eu"><strong>Hosted Version</strong></a> &middot;
-  <a href="https://eryxon.eu">Docs</a> &middot;
   <a href="https://github.com/SheetMetalConnect/eryxon-flow/issues">Issues</a>
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/license-BSL--1.1-blue" alt="License" />
+  <img src="https://img.shields.io/badge/license-Unlicense-blue" alt="License" />
   <img src="https://img.shields.io/badge/react-18-61DAFB?logo=react" alt="React" />
   <img src="https://img.shields.io/badge/supabase-backend-3FCF8E?logo=supabase" alt="Supabase" />
   <img src="https://img.shields.io/badge/typescript-strict-3178C6?logo=typescript" alt="TypeScript" />
@@ -29,7 +30,7 @@ Eryxon Flow is a manufacturing execution system for metalworking job shops: shee
 
 **For the systems around it** it offers a REST API, webhooks and an MCP server, so your ERP or planning tool stays the system of record.
 
-Self-host it with Docker, or use the [hosted version](https://app.eryxon.eu). See [Architecture](docs/ARCHITECTURE.md) for how it fits together and the [Changelog](CHANGELOG.md) for what is new.
+Self-host it with Docker; there is no hosted version. See [Architecture](docs/ARCHITECTURE.md) for how it fits together and the [Changelog](CHANGELOG.md) for what is new.
 
 ## Features
 
@@ -76,7 +77,7 @@ npm run dev             # http://localhost:8080 — the first sign-up creates th
 | Frontend | React 18, TypeScript, Vite, Tailwind CSS, shadcn/ui |
 | Backend | Supabase (PostgreSQL 17, Edge Functions, Realtime) |
 | 3D Viewer | Three.js with browser-side STEP parsing |
-| Deployment | Docker (self-hosted), Vercel + Supabase (hosted) |
+| Deployment | Docker (self-hosted) |
 | API | REST with API key auth, rate limiting, webhook dispatch |
 
 The app is a responsive web app for phones, tablets and desktops. Installable PWA support is off by default; build with `VITE_ENABLE_PWA=true` to enable it.
@@ -129,28 +130,19 @@ Agent instructions live in [`.agents/`](.agents/) and are shared by every tool: 
 
 ## License
 
-**Business Source License 1.1** (source-available)
-
-- Free to self-host for a single production site (one workshop); read, modify, and run the source
-- Any non-production use is free
-- Running it across several sites, or offering it to others as a service, needs a commercial license — see [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md)
-- Each released version converts to its Change License (GNU GPL v2.0 or later) four years after release
-
-See [LICENSE](LICENSE) for the full terms.
+**The Unlicense** (public domain). Anyone may copy, modify, use, sell or distribute the code, for any purpose, without conditions. See [LICENSE](LICENSE).
 
 ## Contributing & Security
 
-- Want to help? Start with [CONTRIBUTING.md](CONTRIBUTING.md) — translations (NL/DE), bug reports from the shop floor, and code are all welcome.
-- Found a vulnerability? Please report it privately — see [SECURITY.md](SECURITY.md).
+- See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).
 
 ## Support
 
 - Issues: [GitHub Issues](https://github.com/SheetMetalConnect/eryxon-flow/issues)
-- Docs: [eryxon.eu](https://eryxon.eu)
-- Professional services: [vanenkhuizen.com](https://www.vanenkhuizen.com/)
+- Enquiries: [Sheet Metal Connect](https://sheetmetalconnect.com)
 
 ---
 
 <p align="center">
-  Made in Europe by <a href="https://vanenkhuizen.com">Van Enkhuizen</a> &middot; <a href="https://sheetmetalconnect.com">Sheet Metal Connect</a>
+  Made in Europe by <a href="https://sheetmetalconnect.com">Sheet Metal Connect</a>
 </p>

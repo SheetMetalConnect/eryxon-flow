@@ -2,7 +2,7 @@
   "name": "eryxon-flow-mcp-server",
   "version": "3.0.1",
   "description": "MCP server for Eryxon Flow: production tools for AI agents over stdio or Streamable HTTP",
-  "license": "BUSL-1.1",
+  "license": "Unlicense",
   "type": "module",
   "main": "dist/index.js",
   "bin": {

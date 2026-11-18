@@ -1,7 +1,6 @@
 # Development and releases
 
-The repository is public and source-available under the Business Source License 1.1.
-The Change Date controls when each release moves to its Change License.
+The repository is archived and released under the Unlicense (public domain). There is no hosted version.
 Keep customer information and credentials out of code,
 issues, pull requests, release notes, and fixtures.
 
